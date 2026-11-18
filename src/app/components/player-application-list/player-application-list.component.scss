@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-@use "@angular/material" as mat;
+@use '@angular/material' as mat;
 
 :host {
   display: flex;
@@ -117,15 +117,15 @@ table {
   align-items: center;
 }
 
-::ng-deep .frame>mat-expansion-panel {
+::ng-deep .frame > mat-expansion-panel {
   flex: 0 0 auto;
 }
 
-::ng-deep .frame>mat-expansion-panel + mat-expansion-panel {
+::ng-deep .frame > mat-expansion-panel + mat-expansion-panel {
   margin-top: 20px;
 }
 
-::ng-deep .frame>mat-expansion-panel .mat-expansion-panel-body {
+::ng-deep .frame > mat-expansion-panel .mat-expansion-panel-body {
   padding-left: 100px;
 }
 

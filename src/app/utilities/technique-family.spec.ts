@@ -12,11 +12,31 @@ describe('techniqueFamily', () => {
    * Data: d3fend flagged, another domain flagged, enterprise-attack unflagged, undefined.
    */
   it.each([
-    { name: 'a flagged d3fend release', item: { domain: 'd3fend', isDefensive: true }, family: 'defensive' },
-    { name: 'a flagged release of another domain', item: { domain: 'other-defend', isDefensive: true }, family: 'defensive' },
-    { name: 'an unflagged ATT&CK release', item: { domain: 'enterprise-attack', isDefensive: false }, family: 'attack' },
-    { name: 'a release without the flag', item: { domain: 'ATLAS' }, family: 'attack' },
-    { name: 'nothing', item: undefined as { isDefensive?: boolean }, family: 'attack' },
+    {
+      name: 'a flagged d3fend release',
+      item: { domain: 'd3fend', isDefensive: true },
+      family: 'defensive',
+    },
+    {
+      name: 'a flagged release of another domain',
+      item: { domain: 'other-defend', isDefensive: true },
+      family: 'defensive',
+    },
+    {
+      name: 'an unflagged ATT&CK release',
+      item: { domain: 'enterprise-attack', isDefensive: false },
+      family: 'attack',
+    },
+    {
+      name: 'a release without the flag',
+      item: { domain: 'ATLAS' },
+      family: 'attack',
+    },
+    {
+      name: 'nothing',
+      item: undefined as { isDefensive?: boolean },
+      family: 'attack',
+    },
   ])('puts $name in the $family family', ({ item, family }) => {
     expect(techniqueFamily(item)).toBe(family);
   });

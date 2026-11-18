@@ -6,9 +6,21 @@ import { TechniqueCountermeasure } from 'src/app/generated/blueprint.api';
 import { groupByTactic } from './countermeasure-tactics';
 
 // a framework's tactic order, as its definition gives it (test data)
-const ORDER = ['Model', 'Harden', 'Detect', 'Isolate', 'Deceive', 'Evict', 'Restore'];
+const ORDER = [
+  'Model',
+  'Harden',
+  'Detect',
+  'Isolate',
+  'Deceive',
+  'Evict',
+  'Restore',
+];
 
-const cm = (externalId: string, tactic: string, weight: number): TechniqueCountermeasure => ({
+const cm = (
+  externalId: string,
+  tactic: string,
+  weight: number,
+): TechniqueCountermeasure => ({
   id: `cm-${externalId}`,
   defensiveTactic: tactic,
   weight,
@@ -22,12 +34,15 @@ describe('groupByTactic', () => {
    * Interacts with: groupByTactic.
    * Data: one mapping per tactic, in reverse order, plus one of an unknown tactic.
    */
-  it('orders the groups as the framework\'s tactic order does', () => {
+  it("orders the groups as the framework's tactic order does", () => {
     const reversed = [...ORDER].reverse().map((t, i) => cm(`D3-${i}`, t, 1));
 
-    const groups = groupByTactic([cm('D3-X', 'Analyze', 1), ...reversed], ORDER);
+    const groups = groupByTactic(
+      [cm('D3-X', 'Analyze', 1), ...reversed],
+      ORDER,
+    );
 
-    expect(groups.map(g => g.tactic)).toEqual([...ORDER, 'Analyze']);
+    expect(groups.map((g) => g.tactic)).toEqual([...ORDER, 'Analyze']);
   });
 
   /**
@@ -36,9 +51,13 @@ describe('groupByTactic', () => {
    * Data: three tactics, out of order, and no tactic order.
    */
   it('orders the groups alphabetically when the framework gives no order', () => {
-    const groups = groupByTactic([cm('A', 'Model', 1), cm('B', 'Detect', 1), cm('C', 'Harden', 1)]);
+    const groups = groupByTactic([
+      cm('A', 'Model', 1),
+      cm('B', 'Detect', 1),
+      cm('C', 'Harden', 1),
+    ]);
 
-    expect(groups.map(g => g.tactic)).toEqual(['Detect', 'Harden', 'Model']);
+    expect(groups.map((g) => g.tactic)).toEqual(['Detect', 'Harden', 'Model']);
   });
 
   /**
@@ -48,10 +67,16 @@ describe('groupByTactic', () => {
    * Data: three Harden countermeasures with weights 1, 3 and 1.
    */
   it('ranks a group by weight, then id', () => {
-    const groups = groupByTactic([cm('D3-TB', 'Harden', 1), cm('D3-CH', 'Harden', 3), cm('D3-CBAN', 'Harden', 1)]);
+    const groups = groupByTactic([
+      cm('D3-TB', 'Harden', 1),
+      cm('D3-CH', 'Harden', 3),
+      cm('D3-CBAN', 'Harden', 1),
+    ]);
 
     expect(groups).toHaveLength(1);
-    expect(groups[0].countermeasures.map(c => c.defensiveTechnique.externalId)).toEqual(['D3-CH', 'D3-CBAN', 'D3-TB']);
+    expect(
+      groups[0].countermeasures.map((c) => c.defensiveTechnique.externalId),
+    ).toEqual(['D3-CH', 'D3-CBAN', 'D3-TB']);
   });
 
   /**
@@ -61,6 +86,8 @@ describe('groupByTactic', () => {
    */
   it('copes with nothing and with a missing tactic', () => {
     expect(groupByTactic(undefined)).toEqual([]);
-    expect(groupByTactic([cm('D3-CH', undefined, 1)]).map(g => g.tactic)).toEqual(['Other']);
+    expect(
+      groupByTactic([cm('D3-CH', undefined, 1)]).map((g) => g.tactic),
+    ).toEqual(['Other']);
   });
 });

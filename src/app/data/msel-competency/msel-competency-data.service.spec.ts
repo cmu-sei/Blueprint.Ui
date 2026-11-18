@@ -4,13 +4,19 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
-import { MselCompetency, MselCompetencyService } from 'src/app/generated/blueprint.api';
+import {
+  MselCompetency,
+  MselCompetencyService,
+} from 'src/app/generated/blueprint.api';
 import { MselCompetencyStore } from './msel-competency.store';
 import { MselCompetencyDataService } from './msel-competency-data.service';
 import { MselCompetencyQuery } from './msel-competency.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function mc(overrides: Partial<MselCompetency> = {}): MselCompetency {
   return { id: 'mc-1', mselId: 'msel-1', competencyId: 'comp-b', ...overrides };
@@ -32,7 +38,8 @@ function setup() {
   };
 }
 
-const competencyIds = (list: MselCompetency[]) => list.map((m) => m.competencyId);
+const competencyIds = (list: MselCompetency[]) =>
+  list.map((m) => m.competencyId);
 
 describe('MselCompetencyDataService', () => {
   beforeEach(() => {
@@ -47,8 +54,12 @@ describe('MselCompetencyDataService', () => {
   it('loadByMsel replaces the competencies, or empties them on failure', () => {
     const { service, query, mcApi } = setup();
     const list = recordEmissions(service.MselCompetencyList);
-    mcApi.getMselCompetencies.mockReturnValueOnce(of([mc(), mc({ id: 'mc-2', competencyId: 'comp-a' })]));
-    mcApi.getMselCompetencies.mockReturnValueOnce(throwError(() => new Error('boom')));
+    mcApi.getMselCompetencies.mockReturnValueOnce(
+      of([mc(), mc({ id: 'mc-2', competencyId: 'comp-a' })]),
+    );
+    mcApi.getMselCompetencies.mockReturnValueOnce(
+      throwError(() => new Error('boom')),
+    );
 
     service.loadByMsel('msel-1');
     expect(mcApi.getMselCompetencies).toHaveBeenCalledWith('msel-1');
@@ -90,22 +101,30 @@ describe('MselCompetencyDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'add', endpoint: 'createMselCompetency', escapes: true, call: (s: MselCompetencyDataService) => s.add({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, mcApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(MselCompetencyStore).setLoading(false);
-    mcApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'add',
+      endpoint: 'createMselCompetency',
+      escapes: true,
+      call: (s: MselCompetencyDataService) => s.add({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, mcApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(MselCompetencyStore).setLoading(false);
+      mcApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(MselCompetencyQuery).getValue().loading).toBe(true);
-    // With no error callback the error escapes to ErrorService, the ErrorHandler
-    // app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(MselCompetencyQuery).getValue().loading).toBe(true);
+      // With no error callback the error escapes to ErrorService, the ErrorHandler
+      // app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete escapes to the app's global ErrorHandler.
@@ -113,19 +132,26 @@ describe('MselCompetencyDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteMselCompetency', call: (s: MselCompetencyDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, mcApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    mcApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteMselCompetency',
+      call: (s: MselCompetencyDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, mcApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      mcApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

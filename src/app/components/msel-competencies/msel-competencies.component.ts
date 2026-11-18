@@ -1,10 +1,28 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, OnInit, AfterViewInit, inject, input, viewChild } from '@angular/core';
-import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  AfterViewInit,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
+import {
+  UntypedFormControl,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { SelectionModel } from '@angular/cdk/collections';
-import { animate, state, style, transition, trigger } from '@angular/animations';
+import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
 import { Subject, Observable } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import {
@@ -30,20 +48,44 @@ import { CompetencyFrameworkDataService } from 'src/app/data/competency-framewor
 import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/competency-framework.query';
 import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { TeamCompetencyPropagateDialogComponent, TeamCompetencyPropagateData } from '../team-competency-propagate-dialog/team-competency-propagate-dialog.component';
+import {
+  TeamCompetencyPropagateDialogComponent,
+  TeamCompetencyPropagateData,
+} from '../team-competency-propagate-dialog/team-competency-propagate-dialog.component';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
-import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+  MatTableDataSource,
+  MatTable,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort, Sort, MatSortHeader } from '@angular/material/sort';
 import { MatIcon } from '@angular/material/icon';
 
-import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
+import {
+  MatFormField,
+  MatLabel,
+  MatInput,
+  MatSuffix,
+} from '@angular/material/input';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
-import { MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
+import {
+  MatExpansionPanel,
+  MatExpansionPanelHeader,
+  MatExpansionPanelTitle,
+} from '@angular/material/expansion';
 import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatCheckbox } from '@angular/material/checkbox';
@@ -51,25 +93,68 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { MatToolbar, MatToolbarRow } from '@angular/material/toolbar';
 
 @Component({
-    selector: 'app-msel-competencies',
-    templateUrl: './msel-competencies.component.html',
-    styleUrls: ['./msel-competencies.component.scss'],
-    animations: [
-        trigger('detailExpand', [
-            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-            state('expanded', style({ height: '*', visibility: 'visible' })),
-            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-        ]),
-    ],
-    imports: [MatIcon, MatFormField, MatLabel, MatSelect, MatOption, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatProgressSpinner, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCheckbox, MatCellDef, MatCell, MatSortHeader, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatButton, MatToolbar, MatToolbarRow]
+  selector: 'app-msel-competencies',
+  templateUrl: './msel-competencies.component.html',
+  styleUrls: ['./msel-competencies.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state(
+        'collapsed',
+        style({ height: '0px', minHeight: '0', visibility: 'hidden' }),
+      ),
+      state('expanded', style({ height: '*', visibility: 'visible' })),
+      transition(
+        'expanded <=> collapsed',
+        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+      ),
+    ]),
+  ],
+  imports: [
+    MatIcon,
+    MatFormField,
+    MatLabel,
+    MatSelect,
+    MatOption,
+    MatExpansionPanel,
+    MatExpansionPanelHeader,
+    MatExpansionPanelTitle,
+    MatInput,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatPaginator,
+    MatProgressSpinner,
+    MatTable,
+    MatSort,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCheckbox,
+    MatCellDef,
+    MatCell,
+    MatSortHeader,
+    MatTooltip,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+    MatButton,
+    MatToolbar,
+    MatToolbarRow,
+  ],
 })
-export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewInit {
+export class MselCompetenciesComponent
+  implements OnDestroy, OnInit, AfterViewInit
+{
   private mselQuery = inject(MselQuery);
   private mselCompetencyDataService = inject(MselCompetencyDataService);
   private mselCompetencyQuery = inject(MselCompetencyQuery);
   private teamCompetencyDataService = inject(TeamCompetencyDataService);
   private teamCompetencyQuery = inject(TeamCompetencyQuery);
-  private competencyFrameworkDataService = inject(CompetencyFrameworkDataService);
+  private competencyFrameworkDataService = inject(
+    CompetencyFrameworkDataService,
+  );
   private competencyFrameworkQuery = inject(CompetencyFrameworkQuery);
   private competencyFrameworkService = inject(CompetencyFrameworkService);
   private permissionDataService = inject(PermissionDataService);
@@ -105,7 +190,12 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   competencySearchControl = new UntypedFormControl();
   competencySearchString = '';
   workRoleDataSource = new MatTableDataSource<Competency>([]);
-  workRoleDisplayedColumns: string[] = ['check', 'idNumber', 'shortName', 'category'];
+  workRoleDisplayedColumns: string[] = [
+    'check',
+    'idNumber',
+    'shortName',
+    'category',
+  ];
   workRoleCategoryFilter = '';
   workRoleCategories: string[] = [];
   addPanelExpanded = false;
@@ -120,12 +210,21 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   filterControl = new UntypedFormControl();
   filterString = '';
   dataSource = new MatTableDataSource<MselCompetency>([]);
-  displayedColumns: string[] = ['select', 'action', 'idNumber', 'type', 'framework', 'shortName', 'teams', 'events'];
+  displayedColumns: string[] = [
+    'select',
+    'action',
+    'idNumber',
+    'type',
+    'framework',
+    'shortName',
+    'teams',
+    'events',
+  ];
   selection = new SelectionModel<MselCompetency>(true, []);
   typeFilter = '';
   competencyTypes: string[] = [];
   frameworkFilter = '';
-  poolFrameworks: { id: string, name: string, version: string }[] = [];
+  poolFrameworks: { id: string; name: string; version: string }[] = [];
   // Teams
   mselTeams: Team[] = [];
   teamsByCompetency = new Map<string, string[]>();
@@ -134,55 +233,81 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   private unsubscribe$ = new Subject();
 
   constructor() {
-    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel) {
-        const isNewMsel = this.msel.id !== msel.id;
-        Object.assign(this.msel, msel);
-        this.mselTeams = msel.teams || [];
-        if (isNewMsel) {
-          this.mselCompetencyDataService.loadByMsel(msel.id);
-          this.teamCompetencyDataService.loadByMsel(msel.id);
+    (this.mselQuery.selectActive() as Observable<MselPlus>)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((msel) => {
+        if (msel) {
+          const isNewMsel = this.msel.id !== msel.id;
+          Object.assign(this.msel, msel);
+          this.mselTeams = msel.teams || [];
+          if (isNewMsel) {
+            this.mselCompetencyDataService.loadByMsel(msel.id);
+            this.teamCompetencyDataService.loadByMsel(msel.id);
+          }
         }
-      }
-    });
-    this.mselCompetencyQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(mselCompetencies => {
-      this.mselCompetencyList = mselCompetencies;
-      if (!this.selectedFrameworkId) {
-        this.addPanelExpanded = mselCompetencies.length === 0;
-      }
-      this.selection.clear();
-      this.buildPoolTypes();
-      this.applyFilter();
-    });
-    this.teamCompetencyQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teamCompetencies => {
-      this.teamCompetencyList = teamCompetencies;
-      this.buildTeamsByCompetency();
-    });
-    this.competencyFrameworkQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(frameworks => {
-      this.frameworks = frameworks;
-    });
-    this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(fields => {
-      this.allDataFields = fields;
-    });
-    this.dataValueQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(values => {
-      this.allDataValues = values;
-    });
-    this.filterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe(term => {
-      this.filterString = term;
-      this.applyFilter();
-    });
-    this.workRoleFilterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe(term => {
-      this.workRoleFilterString = term;
-      this.applyWorkRoleFilter();
-    });
-    this.competencySearchControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe(term => {
-      this.competencySearchString = term;
-      this.applyWorkRoleFilter();
-    });
+      });
+    this.mselCompetencyQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((mselCompetencies) => {
+        this.mselCompetencyList = mselCompetencies;
+        if (!this.selectedFrameworkId) {
+          this.addPanelExpanded = mselCompetencies.length === 0;
+        }
+        this.selection.clear();
+        this.buildPoolTypes();
+        this.applyFilter();
+      });
+    this.teamCompetencyQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((teamCompetencies) => {
+        this.teamCompetencyList = teamCompetencies;
+        this.buildTeamsByCompetency();
+      });
+    this.competencyFrameworkQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((frameworks) => {
+        this.frameworks = frameworks;
+      });
+    this.dataFieldQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((fields) => {
+        this.allDataFields = fields;
+      });
+    this.dataValueQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((values) => {
+        this.allDataValues = values;
+      });
+    this.filterControl.valueChanges
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((term) => {
+        this.filterString = term;
+        this.applyFilter();
+      });
+    this.workRoleFilterControl.valueChanges
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((term) => {
+        this.workRoleFilterString = term;
+        this.applyWorkRoleFilter();
+      });
+    this.competencySearchControl.valueChanges
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((term) => {
+        this.competencySearchString = term;
+        this.applyWorkRoleFilter();
+      });
   }
 
   ngOnInit() {
-    this.permissionDataService.load().pipe(takeUntil(this.unsubscribe$)).subscribe();
+    this.permissionDataService
+      .load()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe();
     this.competencyFrameworkDataService.load();
   }
 
@@ -194,8 +319,10 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   }
 
   canEditMsel(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
-      this.msel.hasRole(this.loggedInUserId(), '').owner;
+    return (
+      this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
+      this.msel.hasRole(this.loggedInUserId(), '').owner
+    );
   }
 
   // =============================================
@@ -222,15 +349,24 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     this.workRoleCategories = [];
     this.workRoleCategoryFilter = '';
     this.isLoadingFramework = true;
-    this.competencyFrameworkService.getCompetencyFramework(frameworkId)
+    this.competencyFrameworkService
+      .getCompetencyFramework(frameworkId)
       .pipe(take(1))
       .subscribe({
-        next: fw => {
+        next: (fw) => {
           this.selectedFramework = fw;
           const allComps = fw.competencies || [];
           this.buildTypeMapFromComps(fw, allComps);
-          this.frameworkWorkRoles = allComps.filter(c => this.competencyTypeMap.get(c.id) === 'Work Role');
-          this.workRoleCategories = [...new Set(this.frameworkWorkRoles.map(wr => this.getWorkRoleCategory(wr)).filter(c => c))].sort();
+          this.frameworkWorkRoles = allComps.filter(
+            (c) => this.competencyTypeMap.get(c.id) === 'Work Role',
+          );
+          this.workRoleCategories = [
+            ...new Set(
+              this.frameworkWorkRoles
+                .map((wr) => this.getWorkRoleCategory(wr))
+                .filter((c) => c),
+            ),
+          ].sort();
           this.workRoleCategoryFilter = '';
           this.workRoleFilterControl.setValue('');
           this.applyWorkRoleFilter();
@@ -249,7 +385,7 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
         },
         complete: () => {
           this.isLoadingFramework = false;
-        }
+        },
       });
   }
 
@@ -257,15 +393,15 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     this.competencyTypeMap.clear();
     this.competencyById.clear();
     const byId = new Map<string, Competency>();
-    comps.forEach(c => {
+    comps.forEach((c) => {
       byId.set(c.id, c);
       this.competencyById.set(c.id, c);
     });
-    const hasHierarchy = comps.some(c => c.parentId && byId.has(c.parentId));
+    const hasHierarchy = comps.some((c) => c.parentId && byId.has(c.parentId));
     const taxonomyLevels = (fw.taxonomies || '')
       .split(',')
-      .map(t => t.trim())
-      .filter(t => t.length > 0);
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
 
     for (const c of comps) {
       const idType = this.deriveTypeFromId(c.idNumber);
@@ -273,7 +409,10 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
         this.competencyTypeMap.set(c.id, idType);
       } else if (hasHierarchy && taxonomyLevels.length > 0) {
         const depth = this.getDepth(c, byId);
-        this.competencyTypeMap.set(c.id, taxonomyLevels[Math.min(depth, taxonomyLevels.length - 1)]);
+        this.competencyTypeMap.set(
+          c.id,
+          taxonomyLevels[Math.min(depth, taxonomyLevels.length - 1)],
+        );
       } else if (hasHierarchy) {
         const isRoot = !c.parentId || !byId.has(c.parentId);
         this.competencyTypeMap.set(c.id, isRoot ? 'Category' : 'Other');
@@ -287,7 +426,12 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     if (!idNumber) return 'Other';
     if (idNumber.includes('WRL')) return 'Work Role';
     if (/^[TKSA][\d-]/.test(idNumber)) {
-      const prefixMap: Record<string, string> = { 'T': 'Task', 'K': 'Knowledge', 'S': 'Skill', 'A': 'Ability' };
+      const prefixMap: Record<string, string> = {
+        T: 'Task',
+        K: 'Knowledge',
+        S: 'Skill',
+        A: 'Ability',
+      };
       return prefixMap[idNumber.charAt(0)] || 'Other';
     }
     if (/^[A-Z]{2}-[A-Z]{3}-\d+$/.test(idNumber)) return 'Work Role';
@@ -325,20 +469,32 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   // =============================================
 
   isInPool(competencyId: string): boolean {
-    return this.mselCompetencyList.some(mc => mc.competencyId === competencyId);
+    return this.mselCompetencyList.some(
+      (mc) => mc.competencyId === competencyId,
+    );
   }
 
   togglePoolItem(comp: Competency) {
     if (this.isInPool(comp.id)) {
-      const mc = this.mselCompetencyList.find(m => m.competencyId === comp.id);
+      const mc = this.mselCompetencyList.find(
+        (m) => m.competencyId === comp.id,
+      );
       if (mc) {
-        const msg = this.buildRemoveMessage(comp.idNumber, comp.shortName, this.getEventCount(mc), this.getDataFieldOptionCount(comp.idNumber));
-        this.dialogService.confirm({ title: 'Remove Competency', message: msg }).afterClosed().subscribe(result => {
-          if (result) {
-            this.removeCompetencyReferences(comp.idNumber);
-            this.mselCompetencyDataService.delete(mc.id);
-          }
-        });
+        const msg = this.buildRemoveMessage(
+          comp.idNumber,
+          comp.shortName,
+          this.getEventCount(mc),
+          this.getDataFieldOptionCount(comp.idNumber),
+        );
+        this.dialogService
+          .confirm({ title: 'Remove Competency', message: msg })
+          .afterClosed()
+          .subscribe((result) => {
+            if (result) {
+              this.removeCompetencyReferences(comp.idNumber);
+              this.mselCompetencyDataService.delete(mc.id);
+            }
+          });
       }
     } else {
       this.mselCompetencyDataService.add({
@@ -356,25 +512,31 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   applyWorkRoleFilter() {
     let filtered = [...this.frameworkWorkRoles];
     if (this.workRoleCategoryFilter) {
-      filtered = filtered.filter(wr => this.getWorkRoleCategory(wr) === this.workRoleCategoryFilter);
+      filtered = filtered.filter(
+        (wr) => this.getWorkRoleCategory(wr) === this.workRoleCategoryFilter,
+      );
     }
     if (this.workRoleFilterString) {
       const fs = this.workRoleFilterString.toLowerCase();
-      filtered = filtered.filter(c =>
-        c.idNumber?.toLowerCase().includes(fs) ||
-        c.shortName?.toLowerCase().includes(fs) ||
-        c.description?.toLowerCase().includes(fs));
+      filtered = filtered.filter(
+        (c) =>
+          c.idNumber?.toLowerCase().includes(fs) ||
+          c.shortName?.toLowerCase().includes(fs) ||
+          c.description?.toLowerCase().includes(fs),
+      );
     }
     // Competency search: filter work roles to those with matching children, auto-expand
     this.browserAutoExpandedIds.clear();
     if (this.competencySearchString) {
       const cs = this.competencySearchString.toLowerCase();
-      filtered = filtered.filter(wr => {
+      filtered = filtered.filter((wr) => {
         const children = this.getRelatedCompetencies(wr);
-        return children.some(c =>
-          c.idNumber?.toLowerCase().includes(cs) ||
-          c.shortName?.toLowerCase().includes(cs) ||
-          c.description?.toLowerCase().includes(cs));
+        return children.some(
+          (c) =>
+            c.idNumber?.toLowerCase().includes(cs) ||
+            c.shortName?.toLowerCase().includes(cs) ||
+            c.description?.toLowerCase().includes(cs),
+        );
       });
       for (const wr of filtered) {
         this.browserAutoExpandedIds.add(wr.id);
@@ -382,10 +544,15 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     }
     filtered.sort((a, b) => (a.idNumber || '').localeCompare(b.idNumber || ''));
     this.workRoleDataSource.data = filtered;
-    this.workRoleDataSource.sortingDataAccessor = (item: Competency, property: string) => {
+    this.workRoleDataSource.sortingDataAccessor = (
+      item: Competency,
+      property: string,
+    ) => {
       switch (property) {
-        case 'category': return this.getWorkRoleCategory(item)?.toLowerCase() || '';
-        default: return (item[property] || '').toString().toLowerCase();
+        case 'category':
+          return this.getWorkRoleCategory(item)?.toLowerCase() || '';
+        default:
+          return (item[property] || '').toString().toLowerCase();
       }
     };
     setTimeout(() => {
@@ -399,7 +566,10 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   // --- Browser expand: child TKSAs ---
 
   isBrowserExpanded(workRole: Competency): boolean {
-    return this.browserExpandedId === workRole.id || this.browserAutoExpandedIds.has(workRole.id);
+    return (
+      this.browserExpandedId === workRole.id ||
+      this.browserAutoExpandedIds.has(workRole.id)
+    );
   }
 
   toggleBrowserExpand(workRole: Competency) {
@@ -425,7 +595,8 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     const children = this.getRelatedCompetencies(workRole);
     const types = new Set<string>();
     for (const c of children) {
-      const t = this.competencyTypeMap.get(c.id) || this.deriveTypeFromId(c.idNumber);
+      const t =
+        this.competencyTypeMap.get(c.id) || this.deriveTypeFromId(c.idNumber);
       if (t && t !== 'Other' && t !== 'Work Role') types.add(t);
     }
     this.browserChildTypes = [...types].sort();
@@ -446,23 +617,28 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
         }
       }
     }
-    return [...resultMap.values()].sort((a, b) => (a.idNumber || '').localeCompare(b.idNumber || ''));
+    return [...resultMap.values()].sort((a, b) =>
+      (a.idNumber || '').localeCompare(b.idNumber || ''),
+    );
   }
 
   getFilteredChildren(workRole: Competency): Competency[] {
     let children = this.getRelatedCompetencies(workRole);
     if (this.browserChildTypeFilter) {
-      children = children.filter(c => {
-        const t = this.competencyTypeMap.get(c.id) || this.deriveTypeFromId(c.idNumber);
+      children = children.filter((c) => {
+        const t =
+          this.competencyTypeMap.get(c.id) || this.deriveTypeFromId(c.idNumber);
         return t === this.browserChildTypeFilter;
       });
     }
     if (this.competencySearchString) {
       const cs = this.competencySearchString.toLowerCase();
-      children = children.filter(c =>
-        c.idNumber?.toLowerCase().includes(cs) ||
-        c.shortName?.toLowerCase().includes(cs) ||
-        c.description?.toLowerCase().includes(cs));
+      children = children.filter(
+        (c) =>
+          c.idNumber?.toLowerCase().includes(cs) ||
+          c.shortName?.toLowerCase().includes(cs) ||
+          c.description?.toLowerCase().includes(cs),
+      );
     }
     return children;
   }
@@ -498,69 +674,34 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   deselectAllChildren(workRole: Competency) {
     const children = this.getFilteredChildren(workRole);
     const toRemove = children
-      .map(c => this.mselCompetencyList.find(m => m.competencyId === c.id))
-      .filter(mc => mc);
+      .map((c) => this.mselCompetencyList.find((m) => m.competencyId === c.id))
+      .filter((mc) => mc);
     if (toRemove.length === 0) return;
-    const totalEvents = toRemove.reduce((sum, mc) => sum + this.getEventCount(mc), 0);
-    const totalOptions = toRemove.reduce((sum, mc) => sum + this.getDataFieldOptionCount(mc.competency?.idNumber), 0);
+    const totalEvents = toRemove.reduce(
+      (sum, mc) => sum + this.getEventCount(mc),
+      0,
+    );
+    const totalOptions = toRemove.reduce(
+      (sum, mc) => sum + this.getDataFieldOptionCount(mc.competency?.idNumber),
+      0,
+    );
     let msg = `Remove ${toRemove.length} competenc${toRemove.length === 1 ? 'y' : 'ies'} from this MSEL?`;
     const parts: string[] = [];
-    if (totalEvents > 0) parts.push(`${totalEvents} scenario event reference${totalEvents === 1 ? '' : 's'}`);
-    if (totalOptions > 0) parts.push(`${totalOptions} data field option${totalOptions === 1 ? '' : 's'}`);
+    if (totalEvents > 0)
+      parts.push(
+        `${totalEvents} scenario event reference${totalEvents === 1 ? '' : 's'}`,
+      );
+    if (totalOptions > 0)
+      parts.push(
+        `${totalOptions} data field option${totalOptions === 1 ? '' : 's'}`,
+      );
     if (parts.length > 0) {
       msg += ` ${parts.join(' and ')} will also be removed.`;
     }
-    this.dialogService.confirm({ title: 'Remove Competencies', message: msg }).afterClosed().subscribe(result => {
-      if (result) {
-        for (const mc of toRemove) {
-          if (mc.competency?.idNumber) {
-            this.removeCompetencyReferences(mc.competency.idNumber);
-          }
-          this.mselCompetencyDataService.delete(mc.id);
-        }
-      }
-    });
-  }
-
-  allChildrenSelected(workRole: Competency): boolean {
-    const children = this.getFilteredChildren(workRole);
-    return children.length > 0 && children.every(c => this.isInPool(c.id));
-  }
-
-  someChildrenSelected(workRole: Competency): boolean {
-    const children = this.getFilteredChildren(workRole);
-    const selectedCount = children.filter(c => this.isInPool(c.id)).length;
-    return selectedCount > 0 && selectedCount < children.length;
-  }
-
-  // --- Select all / deselect all (work role browser) ---
-
-  isAllWorkRolesSelected(): boolean {
-    return this.workRoleDataSource.data.length > 0 && this.workRoleDataSource.data.every(wr => this.isInPool(wr.id));
-  }
-
-  hasWorkRoleSelection(): boolean {
-    return this.workRoleDataSource.data.some(wr => this.isInPool(wr.id));
-  }
-
-  toggleAllWorkRoles() {
-    const allSelected = this.isAllWorkRolesSelected();
-    if (allSelected) {
-      // Remove all visible work roles
-      const toRemove = this.workRoleDataSource.data
-        .map(wr => this.mselCompetencyList.find(mc => mc.competencyId === wr.id))
-        .filter(mc => mc);
-      if (toRemove.length === 0) return;
-      const totalEvents = toRemove.reduce((sum, mc) => sum + this.getEventCount(mc), 0);
-      const totalOptions = toRemove.reduce((sum, mc) => sum + this.getDataFieldOptionCount(mc.competency?.idNumber), 0);
-      let msg = `Remove ${toRemove.length} work role${toRemove.length === 1 ? '' : 's'} from this MSEL?`;
-      const parts: string[] = [];
-      if (totalEvents > 0) parts.push(`${totalEvents} scenario event reference${totalEvents === 1 ? '' : 's'}`);
-      if (totalOptions > 0) parts.push(`${totalOptions} data field option${totalOptions === 1 ? '' : 's'}`);
-      if (parts.length > 0) {
-        msg += ` ${parts.join(' and ')} will also be removed.`;
-      }
-      this.dialogService.confirm({ title: 'Remove Work Roles', message: msg }).afterClosed().subscribe(result => {
+    this.dialogService
+      .confirm({ title: 'Remove Competencies', message: msg })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           for (const mc of toRemove) {
             if (mc.competency?.idNumber) {
@@ -570,6 +711,77 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
           }
         }
       });
+  }
+
+  allChildrenSelected(workRole: Competency): boolean {
+    const children = this.getFilteredChildren(workRole);
+    return children.length > 0 && children.every((c) => this.isInPool(c.id));
+  }
+
+  someChildrenSelected(workRole: Competency): boolean {
+    const children = this.getFilteredChildren(workRole);
+    const selectedCount = children.filter((c) => this.isInPool(c.id)).length;
+    return selectedCount > 0 && selectedCount < children.length;
+  }
+
+  // --- Select all / deselect all (work role browser) ---
+
+  isAllWorkRolesSelected(): boolean {
+    return (
+      this.workRoleDataSource.data.length > 0 &&
+      this.workRoleDataSource.data.every((wr) => this.isInPool(wr.id))
+    );
+  }
+
+  hasWorkRoleSelection(): boolean {
+    return this.workRoleDataSource.data.some((wr) => this.isInPool(wr.id));
+  }
+
+  toggleAllWorkRoles() {
+    const allSelected = this.isAllWorkRolesSelected();
+    if (allSelected) {
+      // Remove all visible work roles
+      const toRemove = this.workRoleDataSource.data
+        .map((wr) =>
+          this.mselCompetencyList.find((mc) => mc.competencyId === wr.id),
+        )
+        .filter((mc) => mc);
+      if (toRemove.length === 0) return;
+      const totalEvents = toRemove.reduce(
+        (sum, mc) => sum + this.getEventCount(mc),
+        0,
+      );
+      const totalOptions = toRemove.reduce(
+        (sum, mc) =>
+          sum + this.getDataFieldOptionCount(mc.competency?.idNumber),
+        0,
+      );
+      let msg = `Remove ${toRemove.length} work role${toRemove.length === 1 ? '' : 's'} from this MSEL?`;
+      const parts: string[] = [];
+      if (totalEvents > 0)
+        parts.push(
+          `${totalEvents} scenario event reference${totalEvents === 1 ? '' : 's'}`,
+        );
+      if (totalOptions > 0)
+        parts.push(
+          `${totalOptions} data field option${totalOptions === 1 ? '' : 's'}`,
+        );
+      if (parts.length > 0) {
+        msg += ` ${parts.join(' and ')} will also be removed.`;
+      }
+      this.dialogService
+        .confirm({ title: 'Remove Work Roles', message: msg })
+        .afterClosed()
+        .subscribe((result) => {
+          if (result) {
+            for (const mc of toRemove) {
+              if (mc.competency?.idNumber) {
+                this.removeCompetencyReferences(mc.competency.idNumber);
+              }
+              this.mselCompetencyDataService.delete(mc.id);
+            }
+          }
+        });
     } else {
       // Add all visible work roles
       for (const wr of this.workRoleDataSource.data) {
@@ -589,18 +801,22 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
 
   private buildPoolTypes() {
     const types = new Set<string>();
-    const fwMap = new Map<string, { name: string, version: string }>();
+    const fwMap = new Map<string, { name: string; version: string }>();
     for (const mc of this.mselCompetencyList) {
-      const t = this.competencyTypeMap.get(mc.competencyId) || this.deriveTypeFromId(mc.competency?.idNumber);
+      const t =
+        this.competencyTypeMap.get(mc.competencyId) ||
+        this.deriveTypeFromId(mc.competency?.idNumber);
       if (t && t !== 'Other') types.add(t);
       const fwId = mc.competency?.competencyFrameworkId;
       if (fwId && !fwMap.has(fwId)) {
-        const fw = this.frameworks.find(f => f.id === fwId);
+        const fw = this.frameworks.find((f) => f.id === fwId);
         if (fw) fwMap.set(fwId, { name: fw.name, version: fw.version || '' });
       }
     }
     this.competencyTypes = [...types].sort();
-    this.poolFrameworks = [...fwMap.entries()].map(([id, fw]) => ({ id, name: fw.name, version: fw.version })).sort((a, b) => a.name.localeCompare(b.name));
+    this.poolFrameworks = [...fwMap.entries()]
+      .map(([id, fw]) => ({ id, name: fw.name, version: fw.version }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   onTypeFilterChange(type: string) {
@@ -616,32 +832,52 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   applyFilter() {
     let filtered = [...this.mselCompetencyList];
     if (this.frameworkFilter) {
-      filtered = filtered.filter(mc => mc.competency?.competencyFrameworkId === this.frameworkFilter);
+      filtered = filtered.filter(
+        (mc) => mc.competency?.competencyFrameworkId === this.frameworkFilter,
+      );
     }
     if (this.typeFilter) {
-      filtered = filtered.filter(mc => {
-        const t = this.competencyTypeMap.get(mc.competencyId) || this.deriveTypeFromId(mc.competency?.idNumber);
+      filtered = filtered.filter((mc) => {
+        const t =
+          this.competencyTypeMap.get(mc.competencyId) ||
+          this.deriveTypeFromId(mc.competency?.idNumber);
         return t === this.typeFilter;
       });
     }
     if (this.filterString) {
       const term = this.filterString.toLowerCase();
-      filtered = filtered.filter(mc =>
-        mc.competency?.idNumber?.toLowerCase().includes(term) ||
-        mc.competency?.shortName?.toLowerCase().includes(term) ||
-        mc.competency?.description?.toLowerCase().includes(term));
+      filtered = filtered.filter(
+        (mc) =>
+          mc.competency?.idNumber?.toLowerCase().includes(term) ||
+          mc.competency?.shortName?.toLowerCase().includes(term) ||
+          mc.competency?.description?.toLowerCase().includes(term),
+      );
     }
-    filtered.sort((a, b) => (a.competency?.idNumber || '').localeCompare(b.competency?.idNumber || ''));
+    filtered.sort((a, b) =>
+      (a.competency?.idNumber || '').localeCompare(
+        b.competency?.idNumber || '',
+      ),
+    );
     this.dataSource.data = filtered;
-    this.dataSource.sortingDataAccessor = (item: MselCompetency, property: string) => {
+    this.dataSource.sortingDataAccessor = (
+      item: MselCompetency,
+      property: string,
+    ) => {
       switch (property) {
-        case 'idNumber': return item.competency?.idNumber?.toLowerCase() || '';
-        case 'type': return this.getMselCompetencyType(item)?.toLowerCase() || '';
-        case 'framework': return this.getFrameworkName(item)?.toLowerCase() || '';
-        case 'shortName': return item.competency?.shortName?.toLowerCase() || '';
-        case 'teams': return this.getTeamNames(item)?.toLowerCase() || '';
-        case 'events': return this.getEventCount(item);
-        default: return '';
+        case 'idNumber':
+          return item.competency?.idNumber?.toLowerCase() || '';
+        case 'type':
+          return this.getMselCompetencyType(item)?.toLowerCase() || '';
+        case 'framework':
+          return this.getFrameworkName(item)?.toLowerCase() || '';
+        case 'shortName':
+          return item.competency?.shortName?.toLowerCase() || '';
+        case 'teams':
+          return this.getTeamNames(item)?.toLowerCase() || '';
+        case 'events':
+          return this.getEventCount(item);
+        default:
+          return '';
       }
     };
     setTimeout(() => {
@@ -659,31 +895,46 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   removeMselCompetency(mc: MselCompetency) {
     const idNumber = mc.competency?.idNumber || '';
     const name = mc.competency?.shortName || '';
-    const msg = this.buildRemoveMessage(idNumber, name, this.getEventCount(mc), this.getDataFieldOptionCount(idNumber));
-    this.dialogService.confirm({ title: 'Remove Competency', message: msg }).afterClosed().subscribe(result => {
-      if (result) {
-        this.removeCompetencyReferences(idNumber);
-        this.mselCompetencyDataService.delete(mc.id);
-      }
-    });
+    const msg = this.buildRemoveMessage(
+      idNumber,
+      name,
+      this.getEventCount(mc),
+      this.getDataFieldOptionCount(idNumber),
+    );
+    this.dialogService
+      .confirm({ title: 'Remove Competency', message: msg })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) {
+          this.removeCompetencyReferences(idNumber);
+          this.mselCompetencyDataService.delete(mc.id);
+        }
+      });
   }
 
   getMselCompetencyType(mc: MselCompetency): string {
-    return this.competencyTypeMap.get(mc.competencyId) || this.deriveTypeFromId(mc.competency?.idNumber);
+    return (
+      this.competencyTypeMap.get(mc.competencyId) ||
+      this.deriveTypeFromId(mc.competency?.idNumber)
+    );
   }
 
   getFrameworkName(mc: MselCompetency): string {
     const fwId = mc.competency?.competencyFrameworkId;
     if (!fwId) return '';
-    const fw = this.frameworks.find(f => f.id === fwId);
+    const fw = this.frameworks.find((f) => f.id === fwId);
     return fw ? fw.name + ' (' + fw.version + ')' : '';
   }
 
   private get competencyFieldIds(): Set<string> {
     return new Set(
       this.allDataFields
-        .filter(df => df.mselId === this.msel.id && df.dataType === DataFieldType.Competency)
-        .map(df => df.id)
+        .filter(
+          (df) =>
+            df.mselId === this.msel.id &&
+            df.dataType === DataFieldType.Competency,
+        )
+        .map((df) => df.id),
     );
   }
 
@@ -695,8 +946,13 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     const seen = new Set<string>();
     let count = 0;
     for (const dv of this.allDataValues) {
-      if (fieldIds.has(dv.dataFieldId) && dv.value && dv.scenarioEventId && !seen.has(dv.scenarioEventId)) {
-        const ids = dv.value.split(',').map(s => s.trim());
+      if (
+        fieldIds.has(dv.dataFieldId) &&
+        dv.value &&
+        dv.scenarioEventId &&
+        !seen.has(dv.scenarioEventId)
+      ) {
+        const ids = dv.value.split(',').map((s) => s.trim());
         if (ids.includes(idNumber)) {
           count++;
           seen.add(dv.scenarioEventId);
@@ -709,12 +965,22 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   private getDataFieldOptionCount(idNumber: string): number {
     if (!idNumber) return 0;
     return this.allDataFields
-      .filter(df => df.mselId === this.msel.id && df.dataType === DataFieldType.Competency)
-      .filter(df => (df.dataOptions || []).some(opt => opt.optionName === idNumber))
-      .length;
+      .filter(
+        (df) =>
+          df.mselId === this.msel.id &&
+          df.dataType === DataFieldType.Competency,
+      )
+      .filter((df) =>
+        (df.dataOptions || []).some((opt) => opt.optionName === idNumber),
+      ).length;
   }
 
-  private buildRemoveMessage(idNumber: string, name: string, eventCount: number, optionCount: number): string {
+  private buildRemoveMessage(
+    idNumber: string,
+    name: string,
+    eventCount: number,
+    optionCount: number,
+  ): string {
     const parts: string[] = [];
     if (eventCount > 0) {
       parts.push(`${eventCount} scenario event${eventCount === 1 ? '' : 's'}`);
@@ -730,20 +996,30 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
 
   private removeCompetencyReferences(idNumber: string) {
     if (!idNumber) return;
-    const competencyFields = this.allDataFields
-      .filter(df => df.mselId === this.msel.id && df.dataType === DataFieldType.Competency);
+    const competencyFields = this.allDataFields.filter(
+      (df) =>
+        df.mselId === this.msel.id && df.dataType === DataFieldType.Competency,
+    );
     // Remove from DataOptions on competency-type data fields
     for (const df of competencyFields) {
-      const filtered = (df.dataOptions || []).filter(opt => opt.optionName !== idNumber);
+      const filtered = (df.dataOptions || []).filter(
+        (opt) => opt.optionName !== idNumber,
+      );
       if (filtered.length !== (df.dataOptions || []).length) {
-        this.dataFieldDataService.updateDataField({ ...df, dataOptions: filtered });
+        this.dataFieldDataService.updateDataField({
+          ...df,
+          dataOptions: filtered,
+        });
       }
     }
     // Remove from DataValues on scenario events
-    const fieldIds = new Set(competencyFields.map(df => df.id));
+    const fieldIds = new Set(competencyFields.map((df) => df.id));
     for (const dv of this.allDataValues) {
       if (fieldIds.has(dv.dataFieldId) && dv.value) {
-        const ids = dv.value.split(',').map(s => s.trim()).filter(id => id && id !== idNumber);
+        const ids = dv.value
+          .split(',')
+          .map((s) => s.trim())
+          .filter((id) => id && id !== idNumber);
         const newValue = ids.join(', ');
         if (newValue !== dv.value) {
           this.dataValueDataService.updateDataValue({ ...dv, value: newValue });
@@ -767,25 +1043,26 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     const teamIds = this.teamsByCompetency.get(mc.competencyId) || [];
     if (teamIds.length === 0) return '';
     return teamIds
-      .map(tid => this.mselTeams.find(t => t.id === tid)?.shortName || '')
-      .filter(n => n)
+      .map((tid) => this.mselTeams.find((t) => t.id === tid)?.shortName || '')
+      .filter((n) => n)
       .join(', ');
   }
 
   // --- Pool row expand: team assignment ---
 
   toggleExpand(mc: MselCompetency) {
-    this.expandedCompetencyId = this.expandedCompetencyId === mc.competencyId ? null : mc.competencyId;
+    this.expandedCompetencyId =
+      this.expandedCompetencyId === mc.competencyId ? null : mc.competencyId;
   }
 
   getAvailableTeams(mc: MselCompetency): Team[] {
     const assignedIds = this.teamsByCompetency.get(mc.competencyId) || [];
-    return this.mselTeams.filter(t => !assignedIds.includes(t.id));
+    return this.mselTeams.filter((t) => !assignedIds.includes(t.id));
   }
 
   getAssignedTeams(mc: MselCompetency): Team[] {
     const assignedIds = this.teamsByCompetency.get(mc.competencyId) || [];
-    return this.mselTeams.filter(t => assignedIds.includes(t.id));
+    return this.mselTeams.filter((t) => assignedIds.includes(t.id));
   }
 
   addTeamToCompetency(mc: MselCompetency, team: Team) {
@@ -795,7 +1072,7 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     } as TeamCompetency);
     // Offer to add to related competencies on the MSEL
     const children = this.getPoolChildren(mc);
-    const unassigned = children.filter(child => {
+    const unassigned = children.filter((child) => {
       const assignedIds = this.teamsByCompetency.get(child.competencyId) || [];
       return !assignedIds.includes(team.id);
     });
@@ -805,13 +1082,16 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   }
 
   removeTeamFromCompetency(mc: MselCompetency, team: Team) {
-    const tc = this.teamCompetencyList.find(t => t.teamId === team.id && t.competencyId === mc.competencyId);
+    const tc = this.teamCompetencyList.find(
+      (t) => t.teamId === team.id && t.competencyId === mc.competencyId,
+    );
     if (tc) {
       this.teamCompetencyDataService.delete(tc.id);
       // Offer to remove from related competencies on the MSEL
       const children = this.getPoolChildren(mc);
-      const assigned = children.filter(child => {
-        const assignedIds = this.teamsByCompetency.get(child.competencyId) || [];
+      const assigned = children.filter((child) => {
+        const assignedIds =
+          this.teamsByCompetency.get(child.competencyId) || [];
         return assignedIds.includes(team.id);
       });
       if (assigned.length > 0) {
@@ -820,7 +1100,11 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     }
   }
 
-  private openPropagateDialog(team: Team, action: 'add' | 'remove', competencies: MselCompetency[]) {
+  private openPropagateDialog(
+    team: Team,
+    action: 'add' | 'remove',
+    competencies: MselCompetency[],
+  ) {
     const dialogRef = this.dialog.open(TeamCompetencyPropagateDialogComponent, {
       width: '600px',
       maxWidth: '95vw',
@@ -842,7 +1126,10 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
         }
       } else {
         for (const child of selected) {
-          const childTc = this.teamCompetencyList.find(t => t.teamId === team.id && t.competencyId === child.competencyId);
+          const childTc = this.teamCompetencyList.find(
+            (t) =>
+              t.teamId === team.id && t.competencyId === child.competencyId,
+          );
           if (childTc) {
             this.teamCompetencyDataService.delete(childTc.id);
           }
@@ -854,10 +1141,14 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   private getPoolChildren(mc: MselCompetency): MselCompetency[] {
     const compId = mc.competencyId;
     const relatedIds = new Set(mc.competency?.relatedIdNumbers || []);
-    return this.mselCompetencyList.filter(other => {
+    return this.mselCompetencyList.filter((other) => {
       if (other.competencyId === compId) return false;
       if (other.competency?.parentId === compId) return true;
-      if (other.competency?.idNumber && relatedIds.has(other.competency.idNumber)) return true;
+      if (
+        other.competency?.idNumber &&
+        relatedIds.has(other.competency.idNumber)
+      )
+        return true;
       return false;
     });
   }
@@ -865,40 +1156,58 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   // --- Select all / deselect all (pool) ---
 
   isAllSelected(): boolean {
-    return this.selection.selected.length === this.dataSource.data.length && this.dataSource.data.length > 0;
+    return (
+      this.selection.selected.length === this.dataSource.data.length &&
+      this.dataSource.data.length > 0
+    );
   }
 
   toggleAllRows() {
     if (this.isAllSelected()) {
       this.selection.clear();
     } else {
-      this.dataSource.data.forEach(row => this.selection.select(row));
+      this.dataSource.data.forEach((row) => this.selection.select(row));
     }
   }
 
   removeSelected() {
     const selected = this.selection.selected;
     if (selected.length === 0) return;
-    const totalEvents = selected.reduce((sum, mc) => sum + this.getEventCount(mc), 0);
-    const totalOptions = selected.reduce((sum, mc) => sum + this.getDataFieldOptionCount(mc.competency?.idNumber), 0);
+    const totalEvents = selected.reduce(
+      (sum, mc) => sum + this.getEventCount(mc),
+      0,
+    );
+    const totalOptions = selected.reduce(
+      (sum, mc) => sum + this.getDataFieldOptionCount(mc.competency?.idNumber),
+      0,
+    );
     let msg = `Remove ${selected.length} competenc${selected.length === 1 ? 'y' : 'ies'} from this MSEL?`;
     const parts: string[] = [];
-    if (totalEvents > 0) parts.push(`${totalEvents} scenario event reference${totalEvents === 1 ? '' : 's'}`);
-    if (totalOptions > 0) parts.push(`${totalOptions} data field option${totalOptions === 1 ? '' : 's'}`);
+    if (totalEvents > 0)
+      parts.push(
+        `${totalEvents} scenario event reference${totalEvents === 1 ? '' : 's'}`,
+      );
+    if (totalOptions > 0)
+      parts.push(
+        `${totalOptions} data field option${totalOptions === 1 ? '' : 's'}`,
+      );
     if (parts.length > 0) {
       msg += ` ${parts.join(' and ')} will also be removed.`;
     }
-    this.dialogService.confirm({ title: 'Remove Selected', message: msg }).afterClosed().subscribe(result => {
-      if (result) {
-        for (const mc of selected) {
-          if (mc.competency?.idNumber) {
-            this.removeCompetencyReferences(mc.competency.idNumber);
+    this.dialogService
+      .confirm({ title: 'Remove Selected', message: msg })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) {
+          for (const mc of selected) {
+            if (mc.competency?.idNumber) {
+              this.removeCompetencyReferences(mc.competency.idNumber);
+            }
+            this.mselCompetencyDataService.delete(mc.id);
           }
-          this.mselCompetencyDataService.delete(mc.id);
+          this.selection.clear();
         }
-        this.selection.clear();
-      }
-    });
+      });
   }
 
   ngOnDestroy() {

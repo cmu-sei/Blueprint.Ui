@@ -4,15 +4,23 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
-import { TechniqueFramework, TechniqueFrameworkService } from 'src/app/generated/blueprint.api';
+import {
+  TechniqueFramework,
+  TechniqueFrameworkService,
+} from 'src/app/generated/blueprint.api';
 import { TechniqueReleaseDataService } from 'src/app/data/technique-release/technique-release-data.service';
 import { TechniqueFrameworkStore } from './technique-framework.store';
 
 /** What an exported definition file holds: the definition without its id and counts. */
-export type TechniqueFrameworkDefinition = Pick<TechniqueFramework, 'name' | 'description' | 'domain' | 'isDefensive' | 'format' | 'settings'>;
+export type TechniqueFrameworkDefinition = Pick<
+  TechniqueFramework,
+  'name' | 'description' | 'domain' | 'isDefensive' | 'format' | 'settings'
+>;
 
 /** The definition of a framework as an export writes it and an import reads it. */
-export function toDefinition(framework: TechniqueFramework): TechniqueFrameworkDefinition {
+export function toDefinition(
+  framework: TechniqueFramework,
+): TechniqueFrameworkDefinition {
   return {
     name: framework.name,
     description: framework.description,
@@ -53,16 +61,23 @@ export class TechniqueFrameworkDataService {
   }
 
   /** Creates a framework; also how an exported definition is imported. */
-  create(definition: TechniqueFrameworkDefinition): Observable<TechniqueFramework> {
+  create(
+    definition: TechniqueFrameworkDefinition,
+  ): Observable<TechniqueFramework> {
     return this.techniqueFrameworkService
       .createTechniqueFramework(definition as TechniqueFramework)
       .pipe(
         take(1),
-        tap((framework) => this.techniqueFrameworkStore.upsert(framework.id, framework))
+        tap((framework) =>
+          this.techniqueFrameworkStore.upsert(framework.id, framework),
+        ),
       );
   }
 
-  update(id: string, definition: TechniqueFrameworkDefinition): Observable<TechniqueFramework> {
+  update(
+    id: string,
+    definition: TechniqueFrameworkDefinition,
+  ): Observable<TechniqueFramework> {
     return this.techniqueFrameworkService
       .updateTechniqueFramework(id, { ...definition, id })
       .pipe(
@@ -70,7 +85,7 @@ export class TechniqueFrameworkDataService {
         tap((framework) => {
           this.techniqueFrameworkStore.update(id, framework);
           this.techniqueReleaseDataService.load();
-        })
+        }),
       );
   }
 

@@ -2,12 +2,47 @@
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, AfterViewInit, inject, input, viewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  AfterViewInit,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
-import { Sort, MatSortable, MatSort, MatSortHeader } from '@angular/material/sort';
-import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+  Sort,
+  MatSortable,
+  MatSort,
+  MatSortHeader,
+} from '@angular/material/sort';
+import {
+  MatTableDataSource,
+  MatTable,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 import { TeamQuery } from 'src/app/data/team/team.query';
-import { SystemPermission, Team, TeamUser, User, UserTeamRole, MselUnit, Unit, CiteService } from 'src/app/generated/blueprint.api';
+import {
+  SystemPermission,
+  Team,
+  TeamUser,
+  User,
+  UserTeamRole,
+  MselUnit,
+  Unit,
+  CiteService,
+} from 'src/app/generated/blueprint.api';
 import { TeamUserDataService } from 'src/app/data/team-user/team-user-data.service';
 import { TeamUserQuery } from 'src/app/data/team-user/team-user.query';
 import { CurrentUserQuery, UserQuery } from 'src/app/data/user/user.query';
@@ -20,7 +55,11 @@ import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  UntypedFormControl,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { MatToolbar, MatToolbarRow } from '@angular/material/toolbar';
 import { MatIcon } from '@angular/material/icon';
 import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
@@ -28,10 +67,35 @@ import { MatIconButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 @Component({
-    selector: 'app-team-users',
-    templateUrl: './team-users.component.html',
-    styleUrls: ['./team-users.component.scss'],
-    imports: [MatToolbar, MatToolbarRow, MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatSortHeader, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatSelect, MatOption]
+  selector: 'app-team-users',
+  templateUrl: './team-users.component.html',
+  styleUrls: ['./team-users.component.scss'],
+  imports: [
+    MatToolbar,
+    MatToolbarRow,
+    MatIcon,
+    MatFormField,
+    MatInput,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatPaginator,
+    MatTable,
+    MatSort,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatSortHeader,
+    MatCellDef,
+    MatCell,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+    MatSelect,
+    MatOption,
+  ],
 })
 export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
   private teamQuery = inject(TeamQuery);
@@ -74,41 +138,65 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
 
   constructor() {
     // Fetch CITE team roles dynamically
-    this.citeService.getTeamRoles().pipe(takeUntil(this.unsubscribe$)).subscribe(roles => {
-      this.teamRoles = roles.map(r => r.name).filter(n => !!n);
-    });
-    this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
-      this.userList = users;
-      this.setDataSources();
-    });
-    this.teamUserQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(tUsers => {
-      this.teamUsers = tUsers.filter(tu => tu.teamId === this.team()?.id);
-      this.otherTeamUsers = tUsers.filter(tu => tu.teamId !== this.team()?.id);
-      this.setDataSources();
-    });
+    this.citeService
+      .getTeamRoles()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((roles) => {
+        this.teamRoles = roles.map((r) => r.name).filter((n) => !!n);
+      });
+    this.userQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((users) => {
+        this.userList = users;
+        this.setDataSources();
+      });
+    this.teamUserQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((tUsers) => {
+        this.teamUsers = tUsers.filter((tu) => tu.teamId === this.team()?.id);
+        this.otherTeamUsers = tUsers.filter(
+          (tu) => tu.teamId !== this.team()?.id,
+        );
+        this.setDataSources();
+      });
     // observe the evaluation teams
-    this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
-      this.teamList = teams ? teams : [];
-    });
+    this.teamQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((teams) => {
+        this.teamList = teams ? teams : [];
+      });
     // subscribe to UserTeamRoles
-    this.userTeamRoleQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(umrs => {
-      this.userTeamRoles = umrs;
-    });
+    this.userTeamRoleQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((umrs) => {
+        this.userTeamRoles = umrs;
+      });
     // subscribe to MselUnits to know which users are contributors
-    this.mselUnitQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(mselUnits => {
-      this.mselUnits = mselUnits || [];
-      this.applyFilter();
-    });
+    this.mselUnitQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((mselUnits) => {
+        this.mselUnits = mselUnits || [];
+        this.applyFilter();
+      });
     // subscribe to Units to get user lists
-    this.unitQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(units => {
-      this.units = units || [];
-      this.applyFilter();
-    });
+    this.unitQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((units) => {
+        this.units = units || [];
+        this.applyFilter();
+      });
   }
 
   ngOnInit() {
     // Load permissions and trigger change detection when loaded
-    this.permissionDataService.load()
+    this.permissionDataService
+      .load()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
@@ -116,34 +204,46 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
     // Subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>)
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(msel => {
+      .subscribe((msel) => {
         if (msel) {
           Object.assign(this.msel, msel);
         }
       });
     // Subscribe to current user
-    this.currentUserQuery.select()
+    this.currentUserQuery
+      .select()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(cu => {
+      .subscribe((cu) => {
         if (cu.id) {
           this.loggedInUserId = cu.id;
         }
       });
-    this.filterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
-      this.filterString = this.filterControl.value;
-      this.applyFilter();
-    });
-    this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
-      this.userList = users;
-      this.applyFilter();
-    });
+    this.filterControl.valueChanges
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.filterString = this.filterControl.value;
+        this.applyFilter();
+      });
+    this.userQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((users) => {
+        this.userList = users;
+        this.applyFilter();
+      });
     this.filterControl.setValue('');
-    this.teamMemberFilterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
-      this.teamMemberFilterString = this.teamMemberFilterControl.value;
-      this.applyTeamMemberFilter();
-    });
-    this.teamUsers = this.teamUserQuery.getAll().filter(tu => tu.teamId === this.team()?.id);
-    this.otherTeamUsers = this.teamUserQuery.getAll().filter(tu => tu.teamId !== this.team()?.id);
+    this.teamMemberFilterControl.valueChanges
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.teamMemberFilterString = this.teamMemberFilterControl.value;
+        this.applyTeamMemberFilter();
+      });
+    this.teamUsers = this.teamUserQuery
+      .getAll()
+      .filter((tu) => tu.teamId === this.team()?.id);
+    this.otherTeamUsers = this.teamUserQuery
+      .getAll()
+      .filter((tu) => tu.teamId !== this.team()?.id);
     this.setDataSources();
   }
 
@@ -153,8 +253,10 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
   }
 
   canEditMsel(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').owner;
+    return (
+      this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
+      this.msel.hasRole(this.loggedInUserId, '').owner
+    );
   }
 
   clearFilter() {
@@ -166,9 +268,13 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
   }
 
   applyTeamMemberFilter() {
-    const searchTerm = this.teamMemberFilterControl.value ? this.teamMemberFilterControl.value.toLowerCase() : '';
-    const filteredTeamUsers = this.teamUsers.filter(tu =>
-      !searchTerm || this.getUserName(tu.userId).toLowerCase().includes(searchTerm)
+    const searchTerm = this.teamMemberFilterControl.value
+      ? this.teamMemberFilterControl.value.toLowerCase()
+      : '';
+    const filteredTeamUsers = this.teamUsers.filter(
+      (tu) =>
+        !searchTerm ||
+        this.getUserName(tu.userId).toLowerCase().includes(searchTerm),
     );
     this.sortTeamUserData(filteredTeamUsers);
   }
@@ -188,7 +294,9 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
         return 0;
       }
     });
-    const newAllUsers = !this.userList ? new Array<User>() : this.userList.slice(0);
+    const newAllUsers = !this.userList
+      ? new Array<User>()
+      : this.userList.slice(0);
     this.teamUserDataSource.data.forEach((tu) => {
       const index = newAllUsers.findIndex((u) => u.id === tu.userId);
       if (index >= 0) {
@@ -207,21 +315,23 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
   }
 
   applyFilter() {
-    const searchTerm = this.filterControl.value ? this.filterControl.value.toLowerCase() : '';
+    const searchTerm = this.filterControl.value
+      ? this.filterControl.value.toLowerCase()
+      : '';
 
     // Get users who are part of contributor units for this MSEL
     const contributorUserIds = new Set<string>();
-    this.mselUnits.forEach(mselUnit => {
+    this.mselUnits.forEach((mselUnit) => {
       // Try to get users from the mselUnit.unit relationship first
       if (mselUnit.unit && mselUnit.unit.users) {
-        mselUnit.unit.users.forEach(user => {
+        mselUnit.unit.users.forEach((user) => {
           contributorUserIds.add(user.id);
         });
       } else if (mselUnit.unitId) {
         // If unit relationship not populated, look up the unit directly
-        const unit = this.units.find(u => u.id === mselUnit.unitId);
+        const unit = this.units.find((u) => u.id === mselUnit.unitId);
         if (unit && unit.users) {
-          unit.users.forEach(user => {
+          unit.users.forEach((user) => {
             contributorUserIds.add(user.id);
           });
         }
@@ -229,16 +339,16 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
     });
 
     // Get users not already on this team
-    const teamUserIds = new Set(this.teamUsers.map(tu => tu.userId));
+    const teamUserIds = new Set(this.teamUsers.map((tu) => tu.userId));
 
     // Filter to only contributors who are not already on the team
-    const availableUsers = this.userList.filter(user =>
-      contributorUserIds.has(user.id) && !teamUserIds.has(user.id)
+    const availableUsers = this.userList.filter(
+      (user) => contributorUserIds.has(user.id) && !teamUserIds.has(user.id),
     );
 
     // Apply search filter
-    const filteredData = availableUsers.filter(user =>
-      !searchTerm || user.name.toLowerCase().includes(searchTerm)
+    const filteredData = availableUsers.filter(
+      (user) => !searchTerm || user.name.toLowerCase().includes(searchTerm),
     );
     this.sortUserData(filteredData);
   }
@@ -296,14 +406,14 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
   }
 
   getUserName(id: string) {
-    const user = this.userList.find(u => u.id === id);
+    const user = this.userList.find((u) => u.id === id);
     return user ? user.name : '?';
   }
 
   addUserToTeam(user: User): void {
     const teamUser = {
       teamId: this.team()?.id,
-      userId: user.id
+      userId: user.id,
     } as TeamUser;
     this.teamUserDataService.add(teamUser);
   }
@@ -317,16 +427,16 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
   }
 
   getUserTeamRole(userId: string): string {
-    const role = this.userTeamRoles.find(utr =>
-      utr.userId === userId && utr.teamId === this.team()?.id
+    const role = this.userTeamRoles.find(
+      (utr) => utr.userId === userId && utr.teamId === this.team()?.id,
     );
     return role ? role.role : '';
   }
 
   setUserTeamRole(userId: string, teamId: string, newRole: string) {
     // Remove existing role for this user on this team
-    const existingRole = this.userTeamRoles.find(utr =>
-      utr.userId === userId && utr.teamId === teamId
+    const existingRole = this.userTeamRoles.find(
+      (utr) => utr.userId === userId && utr.teamId === teamId,
     );
     if (existingRole) {
       this.userTeamRoleDataService.delete(existingRole.id);
@@ -336,21 +446,21 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
       const umr = {
         userId: userId,
         teamId: teamId,
-        role: newRole
+        role: newRole,
       } as UserTeamRole;
       this.userTeamRoleDataService.add(umr);
     }
   }
 
   onAnotherTeam(userId: string): boolean {
-    return this.otherTeamUsers.some(tu => tu.userId === userId);
+    return this.otherTeamUsers.some((tu) => tu.userId === userId);
   }
 
   getUserTeamName(userId: string): string {
     let teamName = '';
-    const teamUser = this.otherTeamUsers.find(tu => tu.userId === userId);
+    const teamUser = this.otherTeamUsers.find((tu) => tu.userId === userId);
     if (teamUser && teamUser.teamId) {
-      const team = this.teamList.find(t => t.id === teamUser.teamId);
+      const team = this.teamList.find((t) => t.id === teamUser.teamId);
       if (team) {
         teamName = team.shortName;
       }
@@ -362,5 +472,4 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
   }
-
 }

@@ -9,20 +9,24 @@ project root for license information.
 >
   <div crucibleDialogContent>
     @if (release.source) {
-    <div class="source">{{ release.source }}</div>
+      <div class="source">{{ release.source }}</div>
     }
     @if (notice) {
-    <p class="notice">{{ notice }}</p>
+      <p class="notice">{{ notice }}</p>
     }
     @if (termsUrl || sourceUrl) {
-    <div class="links">
-      @if (termsUrl) {
-      <a [href]="termsUrl" target="_blank" rel="noopener">{{ termsLabel }}</a>
-      }
-      @if (sourceUrl) {
-      <a [href]="sourceUrl" target="_blank" rel="noopener">{{ release.source || release.name }} website</a>
-      }
-    </div>
+      <div class="links">
+        @if (termsUrl) {
+          <a [href]="termsUrl" target="_blank" rel="noopener">{{
+            termsLabel
+          }}</a>
+        }
+        @if (sourceUrl) {
+          <a [href]="sourceUrl" target="_blank" rel="noopener"
+            >{{ release.source || release.name }} website</a
+          >
+        }
+      </div>
     }
   </div>
   <ng-container crucibleDialogActions>

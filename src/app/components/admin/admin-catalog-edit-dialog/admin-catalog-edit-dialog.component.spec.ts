@@ -11,31 +11,65 @@ import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
 import { of } from 'rxjs';
-import { Catalog, DataField, DataFieldService } from 'src/app/generated/blueprint.api';
+import {
+  Catalog,
+  DataField,
+  DataFieldService,
+} from 'src/app/generated/blueprint.api';
 import { AdminCatalogEditDialogComponent } from './admin-catalog-edit-dialog.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const CATALOG = { id: 'cat-1', name: 'Ransomware Catalog', description: 'Ransomware injects', injectTypeId: 'it-email', isPublic: false, listDataFields: '' } as Catalog;
+const CATALOG = {
+  id: 'cat-1',
+  name: 'Ransomware Catalog',
+  description: 'Ransomware injects',
+  injectTypeId: 'it-email',
+  isPublic: false,
+  listDataFields: '',
+} as Catalog;
 
 function dialogData(overrides: Partial<typeof CATALOG> = {}) {
-  return { catalog: { ...structuredClone(CATALOG), ...overrides }, injectTypeList: [{ id: 'it-email', name: 'Email' }] };
+  return {
+    catalog: { ...structuredClone(CATALOG), ...overrides },
+    injectTypeList: [{ id: 'it-email', name: 'Email' }],
+  };
 }
 
 async function renderAdminCatalogEditDialog(data = dialogData()) {
   const dataFieldApi = {
-    getDataFieldsByInjectType: vi.fn(() => of<DataField[]>([{ id: 'df-1', injectTypeId: 'it-email', name: 'Subject', displayOrder: 1 }])),
+    getDataFieldsByInjectType: vi.fn(() =>
+      of<DataField[]>([
+        {
+          id: 'df-1',
+          injectTypeId: 'it-email',
+          name: 'Subject',
+          displayOrder: 1,
+        },
+      ]),
+    ),
   } satisfies ApiStub<DataFieldService>;
   const rendered = await renderComponent(AdminCatalogEditDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, MatCheckboxModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+    imports: [
+      ...CRUCIBLE_DIALOG_IMPORTS,
+      MatCheckboxModule,
+      MatFormFieldModule,
+      MatInputModule,
+      MatSelectModule,
+    ],
     declarations: [AdminCatalogEditDialogComponent],
-    providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, { provide: DataFieldService, useValue: dataFieldApi }],
+    providers: [
+      { provide: MAT_DIALOG_DATA, useValue: data },
+      { provide: DataFieldService, useValue: dataFieldApi },
+    ],
   });
   // ngModel writes the values into the inputs in a microtask.
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
   const results: unknown[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results, dataFieldApi };
 }
 
@@ -48,9 +82,15 @@ describe('AdminCatalogEditDialogComponent', () => {
   it('renders with the default test providers', async () => {
     const { fixture } = await renderAdminCatalogEditDialog();
 
-    expect(fixture.componentInstance).toBeInstanceOf(AdminCatalogEditDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Edit Catalog' })).toBeInTheDocument();
-    expect(screen.getByRole('checkbox', { name: 'Subject' })).toBeInTheDocument();
+    expect(fixture.componentInstance).toBeInstanceOf(
+      AdminCatalogEditDialogComponent,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Edit Catalog' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('checkbox', { name: 'Subject' }),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -88,7 +128,9 @@ describe('AdminCatalogEditDialogComponent', () => {
    * Data: a catalog with no description.
    */
   it('saves an incomplete catalog when handleEditComplete is called', async () => {
-    const { fixture, data, results } = await renderAdminCatalogEditDialog(dialogData({ description: '' }));
+    const { fixture, data, results } = await renderAdminCatalogEditDialog(
+      dialogData({ description: '' }),
+    );
 
     fixture.componentInstance.handleEditComplete(true);
 

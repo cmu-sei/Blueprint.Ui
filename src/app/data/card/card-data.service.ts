@@ -10,10 +10,7 @@ import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
-import {
-  Card,
-  CardService,
-} from 'src/app/generated/blueprint.api';
+import { Card, CardService } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
 import { HttpEventType, HttpResponse } from '@angular/common/http';
@@ -31,13 +28,14 @@ export class CardDataService {
   readonly CardList: Observable<Card[]>;
   readonly filterControl = new UntypedFormControl();
   private _requestedCardId$ = this.activatedRoute.queryParamMap.pipe(
-    map((params) => params.get('cardId') || '')
+    map((params) => params.get('cardId') || ''),
   );
   private filterTerm: Observable<string>;
   private sortColumn: Observable<string>;
   private sortIsAscending: Observable<boolean>;
   private _pageEvent: PageEvent = { length: 0, pageIndex: 0, pageSize: 10 };
-  readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent); private _requestedCardId: string;
+  readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent);
+  private _requestedCardId: string;
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
   public uploadProgress = new Subject<number>();
@@ -46,7 +44,7 @@ export class CardDataService {
     const activatedRoute = this.activatedRoute;
 
     this.filterTerm = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('cardmask') || '')
+      map((params) => params.get('cardmask') || ''),
     );
     this.filterControl.valueChanges.subscribe((term) => {
       this.router.navigate([], {
@@ -55,16 +53,16 @@ export class CardDataService {
       });
     });
     this.sortColumn = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('sorton') || 'name')
+      map((params) => params.get('sorton') || 'name'),
     );
     this.sortIsAscending = activatedRoute.queryParamMap.pipe(
-      map((params) => (params.get('sortdir') || 'asc') === 'asc')
+      map((params) => (params.get('sortdir') || 'asc') === 'asc'),
     );
     this.pageSize = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pagesize') || '20', 10))
+      map((params) => parseInt(params.get('pagesize') || '20', 10)),
     );
     this.pageIndex = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pageindex') || '0', 10))
+      map((params) => parseInt(params.get('pageindex') || '0', 10)),
     );
     this.CardList = combineLatest([
       this.cardQuery.selectAll(),
@@ -85,20 +83,18 @@ export class CardDataService {
         ]) =>
           items
             ? (items as Card[])
-              .sort((a: Card, b: Card) =>
-                this.sortCards(a, b, sortColumn, sortIsAscending)
-              )
-              .filter(
-                (card) =>
-                  ('' + card.description)
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase()) ||
-                  card.id
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase())
-              )
-            : []
-      )
+                .sort((a: Card, b: Card) =>
+                  this.sortCards(a, b, sortColumn, sortIsAscending),
+                )
+                .filter(
+                  (card) =>
+                    ('' + card.description)
+                      .toLowerCase()
+                      .includes(filterTerm.toLowerCase()) ||
+                    card.id.toLowerCase().includes(filterTerm.toLowerCase()),
+                )
+            : [],
+      ),
     );
   }
 
@@ -110,13 +106,13 @@ export class CardDataService {
         tap(() => {
           this.cardStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (templates) => {
           this.cardStore.upsertMany(templates);
         },
-        (error) => { }
+        (error) => {},
       );
   }
 
@@ -128,7 +124,7 @@ export class CardDataService {
         tap(() => {
           this.cardStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (cards) => {
@@ -136,7 +132,7 @@ export class CardDataService {
         },
         (error) => {
           this.cardStore.set([]);
-        }
+        },
       );
   }
 
@@ -148,7 +144,7 @@ export class CardDataService {
         tap(() => {
           this.cardStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.cardStore.upsert(s.id, { ...s });
@@ -167,7 +163,7 @@ export class CardDataService {
         tap(() => {
           this.cardStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.cardStore.add(s);
@@ -182,7 +178,7 @@ export class CardDataService {
         tap(() => {
           this.cardStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((n) => {
         this.updateStore(n);
@@ -204,29 +200,25 @@ export class CardDataService {
 
   uploadJson(file: File, observe: any, reportProgress: boolean) {
     this.cardStore.setLoading(true);
-    this.cardService
-      .uploadJsonCards(file, observe, reportProgress)
-      .subscribe(
-        (event: any) => {
-          if (event.type === HttpEventType.UploadProgress) {
-            const uploadProgress = Math.round(
-              (100 * event.loaded) / event.total
-            );
-            this.uploadProgress.next(uploadProgress);
-          } else if (event instanceof HttpResponse) {
-            this.uploadProgress.next(0);
-            this.cardStore.setLoading(false);
-            if (event.status === 200) {
-              const items = event.body || [];
-              this.cardStore.upsertMany(items);
-            }
-          }
-        },
-        (error) => {
-          this.cardStore.setLoading(false);
+    this.cardService.uploadJsonCards(file, observe, reportProgress).subscribe(
+      (event: any) => {
+        if (event.type === HttpEventType.UploadProgress) {
+          const uploadProgress = Math.round((100 * event.loaded) / event.total);
+          this.uploadProgress.next(uploadProgress);
+        } else if (event instanceof HttpResponse) {
           this.uploadProgress.next(0);
+          this.cardStore.setLoading(false);
+          if (event.status === 200) {
+            const items = event.body || [];
+            this.cardStore.upsertMany(items);
+          }
         }
-      );
+      },
+      (error) => {
+        this.cardStore.setLoading(false);
+        this.uploadProgress.next(0);
+      },
+    );
   }
 
   setPageEvent(pageEvent: PageEvent) {
@@ -241,12 +233,7 @@ export class CardDataService {
     this.cardStore.remove(id);
   }
 
-  private sortCards(
-    a: Card,
-    b: Card,
-    column: string,
-    isAsc: boolean
-  ) {
+  private sortCards(a: Card, b: Card, column: string, isAsc: boolean) {
     switch (column) {
       case 'description':
         return (

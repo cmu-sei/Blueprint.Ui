@@ -26,7 +26,7 @@ export class CatalogUnitDataService {
 
   private _requestedCatalogUnitId: string;
   private _requestedCatalogUnitId$ = this.activatedRoute.queryParamMap.pipe(
-    map((params) => params.get('catalogUnitId') || '')
+    map((params) => params.get('catalogUnitId') || ''),
   );
   readonly CatalogUnitList: Observable<CatalogUnit[]>;
   readonly filterControl = new UntypedFormControl();
@@ -42,7 +42,7 @@ export class CatalogUnitDataService {
     const activatedRoute = this.activatedRoute;
 
     this.filterTerm = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('catalogUnitmask') || '')
+      map((params) => params.get('catalogUnitmask') || ''),
     );
     this.filterControl.valueChanges.subscribe((term) => {
       this.router.navigate([], {
@@ -51,16 +51,16 @@ export class CatalogUnitDataService {
       });
     });
     this.sortColumn = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('sorton') || 'name')
+      map((params) => params.get('sorton') || 'name'),
     );
     this.sortIsAscending = activatedRoute.queryParamMap.pipe(
-      map((params) => (params.get('sortdir') || 'asc') === 'asc')
+      map((params) => (params.get('sortdir') || 'asc') === 'asc'),
     );
     this.pageSize = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pagesize') || '20', 10))
+      map((params) => parseInt(params.get('pagesize') || '20', 10)),
     );
     this.pageIndex = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pageindex') || '0', 10))
+      map((params) => parseInt(params.get('pageindex') || '0', 10)),
     );
     this.CatalogUnitList = combineLatest([
       this.catalogUnitQuery.selectAll(),
@@ -80,14 +80,11 @@ export class CatalogUnitDataService {
           pageIndex,
         ]) =>
           items
-            ? (items as CatalogUnit[])
-              .filter(
-                (catalogUnit) =>
-                  catalogUnit.id
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase()))
-            : []
-      )
+            ? (items as CatalogUnit[]).filter((catalogUnit) =>
+                catalogUnit.id.toLowerCase().includes(filterTerm.toLowerCase()),
+              )
+            : [],
+      ),
     );
   }
 
@@ -99,7 +96,7 @@ export class CatalogUnitDataService {
         tap(() => {
           this.catalogUnitStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (catalogUnits) => {
@@ -107,7 +104,7 @@ export class CatalogUnitDataService {
         },
         (error) => {
           this.catalogUnitStore.set([]);
-        }
+        },
       );
   }
 
@@ -119,7 +116,7 @@ export class CatalogUnitDataService {
         tap(() => {
           this.catalogUnitStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.catalogUnitStore.upsert(s.id, { ...s });
@@ -138,7 +135,7 @@ export class CatalogUnitDataService {
         tap(() => {
           this.catalogUnitStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.catalogUnitStore.add(s);
@@ -153,7 +150,7 @@ export class CatalogUnitDataService {
         tap(() => {
           this.catalogUnitStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((n) => {
         this.updateStore(n);
@@ -184,5 +181,4 @@ export class CatalogUnitDataService {
   deleteFromStore(id: string) {
     this.catalogUnitStore.remove(id);
   }
-
 }

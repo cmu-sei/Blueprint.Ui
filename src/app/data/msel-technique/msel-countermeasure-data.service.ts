@@ -4,7 +4,10 @@
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { distinctUntilChanged, map, take } from 'rxjs/operators';
-import { MselTechniqueService, MselCountermeasures } from 'src/app/generated/blueprint.api';
+import {
+  MselTechniqueService,
+  MselCountermeasures,
+} from 'src/app/generated/blueprint.api';
 import { MselTechniqueQuery } from './msel-technique.query';
 
 /**
@@ -18,20 +21,33 @@ export class MselCountermeasureDataService {
   private mselTechniqueService = inject(MselTechniqueService);
   private mselTechniqueQuery = inject(MselTechniqueQuery);
 
-  private readonly subject = new BehaviorSubject<MselCountermeasures | undefined>(undefined);
-  readonly countermeasures$: Observable<MselCountermeasures | undefined> = this.subject.asObservable();
+  private readonly subject = new BehaviorSubject<
+    MselCountermeasures | undefined
+  >(undefined);
+  readonly countermeasures$: Observable<MselCountermeasures | undefined> =
+    this.subject.asObservable();
   private loadedMselId = '';
   private loadedPoolKey = '';
   loading = false;
 
   constructor() {
-    this.mselTechniqueQuery.selectAll()
+    this.mselTechniqueQuery
+      .selectAll()
       .pipe(
-        map(items => items.map(m => m.techniqueId).sort().join(',')),
-        distinctUntilChanged()
+        map((items) =>
+          items
+            .map((m) => m.techniqueId)
+            .sort()
+            .join(','),
+        ),
+        distinctUntilChanged(),
       )
-      .subscribe(poolKey => {
-        if (this.loadedMselId && poolKey !== this.loadedPoolKey && !this.mselTechniqueQuery.getValue().loading) {
+      .subscribe((poolKey) => {
+        if (
+          this.loadedMselId &&
+          poolKey !== this.loadedPoolKey &&
+          !this.mselTechniqueQuery.getValue().loading
+        ) {
           this.load(this.loadedMselId);
         }
       });
@@ -45,13 +61,18 @@ export class MselCountermeasureDataService {
       .getMselCountermeasures(mselId)
       .pipe(take(1))
       .subscribe({
-        next: result => {
+        next: (result) => {
           this.loading = false;
           this.subject.next(result);
         },
         error: () => {
           this.loading = false;
-          this.subject.next({ mselId, techniqueReleaseId: null, hasMappings: false, techniques: [] });
+          this.subject.next({
+            mselId,
+            techniqueReleaseId: null,
+            hasMappings: false,
+            techniques: [],
+          });
         },
       });
   }
@@ -70,6 +91,10 @@ export class MselCountermeasureDataService {
   }
 
   private poolKey(): string {
-    return this.mselTechniqueQuery.getAll().map(m => m.techniqueId).sort().join(',');
+    return this.mselTechniqueQuery
+      .getAll()
+      .map((m) => m.techniqueId)
+      .sort()
+      .join(',');
   }
 }

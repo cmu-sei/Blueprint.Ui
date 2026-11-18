@@ -14,12 +14,15 @@ import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
-import {
-  Unit,
-  UnitService
-} from 'src/app/generated/blueprint.api';
+import { Unit, UnitService } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
-import { BehaviorSubject, Observable, Subject, Subscription, combineLatest } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  Subject,
+  Subscription,
+  combineLatest,
+} from 'rxjs';
 import { HttpEventType, HttpResponse } from '@angular/common/http';
 
 @Injectable({
@@ -52,7 +55,7 @@ export class UnitDataService {
     const activatedRoute = this.activatedRoute;
 
     this.filterTerm = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('filter') || '')
+      map((params) => params.get('filter') || ''),
     );
     this.filterControl.valueChanges.subscribe((term) => {
       this.router.navigate([], {
@@ -61,16 +64,16 @@ export class UnitDataService {
       });
     });
     this.sortColumn = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('sorton') || 'name')
+      map((params) => params.get('sorton') || 'name'),
     );
     this.sortIsAscending = activatedRoute.queryParamMap.pipe(
-      map((params) => (params.get('sortdir') || 'asc') === 'asc')
+      map((params) => (params.get('sortdir') || 'asc') === 'asc'),
     );
     this.pageSize = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pagesize') || '20', 10))
+      map((params) => parseInt(params.get('pagesize') || '20', 10)),
     );
     this.pageIndex = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pageindex') || '0', 10))
+      map((params) => parseInt(params.get('pageindex') || '0', 10)),
     );
     this.unitList = combineLatest([
       this.unitQuery.selectAll(),
@@ -91,23 +94,21 @@ export class UnitDataService {
         ]) =>
           items
             ? (items as Unit[])
-              .sort((a: Unit, b: Unit) =>
-                this.sortUnits(a, b, sortColumn, sortIsAscending)
-              )
-              .filter(
-                (unit) =>
-                  ('' + unit.name)
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase()) ||
-                  ('' + unit.shortName)
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase()) ||
-                  unit.id
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase())
-              )
-            : []
-      )
+                .sort((a: Unit, b: Unit) =>
+                  this.sortUnits(a, b, sortColumn, sortIsAscending),
+                )
+                .filter(
+                  (unit) =>
+                    ('' + unit.name)
+                      .toLowerCase()
+                      .includes(filterTerm.toLowerCase()) ||
+                    ('' + unit.shortName)
+                      .toLowerCase()
+                      .includes(filterTerm.toLowerCase()) ||
+                    unit.id.toLowerCase().includes(filterTerm.toLowerCase()),
+                )
+            : [],
+      ),
     );
     // this.selected = combineLatest([
     //   this.unitList,
@@ -150,7 +151,7 @@ export class UnitDataService {
         tap(() => {
           this.unitStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (units) => {
@@ -158,7 +159,7 @@ export class UnitDataService {
         },
         (error) => {
           this.unitStore.set([]);
-        }
+        },
       );
   }
 
@@ -170,7 +171,7 @@ export class UnitDataService {
         tap(() => {
           this.unitStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.unitStore.upsert(s.id, { ...s });
@@ -186,7 +187,7 @@ export class UnitDataService {
         tap(() => {
           this.unitStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (units) => {
@@ -194,7 +195,7 @@ export class UnitDataService {
         },
         (error) => {
           this.unitStore.set([]);
-        }
+        },
       );
   }
 
@@ -206,7 +207,7 @@ export class UnitDataService {
         tap(() => {
           this.unitStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (units) => {
@@ -214,7 +215,7 @@ export class UnitDataService {
         },
         (error) => {
           this.unitStore.set([]);
-        }
+        },
       );
   }
 
@@ -231,7 +232,7 @@ export class UnitDataService {
         tap(() => {
           this.unitStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.unitStore.add(s);
@@ -247,7 +248,7 @@ export class UnitDataService {
         tap(() => {
           this.unitStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((n) => {
         this.updateStore(n);
@@ -270,29 +271,25 @@ export class UnitDataService {
 
   uploadJson(file: File, observe: any, reportProgress: boolean) {
     this.unitStore.setLoading(true);
-    this.unitService
-      .uploadJsonUnits(file, observe, reportProgress)
-      .subscribe(
-        (event: any) => {
-          if (event.type === HttpEventType.UploadProgress) {
-            const uploadProgress = Math.round(
-              (100 * event.loaded) / event.total
-            );
-            this.uploadProgress.next(uploadProgress);
-          } else if (event instanceof HttpResponse) {
-            this.uploadProgress.next(0);
-            this.unitStore.setLoading(false);
-            if (event.status === 200) {
-              const items = event.body || [];
-              this.unitStore.upsertMany(items);
-            }
-          }
-        },
-        (error) => {
-          this.unitStore.setLoading(false);
+    this.unitService.uploadJsonUnits(file, observe, reportProgress).subscribe(
+      (event: any) => {
+        if (event.type === HttpEventType.UploadProgress) {
+          const uploadProgress = Math.round((100 * event.loaded) / event.total);
+          this.uploadProgress.next(uploadProgress);
+        } else if (event instanceof HttpResponse) {
           this.uploadProgress.next(0);
+          this.unitStore.setLoading(false);
+          if (event.status === 200) {
+            const items = event.body || [];
+            this.unitStore.upsertMany(items);
+          }
         }
-      );
+      },
+      (error) => {
+        this.unitStore.setLoading(false);
+        this.uploadProgress.next(0);
+      },
+    );
   }
 
   setActive(id: string) {
@@ -315,12 +312,7 @@ export class UnitDataService {
     this.unitStore.remove(id);
   }
 
-  private sortUnits(
-    a: Unit,
-    b: Unit,
-    column: string,
-    isAsc: boolean
-  ) {
+  private sortUnits(a: Unit, b: Unit, column: string, isAsc: boolean) {
     switch (column) {
       case 'name':
         return (

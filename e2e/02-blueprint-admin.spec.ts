@@ -10,7 +10,15 @@ const fs = require('fs');
 
 // pull proxy from settings file
 if (extraConfig.proxySettings.port) {
-  test.use({proxy: {server: 'http:// ' + extraConfig.proxySettings.host + ':' + extraConfig.proxySettings.port}});
+  test.use({
+    proxy: {
+      server:
+        'http:// ' +
+        extraConfig.proxySettings.host +
+        ':' +
+        extraConfig.proxySettings.port,
+    },
+  });
 }
 
 // ===================== ADMIN Add User ======================
@@ -29,19 +37,22 @@ test('add users', async ({ page }) => {
   await page.locator('#mat-input-3').type(extraConfig.adminNewUserID);
   await page.locator('#mat-input-4').type(extraConfig.adminNewUser);
   await page.waitForTimeout(5 * 1000);
-  await page.locator('button:has(mat-icon.mdi-account-plus)').dblclick({force: true});
+  await page
+    .locator('button:has(mat-icon.mdi-account-plus)')
+    .dblclick({ force: true });
   await page.waitForTimeout(5 * 1000);
 
   // delete user
-  const deleteButton = await page.locator(`text = ${extraConfig.adminNewUser} >> button >> nth=1`);
-  if (deleteButton){
-    await deleteButton.click({force: true});
+  const deleteButton = await page.locator(
+    `text = ${extraConfig.adminNewUser} >> button >> nth=1`,
+  );
+  if (deleteButton) {
+    await deleteButton.click({ force: true });
     await page.click('button:has-text("Yes")');
     await page.waitForTimeout(5 * 1000);
   } else {
     console.log('Page does not have specified user.');
   }
-
 });
 
 // ===================== ADMIN Add Team ======================
@@ -66,13 +77,20 @@ test('add teams', async ({ page }) => {
   await page.keyboard.press('Enter');
 
   // add users to the team
-  await page.click(`mat-expansion-panel-header:has-text('${extraConfig.blueprintShortName}')`);
-  await page.getByRole('row', { name: 'Bob Add User' }).getByRole('button').click();
+  await page.click(
+    `mat-expansion-panel-header:has-text('${extraConfig.blueprintShortName}')`,
+  );
+  await page
+    .getByRole('row', { name: 'Bob Add User' })
+    .getByRole('button')
+    .click();
 
   // delete team
-  const deleteButton = await page.locator(`text = ${extraConfig.blueprintShortName} >> button >> nth=1`);
-  if (deleteButton){
-    await deleteButton.click({force: true});
+  const deleteButton = await page.locator(
+    `text = ${extraConfig.blueprintShortName} >> button >> nth=1`,
+  );
+  if (deleteButton) {
+    await deleteButton.click({ force: true });
     await page.click('button:has-text("Yes")');
     await page.waitForTimeout(5 * 1000);
   } else {

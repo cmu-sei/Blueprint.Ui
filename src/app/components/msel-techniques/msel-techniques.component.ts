@@ -17,7 +17,7 @@ import { TechniquePoolComponent } from './technique-pool/technique-pool.componen
   selector: 'app-msel-techniques',
   templateUrl: './msel-techniques.component.html',
   styleUrls: ['./msel-techniques.component.scss'],
-  imports: [TechniquePoolComponent]
+  imports: [TechniquePoolComponent],
 })
 export class MselTechniquesComponent implements OnDestroy {
   private mselQuery = inject(MselQuery);
@@ -29,12 +29,14 @@ export class MselTechniquesComponent implements OnDestroy {
 
   constructor() {
     // loaded once here for both sections
-    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel && msel.id !== this.mselId) {
-        this.mselId = msel.id;
-        this.mselTechniqueDataService.loadByMsel(msel.id);
-      }
-    });
+    (this.mselQuery.selectActive() as Observable<MselPlus>)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((msel) => {
+        if (msel && msel.id !== this.mselId) {
+          this.mselId = msel.id;
+          this.mselTechniqueDataService.loadByMsel(msel.id);
+        }
+      });
   }
 
   ngOnDestroy() {

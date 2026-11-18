@@ -14,8 +14,17 @@ import {
 import { MselCompetencyQuery } from 'src/app/data/msel-competency/msel-competency.query';
 import { CompetencyFrameworkService } from 'src/app/generated/blueprint.api/api/api';
 import { v4 as uuidv4 } from 'uuid';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective, CrucibleDialogActionsDirective } from '@cmusei/crucible-common';
-import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+  CrucibleDialogActionsDirective,
+} from '@cmusei/crucible-common';
+import {
+  MatFormField,
+  MatLabel,
+  MatInput,
+  MatSuffix,
+} from '@angular/material/input';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { FormsModule } from '@angular/forms';
@@ -25,20 +34,37 @@ import { MatCheckbox } from '@angular/material/checkbox';
 import { MatPaginator } from '@angular/material/paginator';
 
 @Component({
-    selector: 'app-competency-options-dialog',
-    templateUrl: './competency-options-dialog.component.html',
-    styleUrls: ['./competency-options-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatSelect, MatOption, MatInput, FormsModule, MatIconButton, MatSuffix, MatIcon, MatCheckbox, MatPaginator, CrucibleDialogActionsDirective, MatButton]
+  selector: 'app-competency-options-dialog',
+  templateUrl: './competency-options-dialog.component.html',
+  styleUrls: ['./competency-options-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatFormField,
+    MatLabel,
+    MatSelect,
+    MatOption,
+    MatInput,
+    FormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatIcon,
+    MatCheckbox,
+    MatPaginator,
+    CrucibleDialogActionsDirective,
+    MatButton,
+  ],
 })
 export class CompetencyOptionsDialogComponent implements OnDestroy {
-  dialogRef = inject<MatDialogRef<CompetencyOptionsDialogComponent>>(MatDialogRef);
+  dialogRef =
+    inject<MatDialogRef<CompetencyOptionsDialogComponent>>(MatDialogRef);
   private mselCompetencyQuery = inject(MselCompetencyQuery);
   private competencyFrameworkService = inject(CompetencyFrameworkService);
   data = inject<{
     dataFieldId: string;
     dataOptions: DataOption[];
     canEdit: boolean;
-}>(MAT_DIALOG_DATA);
+  }>(MAT_DIALOG_DATA);
 
   searchText = '';
   typeFilter = '';
@@ -56,21 +82,26 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
 
   constructor() {
     // Load frameworks
-    this.competencyFrameworkService.getCompetencyFrameworks().subscribe(frameworks => {
-      this.frameworks = frameworks;
-      this.buildFrameworkMap();
-    });
+    this.competencyFrameworkService
+      .getCompetencyFrameworks()
+      .subscribe((frameworks) => {
+        this.frameworks = frameworks;
+        this.buildFrameworkMap();
+      });
     // Subscribe to MSEL competency pool
-    this.mselCompetencyQuery.selectAll().pipe(
-      takeUntil(this.unsubscribe$)
-    ).subscribe(mselCompetencies => {
-      this.mselCompetencies = mselCompetencies;
-      this.buildTypeMap();
-      this.buildFrameworkMap();
-    });
+    this.mselCompetencyQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((mselCompetencies) => {
+        this.mselCompetencies = mselCompetencies;
+        this.buildTypeMap();
+        this.buildFrameworkMap();
+      });
     // Initialize selected set — only include options still in the pool
     const poolIdNumbers = new Set(
-      this.mselCompetencies.map(mc => mc.competency?.idNumber).filter(n => n)
+      this.mselCompetencies
+        .map((mc) => mc.competency?.idNumber)
+        .filter((n) => n),
     );
     for (const opt of this.data.dataOptions) {
       if (poolIdNumbers.has(opt.optionName)) {
@@ -94,18 +125,19 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
       this.competencyTypeMap.set(c.id, t);
     }
     this.competencyTypes = [...new Set(this.competencyTypeMap.values())]
-      .filter(t => t !== 'Other')
+      .filter((t) => t !== 'Other')
       .sort();
   }
 
   private buildFrameworkMap() {
     this.competencyFrameworkMap.clear();
-    const frameworkMap = new Map(this.frameworks.map(f => [f.id, f.name]));
+    const frameworkMap = new Map(this.frameworks.map((f) => [f.id, f.name]));
     const frameworkNamesSet = new Set<string>();
     for (const mc of this.mselCompetencies) {
       const c = mc.competency;
       if (!c || !c.competencyFrameworkId) continue;
-      const frameworkName = frameworkMap.get(c.competencyFrameworkId) || 'Unknown';
+      const frameworkName =
+        frameworkMap.get(c.competencyFrameworkId) || 'Unknown';
       this.competencyFrameworkMap.set(c.id, frameworkName);
       frameworkNamesSet.add(frameworkName);
     }
@@ -117,7 +149,10 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
     if (idNumber.includes('WRL')) return 'Work Role';
     if (/^[TKSA][\d-]/.test(idNumber)) {
       const prefixMap: Record<string, string> = {
-        'T': 'Task', 'K': 'Knowledge', 'S': 'Skill', 'A': 'Ability',
+        T: 'Task',
+        K: 'Knowledge',
+        S: 'Skill',
+        A: 'Ability',
       };
       return prefixMap[idNumber.charAt(0)] || 'Other';
     }
@@ -131,17 +166,24 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
   get filteredCompetencies(): MselCompetency[] {
     let results = this.mselCompetencies;
     if (this.frameworkFilter) {
-      results = results.filter(mc => this.competencyFrameworkMap.get(mc.competencyId) === this.frameworkFilter);
+      results = results.filter(
+        (mc) =>
+          this.competencyFrameworkMap.get(mc.competencyId) ===
+          this.frameworkFilter,
+      );
     }
     if (this.typeFilter) {
-      results = results.filter(mc => this.competencyTypeMap.get(mc.competencyId) === this.typeFilter);
+      results = results.filter(
+        (mc) => this.competencyTypeMap.get(mc.competencyId) === this.typeFilter,
+      );
     }
     if (this.searchText) {
       const s = this.searchText.toLowerCase();
-      results = results.filter(mc =>
-        mc.competency?.idNumber?.toLowerCase().includes(s) ||
-        mc.competency?.shortName?.toLowerCase().includes(s) ||
-        mc.competency?.description?.toLowerCase().includes(s)
+      results = results.filter(
+        (mc) =>
+          mc.competency?.idNumber?.toLowerCase().includes(s) ||
+          mc.competency?.shortName?.toLowerCase().includes(s) ||
+          mc.competency?.description?.toLowerCase().includes(s),
       );
     }
     return results;
@@ -175,13 +217,20 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
 
   get allFilteredSelected(): boolean {
     const filtered = this.filteredCompetencies;
-    return filtered.length > 0 && filtered.every(mc => this.selected.has(mc.competency?.idNumber));
+    return (
+      filtered.length > 0 &&
+      filtered.every((mc) => this.selected.has(mc.competency?.idNumber))
+    );
   }
 
   get someFilteredSelected(): boolean {
     const filtered = this.filteredCompetencies;
-    const some = filtered.some(mc => this.selected.has(mc.competency?.idNumber));
-    const all = filtered.every(mc => this.selected.has(mc.competency?.idNumber));
+    const some = filtered.some((mc) =>
+      this.selected.has(mc.competency?.idNumber),
+    );
+    const all = filtered.every((mc) =>
+      this.selected.has(mc.competency?.idNumber),
+    );
     return some && !all;
   }
 
@@ -207,8 +256,10 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
   private initialSelected = new Set<string>();
 
   private selectionChanged(): boolean {
-    return this.selected.size !== this.initialSelected.size ||
-      [...this.selected].some((idNumber) => !this.initialSelected.has(idNumber));
+    return (
+      this.selected.size !== this.initialSelected.size ||
+      [...this.selected].some((idNumber) => !this.initialSelected.has(idNumber))
+    );
   }
 
   toggleCompetency(mc: MselCompetency): void {
@@ -247,7 +298,11 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
       const existing = existingMap.get(idNumber);
       if (existing) {
         const mc = competencyMap.get(idNumber);
-        newOptions.push({ ...existing, displayOrder: order++, competencyId: mc?.competency?.id || (existing as any).competencyId } as any);
+        newOptions.push({
+          ...existing,
+          displayOrder: order++,
+          competencyId: mc?.competency?.id || (existing as any).competencyId,
+        } as any);
       } else {
         const mc = competencyMap.get(idNumber);
         if (mc?.competency) {

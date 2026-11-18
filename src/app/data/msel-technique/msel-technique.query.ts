@@ -2,12 +2,12 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { QueryEntity } from '@datorama/akita';
-import {
-  MselTechniqueState,
-  MselTechniqueStore,
-} from './msel-technique.store';
+import { MselTechniqueState, MselTechniqueStore } from './msel-technique.store';
 import { Technique, MselTechnique } from 'src/app/generated/blueprint.api';
-import { TechniqueFamily, techniqueFamily } from 'src/app/utilities/technique-family';
+import {
+  TechniqueFamily,
+  techniqueFamily,
+} from 'src/app/utilities/technique-family';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -29,10 +29,12 @@ export class MselTechniqueQuery extends QueryEntity<MselTechniqueState> {
    */
   selectTechniques(family?: TechniqueFamily): Observable<Technique[]> {
     return this.selectAll().pipe(
-      map((items) => items
-        .map((m) => m.technique)
-        .filter((t) => !!t && (!family || techniqueFamily(t) === family))
-        .sort((a, b) => compareAttackIds(a.externalId, b.externalId)))
+      map((items) =>
+        items
+          .map((m) => m.technique)
+          .filter((t) => !!t && (!family || techniqueFamily(t) === family))
+          .sort((a, b) => compareAttackIds(a.externalId, b.externalId)),
+      ),
     );
   }
 }

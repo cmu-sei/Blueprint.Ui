@@ -5,14 +5,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
-import { PlayerApplication, PlayerApplicationService } from 'src/app/generated/blueprint.api';
+import {
+  PlayerApplication,
+  PlayerApplicationService,
+} from 'src/app/generated/blueprint.api';
 import { PlayerApplicationStore } from './player-application.store';
 import { PlayerApplicationDataService } from './player-application-data.service';
 import { PlayerApplicationQuery } from './player-application.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function app(overrides: Partial<PlayerApplication> = {}): PlayerApplication {
   return {
@@ -41,7 +47,10 @@ function setup(queryParams: Record<string, string> = {}) {
   TestBed.configureTestingModule({
     providers: [
       { provide: PlayerApplicationService, useValue: appApi },
-      { provide: Router, useValue: { navigate: vi.fn() } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate: vi.fn() } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -67,8 +76,12 @@ describe('PlayerApplicationDataService', () => {
    */
   it('loadByMsel replaces the applications, or empties them on failure', () => {
     const { service, query, appApi } = setup();
-    appApi.getApplicationsByMsel.mockReturnValueOnce(of([app(), app({ id: 'app-2', name: 'CITE' })]));
-    appApi.getApplicationsByMsel.mockReturnValueOnce(throwError(() => new Error('boom')));
+    appApi.getApplicationsByMsel.mockReturnValueOnce(
+      of([app(), app({ id: 'app-2', name: 'CITE' })]),
+    );
+    appApi.getApplicationsByMsel.mockReturnValueOnce(
+      throwError(() => new Error('boom')),
+    );
 
     service.loadByMsel('msel-1');
     expect(appApi.getApplicationsByMsel).toHaveBeenCalledWith('msel-1');
@@ -86,11 +99,20 @@ describe('PlayerApplicationDataService', () => {
    */
   it('loadTemplates adds the templates, and loadByMsel keeps them', () => {
     const { service, query, appApi } = setup();
-    const map = app({ id: 'tpl-1', mselId: null, isTemplate: true, name: 'Map' });
+    const map = app({
+      id: 'tpl-1',
+      mselId: null,
+      isTemplate: true,
+      name: 'Map',
+    });
     appApi.getPlayerApplicationTemplates.mockReturnValueOnce(of([map]));
     appApi.getApplicationsByMsel.mockReturnValueOnce(of([app()]));
-    appApi.getApplicationsByMsel.mockReturnValueOnce(of([app({ id: 'app-2', name: 'CITE' })]));
-    appApi.getApplicationsByMsel.mockReturnValueOnce(throwError(() => new Error('boom')));
+    appApi.getApplicationsByMsel.mockReturnValueOnce(
+      of([app({ id: 'app-2', name: 'CITE' })]),
+    );
+    appApi.getApplicationsByMsel.mockReturnValueOnce(
+      throwError(() => new Error('boom')),
+    );
 
     service.loadByMsel('msel-1');
     service.loadTemplates();
@@ -115,7 +137,10 @@ describe('PlayerApplicationDataService', () => {
     appApi.downloadJsonPlayerApplications.mockReturnValueOnce(file$);
 
     expect(service.downloadJson(['tpl-1', 'tpl-2'])).toBe(file$);
-    expect(appApi.downloadJsonPlayerApplications).toHaveBeenCalledWith(['tpl-1', 'tpl-2']);
+    expect(appApi.downloadJsonPlayerApplications).toHaveBeenCalledWith([
+      'tpl-1',
+      'tpl-2',
+    ]);
   });
 
   /**
@@ -125,9 +150,15 @@ describe('PlayerApplicationDataService', () => {
    */
   it('single-application calls keep the store in step with the API', () => {
     const { service, query, appApi } = setup();
-    appApi.getPlayerApplication.mockReturnValue(of(app({ id: 'app-2', name: 'CITE' })));
-    appApi.createPlayerApplication.mockReturnValue(of(app({ id: 'app-3', name: 'Steamfitter' })));
-    appApi.updatePlayerApplication.mockReturnValue(of(app({ id: 'app-2', name: 'CITE Scoring' })));
+    appApi.getPlayerApplication.mockReturnValue(
+      of(app({ id: 'app-2', name: 'CITE' })),
+    );
+    appApi.createPlayerApplication.mockReturnValue(
+      of(app({ id: 'app-3', name: 'Steamfitter' })),
+    );
+    appApi.updatePlayerApplication.mockReturnValue(
+      of(app({ id: 'app-2', name: 'CITE Scoring' })),
+    );
     appApi.deletePlayerApplication.mockReturnValue(of(null));
     const pushed$ = of(app({ id: 'app-pushed' }));
     appApi.createAndPushPlayerApplication.mockReturnValue(pushed$);
@@ -172,24 +203,45 @@ describe('PlayerApplicationDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'loadById', endpoint: 'getPlayerApplication', escapes: true, call: (s: PlayerApplicationDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createPlayerApplication', escapes: true, call: (s: PlayerApplicationDataService) => s.add({ id: 'x-1' }) },
-    { method: 'updatePlayerApplication', endpoint: 'updatePlayerApplication', escapes: true, call: (s: PlayerApplicationDataService) => s.updatePlayerApplication({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, appApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(PlayerApplicationStore).setLoading(false);
-    appApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'loadById',
+      endpoint: 'getPlayerApplication',
+      escapes: true,
+      call: (s: PlayerApplicationDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createPlayerApplication',
+      escapes: true,
+      call: (s: PlayerApplicationDataService) => s.add({ id: 'x-1' }),
+    },
+    {
+      method: 'updatePlayerApplication',
+      endpoint: 'updatePlayerApplication',
+      escapes: true,
+      call: (s: PlayerApplicationDataService) =>
+        s.updatePlayerApplication({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, appApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(PlayerApplicationStore).setLoading(false);
+      appApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(PlayerApplicationQuery).getValue().loading).toBe(true);
-    // With no error callback the error escapes to ErrorService, the ErrorHandler
-    // app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(PlayerApplicationQuery).getValue().loading).toBe(
+        true,
+      );
+      // With no error callback the error escapes to ErrorService, the ErrorHandler
+      // app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete escapes to the app's global ErrorHandler.
@@ -197,19 +249,26 @@ describe('PlayerApplicationDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deletePlayerApplication', call: (s: PlayerApplicationDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, appApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    appApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deletePlayerApplication',
+      call: (s: PlayerApplicationDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, appApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      appApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

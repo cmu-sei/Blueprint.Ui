@@ -8,7 +8,11 @@ import { CompetencyFrameworkService } from 'src/app/generated/blueprint.api';
 import { EMPTY, Subscription, timer } from 'rxjs';
 import { catchError, switchMap, take } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective, CrucibleDialogActionsDirective } from '@cmusei/crucible-common';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+  CrucibleDialogActionsDirective,
+} from '@cmusei/crucible-common';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatFormField, MatLabel, MatInput } from '@angular/material/input';
@@ -31,13 +35,28 @@ export interface ImportResult {
 }
 
 @Component({
-    selector: 'app-admin-competency-framework-import-dialog',
-    templateUrl: './admin-competency-framework-import-dialog.component.html',
-    styleUrls: ['./admin-competency-framework-import-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatButton, MatIcon, MatFormField, MatLabel, MatInput, FormsModule, MatProgressBar, MatProgressSpinner, CrucibleDialogActionsDirective]
+  selector: 'app-admin-competency-framework-import-dialog',
+  templateUrl: './admin-competency-framework-import-dialog.component.html',
+  styleUrls: ['./admin-competency-framework-import-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatButton,
+    MatIcon,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    FormsModule,
+    MatProgressBar,
+    MatProgressSpinner,
+    CrucibleDialogActionsDirective,
+  ],
 })
 export class AdminCompetencyFrameworkImportDialogComponent implements OnDestroy {
-  dialogRef = inject<MatDialogRef<AdminCompetencyFrameworkImportDialogComponent>>(MatDialogRef);
+  dialogRef =
+    inject<MatDialogRef<AdminCompetencyFrameworkImportDialogComponent>>(
+      MatDialogRef,
+    );
   private competencyFrameworkService = inject(CompetencyFrameworkService);
 
   readonly importComplete = output<ImportResult | null>();
@@ -85,26 +104,28 @@ export class AdminCompetencyFrameworkImportDialogComponent implements OnDestroy 
       if (sourceMatch) this.source = sourceMatch[1].toUpperCase();
 
       // Call preview API
-      this.competencyFrameworkService.previewCompetencyFrameworkCsv(this.source, this.version, file)
+      this.competencyFrameworkService
+        .previewCompetencyFrameworkCsv(this.source, this.version, file)
         .pipe(take(1))
         .subscribe({
           next: (preview) => this.handlePreview(preview),
           error: (err) => {
             this.parseError = `Error previewing CSV: ${err.error?.title || err.message || 'Unknown error'}`;
             this.isProcessing = false;
-          }
+          },
         });
     } else if (file.name.endsWith('.json')) {
       this.fileType = 'json';
       // Call preview API
-      this.competencyFrameworkService.previewCompetencyFrameworkJson(file)
+      this.competencyFrameworkService
+        .previewCompetencyFrameworkJson(file)
         .pipe(take(1))
         .subscribe({
           next: (preview) => this.handlePreview(preview),
           error: (err) => {
             this.parseError = `Error previewing JSON: ${err.error?.title || err.message || 'Unknown error'}`;
             this.isProcessing = false;
-          }
+          },
         });
     } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
       this.fileType = 'xlsx';
@@ -114,17 +135,19 @@ export class AdminCompetencyFrameworkImportDialogComponent implements OnDestroy 
       this.version = versionMatch ? versionMatch[1] : '';
 
       // Call preview API
-      this.competencyFrameworkService.previewCompetencyFrameworkXlsx(this.source, this.version, file)
+      this.competencyFrameworkService
+        .previewCompetencyFrameworkXlsx(this.source, this.version, file)
         .pipe(take(1))
         .subscribe({
           next: (preview) => this.handlePreview(preview),
           error: (err) => {
             this.parseError = `Error previewing XLSX: ${err.error?.title || err.message || 'Unknown error'}`;
             this.isProcessing = false;
-          }
+          },
         });
     } else {
-      this.parseError = 'Supported formats: .csv (Moodle), .json (NICE), .xlsx (DCWF)';
+      this.parseError =
+        'Supported formats: .csv (Moodle), .json (NICE), .xlsx (DCWF)';
       this.selectedFile = null;
       this.fileType = null;
       this.isProcessing = false;
@@ -146,11 +169,12 @@ export class AdminCompetencyFrameworkImportDialogComponent implements OnDestroy 
     this.isProcessing = false;
   }
 
-
   get ready(): boolean {
-    if (this.fileType === 'csv') return !!this.selectedFile && !!this.source && !!this.version;
+    if (this.fileType === 'csv')
+      return !!this.selectedFile && !!this.source && !!this.version;
     if (this.fileType === 'json') return !!this.selectedFile; // Allow import without preview
-    if (this.fileType === 'xlsx') return !!this.selectedFile && !!this.source && !!this.version;
+    if (this.fileType === 'xlsx')
+      return !!this.selectedFile && !!this.source && !!this.version;
     return false;
   }
 
@@ -199,11 +223,14 @@ export class AdminCompetencyFrameworkImportDialogComponent implements OnDestroy 
     this.progressSub?.unsubscribe();
     this.progressSub = timer(500, 1000)
       .pipe(
-        switchMap(() => this.competencyFrameworkService.getCompetencyFrameworkImportStatus(importId)
-          // The first poll or two can 404 before the API has registered the import, and
-          // a real failure is reported by the import request itself — so a failed poll
-          // only means "no news", and must not tear down the timer.
-          .pipe(catchError(() => EMPTY)))
+        switchMap(() =>
+          this.competencyFrameworkService
+            .getCompetencyFrameworkImportStatus(importId)
+            // The first poll or two can 404 before the API has registered the import, and
+            // a real failure is reported by the import request itself — so a failed poll
+            // only means "no news", and must not tear down the timer.
+            .pipe(catchError(() => EMPTY)),
+        ),
       )
       .subscribe((status) => {
         if (importId !== this.importId) {
@@ -211,7 +238,8 @@ export class AdminCompetencyFrameworkImportDialogComponent implements OnDestroy 
         }
         this.importPercent = status.percentComplete ?? 0;
         this.importPhase = status.phase || '';
-        this.importCounts = status.total > 0 ? `${status.processed} of ${status.total}` : '';
+        this.importCounts =
+          status.total > 0 ? `${status.processed} of ${status.total}` : '';
       });
   }
 

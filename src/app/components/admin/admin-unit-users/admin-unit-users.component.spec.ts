@@ -13,7 +13,12 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
-import { UnitUser, UnitUserService, User, UserService } from 'src/app/generated/blueprint.api';
+import {
+  UnitUser,
+  UnitUserService,
+  User,
+  UserService,
+} from 'src/app/generated/blueprint.api';
 import { UserStore } from 'src/app/data/user/user.store';
 import { AdminUnitUsersComponent } from './admin-unit-users.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
@@ -28,7 +33,9 @@ async function renderUnitUsers(overrides: { canManage?: boolean } = {}) {
     getUnitUsers: vi.fn(() => of([structuredClone(ALICE)])),
   } satisfies ApiStub<UserService>;
   const unitUserApi = {
-    createUnitUser: vi.fn((unitUser: UnitUser) => of(structuredClone(unitUser))),
+    createUnitUser: vi.fn((unitUser: UnitUser) =>
+      of(structuredClone(unitUser)),
+    ),
     deleteUnitUserByIds: vi.fn(() => of<unknown>(null)),
   } satisfies ApiStub<UnitUserService>;
   const rendered = await renderComponent(AdminUnitUsersComponent, {
@@ -89,14 +96,24 @@ describe('AdminUnitUsersComponent', () => {
     const { fixture, unitUserApi } = await renderUnitUsers({ canManage: true });
     const user = userEvent.setup();
 
-    await user.click(within(nonMembers()).getByRole('button', { name: 'Add Bob' }));
-    expect(unitUserApi.createUnitUser).toHaveBeenCalledWith({ unitId: 'unit-1', userId: 'user-b' });
+    await user.click(
+      within(nonMembers()).getByRole('button', { name: 'Add Bob' }),
+    );
+    expect(unitUserApi.createUnitUser).toHaveBeenCalledWith({
+      unitId: 'unit-1',
+      userId: 'user-b',
+    });
     fixture.detectChanges();
     expect(within(members()).getByText('Bob')).toBeInTheDocument();
     expect(within(nonMembers()).queryByText('Bob')).not.toBeInTheDocument();
 
-    await user.click(within(members()).getByRole('button', { name: 'Remove Alice' }));
-    expect(unitUserApi.deleteUnitUserByIds).toHaveBeenCalledWith('unit-1', 'user-a');
+    await user.click(
+      within(members()).getByRole('button', { name: 'Remove Alice' }),
+    );
+    expect(unitUserApi.deleteUnitUserByIds).toHaveBeenCalledWith(
+      'unit-1',
+      'user-a',
+    );
     fixture.detectChanges();
     expect(within(members()).queryByText('Alice')).not.toBeInTheDocument();
     expect(within(nonMembers()).getByText('Alice')).toBeInTheDocument();
@@ -110,7 +127,11 @@ describe('AdminUnitUsersComponent', () => {
   it('disables Add and Remove without canManage', async () => {
     await renderUnitUsers({ canManage: false });
 
-    expect(within(nonMembers()).getByRole('button', { name: 'Add Bob' })).toBeDisabled();
-    expect(within(members()).getByRole('button', { name: 'Remove Alice' })).toBeDisabled();
+    expect(
+      within(nonMembers()).getByRole('button', { name: 'Add Bob' }),
+    ).toBeDisabled();
+    expect(
+      within(members()).getByRole('button', { name: 'Remove Alice' }),
+    ).toBeDisabled();
   });
 });

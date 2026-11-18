@@ -14,13 +14,19 @@ project root for license information.
     <div class="add-margin">
       <mat-form-field class="full-width">
         <mat-label>Framework</mat-label>
-        <mat-select [(ngModel)]="data.notice.techniqueFrameworkId" title="The framework definition the release belongs to">
+        <mat-select
+          [(ngModel)]="data.notice.techniqueFrameworkId"
+          title="The framework definition the release belongs to"
+        >
           <mat-option [value]="null">No framework</mat-option>
           @for (framework of frameworks; track framework.id) {
-          <mat-option [value]="framework.id">{{ framework.name }}</mat-option>
+            <mat-option [value]="framework.id">{{ framework.name }}</mat-option>
           }
         </mat-select>
-        <mat-hint>Frameworks of the release's domain and family. The release shows the links and mappings its framework defines.</mat-hint>
+        <mat-hint
+          >Frameworks of the release's domain and family. The release shows the
+          links and mappings its framework defines.</mat-hint
+        >
       </mat-form-field>
     </div>
     <div class="add-margin">
@@ -31,7 +37,8 @@ project root for license information.
           title="Who publishes the release"
           matInput
           placeholder="The publisher's name"
-          [(ngModel)]="data.notice.source">
+          [(ngModel)]="data.notice.source"
+        />
       </mat-form-field>
     </div>
     <div class="add-margin">
@@ -42,10 +49,11 @@ project root for license information.
           title="The publisher's website for the framework"
           matInput
           placeholder="https://"
-          [(ngModel)]="data.notice.sourceUrl">
+          [(ngModel)]="data.notice.sourceUrl"
+        />
       </mat-form-field>
       @if (sourceUrlError) {
-      <div class="url-error" role="alert">Enter an http or https address</div>
+        <div class="url-error" role="alert">Enter an http or https address</div>
       }
     </div>
     <div class="add-margin">
@@ -56,9 +64,13 @@ project root for license information.
           rows="4"
           title="The copyright and trademark notice to show with the release's content"
           placeholder="Copyright and trademark notice"
-          [(ngModel)]="data.notice.notice">
+          [(ngModel)]="data.notice.notice"
+        >
         </textarea>
-        <mat-hint>One line per sentence group. Shown under the techniques of this release; leave blank to show none.</mat-hint>
+        <mat-hint
+          >One line per sentence group. Shown under the techniques of this
+          release; leave blank to show none.</mat-hint
+        >
       </mat-form-field>
     </div>
     <div class="add-margin">
@@ -69,10 +81,11 @@ project root for license information.
           title="The publisher's terms of use"
           matInput
           placeholder="https://"
-          [(ngModel)]="data.notice.termsUrl">
+          [(ngModel)]="data.notice.termsUrl"
+        />
       </mat-form-field>
       @if (termsUrlError) {
-      <div class="url-error" role="alert">Enter an http or https address</div>
+        <div class="url-error" role="alert">Enter an http or https address</div>
       }
     </div>
   </div>

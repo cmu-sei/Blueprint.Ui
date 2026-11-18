@@ -70,23 +70,28 @@ async function renderMoveEdit(move: Move = MOVE) {
       NgxMatDatepickerInput,
       NgxMatDatetimepicker,
     ],
-    childStubs: [
-      { replace: DurationEditComponent, with: DurationEditStub },
-    ],
+    childStubs: [{ replace: DurationEditComponent, with: DurationEditStub }],
     // angular-editor injects HttpClient for its image upload.
-    providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, provideHttpClient(), provideHttpClientTesting()],
+    providers: [
+      { provide: MAT_DIALOG_DATA, useValue: data },
+      provideHttpClient(),
+      provideHttpClientTesting(),
+    ],
   });
   // ngModel writes the values into the inputs in a microtask.
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
   const results: unknown[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results };
 }
 
 // angular-editor's toolbar makes whole-document role queries slow, so the
 // fields go by placeholder and the buttons are looked up in the dialog actions.
-const actions = () => within(document.querySelector('mat-dialog-actions') as HTMLElement);
+const actions = () =>
+  within(document.querySelector('mat-dialog-actions') as HTMLElement);
 const description = () => screen.getByPlaceholderText('Move Description');
 
 describe('MoveEditDialogComponent', () => {
@@ -104,9 +109,12 @@ describe('MoveEditDialogComponent', () => {
     const { fixture } = await renderMoveEdit();
 
     expect(fixture.componentInstance).toBeInstanceOf(MoveEditDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Edit Move' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Edit Move' }),
+    ).toBeInTheDocument();
     expect(description()).toHaveValue('Initial access');
-    const duration = fixture.debugElement.query(By.directive(DurationEditStub)).componentInstance as DurationEditStub;
+    const duration = fixture.debugElement.query(By.directive(DurationEditStub))
+      .componentInstance as DurationEditStub;
     expect(duration.durationSeconds()).toBe(3600);
     expect(duration.startTime()).toEqual(START);
   });
@@ -172,11 +180,14 @@ describe('MoveEditDialogComponent', () => {
   it.each([
     { date: '2026-10-20T16:00:00Z', label: '20 Oct 2026 12:00 EDT' },
     { date: '2026-11-20T17:00:00Z', label: '20 Nov 2026 12:00 EST' },
-  ])('labels the situation time with the zone in effect on that date ($label)', async ({ date, label }) => {
-    vi.stubEnv('TZ', 'America/New_York');
+  ])(
+    'labels the situation time with the zone in effect on that date ($label)',
+    async ({ date, label }) => {
+      vi.stubEnv('TZ', 'America/New_York');
 
-    await renderMoveEdit({ ...MOVE, situationTime: new Date(date) });
+      await renderMoveEdit({ ...MOVE, situationTime: new Date(date) });
 
-    expect(screen.getByText(label)).toBeInTheDocument();
-  });
+      expect(screen.getByText(label)).toBeInTheDocument();
+    },
+  );
 });

@@ -11,14 +11,21 @@ import { ScenarioEventCopyDialogComponent } from './scenario-event-copy-dialog.c
 import { renderComponent } from 'src/app/test-utils/render-component';
 
 async function renderCopyDialog() {
-  const data = { mselList: [{ id: 'msel-2', name: 'Exercise Bravo' }, { id: 'msel-3', name: 'Exercise Charlie' }] };
+  const data = {
+    mselList: [
+      { id: 'msel-2', name: 'Exercise Bravo' },
+      { id: 'msel-3', name: 'Exercise Charlie' },
+    ],
+  };
   const rendered = await renderComponent(ScenarioEventCopyDialogComponent, {
     imports: [...CRUCIBLE_DIALOG_IMPORTS, MatRadioModule],
     declarations: [ScenarioEventCopyDialogComponent],
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
   });
   const results: unknown[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, results };
 }
 
@@ -31,8 +38,12 @@ describe('ScenarioEventCopyDialogComponent', () => {
   it('renders with the default test providers', async () => {
     const { fixture } = await renderCopyDialog();
 
-    expect(fixture.componentInstance).toBeInstanceOf(ScenarioEventCopyDialogComponent);
-    expect(screen.getByRole('radio', { name: 'Exercise Bravo' })).toBeInTheDocument();
+    expect(fixture.componentInstance).toBeInstanceOf(
+      ScenarioEventCopyDialogComponent,
+    );
+    expect(
+      screen.getByRole('radio', { name: 'Exercise Bravo' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Copy' })).toBeDisabled();
   });
 

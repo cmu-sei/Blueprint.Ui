@@ -11,13 +11,22 @@ import { renderComponent } from 'src/app/test-utils/render-component';
 import { TechniqueNoticeDialogComponent } from './technique-notice-dialog.component';
 
 const RELEASE: TechniqueRelease = {
-  id: 'rel-1', domain: 'acme-ttp', name: 'Acme Techniques', version: '1.0', source: 'Acme Corp',
-  sourceUrl: 'https://acme.example', termsUrl: 'https://acme.example/terms',
+  id: 'rel-1',
+  domain: 'acme-ttp',
+  name: 'Acme Techniques',
+  version: '1.0',
+  source: 'Acme Corp',
+  sourceUrl: 'https://acme.example',
+  termsUrl: 'https://acme.example/terms',
   notice: '© Acme Corp\nAcme is a trademark of Acme Corp.',
 };
 
 async function renderDialog(release: TechniqueRelease) {
-  const dialogRef = { close: vi.fn(), disableClose: false, keydownEvents: () => ({ pipe: () => ({ subscribe: () => undefined }) }) };
+  const dialogRef = {
+    close: vi.fn(),
+    disableClose: false,
+    keydownEvents: () => ({ pipe: () => ({ subscribe: () => undefined }) }),
+  };
   const rendered = await renderComponent(TechniqueNoticeDialogComponent, {
     imports: [...CRUCIBLE_DIALOG_IMPORTS],
     declarations: [TechniqueNoticeDialogComponent],
@@ -41,16 +50,25 @@ describe('TechniqueNoticeDialogComponent', () => {
   it('shows the source, the notice with its line breaks, and the links', async () => {
     const { container } = await renderDialog(RELEASE);
 
-    expect(screen.getByRole('heading', { name: 'Copyright & Terms: Acme Techniques 1.0' })).toBeTruthy();
+    expect(
+      screen.getByRole('heading', {
+        name: 'Copyright & Terms: Acme Techniques 1.0',
+      }),
+    ).toBeTruthy();
     expect(screen.getByText('Acme Corp')).toBeTruthy();
-    const notice = container.ownerDocument.querySelector<HTMLElement>('.notice');
+    const notice =
+      container.ownerDocument.querySelector<HTMLElement>('.notice');
     expect(notice.textContent).toBe(RELEASE.notice);
     expect(getComputedStyle(notice).whiteSpace).toBe('pre-line');
     const terms = screen.getByRole('link', { name: 'Acme Corp Terms of Use' });
     expect(terms.getAttribute('href')).toBe('https://acme.example/terms');
     expect(terms.getAttribute('target')).toBe('_blank');
     expect(terms.getAttribute('rel')).toBe('noopener');
-    expect(screen.getByRole('link', { name: 'Acme Corp website' }).getAttribute('href')).toBe('https://acme.example');
+    expect(
+      screen
+        .getByRole('link', { name: 'Acme Corp website' })
+        .getAttribute('href'),
+    ).toBe('https://acme.example');
   });
 
   /**
@@ -60,7 +78,11 @@ describe('TechniqueNoticeDialogComponent', () => {
    * Data: a release whose terms link is a javascript: address and whose source link is blank.
    */
   it('offers no link that is not a web address', async () => {
-    await renderDialog({ ...RELEASE, termsUrl: 'javascript:alert(1)', sourceUrl: '' });
+    await renderDialog({
+      ...RELEASE,
+      termsUrl: 'javascript:alert(1)',
+      sourceUrl: '',
+    });
 
     expect(screen.queryByRole('link')).toBeNull();
     expect(screen.getByText(/Acme is a trademark/)).toBeTruthy();
@@ -74,7 +96,9 @@ describe('TechniqueNoticeDialogComponent', () => {
   it('closes from the Close button', async () => {
     const { dialogRef } = await renderDialog(RELEASE);
 
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Close' }));
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Close' }));
 
     expect(dialogRef.close).toHaveBeenCalled();
   });

@@ -19,7 +19,8 @@ export class MselTechniqueDataService {
   private mselTechniqueStore = inject(MselTechniqueStore);
   private mselTechniqueQuery = inject(MselTechniqueQuery);
   private mselTechniqueService = inject(MselTechniqueService);
-  readonly MselTechniqueList: Observable<MselTechnique[]> = this.mselTechniqueQuery.selectAll();
+  readonly MselTechniqueList: Observable<MselTechnique[]> =
+    this.mselTechniqueQuery.selectAll();
   private loadedMselId = '';
 
   loadByMsel(mselId: string) {
@@ -31,7 +32,7 @@ export class MselTechniqueDataService {
         tap(() => {
           this.mselTechniqueStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe({
         next: (items) => {
@@ -74,12 +75,15 @@ export class MselTechniqueDataService {
   }
 
   /** Moves the pool to another release and reloads it; the caller reports what was dropped. */
-  upgrade(mselId: string, techniqueReleaseId: string): Observable<MselTechniqueUpgrade> {
+  upgrade(
+    mselId: string,
+    techniqueReleaseId: string,
+  ): Observable<MselTechniqueUpgrade> {
     return this.mselTechniqueService
       .upgradeMselTechniques(mselId, techniqueReleaseId)
       .pipe(
         take(1),
-        tap(() => this.loadByMsel(mselId))
+        tap(() => this.loadByMsel(mselId)),
       );
   }
 }

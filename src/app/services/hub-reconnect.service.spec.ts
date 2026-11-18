@@ -4,7 +4,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { HubReconnectService, reloadOnReconnect } from './hub-reconnect.service';
+import {
+  HubReconnectService,
+  reloadOnReconnect,
+} from './hub-reconnect.service';
 
 const load = vi.fn();
 

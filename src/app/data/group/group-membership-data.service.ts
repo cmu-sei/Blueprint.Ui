@@ -4,10 +4,7 @@
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import {
-  GroupMembership,
-  GroupService,
-} from 'src/app/generated/blueprint.api';
+import { GroupMembership, GroupService } from 'src/app/generated/blueprint.api';
 
 @Injectable({
   providedIn: 'root',
@@ -40,7 +37,7 @@ export class GroupMembershipDataService {
         });
 
         this.groupMembershipSubject.next(memberships);
-      })
+      }),
     );
   }
 
@@ -48,7 +45,7 @@ export class GroupMembershipDataService {
     return this.groupService.createGroupMembership(groupId, group).pipe(
       tap((x) => {
         this.upsert(x.id, x);
-      })
+      }),
     );
   }
 
@@ -56,7 +53,7 @@ export class GroupMembershipDataService {
     return this.groupService.deleteGroupMembership(id).pipe(
       tap(() => {
         this.remove(id);
-      })
+      }),
     );
   }
 

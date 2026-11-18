@@ -4,7 +4,15 @@
  project root for license information.
 */
 
-import { Component, Input, OnChanges, OnDestroy, inject, input, output } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  inject,
+  input,
+  output,
+} from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
@@ -20,11 +28,24 @@ import { dataValueError } from 'src/app/utilities/ip-address';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatTooltip } from '@angular/material/tooltip';
-import { MatFormField, MatLabel, MatInput, MatError, MatHint, MatSuffix } from '@angular/material/input';
+import {
+  MatFormField,
+  MatLabel,
+  MatInput,
+  MatError,
+  MatHint,
+  MatSuffix,
+} from '@angular/material/input';
 import { MatSelect, MatSelectTrigger } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { MatOptgroup, MatOption } from '@angular/material/autocomplete';
-import { NgxMatDatepickerInput, NgxMatDatetimepicker, NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel } from '@ngxmc/datetime-picker';
+import {
+  NgxMatDatepickerInput,
+  NgxMatDatetimepicker,
+  NgxMatDatepickerActions,
+  NgxMatDatepickerApply,
+  NgxMatDatepickerCancel,
+} from '@ngxmc/datetime-picker';
 import { MatDatepickerToggle } from '@angular/material/datepicker';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatChipSet, MatChip, MatChipRemove } from '@angular/material/chips';
@@ -35,13 +56,47 @@ import { IsDateTimeValuePipe } from '../../utilities/date-time-value';
 import { MselTechniqueQuery } from 'src/app/data/msel-technique/msel-technique.query';
 import { MselTechniqueDataService } from 'src/app/data/msel-technique/msel-technique-data.service';
 import { MselCountermeasureDataService } from 'src/app/data/msel-technique/msel-countermeasure-data.service';
-import { TechniqueFamily, techniqueFamily } from 'src/app/utilities/technique-family';
+import {
+  TechniqueFamily,
+  techniqueFamily,
+} from 'src/app/utilities/technique-family';
 
 @Component({
-    selector: 'app-data-value',
-    templateUrl: './data-value.component.html',
-    styleUrls: ['./data-value.component.scss'],
-    imports: [AngularEditorModule, MatCheckbox, MatTooltip, MatFormField, MatLabel, MatHint, MatSelect, FormsModule, MatSelectTrigger, MatOptgroup, MatOption, MatInput, MatError, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, MatChipSet, MatChip, MatChipRemove, MatIcon, MatIconButton, DatePipe, TimezoneAbbrPipe, NgTemplateOutlet, IsDateTimeValuePipe]
+  selector: 'app-data-value',
+  templateUrl: './data-value.component.html',
+  styleUrls: ['./data-value.component.scss'],
+  imports: [
+    AngularEditorModule,
+    MatCheckbox,
+    MatTooltip,
+    MatFormField,
+    MatLabel,
+    MatHint,
+    MatSelect,
+    FormsModule,
+    MatSelectTrigger,
+    MatOptgroup,
+    MatOption,
+    MatInput,
+    MatError,
+    NgxMatDatepickerInput,
+    MatDatepickerToggle,
+    MatSuffix,
+    NgxMatDatetimepicker,
+    NgxMatDatepickerActions,
+    MatButton,
+    NgxMatDatepickerApply,
+    NgxMatDatepickerCancel,
+    MatChipSet,
+    MatChip,
+    MatChipRemove,
+    MatIcon,
+    MatIconButton,
+    DatePipe,
+    TimezoneAbbrPipe,
+    NgTemplateOutlet,
+    IsDateTimeValuePipe,
+  ],
 })
 export class DataValueComponent implements OnChanges, OnDestroy {
   private mselTechniqueQuery = inject(MselTechniqueQuery);
@@ -113,31 +168,32 @@ export class DataValueComponent implements OnChanges, OnDestroy {
   competencyFilter = '';
 
   get selectedCompetencies(): string[] {
-    return this.value ? this.value.split(', ').filter(v => v) : [];
+    return this.value ? this.value.split(', ').filter((v) => v) : [];
   }
 
   get filteredCompetencyOptions() {
     const options = this.dataField?.dataOptions || [];
     if (!this.competencyFilter) return options;
     const s = this.competencyFilter.toLowerCase();
-    return options.filter(o =>
-      o.optionName?.toLowerCase().includes(s) ||
-      o.optionValue?.toLowerCase().includes(s) ||
-      o.optionDescription?.toLowerCase().includes(s)
+    return options.filter(
+      (o) =>
+        o.optionName?.toLowerCase().includes(s) ||
+        o.optionValue?.toLowerCase().includes(s) ||
+        o.optionDescription?.toLowerCase().includes(s),
     );
   }
 
   displayCompetency = (val: string): string => {
     if (!val || !this.dataField?.dataOptions) return val || '';
-    const opt = this.dataField.dataOptions.find(o => o.optionName === val);
+    const opt = this.dataField.dataOptions.find((o) => o.optionName === val);
     return opt ? opt.optionName : val;
-  }
+  };
 
   getCompetencyTooltip = (val: string): string => {
     if (!val || !this.dataField?.dataOptions) return '';
-    const opt = this.dataField.dataOptions.find(o => o.optionName === val);
+    const opt = this.dataField.dataOptions.find((o) => o.optionName === val);
     return opt?.optionValue || '';
-  }
+  };
 
   isCompetencySelected(optionName: string): boolean {
     return this.selectedCompetencies.includes(optionName);
@@ -156,7 +212,7 @@ export class DataValueComponent implements OnChanges, OnDestroy {
   }
 
   removeCompetency(id: string) {
-    const current = this.selectedCompetencies.filter(v => v !== id);
+    const current = this.selectedCompetencies.filter((v) => v !== id);
     this.value = current.join(', ');
     this.valueChangeHandler();
   }
@@ -172,13 +228,18 @@ export class DataValueComponent implements OnChanges, OnDestroy {
   private unsubscribe$ = new Subject();
 
   constructor() {
-    this.mselTechniqueQuery.selectTechniques().pipe(takeUntil(this.unsubscribe$)).subscribe(techniques => {
-      this.wholePool = techniques;
-      this.offerTechniques();
-    });
-    this.mselCountermeasureDataService.countermeasures$.pipe(takeUntil(this.unsubscribe$)).subscribe(countermeasures => {
-      this.mselCountermeasures = countermeasures;
-    });
+    this.mselTechniqueQuery
+      .selectTechniques()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((techniques) => {
+        this.wholePool = techniques;
+        this.offerTechniques();
+      });
+    this.mselCountermeasureDataService.countermeasures$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((countermeasures) => {
+        this.mselCountermeasures = countermeasures;
+      });
   }
 
   ngOnChanges() {
@@ -193,18 +254,25 @@ export class DataValueComponent implements OnChanges, OnDestroy {
 
   /** A Defensive Technique field on an event with attack techniques offers their countermeasures first. */
   get suggestsCountermeasures(): boolean {
-    return this.dataField?.dataType === DataFieldType.DefensiveTechnique && this.eventTechniqueIds.length > 0;
+    return (
+      this.dataField?.dataType === DataFieldType.DefensiveTechnique &&
+      this.eventTechniqueIds.length > 0
+    );
   }
 
   private get eventTechniqueIds(): string[] {
-    return (this.techniques() || '').split(',').map(v => v.trim()).filter(v => v);
+    return (this.techniques() || '')
+      .split(',')
+      .map((v) => v.trim())
+      .filter((v) => v);
   }
 
   /**
    * The pooled defensive techniques mapped against the event's attack techniques, strongest first.
    */
   get suggestedTechniqueOptions(): Technique[] {
-    if (!this.suggestsCountermeasures || !this.mselCountermeasures?.techniques) return [];
+    if (!this.suggestsCountermeasures || !this.mselCountermeasures?.techniques)
+      return [];
     const wanted = new Set(this.eventTechniqueIds);
     const weights = new Map<string, number>();
     for (const group of this.mselCountermeasures.techniques) {
@@ -215,8 +283,14 @@ export class DataValueComponent implements OnChanges, OnDestroy {
       }
     }
     return this.techniqueOptions
-      .filter(t => weights.has(t.externalId))
-      .sort((a, b) => weights.get(b.externalId) - weights.get(a.externalId) || a.externalId.localeCompare(b.externalId, undefined, { numeric: true }));
+      .filter((t) => weights.has(t.externalId))
+      .sort(
+        (a, b) =>
+          weights.get(b.externalId) - weights.get(a.externalId) ||
+          a.externalId.localeCompare(b.externalId, undefined, {
+            numeric: true,
+          }),
+      );
   }
 
   get filteredSuggestedTechniqueOptions(): Technique[] {
@@ -225,8 +299,12 @@ export class DataValueComponent implements OnChanges, OnDestroy {
 
   /** The rest of the pool, after the suggested ones. */
   get filteredOtherTechniqueOptions(): Technique[] {
-    const suggested = new Set(this.suggestedTechniqueOptions.map(t => t.externalId));
-    return this.filterTechniques(this.techniqueOptions.filter(t => !suggested.has(t.externalId)));
+    const suggested = new Set(
+      this.suggestedTechniqueOptions.map((t) => t.externalId),
+    );
+    return this.filterTechniques(
+      this.techniqueOptions.filter((t) => !suggested.has(t.externalId)),
+    );
   }
 
   /** The list is split into Suggested and the rest only when there is something to suggest. */
@@ -236,23 +314,33 @@ export class DataValueComponent implements OnChanges, OnDestroy {
 
   /** An Attack Technique or Defensive Technique field. */
   get isTechniqueField(): boolean {
-    return this.dataField?.dataType === DataFieldType.AttackTechnique || this.dataField?.dataType === DataFieldType.DefensiveTechnique;
+    return (
+      this.dataField?.dataType === DataFieldType.AttackTechnique ||
+      this.dataField?.dataType === DataFieldType.DefensiveTechnique
+    );
   }
 
   private get techniqueFamily(): TechniqueFamily {
-    return this.dataField?.dataType === DataFieldType.DefensiveTechnique ? 'defensive' : 'attack';
+    return this.dataField?.dataType === DataFieldType.DefensiveTechnique
+      ? 'defensive'
+      : 'attack';
   }
 
   /**
    * A cell stores only a technique's id, so an id the pool holds in two domains is offered once.
    */
   private offerTechniques() {
-    const techniques = this.wholePool.filter(t => techniqueFamily(t) === this.techniqueFamily);
+    const techniques = this.wholePool.filter(
+      (t) => techniqueFamily(t) === this.techniqueFamily,
+    );
     const seen = new Set<string>();
-    const options = techniques.filter(t => !seen.has(t.externalId) && !!seen.add(t.externalId));
+    const options = techniques.filter(
+      (t) => !seen.has(t.externalId) && !!seen.add(t.externalId),
+    );
     this.techniqueOptions = options;
-    this.techniquesById = new Map(options.map(t => [t.externalId, t]));
-    this.showsTechniqueDomains = new Set(techniques.map(t => t.domain)).size > 1;
+    this.techniquesById = new Map(options.map((t) => [t.externalId, t]));
+    this.showsTechniqueDomains =
+      new Set(techniques.map((t) => t.domain)).size > 1;
   }
 
   ngOnDestroy() {
@@ -262,7 +350,12 @@ export class DataValueComponent implements OnChanges, OnDestroy {
 
   get selectedTechniques(): string[] {
     const value = this.value as string;
-    return value ? value.split(',').map(v => v.trim()).filter(v => v) : [];
+    return value
+      ? value
+          .split(',')
+          .map((v) => v.trim())
+          .filter((v) => v)
+      : [];
   }
 
   get filteredTechniqueOptions(): Technique[] {
@@ -272,9 +365,10 @@ export class DataValueComponent implements OnChanges, OnDestroy {
   private filterTechniques(techniques: Technique[]): Technique[] {
     if (!this.techniqueFilter) return techniques;
     const s = this.techniqueFilter.toLowerCase();
-    return techniques.filter(t =>
-      t.externalId?.toLowerCase().includes(s) ||
-      t.name?.toLowerCase().includes(s)
+    return techniques.filter(
+      (t) =>
+        t.externalId?.toLowerCase().includes(s) ||
+        t.name?.toLowerCase().includes(s),
     );
   }
 
@@ -284,18 +378,22 @@ export class DataValueComponent implements OnChanges, OnDestroy {
 
   getTechniqueTooltip(externalId: string): string {
     const t = this.techniquesById.get(externalId);
-    return t ? t.name : 'Not in this MSEL\'s techniques';
+    return t ? t.name : "Not in this MSEL's techniques";
   }
 
   // ids the pool no longer offers aren't options, so keep them rather than let the select drop them
   setTechniques(selected: string[]) {
-    const kept = this.selectedTechniques.filter(id => !this.techniquesById.has(id));
+    const kept = this.selectedTechniques.filter(
+      (id) => !this.techniquesById.has(id),
+    );
     this.value = [...kept, ...selected].join(', ');
     this.valueChangeHandler();
   }
 
   removeTechnique(externalId: string) {
-    this.value = this.selectedTechniques.filter(v => v !== externalId).join(', ');
+    this.value = this.selectedTechniques
+      .filter((v) => v !== externalId)
+      .join(', ');
     this.valueChangeHandler();
   }
 
@@ -343,9 +441,11 @@ export class DataValueComponent implements OnChanges, OnDestroy {
   getGalleryItemStatus(value: string): string {
     const status = value?.trim() || '';
     const color = Object.keys(this.galleryItemStatusColors).find(
-      (c) => c.toLowerCase() === status.toLowerCase()
+      (c) => c.toLowerCase() === status.toLowerCase(),
     );
-    return color || this.legacyGalleryItemStatuses[status.toLowerCase()] || value;
+    return (
+      color || this.legacyGalleryItemStatuses[status.toLowerCase()] || value
+    );
   }
 
   galleryItemStatusChange(status: string) {

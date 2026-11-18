@@ -11,7 +11,10 @@ import userEvent from '@testing-library/user-event';
 import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
 import { TechniqueFileFormat } from 'src/app/generated/blueprint.api';
 import { TechniqueFrameworkDefinition } from 'src/app/data/technique-framework/technique-framework-data.service';
-import { AdminTechniqueFrameworkDialogComponent, toForm } from './admin-technique-framework-dialog.component';
+import {
+  AdminTechniqueFrameworkDialogComponent,
+  toForm,
+} from './admin-technique-framework-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
 // a definition as an administrator entered it (test data)
@@ -26,15 +29,28 @@ const DEFINITION: TechniqueFrameworkDefinition = {
 
 async function renderDialog(definition: TechniqueFrameworkDefinition | null) {
   const data = { title: 'Edit Technique Framework', form: toForm(definition) };
-  const rendered = await renderComponent(AdminTechniqueFrameworkDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, MatFormFieldModule, MatInputModule, MatSelectModule],
-    declarations: [AdminTechniqueFrameworkDialogComponent],
-    providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
-  });
+  const rendered = await renderComponent(
+    AdminTechniqueFrameworkDialogComponent,
+    {
+      imports: [
+        ...CRUCIBLE_DIALOG_IMPORTS,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+      ],
+      declarations: [AdminTechniqueFrameworkDialogComponent],
+      providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
+    },
+  );
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
-  const results: { saveChanges: boolean; definition: TechniqueFrameworkDefinition | null }[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  const results: {
+    saveChanges: boolean;
+    definition: TechniqueFrameworkDefinition | null;
+  }[] = [];
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results };
 }
 
@@ -50,11 +66,20 @@ describe('AdminTechniqueFrameworkDialogComponent', () => {
     await renderDialog(null);
 
     expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('');
-    expect(JSON.parse(screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Settings (JSON)' }).value)).toEqual({ match: {} });
+    expect(
+      JSON.parse(
+        screen.getByRole<HTMLTextAreaElement>('textbox', {
+          name: 'Settings (JSON)',
+        }).value,
+      ),
+    ).toEqual({ match: {} });
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
 
     await user.type(screen.getByRole('textbox', { name: 'Name' }), 'New');
-    await user.type(screen.getByRole('textbox', { name: 'Domain' }), 'new-domain');
+    await user.type(
+      screen.getByRole('textbox', { name: 'Domain' }),
+      'new-domain',
+    );
     expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
   });
 
@@ -74,7 +99,10 @@ describe('AdminTechniqueFrameworkDialogComponent', () => {
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
     expect(results).toEqual([
-      { saveChanges: true, definition: { ...DEFINITION, name: 'Acme, renamed' } },
+      {
+        saveChanges: true,
+        definition: { ...DEFINITION, name: 'Acme, renamed' },
+      },
       { saveChanges: false, definition: null },
     ]);
   });
@@ -89,11 +117,15 @@ describe('AdminTechniqueFrameworkDialogComponent', () => {
     const settings = screen.getByRole('textbox', { name: 'Settings (JSON)' });
 
     fireEvent.input(settings, { target: { value: '{ "match": ' } });
-    expect(await screen.findByText(/The settings are not valid JSON/)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/The settings are not valid JSON/),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
 
     fireEvent.input(settings, { target: { value: '[]' } });
-    expect(await screen.findByText('The settings must be a JSON object.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('The settings must be a JSON object.'),
+    ).toBeInTheDocument();
     expect(results).toEqual([]);
   });
 });

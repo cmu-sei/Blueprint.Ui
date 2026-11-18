@@ -5,12 +5,17 @@ import { describe, it, expect } from 'vitest';
 import { MatIconModule } from '@angular/material/icon';
 import { screen } from '@testing-library/angular';
 import { BehaviorSubject } from 'rxjs';
-import { PresenceActor, SignalRService } from 'src/app/services/signalr.service';
+import {
+  PresenceActor,
+  SignalRService,
+} from 'src/app/services/signalr.service';
 import { PresenceBarComponent } from './presence-bar.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
 async function renderPresenceBar(actors: PresenceActor[] = []) {
-  const signalR = { actors$: new BehaviorSubject<PresenceActor[]>(actors) } satisfies Pick<SignalRService, 'actors$'>;
+  const signalR = {
+    actors$: new BehaviorSubject<PresenceActor[]>(actors),
+  } satisfies Pick<SignalRService, 'actors$'>;
   const rendered = await renderComponent(PresenceBarComponent, {
     imports: [MatIconModule],
     declarations: [PresenceBarComponent],
@@ -29,7 +34,9 @@ describe('PresenceBarComponent', () => {
     const { fixture } = await renderPresenceBar();
 
     expect(fixture.componentInstance).toBeInstanceOf(PresenceBarComponent);
-    expect(fixture.nativeElement.querySelector('.presence-container')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.presence-container'),
+    ).toBeNull();
   });
 
   /**
@@ -44,9 +51,13 @@ describe('PresenceBarComponent', () => {
     ]);
 
     expect(screen.getByText('Alice')).toBeInTheDocument();
-    expect(screen.getByText('Anonymous').closest('.presence-chip')).toHaveClass('presence-offline');
+    expect(screen.getByText('Anonymous').closest('.presence-chip')).toHaveClass(
+      'presence-offline',
+    );
 
-    signalR.actors$.next([{ id: 'c', name: 'Bob', online: true, color: 'green' }]);
+    signalR.actors$.next([
+      { id: 'c', name: 'Bob', online: true, color: 'green' },
+    ]);
 
     expect(screen.getByText('Bob')).toBeInTheDocument();
     expect(screen.queryByText('Alice')).not.toBeInTheDocument();

@@ -7,10 +7,7 @@ import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
-import {
-  MselUnit,
-  MselUnitService,
-} from 'src/app/generated/blueprint.api';
+import { MselUnit, MselUnitService } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 
@@ -26,7 +23,7 @@ export class MselUnitDataService {
 
   private _requestedMselUnitId: string;
   private _requestedMselUnitId$ = this.activatedRoute.queryParamMap.pipe(
-    map((params) => params.get('mselUnitId') || '')
+    map((params) => params.get('mselUnitId') || ''),
   );
   readonly MselUnitList: Observable<MselUnit[]>;
   readonly filterControl = new UntypedFormControl();
@@ -42,7 +39,7 @@ export class MselUnitDataService {
     const activatedRoute = this.activatedRoute;
 
     this.filterTerm = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('mselUnitmask') || '')
+      map((params) => params.get('mselUnitmask') || ''),
     );
     this.filterControl.valueChanges.subscribe((term) => {
       this.router.navigate([], {
@@ -51,16 +48,16 @@ export class MselUnitDataService {
       });
     });
     this.sortColumn = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('sorton') || 'name')
+      map((params) => params.get('sorton') || 'name'),
     );
     this.sortIsAscending = activatedRoute.queryParamMap.pipe(
-      map((params) => (params.get('sortdir') || 'asc') === 'asc')
+      map((params) => (params.get('sortdir') || 'asc') === 'asc'),
     );
     this.pageSize = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pagesize') || '20', 10))
+      map((params) => parseInt(params.get('pagesize') || '20', 10)),
     );
     this.pageIndex = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pageindex') || '0', 10))
+      map((params) => parseInt(params.get('pageindex') || '0', 10)),
     );
     this.MselUnitList = combineLatest([
       this.mselUnitQuery.selectAll(),
@@ -80,14 +77,11 @@ export class MselUnitDataService {
           pageIndex,
         ]) =>
           items
-            ? (items as MselUnit[])
-              .filter(
-                (mselUnit) =>
-                  mselUnit.id
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase()))
-            : []
-      )
+            ? (items as MselUnit[]).filter((mselUnit) =>
+                mselUnit.id.toLowerCase().includes(filterTerm.toLowerCase()),
+              )
+            : [],
+      ),
     );
   }
 
@@ -99,7 +93,7 @@ export class MselUnitDataService {
         tap(() => {
           this.mselUnitStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (mselUnits) => {
@@ -107,7 +101,7 @@ export class MselUnitDataService {
         },
         (error) => {
           this.mselUnitStore.set([]);
-        }
+        },
       );
   }
 
@@ -119,7 +113,7 @@ export class MselUnitDataService {
         tap(() => {
           this.mselUnitStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.mselUnitStore.upsert(s.id, { ...s });
@@ -138,7 +132,7 @@ export class MselUnitDataService {
         tap(() => {
           this.mselUnitStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.mselUnitStore.add(s);
@@ -153,7 +147,7 @@ export class MselUnitDataService {
         tap(() => {
           this.mselUnitStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((n) => {
         this.updateStore(n);
@@ -184,5 +178,4 @@ export class MselUnitDataService {
   deleteFromStore(id: string) {
     this.mselUnitStore.remove(id);
   }
-
 }

@@ -6,19 +6,35 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <div class="top-toolbar">
   <div class="sp-icon">
-    <mat-icon class="mdi-24px" [fontIcon]="icon" [style.color]="'var(--mat-sys-primary)'" />
+    <mat-icon
+      class="mdi-24px"
+      [fontIcon]="icon"
+      [style.color]="'var(--mat-sys-primary)'"
+    />
   </div>
   <mat-form-field class="release-select">
-    <mat-label>{{ isDefensive ? 'Defensive Technique Release' : 'Attack Technique Release' }}</mat-label>
-    <mat-select [value]="selectedReleaseId" (selectionChange)="onReleaseChange($event.value)" [aria-label]="title + ' release'">
+    <mat-label>{{
+      isDefensive ? 'Defensive Technique Release' : 'Attack Technique Release'
+    }}</mat-label>
+    <mat-select
+      [value]="selectedReleaseId"
+      (selectionChange)="onReleaseChange($event.value)"
+      [aria-label]="title + ' release'"
+    >
       @for (release of releases; track release.id) {
-      <mat-option [value]="release.id">
-        {{ release.name }} {{ release.version }}@if (isPinned(release)) { (this MSEL)}
-      </mat-option>
+        <mat-option [value]="release.id">
+          {{ release.name }} {{ release.version }}
+          @if (isPinned(release)) {
+            (this MSEL)
+          }
+        </mat-option>
       }
     </mat-select>
     @if (releases.length === 0) {
-    <mat-hint>No releases have been imported. An administrator imports them under Administration.</mat-hint>
+      <mat-hint
+        >No releases have been imported. An administrator imports them under
+        Administration.</mat-hint
+      >
     }
   </mat-form-field>
 </div>
@@ -27,49 +43,78 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <mat-expansion-panel class="section-panel" [(expanded)]="addPanelExpanded">
     <mat-expansion-panel-header>
       <mat-panel-title>
-        <mat-icon class="mdi-18px panel-icon" fontIcon="mdi-plus-circle-outline" />
+        <mat-icon
+          class="mdi-18px panel-icon"
+          fontIcon="mdi-plus-circle-outline"
+        />
         Add Techniques
       </mat-panel-title>
     </mat-expansion-panel-header>
     @if (needsUpgrade) {
-    <div class="pin-notice">
-      This MSEL's {{ selectedRelease?.domain }} techniques are from {{ pinnedRelease?.name }} {{ pinnedRelease?.version }}.
-      Upgrade them to {{ selectedRelease?.version }} to add techniques from it.
-    </div>
+      <div class="pin-notice">
+        This MSEL's {{ selectedRelease?.domain }} techniques are from
+        {{ pinnedRelease?.name }} {{ pinnedRelease?.version }}. Upgrade them to
+        {{ selectedRelease?.version }} to add techniques from it.
+      </div>
     }
     @if (browsedUnpinnedRelease) {
-    <app-technique-notice [release]="browsedUnpinnedRelease" />
+      <app-technique-notice [release]="browsedUnpinnedRelease" />
     }
     <div class="toolbar-row">
-      <mat-form-field style="width: 220px;">
+      <mat-form-field style="width: 220px">
         <mat-label>{{ groupLabel }}</mat-label>
-        <mat-select [value]="tacticFilter" (selectionChange)="onTacticChange($event.value)">
+        <mat-select
+          [value]="tacticFilter"
+          (selectionChange)="onTacticChange($event.value)"
+        >
           <mat-option value="">All</mat-option>
           @for (tactic of tactics; track tactic.id) {
-          <mat-option [value]="tactic.shortName">{{ tacticLabel(tactic) }}</mat-option>
+            <mat-option [value]="tactic.shortName">{{
+              tacticLabel(tactic)
+            }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
-      <mat-form-field style="width: 260px; margin-left: 10px;">
-        <input matInput [formControl]="searchControl" placeholder="Search techniques" />
+      <mat-form-field style="width: 260px; margin-left: 10px">
+        <input
+          matInput
+          [formControl]="searchControl"
+          placeholder="Search techniques"
+        />
         @if (searchString) {
-        <button mat-icon-button matSuffix (click)="searchControl.setValue('')" title="Clear">
-          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
-        </button>
+          <button
+            mat-icon-button
+            matSuffix
+            (click)="searchControl.setValue('')"
+            title="Clear"
+          >
+            <mat-icon
+              style="transform: scale(0.85)"
+              fontIcon="mdi-close-circle-outline"
+            />
+          </button>
         }
       </mat-form-field>
-      <mat-checkbox class="sub-technique-toggle" [checked]="showSubTechniques" (change)="toggleSubTechniques()">
+      <mat-checkbox
+        class="sub-technique-toggle"
+        [checked]="showSubTechniques"
+        (change)="toggleSubTechniques()"
+      >
         Sub-techniques
       </mat-checkbox>
       <div class="button-end">
-        <mat-paginator #browserPaginator [pageSize]="25" [pageSizeOptions]="[10, 25, 50, 100]" />
+        <mat-paginator
+          #browserPaginator
+          [pageSize]="25"
+          [pageSizeOptions]="[10, 25, 50, 100]"
+        />
       </div>
     </div>
     @if (isLoadingRelease) {
-    <div class="browser-loading">
-      <mat-spinner diameter="36" />
-      <div class="browser-loading-text">Loading techniques...</div>
-    </div>
+      <div class="browser-loading">
+        <mat-spinner diameter="36" />
+        <div class="browser-loading-text">Loading techniques...</div>
+      </div>
     }
     <div class="browser-table-scroll" [class.hidden]="isLoadingRelease">
       <mat-table [dataSource]="browserDataSource">
@@ -77,57 +122,129 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-header-cell *matHeaderCellDef class="col-check" />
           <mat-cell *matCellDef="let t" class="col-check">
             @if (canEditMsel()) {
-            <mat-checkbox [checked]="isInPool(t)" [disabled]="needsUpgrade" (change)="togglePoolItem(t)"
-              [attr.aria-label]="'Add ' + t.externalId" />
+              <mat-checkbox
+                [checked]="isInPool(t)"
+                [disabled]="needsUpgrade"
+                (change)="togglePoolItem(t)"
+                [attr.aria-label]="'Add ' + t.externalId"
+              />
             }
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="externalId">
           <mat-header-cell *matHeaderCellDef class="col-id">ID</mat-header-cell>
-          <mat-cell *matCellDef="let t" class="col-id" [class.sub-technique]="t.isSubTechnique">
-            <a [href]="t.url" target="_blank" rel="noopener" title="Open {{ t.externalId }} on {{ linkHost(t) }}">{{ t.externalId }}</a>
+          <mat-cell
+            *matCellDef="let t"
+            class="col-id"
+            [class.sub-technique]="t.isSubTechnique"
+          >
+            <a
+              [href]="t.url"
+              target="_blank"
+              rel="noopener"
+              title="Open {{ t.externalId }} on {{ linkHost(t) }}"
+              >{{ t.externalId }}</a
+            >
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="name">
-          <mat-header-cell *matHeaderCellDef class="col-name">Name</mat-header-cell>
-          <mat-cell *matCellDef="let t" class="col-name" [matTooltip]="t.description" matTooltipShowDelay="800"
-            matTooltipClass="attack-description-tooltip">{{ t.name }}</mat-cell>
+          <mat-header-cell *matHeaderCellDef class="col-name"
+            >Name</mat-header-cell
+          >
+          <mat-cell
+            *matCellDef="let t"
+            class="col-name"
+            [matTooltip]="t.description"
+            matTooltipShowDelay="800"
+            matTooltipClass="attack-description-tooltip"
+            >{{ t.name }}</mat-cell
+          >
         </ng-container>
         <ng-container matColumnDef="tactics">
-          <mat-header-cell *matHeaderCellDef class="col-tactics">{{ browserGroupsLabel }}</mat-header-cell>
-          <mat-cell *matCellDef="let t" class="col-tactics">{{ getTacticNames(t) }}</mat-cell>
+          <mat-header-cell *matHeaderCellDef class="col-tactics">{{
+            browserGroupsLabel
+          }}</mat-header-cell>
+          <mat-cell *matCellDef="let t" class="col-tactics">{{
+            getTacticNames(t)
+          }}</mat-cell>
         </ng-container>
         <ng-container matColumnDef="platforms">
-          <mat-header-cell *matHeaderCellDef class="col-platforms">{{ platformsLabel }}</mat-header-cell>
-          <mat-cell *matCellDef="let t" class="col-platforms">{{ t.platforms?.join(', ') }}</mat-cell>
+          <mat-header-cell *matHeaderCellDef class="col-platforms">{{
+            platformsLabel
+          }}</mat-header-cell>
+          <mat-cell *matCellDef="let t" class="col-platforms">{{
+            t.platforms?.join(', ')
+          }}</mat-cell>
         </ng-container>
         <ng-container matColumnDef="weaknesses">
-          <mat-header-cell *matHeaderCellDef class="col-weaknesses">Weaknesses</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef class="col-weaknesses"
+            >Weaknesses</mat-header-cell
+          >
           <mat-cell *matCellDef="let t" class="col-weaknesses">
             @for (w of shownWeaknesses(t); track w; let isLast = $last) {
-            @if (weaknessUrl(w); as url) {<a [href]="url" target="_blank" rel="noopener" title="Open {{ w }} on {{ hostOf(url) }}">{{ w }}</a>} @else {<span>{{ w }}</span>}@if (!isLast) {<span>, </span>}
+              @if (weaknessUrl(w); as url) {
+                <a
+                  [href]="url"
+                  target="_blank"
+                  rel="noopener"
+                  title="Open {{ w }} on {{ hostOf(url) }}"
+                  >{{ w }}</a
+                >
+              } @else {
+                <span>{{ w }}</span>
+              }
+              @if (!isLast) {
+                <span>, </span>
+              }
             }
             @if ((t.weaknesses?.length || 0) > weaknessesShown) {
-            <button type="button" class="more-toggle" (click)="toggleWeaknesses(t, $event)"
-              [attr.aria-expanded]="openWeaknesses.has(t.id)">
-              {{ openWeaknesses.has(t.id) ? 'show fewer' : '+' + (t.weaknesses.length - weaknessesShown) + ' more' }}
-            </button>
+              <button
+                type="button"
+                class="more-toggle"
+                (click)="toggleWeaknesses(t, $event)"
+                [attr.aria-expanded]="openWeaknesses.has(t.id)"
+              >
+                {{
+                  openWeaknesses.has(t.id)
+                    ? 'show fewer'
+                    : '+' + (t.weaknesses.length - weaknessesShown) + ' more'
+                }}
+              </button>
             }
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="seeAlso">
-          <mat-header-cell *matHeaderCellDef class="col-see-also">See also</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef class="col-see-also"
+            >See also</mat-header-cell
+          >
           <mat-cell *matCellDef="let t" class="col-see-also">
-            @for (link of t.referenceLinks; track link.url; let isLast = $last) {
-            <a [href]="link.url" target="_blank" rel="noopener" [title]="link.label">{{ link.source }}</a>@if (!isLast) {<span>, </span>}
+            @for (
+              link of t.referenceLinks;
+              track link.url;
+              let isLast = $last
+            ) {
+              <a
+                [href]="link.url"
+                target="_blank"
+                rel="noopener"
+                [title]="link.label"
+                >{{ link.source }}</a
+              >
+              @if (!isLast) {
+                <span>, </span>
+              }
             }
           </mat-cell>
         </ng-container>
         <mat-header-row *matHeaderRowDef="browserColumns; sticky: true" />
         <mat-row *matRowDef="let row; columns: browserColumns" />
       </mat-table>
-      @if (!isLoadingRelease && selectedReleaseId && browserDataSource.filteredData.length === 0) {
-      <div class="empty-text">No matching techniques</div>
+      @if (
+        !isLoadingRelease &&
+        selectedReleaseId &&
+        browserDataSource.filteredData.length === 0
+      ) {
+        <div class="empty-text">No matching techniques</div>
       }
     </div>
   </mat-expansion-panel>
@@ -140,80 +257,144 @@ project root for license information or contact permission@sei.cmu.edu for full 
         MSEL Techniques ({{ pool.length }})
       </mat-panel-title>
       @if (pinnedDomains.length === 1) {
-      <mat-panel-description>{{ pinnedDomains[0].release.name }} {{ pinnedDomains[0].release.version }}</mat-panel-description>
+        <mat-panel-description
+          >{{ pinnedDomains[0].release.name }}
+          {{ pinnedDomains[0].release.version }}</mat-panel-description
+        >
       }
     </mat-expansion-panel-header>
     @if (pinnedDomains.length > 0) {
-    <!-- one row per domain the pool holds: its pinned release, and its own upgrade when the browsed release is a newer one of it -->
-    <div class="pinned-releases" aria-label="Pinned releases">
-      @for (pinned of pinnedDomains; track pinned.domain) {
-      <div class="pinned-release" [attr.data-domain]="pinned.domain">
-        <span class="pinned-name">{{ pinned.release.name }} {{ pinned.release.version }}</span>
-        <span class="pinned-count">{{ pinned.count }} technique{{ pinned.count === 1 ? '' : 's' }}</span>
-        @if (pinned.upgradeTo && canEditMsel()) {
-        <button mat-stroked-button class="upgrade-button" (click)="upgradePool(pinned)"
-          title="Move this MSEL's {{ pinned.domain }} techniques to {{ pinned.upgradeTo.version }}">
-          <mat-icon fontIcon="mdi-arrow-up-bold-circle-outline" />
-          Upgrade {{ pinned.domain }} to {{ pinned.upgradeTo.version }}
-        </button>
+      <!-- one row per domain the pool holds: its pinned release, and its own upgrade when the browsed release is a newer one of it -->
+      <div class="pinned-releases" aria-label="Pinned releases">
+        @for (pinned of pinnedDomains; track pinned.domain) {
+          <div class="pinned-release" [attr.data-domain]="pinned.domain">
+            <span class="pinned-name"
+              >{{ pinned.release.name }} {{ pinned.release.version }}</span
+            >
+            <span class="pinned-count"
+              >{{ pinned.count }} technique{{
+                pinned.count === 1 ? '' : 's'
+              }}</span
+            >
+            @if (pinned.upgradeTo && canEditMsel()) {
+              <button
+                mat-stroked-button
+                class="upgrade-button"
+                (click)="upgradePool(pinned)"
+                title="Move this MSEL's {{ pinned.domain }} techniques to {{
+                  pinned.upgradeTo.version
+                }}"
+              >
+                <mat-icon fontIcon="mdi-arrow-up-bold-circle-outline" />
+                Upgrade {{ pinned.domain }} to {{ pinned.upgradeTo.version }}
+              </button>
+            }
+          </div>
+          <!-- the release's own copyright and terms, kept with the techniques it covers -->
+          <app-technique-notice [release]="pinned.release" />
         }
       </div>
-      <!-- the release's own copyright and terms, kept with the techniques it covers -->
-      <app-technique-notice [release]="pinned.release" />
-      }
-    </div>
     }
     @if (pool.length === 0) {
-    <div class="empty-text">
-      No techniques yet. Add techniques above, then add a {{ fieldTypeName }} data field so scenario events can name them.
-    </div>
+      <div class="empty-text">
+        No techniques yet. Add techniques above, then add a
+        {{ fieldTypeName }} data field so scenario events can name them.
+      </div>
     } @else {
-    <mat-table [dataSource]="poolDataSource" multiTemplateDataRows>
-      <ng-container matColumnDef="action">
-        <mat-header-cell *matHeaderCellDef class="col-check" />
-        <mat-cell *matCellDef="let item" class="col-check">
-          @if (canEditMsel()) {
-          <button mat-icon-button class="msel-action" (click)="removeFromPool(item)"
-            title="Remove {{ item.technique?.externalId }}">
-            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
-          </button>
-          }
-        </mat-cell>
-      </ng-container>
-      <ng-container matColumnDef="externalId">
-        <mat-header-cell *matHeaderCellDef class="col-id" [class.with-domain]="showsDomainLabels">ID</mat-header-cell>
-        <mat-cell *matCellDef="let item" class="col-id" [class.with-domain]="showsDomainLabels">
-          <a [href]="item.technique?.url" target="_blank" rel="noopener"
-            title="Open {{ item.technique?.externalId }} on {{ linkHost(item.technique) }}">{{ item.technique?.externalId }}</a>
-          @if (showsDomainLabels) {
-          <span class="domain-tag">{{ item.technique?.domain }}</span>
-          }
-        </mat-cell>
-      </ng-container>
-      <ng-container matColumnDef="name">
-        <mat-header-cell *matHeaderCellDef class="col-name">Name</mat-header-cell>
-        <mat-cell *matCellDef="let item" class="col-name" [matTooltip]="item.technique?.description"
-          matTooltipShowDelay="800" matTooltipClass="attack-description-tooltip">{{ item.technique?.name }}</mat-cell>
-      </ng-container>
-      <ng-container matColumnDef="tactics">
-        <mat-header-cell *matHeaderCellDef class="col-tactics">{{ poolGroupsLabel }}</mat-header-cell>
-        <mat-cell *matCellDef="let item" class="col-tactics">{{ getTacticNames(item.technique) }}</mat-cell>
-      </ng-container>
-      <ng-container matColumnDef="events">
-        <mat-header-cell *matHeaderCellDef class="col-events">Events</mat-header-cell>
-        <mat-cell *matCellDef="let item" class="col-events">{{ getEventCount(item) }}</mat-cell>
-      </ng-container>
-      <ng-container matColumnDef="countermeasures">
-        <mat-cell *matCellDef="let item" class="col-countermeasures">
-          <app-technique-countermeasures [mselId]="msel.id" [externalId]="item.technique?.externalId"
-            [group]="countermeasuresFor(item)" [countermeasures]="countermeasures" [canEdit]="canEditMsel()"
-            [hasDefensiveRelease]="hasDefensiveRelease" />
-        </mat-cell>
-      </ng-container>
-      <mat-header-row *matHeaderRowDef="poolColumns" />
-      <mat-row *matRowDef="let row; columns: poolColumns" class="pool-row" />
-      <mat-row *matRowDef="let row; columns: ['countermeasures']; when: showsCountermeasures" class="countermeasures-row" />
-    </mat-table>
+      <mat-table [dataSource]="poolDataSource" multiTemplateDataRows>
+        <ng-container matColumnDef="action">
+          <mat-header-cell *matHeaderCellDef class="col-check" />
+          <mat-cell *matCellDef="let item" class="col-check">
+            @if (canEditMsel()) {
+              <button
+                mat-icon-button
+                class="msel-action"
+                (click)="removeFromPool(item)"
+                title="Remove {{ item.technique?.externalId }}"
+              >
+                <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
+              </button>
+            }
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="externalId">
+          <mat-header-cell
+            *matHeaderCellDef
+            class="col-id"
+            [class.with-domain]="showsDomainLabels"
+            >ID</mat-header-cell
+          >
+          <mat-cell
+            *matCellDef="let item"
+            class="col-id"
+            [class.with-domain]="showsDomainLabels"
+          >
+            <a
+              [href]="item.technique?.url"
+              target="_blank"
+              rel="noopener"
+              title="Open {{ item.technique?.externalId }} on {{
+                linkHost(item.technique)
+              }}"
+              >{{ item.technique?.externalId }}</a
+            >
+            @if (showsDomainLabels) {
+              <span class="domain-tag">{{ item.technique?.domain }}</span>
+            }
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="name">
+          <mat-header-cell *matHeaderCellDef class="col-name"
+            >Name</mat-header-cell
+          >
+          <mat-cell
+            *matCellDef="let item"
+            class="col-name"
+            [matTooltip]="item.technique?.description"
+            matTooltipShowDelay="800"
+            matTooltipClass="attack-description-tooltip"
+            >{{ item.technique?.name }}</mat-cell
+          >
+        </ng-container>
+        <ng-container matColumnDef="tactics">
+          <mat-header-cell *matHeaderCellDef class="col-tactics">{{
+            poolGroupsLabel
+          }}</mat-header-cell>
+          <mat-cell *matCellDef="let item" class="col-tactics">{{
+            getTacticNames(item.technique)
+          }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="events">
+          <mat-header-cell *matHeaderCellDef class="col-events"
+            >Events</mat-header-cell
+          >
+          <mat-cell *matCellDef="let item" class="col-events">{{
+            getEventCount(item)
+          }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="countermeasures">
+          <mat-cell *matCellDef="let item" class="col-countermeasures">
+            <app-technique-countermeasures
+              [mselId]="msel.id"
+              [externalId]="item.technique?.externalId"
+              [group]="countermeasuresFor(item)"
+              [countermeasures]="countermeasures"
+              [canEdit]="canEditMsel()"
+              [hasDefensiveRelease]="hasDefensiveRelease"
+            />
+          </mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="poolColumns" />
+        <mat-row *matRowDef="let row; columns: poolColumns" class="pool-row" />
+        <mat-row
+          *matRowDef="
+            let row;
+            columns: ['countermeasures'];
+            when: showsCountermeasures
+          "
+          class="countermeasures-row"
+        />
+      </mat-table>
     }
   </mat-expansion-panel>
 </div>

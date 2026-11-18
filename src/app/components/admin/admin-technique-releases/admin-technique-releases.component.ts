@@ -1,13 +1,40 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, inject, input, viewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSort, MatSortHeader } from '@angular/material/sort';
-import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+  MatTableDataSource,
+  MatTable,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
-import { MatFormField, MatLabel, MatInput, MatSuffix, MatHint } from '@angular/material/input';
+import {
+  MatFormField,
+  MatLabel,
+  MatInput,
+  MatSuffix,
+  MatHint,
+} from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatTooltip } from '@angular/material/tooltip';
@@ -15,7 +42,11 @@ import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MatDialog } from '@angular/material/dialog';
-import { TechniqueFramework, TechniqueRelease, TechniqueReleaseNotice } from 'src/app/generated/blueprint.api';
+import {
+  TechniqueFramework,
+  TechniqueRelease,
+  TechniqueReleaseNotice,
+} from 'src/app/generated/blueprint.api';
 import { TechniqueReleaseDataService } from 'src/app/data/technique-release/technique-release-data.service';
 import { TechniqueReleaseQuery } from 'src/app/data/technique-release/technique-release.query';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
@@ -23,7 +54,10 @@ import { TechniqueFrameworkQuery } from 'src/app/data/technique-framework/techni
 import { MatSelect, MatOption } from '@angular/material/select';
 import { AdminTechniqueFrameworksComponent } from '../admin-technique-frameworks/admin-technique-frameworks.component';
 import { AdminTechniqueReleaseNoticeDialogComponent } from '../admin-technique-release-notice-dialog/admin-technique-release-notice-dialog.component';
-import { TechniqueNoticeComponent, hasTechniqueNotice } from '../../technique-notice/technique-notice.component';
+import {
+  TechniqueNoticeComponent,
+  hasTechniqueNotice,
+} from '../../technique-notice/technique-notice.component';
 
 /**
  * The technique frameworks and the releases planners pick techniques from. An administrator defines the
@@ -35,9 +69,40 @@ import { TechniqueNoticeComponent, hasTechniqueNotice } from '../../technique-no
   selector: 'app-admin-technique-releases',
   templateUrl: './admin-technique-releases.component.html',
   styleUrls: ['./admin-technique-releases.component.scss'],
-  imports: [MatIcon, MatFormField, MatLabel, MatHint, MatInput, ReactiveFormsModule, MatIconButton, MatSuffix, MatProgressSpinner, MatTable, MatSort, MatSortHeader, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, AsyncPipe, DatePipe, TechniqueNoticeComponent, MatSelect, MatOption, AdminTechniqueFrameworksComponent]
+  imports: [
+    MatIcon,
+    MatFormField,
+    MatLabel,
+    MatHint,
+    MatInput,
+    ReactiveFormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatProgressSpinner,
+    MatTable,
+    MatSort,
+    MatSortHeader,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCellDef,
+    MatCell,
+    MatTooltip,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+    AsyncPipe,
+    DatePipe,
+    TechniqueNoticeComponent,
+    MatSelect,
+    MatOption,
+    AdminTechniqueFrameworksComponent,
+  ],
 })
-export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, OnDestroy {
+export class AdminTechniqueReleasesComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
   private techniqueReleaseDataService = inject(TechniqueReleaseDataService);
   private techniqueReleaseQuery = inject(TechniqueReleaseQuery);
   private techniqueFrameworkQuery = inject(TechniqueFrameworkQuery);
@@ -49,13 +114,23 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
   readonly canEdit = input<boolean>(undefined);
   readonly sort = viewChild(MatSort);
   readonly stixInput = viewChild<ElementRef<HTMLInputElement>>('stixInput');
-  readonly mappingsInput = viewChild<ElementRef<HTMLInputElement>>('mappingsInput');
+  readonly mappingsInput =
+    viewChild<ElementRef<HTMLInputElement>>('mappingsInput');
   /** The release the mappings file picker was opened for. */
   private mappingsRelease: TechniqueRelease;
   dataSource = new MatTableDataSource<TechniqueRelease>([]);
   // the release whose notice is open under its row
   expandedId = '';
-  displayedColumns: string[] = ['action', 'name', 'framework', 'domain', 'version', 'releaseDate', 'tacticCount', 'techniqueCount'];
+  displayedColumns: string[] = [
+    'action',
+    'name',
+    'framework',
+    'domain',
+    'version',
+    'releaseDate',
+    'tacticCount',
+    'techniqueCount',
+  ];
   versionControl = new FormControl<string>('');
   /** The framework to read the next file as; empty to match it automatically. */
   frameworkControl = new FormControl<string>('');
@@ -80,16 +155,26 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
   }
 
   ngOnInit() {
-    this.techniqueReleaseQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(releases => {
-      this.dataSource.data = releases;
-    });
-    this.techniqueFrameworkQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(frameworks => {
-      this.frameworks = [...frameworks].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-    });
-    this.filterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe(term => {
-      this.filterString = term;
-      this.dataSource.filter = (term || '').trim().toLowerCase();
-    });
+    this.techniqueReleaseQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((releases) => {
+        this.dataSource.data = releases;
+      });
+    this.techniqueFrameworkQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((frameworks) => {
+        this.frameworks = [...frameworks].sort((a, b) =>
+          (a.name || '').localeCompare(b.name || ''),
+        );
+      });
+    this.filterControl.valueChanges
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((term) => {
+        this.filterString = term;
+        this.dataSource.filter = (term || '').trim().toLowerCase();
+      });
     this.techniqueReleaseDataService.load();
   }
 
@@ -99,7 +184,9 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
 
   /** The frameworks whose download hints the empty state lists. */
   get frameworksWithDownloads(): TechniqueFramework[] {
-    return this.frameworks.filter(f => f.settings?.downloadHint || f.settings?.downloadUrl);
+    return this.frameworks.filter(
+      (f) => f.settings?.downloadHint || f.settings?.downloadUrl,
+    );
   }
 
   /** Opens the framework, source, notice and terms of a release for editing. */
@@ -111,15 +198,20 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
       notice: release.notice ?? '',
       termsUrl: release.termsUrl ?? '',
     };
-    const dialogRef = this.dialog.open(AdminTechniqueReleaseNoticeDialogComponent, {
-      minWidth: '500px',
-      maxWidth: '90vw',
-      width: '700px',
-      data: { release, notice, frameworks: this.frameworks },
-    });
+    const dialogRef = this.dialog.open(
+      AdminTechniqueReleaseNoticeDialogComponent,
+      {
+        minWidth: '500px',
+        maxWidth: '90vw',
+        width: '700px',
+        data: { release, notice, frameworks: this.frameworks },
+      },
+    );
     dialogRef.componentInstance.editComplete.subscribe((result) => {
       if (result.saveChanges && result.notice) {
-        this.techniqueReleaseDataService.updateNotice(release.id, result.notice).subscribe();
+        this.techniqueReleaseDataService
+          .updateNotice(release.id, result.notice)
+          .subscribe();
       }
       dialogRef.close();
     });
@@ -132,7 +224,9 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
 
   /** The releases that take mappings but have none yet, for the hint. */
   get releasesWithoutMappings(): TechniqueRelease[] {
-    return this.dataSource.data.filter(r => this.takesMappings(r) && !r.countermeasureCount);
+    return this.dataSource.data.filter(
+      (r) => this.takesMappings(r) && !r.countermeasureCount,
+    );
   }
 
   selectFile(e: Event) {
@@ -141,7 +235,12 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
     if (!file) {
       return;
     }
-    this.techniqueReleaseDataService.import(file, (this.versionControl.value || '').trim(), this.frameworkControl.value || undefined)
+    this.techniqueReleaseDataService
+      .import(
+        file,
+        (this.versionControl.value || '').trim(),
+        this.frameworkControl.value || undefined,
+      )
       .subscribe(() => {
         this.versionControl.setValue('');
         this.frameworkControl.setValue('');
@@ -161,14 +260,18 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
     if (!file || !release) {
       return;
     }
-    this.techniqueReleaseDataService.importCountermeasures(release.id, file).subscribe(result => {
-      this.messageService.displayMessage(
-        'Mappings Imported',
-        `${result.rowsRead} rows read. ${result.pairsStored} mappings for ${result.offensiveTechniqueCount} ` +
-          `techniques stored on ${release.name} ${release.version}` +
-          (result.pairsSkipped > 0 ? `; ${result.pairsSkipped} skipped because their technique is not in this release.` : '.')
-      );
-    });
+    this.techniqueReleaseDataService
+      .importCountermeasures(release.id, file)
+      .subscribe((result) => {
+        this.messageService.displayMessage(
+          'Mappings Imported',
+          `${result.rowsRead} rows read. ${result.pairsStored} mappings for ${result.offensiveTechniqueCount} ` +
+            `techniques stored on ${release.name} ${release.version}` +
+            (result.pairsSkipped > 0
+              ? `; ${result.pairsSkipped} skipped because their technique is not in this release.`
+              : '.'),
+        );
+      });
     input.value = null;
   }
 
@@ -176,11 +279,16 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
     this.dialogService
       .confirm({
         title: 'Delete Release',
-        message: 'Are you sure you want to delete ' + release.name + ' ' + release.version + '? ' +
-          'A release that any MSEL still uses cannot be deleted.'
+        message:
+          'Are you sure you want to delete ' +
+          release.name +
+          ' ' +
+          release.version +
+          '? ' +
+          'A release that any MSEL still uses cannot be deleted.',
       })
       .afterClosed()
-      .subscribe(result => {
+      .subscribe((result) => {
         if (result) {
           this.techniqueReleaseDataService.delete(release.id);
         }

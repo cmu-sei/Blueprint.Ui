@@ -4,7 +4,11 @@
 import { Component, inject } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { CrucibleDialogActionsDirective, CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import {
+  CrucibleDialogActionsDirective,
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
 import { TechniqueRelease } from 'src/app/generated/blueprint.api';
 import { isWebAddress } from '../admin/admin-technique-release-notice-dialog/admin-technique-release-notice-dialog.component';
 
@@ -16,10 +20,16 @@ import { isWebAddress } from '../admin/admin-technique-release-notice-dialog/adm
   selector: 'app-technique-notice-dialog',
   templateUrl: './technique-notice-dialog.component.html',
   styleUrls: ['./technique-notice-dialog.component.scss'],
-  imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, CrucibleDialogActionsDirective, MatButton]
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    CrucibleDialogActionsDirective,
+    MatButton,
+  ],
 })
 export class TechniqueNoticeDialogComponent {
-  private dialogRef = inject<MatDialogRef<TechniqueNoticeDialogComponent>>(MatDialogRef);
+  private dialogRef =
+    inject<MatDialogRef<TechniqueNoticeDialogComponent>>(MatDialogRef);
   data = inject<{ release: TechniqueRelease }>(MAT_DIALOG_DATA);
 
   get release(): TechniqueRelease {
@@ -41,7 +51,9 @@ export class TechniqueNoticeDialogComponent {
   }
 
   get termsLabel(): string {
-    return this.release.source ? `${this.release.source} Terms of Use` : 'Terms of Use';
+    return this.release.source
+      ? `${this.release.source} Terms of Use`
+      : 'Terms of Use';
   }
 
   close() {

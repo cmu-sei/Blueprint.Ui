@@ -2,14 +2,23 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+  MatTableDataSource,
+  MatTable,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 import { MatCheckboxChange, MatCheckbox } from '@angular/material/checkbox';
 import { Subject } from 'rxjs';
 import { map, takeUntil } from 'rxjs/operators';
-import {
-  SystemPermission,
-  SystemRole,
-} from 'src/app/generated/blueprint.api';
+import { SystemPermission, SystemRole } from 'src/app/generated/blueprint.api';
 import { SystemRoleDataService } from 'src/app/data/system-role/system-role-data.service';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
@@ -21,29 +30,29 @@ import { FormsModule } from '@angular/forms';
 import { AsyncPipe } from '@angular/common';
 
 @Component({
-    selector: 'app-admin-roles',
-    templateUrl: './admin-roles.component.html',
-    styleUrls: ['./admin-roles.component.scss'],
-    imports: [
-        MatTable,
-        MatColumnDef,
-        MatHeaderCellDef,
-        MatHeaderCell,
-        MatIconButton,
-        MatTooltip,
-        MatIcon,
-        MatFormField,
-        MatInput,
-        FormsModule,
-        MatCellDef,
-        MatCell,
-        MatCheckbox,
-        MatHeaderRowDef,
-        MatHeaderRow,
-        MatRowDef,
-        MatRow,
-        AsyncPipe,
-    ],
+  selector: 'app-admin-roles',
+  templateUrl: './admin-roles.component.html',
+  styleUrls: ['./admin-roles.component.scss'],
+  imports: [
+    MatTable,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatIconButton,
+    MatTooltip,
+    MatIcon,
+    MatFormField,
+    MatInput,
+    FormsModule,
+    MatCellDef,
+    MatCell,
+    MatCheckbox,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+    AsyncPipe,
+  ],
 })
 export class AdminRolesComponent implements OnInit, OnDestroy {
   private roleDataService = inject(SystemRoleDataService);
@@ -64,7 +73,10 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
     [SystemPermission.CreateMsels, 'Allows creation of new MSELs'],
     [SystemPermission.ViewMsels, 'Allows viewing all MSELs'],
     [SystemPermission.EditMsels, 'Allows editing MSELs'],
-    [SystemPermission.ManageMsels, 'Allows managing MSELs including memberships'],
+    [
+      SystemPermission.ManageMsels,
+      'Allows managing MSELs including memberships',
+    ],
     [SystemPermission.ViewUnits, 'Allows viewing all Units'],
     [SystemPermission.ManageUnits, 'Allows managing Units'],
     [SystemPermission.ViewOrganizations, 'Allows viewing all Organizations'],
@@ -81,14 +93,38 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
     [SystemPermission.ManageCiteActions, 'Allows managing CITE Actions'],
     [SystemPermission.ViewCiteDuties, 'Allows viewing CITE Duties'],
     [SystemPermission.ManageCiteDuties, 'Allows managing CITE Duties'],
-    [SystemPermission.ViewPlayerApplications, 'Allows viewing Player Application Templates'],
-    [SystemPermission.ManagePlayerApplications, 'Allows managing Player Application Templates'],
-    [SystemPermission.ViewUsers, 'Allows viewing all Users. Enables the Users Administration panel'],
-    [SystemPermission.ManageUsers, 'Allows managing Users including adding, removing, and changing roles'],
-    [SystemPermission.ViewRoles, 'Allows viewing all Roles. Enables the Roles Administration panel'],
-    [SystemPermission.ManageRoles, 'Allows creating, editing, and deleting Roles'],
-    [SystemPermission.ViewGroups, 'Allows viewing all Groups. Enables the Groups Administration panel'],
-    [SystemPermission.ManageGroups, 'Allows creating, editing, and deleting Groups'],
+    [
+      SystemPermission.ViewPlayerApplications,
+      'Allows viewing Player Application Templates',
+    ],
+    [
+      SystemPermission.ManagePlayerApplications,
+      'Allows managing Player Application Templates',
+    ],
+    [
+      SystemPermission.ViewUsers,
+      'Allows viewing all Users. Enables the Users Administration panel',
+    ],
+    [
+      SystemPermission.ManageUsers,
+      'Allows managing Users including adding, removing, and changing roles',
+    ],
+    [
+      SystemPermission.ViewRoles,
+      'Allows viewing all Roles. Enables the Roles Administration panel',
+    ],
+    [
+      SystemPermission.ManageRoles,
+      'Allows creating, editing, and deleting Roles',
+    ],
+    [
+      SystemPermission.ViewGroups,
+      'Allows viewing all Groups. Enables the Groups Administration panel',
+    ],
+    [
+      SystemPermission.ManageGroups,
+      'Allows creating, editing, and deleting Groups',
+    ],
   ]);
 
   dataSource = new MatTableDataSource<string>([
@@ -103,22 +139,25 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
           return a.immutable ? -1 : 1;
         }
         return (a.name || '').localeCompare(b.name || '');
-      })
-    )
+      }),
+    ),
   );
 
   displayedColumns$ = this.roles$.pipe(
     map((roles) => {
       const columnNames = roles.map((r) => r.name);
       return ['permissions', ...columnNames];
-    })
+    }),
   );
 
   ngOnInit(): void {
     this.canEdit = this.permissionDataService.hasPermission(
-      SystemPermission.ManageRoles
+      SystemPermission.ManageRoles,
     );
-    this.roleDataService.getRoles().pipe(takeUntil(this.unsubscribe$)).subscribe();
+    this.roleDataService
+      .getRoles()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe();
   }
 
   ngOnDestroy(): void {
@@ -140,7 +179,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
   setPermission(
     permission: string,
     role: SystemRole,
-    event: MatCheckboxChange
+    event: MatCheckboxChange,
   ): void {
     const updatedRole = { ...role };
 
@@ -152,7 +191,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
         updatedRole.permissions.push(permission as SystemPermission);
       } else if (!event.checked) {
         updatedRole.permissions = updatedRole.permissions.filter(
-          (x) => x !== (permission as SystemPermission)
+          (x) => x !== (permission as SystemPermission),
         );
       }
     }
@@ -203,8 +242,14 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
 
   deleteRole(role: SystemRole): void {
     this.dialogService
-      .confirm({ title: 'Delete Role', message: `Are you sure that you want to delete ${role.name}?`, confirmText: 'Delete', cancelText: 'Cancel'
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Delete Role',
+        message: `Are you sure that you want to delete ${role.name}?`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result && result) {
           this.roleDataService.deleteRole(role.id).subscribe();
         }

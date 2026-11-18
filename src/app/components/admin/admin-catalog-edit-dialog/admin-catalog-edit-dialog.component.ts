@@ -8,7 +8,10 @@ import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.se
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { Subject, takeUntil } from 'rxjs';
 import { DataField } from 'src/app/generated/blueprint.api';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
 import { MatFormField, MatLabel, MatInput } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatSelect } from '@angular/material/select';
@@ -16,10 +19,20 @@ import { MatOption } from '@angular/material/autocomplete';
 import { MatCheckbox } from '@angular/material/checkbox';
 
 @Component({
-    selector: 'app-admin-catalog-edit-dialog',
-    templateUrl: './admin-catalog-edit-dialog.component.html',
-    styleUrls: ['./admin-catalog-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, MatSelect, MatOption, MatCheckbox]
+  selector: 'app-admin-catalog-edit-dialog',
+  templateUrl: './admin-catalog-edit-dialog.component.html',
+  styleUrls: ['./admin-catalog-edit-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    FormsModule,
+    MatSelect,
+    MatOption,
+    MatCheckbox,
+  ],
 })
 export class AdminCatalogEditDialogComponent {
   private dataFieldDataService = inject(DataFieldDataService);

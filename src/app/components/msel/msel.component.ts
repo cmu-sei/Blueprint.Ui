@@ -1,16 +1,21 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, inject, input, output, viewChild, viewChildren } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  inject,
+  input,
+  output,
+  viewChild,
+  viewChildren,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MselInfoComponent } from '../msel-info/msel-info.component';
 import { Subject, Observable } from 'rxjs';
 import { filter, map, takeUntil } from 'rxjs/operators';
-import {
-  Theme,
-  ComnAuthQuery
-} from '@cmusei/crucible-common';
+import { Theme, ComnAuthQuery } from '@cmusei/crucible-common';
 import { CatalogUnit, Msel } from 'src/app/generated/blueprint.api';
 import { CardDataService } from 'src/app/data/card/card-data.service';
 import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
@@ -38,7 +43,11 @@ import { UserDataService } from 'src/app/data/user/user-data.service';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-role-data.service';
 import { XApiService } from 'src/app/services/xapi/xapi.service';
-import { MatDrawerContainer, MatDrawer, MatDrawerContent } from '@angular/material/sidenav';
+import {
+  MatDrawerContainer,
+  MatDrawer,
+  MatDrawerContent,
+} from '@angular/material/sidenav';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatList, MatDivider, MatListItem } from '@angular/material/list';
@@ -63,10 +72,38 @@ import { MselScoringModelTabComponent } from '../msel-scoring-model-tab/msel-sco
 import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
-    selector: 'app-msel',
-    templateUrl: './msel.component.html',
-    styleUrls: ['./msel.component.scss'],
-    imports: [MatDrawerContainer, MatDrawer, MatIconButton, MatIcon, MatList, MatDivider, MatListItem, MatDrawerContent, MselInfoComponent, MselContributorsComponent, MselTeamsComponent, DataFieldListComponent, OrganizationListComponent, MoveListComponent, PlayerApplicationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, MselCompetenciesComponent, MselTechniquesComponent, ScenarioEventListComponent, MselViewComponent, AssessorViewComponent, InvitationListComponent, MselPlaybookComponent, MselScoringModelTabComponent, AsyncPipe]
+  selector: 'app-msel',
+  templateUrl: './msel.component.html',
+  styleUrls: ['./msel.component.scss'],
+  imports: [
+    MatDrawerContainer,
+    MatDrawer,
+    MatIconButton,
+    MatIcon,
+    MatList,
+    MatDivider,
+    MatListItem,
+    MatDrawerContent,
+    MselInfoComponent,
+    MselContributorsComponent,
+    MselTeamsComponent,
+    DataFieldListComponent,
+    OrganizationListComponent,
+    MoveListComponent,
+    PlayerApplicationListComponent,
+    CardListComponent,
+    CiteActionListComponent,
+    CiteDutyListComponent,
+    MselCompetenciesComponent,
+    MselTechniquesComponent,
+    ScenarioEventListComponent,
+    MselViewComponent,
+    AssessorViewComponent,
+    InvitationListComponent,
+    MselPlaybookComponent,
+    MselScoringModelTabComponent,
+    AsyncPipe,
+  ],
 })
 export class MselComponent implements OnDestroy {
   private activatedRoute = inject(ActivatedRoute);
@@ -194,17 +231,27 @@ export class MselComponent implements OnDestroy {
         }
       });
     // subscribe to mselUnits to reload users when contributors change
-    this.mselUnitQuery.selectAll()
+    this.mselUnitQuery
+      .selectAll()
       .pipe(
         // skip the units still in the store while this MSEL's are loading
         filter(() => !this.mselUnitQuery.getValue().loading),
-        map((mselUnits) => mselUnits.map((mu) => mu.unitId).sort().join()),
-        takeUntil(this.unsubscribe$)
+        map((mselUnits) =>
+          mselUnits
+            .map((mu) => mu.unitId)
+            .sort()
+            .join(),
+        ),
+        takeUntil(this.unsubscribe$),
       )
       .subscribe((unitIds) => {
         const mselId = this.activatedRoute.snapshot.queryParamMap.get('msel');
         // The users loaded with the MSEL already include its first contributors.
-        if (mselId && this.contributorUnitIds !== undefined && unitIds !== this.contributorUnitIds) {
+        if (
+          mselId &&
+          this.contributorUnitIds !== undefined &&
+          unitIds !== this.contributorUnitIds
+        ) {
           this.userDataService.loadByMsel(mselId).subscribe();
         }
         this.contributorUnitIds = unitIds;
@@ -277,10 +324,13 @@ export class MselComponent implements OnDestroy {
       }
     };
 
-    const unsaved = tabName !== this.selectedTab ? this.unsavedChangesMessage() : '';
+    const unsaved =
+      tabName !== this.selectedTab ? this.unsavedChangesMessage() : '';
     if (unsaved) {
       this.dialogService
-        .confirm({ title: 'Unsaved Changes', message: unsaved }).afterClosed().subscribe((result) => {
+        .confirm({ title: 'Unsaved Changes', message: unsaved })
+        .afterClosed()
+        .subscribe((result) => {
           if (result) {
             doTabChange();
           }
@@ -301,7 +351,9 @@ export class MselComponent implements OnDestroy {
     const unsaved = this.unsavedChangesMessage();
     if (unsaved) {
       this.dialogService
-        .confirm({ title: 'Unsaved Changes', message: unsaved }).afterClosed().subscribe((result) => {
+        .confirm({ title: 'Unsaved Changes', message: unsaved })
+        .afterClosed()
+        .subscribe((result) => {
           if (result) {
             doNavigate();
           }
@@ -313,10 +365,16 @@ export class MselComponent implements OnDestroy {
 
   // the open tab's unsaved work, for the pages that hold edits until they are saved
   private unsavedChangesMessage(): string {
-    if (this.selectedTab === 'Info' && this.mselInfoComponent()?.hasPendingChanges()) {
+    if (
+      this.selectedTab === 'Info' &&
+      this.mselInfoComponent()?.hasPendingChanges()
+    ) {
       return 'You have unsaved changes on the MSEL Info page. Are you sure that you want to discard them?';
     }
-    if (this.selectedTab === 'Scoring Model' && this.scoringModelTab()?.hasPendingChanges()) {
+    if (
+      this.selectedTab === 'Scoring Model' &&
+      this.scoringModelTab()?.hasPendingChanges()
+    ) {
       return 'You have unsaved changes on the Scoring Model page. Are you sure that you want to discard them?';
     }
     return '';

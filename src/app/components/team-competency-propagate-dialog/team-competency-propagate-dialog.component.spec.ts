@@ -15,20 +15,42 @@ import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
 const RELATED: MselCompetency[] = [
-  { id: 'mc-1', competencyId: 'c-1', competency: { id: 'c-1', idNumber: 'K0001', shortName: 'Networking' } },
-  { id: 'mc-2', competencyId: 'c-2', competency: { id: 'c-2', idNumber: 'S0002', shortName: 'Scripting' } },
+  {
+    id: 'mc-1',
+    competencyId: 'c-1',
+    competency: { id: 'c-1', idNumber: 'K0001', shortName: 'Networking' },
+  },
+  {
+    id: 'mc-2',
+    competencyId: 'c-2',
+    competency: { id: 'c-2', idNumber: 'S0002', shortName: 'Scripting' },
+  },
 ];
 
 async function renderPropagate() {
-  const ref = dialogRefStub<TeamCompetencyPropagateDialogComponent, MselCompetency[]>();
-  const rendered = await renderComponent(TeamCompetencyPropagateDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, MatCheckboxModule, MatTableModule, MatTooltipModule],
-    declarations: [TeamCompetencyPropagateDialogComponent],
-    providers: [
-      { provide: MAT_DIALOG_DATA, useValue: { teamName: 'BLUE', action: 'add', competencies: RELATED } },
-      { provide: MatDialogRef, useValue: ref.dialogRef },
-    ],
-  });
+  const ref = dialogRefStub<
+    TeamCompetencyPropagateDialogComponent,
+    MselCompetency[]
+  >();
+  const rendered = await renderComponent(
+    TeamCompetencyPropagateDialogComponent,
+    {
+      imports: [
+        ...CRUCIBLE_DIALOG_IMPORTS,
+        MatCheckboxModule,
+        MatTableModule,
+        MatTooltipModule,
+      ],
+      declarations: [TeamCompetencyPropagateDialogComponent],
+      providers: [
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: { teamName: 'BLUE', action: 'add', competencies: RELATED },
+        },
+        { provide: MatDialogRef, useValue: ref.dialogRef },
+      ],
+    },
+  );
   return { ...rendered, close: ref.close };
 }
 
@@ -41,9 +63,15 @@ describe('TeamCompetencyPropagateDialogComponent', () => {
   it('renders with the default test providers', async () => {
     const { fixture } = await renderPropagate();
 
-    expect(fixture.componentInstance).toBeInstanceOf(TeamCompetencyPropagateDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Add Team from Related' })).toBeInTheDocument();
-    expect(screen.getByText(/Also add team BLUE to the 2 related competencies/)).toBeInTheDocument();
+    expect(fixture.componentInstance).toBeInstanceOf(
+      TeamCompetencyPropagateDialogComponent,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Add Team from Related' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Also add team BLUE to the 2 related competencies/),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Yes (2)' })).toBeEnabled();
   });
 

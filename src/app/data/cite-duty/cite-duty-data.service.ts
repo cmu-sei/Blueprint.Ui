@@ -8,10 +8,7 @@ import { Injectable, inject } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
-import {
-  CiteDuty,
-  CiteDutyService,
-} from 'src/app/generated/blueprint.api';
+import { CiteDuty, CiteDutyService } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
 import { HttpEventType, HttpResponse } from '@angular/common/http';
@@ -28,7 +25,7 @@ export class CiteDutyDataService {
 
   private _requestedCiteDutyId: string;
   private _requestedCiteDutyId$ = this.activatedRoute.queryParamMap.pipe(
-    map((params) => params.get('citeDutyId') || '')
+    map((params) => params.get('citeDutyId') || ''),
   );
   readonly CiteDutyList: Observable<CiteDuty[]>;
   readonly filterControl = new FormControl();
@@ -45,7 +42,7 @@ export class CiteDutyDataService {
     const activatedRoute = this.activatedRoute;
 
     this.filterTerm = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('citeDutymask') || '')
+      map((params) => params.get('citeDutymask') || ''),
     );
     this.filterControl.valueChanges.subscribe((term) => {
       this.router.navigate([], {
@@ -54,16 +51,16 @@ export class CiteDutyDataService {
       });
     });
     this.sortColumn = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('sorton') || 'name')
+      map((params) => params.get('sorton') || 'name'),
     );
     this.sortIsAscending = activatedRoute.queryParamMap.pipe(
-      map((params) => (params.get('sortdir') || 'asc') === 'asc')
+      map((params) => (params.get('sortdir') || 'asc') === 'asc'),
     );
     this.pageSize = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pagesize') || '20', 10))
+      map((params) => parseInt(params.get('pagesize') || '20', 10)),
     );
     this.pageIndex = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pageindex') || '0', 10))
+      map((params) => parseInt(params.get('pageindex') || '0', 10)),
     );
     this.CiteDutyList = combineLatest([
       this.citeDutyQuery.selectAll(),
@@ -84,20 +81,20 @@ export class CiteDutyDataService {
         ]) =>
           items
             ? (items as CiteDuty[])
-              .sort((a: CiteDuty, b: CiteDuty) =>
-                this.sortCiteDuties(a, b, sortColumn, sortIsAscending)
-              )
-              .filter(
-                (citeDuty) =>
-                  ('' + citeDuty.name)
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase()) ||
+                .sort((a: CiteDuty, b: CiteDuty) =>
+                  this.sortCiteDuties(a, b, sortColumn, sortIsAscending),
+                )
+                .filter(
+                  (citeDuty) =>
+                    ('' + citeDuty.name)
+                      .toLowerCase()
+                      .includes(filterTerm.toLowerCase()) ||
                     citeDuty.id
                       .toLowerCase()
-                      .includes(filterTerm.toLowerCase())
-              )
-            : []
-      )
+                      .includes(filterTerm.toLowerCase()),
+                )
+            : [],
+      ),
     );
   }
 
@@ -105,7 +102,7 @@ export class CiteDutyDataService {
     a: CiteDuty,
     b: CiteDuty,
     column: string,
-    isAsc: boolean
+    isAsc: boolean,
   ) {
     switch (column) {
       case 'name':
@@ -131,13 +128,13 @@ export class CiteDutyDataService {
         tap(() => {
           this.citeDutyStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (templates) => {
           this.citeDutyStore.upsertMany(templates);
         },
-        (error) => {}
+        (error) => {},
       );
   }
 
@@ -149,7 +146,7 @@ export class CiteDutyDataService {
         tap(() => {
           this.citeDutyStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (citeDuties) => {
@@ -157,7 +154,7 @@ export class CiteDutyDataService {
         },
         (error) => {
           this.citeDutyStore.set([]);
-        }
+        },
       );
   }
 
@@ -169,7 +166,7 @@ export class CiteDutyDataService {
         tap(() => {
           this.citeDutyStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.citeDutyStore.upsert(s.id, { ...s });
@@ -188,7 +185,7 @@ export class CiteDutyDataService {
         tap(() => {
           this.citeDutyStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.citeDutyStore.add(s);
@@ -203,7 +200,7 @@ export class CiteDutyDataService {
         tap(() => {
           this.citeDutyStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((n) => {
         this.updateStore(n);
@@ -231,7 +228,7 @@ export class CiteDutyDataService {
         (event: any) => {
           if (event.type === HttpEventType.UploadProgress) {
             const uploadProgress = Math.round(
-              (100 * event.loaded) / event.total
+              (100 * event.loaded) / event.total,
             );
             this.uploadProgress.next(uploadProgress);
           } else if (event instanceof HttpResponse) {
@@ -246,7 +243,7 @@ export class CiteDutyDataService {
         (error) => {
           this.citeDutyStore.setLoading(false);
           this.uploadProgress.next(0);
-        }
+        },
       );
   }
 

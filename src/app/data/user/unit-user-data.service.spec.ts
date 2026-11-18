@@ -14,7 +14,10 @@ import { UnitUserDataService } from './unit-user-data.service';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { getDefaultProviders } from 'src/app/test-utils/default-test-providers';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 const alice: User = { id: 'user-1', name: 'Alice' };
 const bob: User = { id: 'user-2', name: 'Bob' };
@@ -59,7 +62,9 @@ describe('UnitUserDataService', () => {
   it('publishes the unit users', () => {
     const { service, userApi, emissions } = setup();
     userApi.getUnitUsers.mockReturnValueOnce(of([alice, bob]));
-    userApi.getUnitUsers.mockReturnValueOnce(throwError(() => new Error('boom')));
+    userApi.getUnitUsers.mockReturnValueOnce(
+      throwError(() => new Error('boom')),
+    );
 
     service.getUnitUsersFromApi('unit-1');
     expect(userApi.getUnitUsers).toHaveBeenCalledWith('unit-1');
@@ -103,7 +108,10 @@ describe('UnitUserDataService', () => {
 
     service.removeUnitUser('unit-1', 'user-1');
 
-    expect(unitUserApi.deleteUnitUserByIds).toHaveBeenCalledWith('unit-1', 'user-1');
+    expect(unitUserApi.deleteUnitUserByIds).toHaveBeenCalledWith(
+      'unit-1',
+      'user-1',
+    );
     expect(ids(emissions.at(-1))).toEqual(['user-2']);
   });
 
@@ -117,7 +125,11 @@ describe('UnitUserDataService', () => {
     userApi.getUnitUsers.mockReturnValue(of([alice]));
     service.getUnitUsersFromApi('unit-1');
 
-    service.updateStore({ unitId: 'unit-2', userId: 'user-9', user: { id: 'user-9' } });
+    service.updateStore({
+      unitId: 'unit-2',
+      userId: 'user-9',
+      user: { id: 'user-9' },
+    });
     expect(ids(emissions.at(-1))).toEqual(['user-1']);
 
     service.updateStore({ unitId: 'unit-1', userId: 'user-2', user: bob });
@@ -136,20 +148,32 @@ describe('UnitUserDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'addUserToUnit', endpoint: 'createUnitUser', call: (s: UnitUserDataService) => s.addUserToUnit('unit-1', { id: 'user-1' }) },
-    { method: 'removeUnitUser', endpoint: 'deleteUnitUserByIds', call: (s: UnitUserDataService) => s.removeUnitUser('unit-1', 'user-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, unitUserApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    unitUserApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'addUserToUnit',
+      endpoint: 'createUnitUser',
+      call: (s: UnitUserDataService) =>
+        s.addUserToUnit('unit-1', { id: 'user-1' }),
+    },
+    {
+      method: 'removeUnitUser',
+      endpoint: 'deleteUnitUserByIds',
+      call: (s: UnitUserDataService) => s.removeUnitUser('unit-1', 'user-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, unitUserApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      unitUserApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

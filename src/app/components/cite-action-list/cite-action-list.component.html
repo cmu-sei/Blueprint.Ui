@@ -6,133 +6,252 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <div class="cssLayoutRowStartCenter">
   <div class="sp-icon">
-    <mat-icon class="mdi-24px" fontIcon="mdi-clipboard-check-outline" [style.color]="'var(--mat-sys-primary)'" />
+    <mat-icon
+      class="mdi-24px"
+      fontIcon="mdi-clipboard-check-outline"
+      [style.color]="'var(--mat-sys-primary)'"
+    />
   </div>
-  <mat-form-field style="width: 300px; margin-left: 10px;">
+  <mat-form-field style="width: 300px; margin-left: 10px">
     <input matInput [formControl]="filterControl" placeholder="Search" />
     @if (filterControl.value) {
-    <button mat-icon-button matSuffix (click)="filterControl.setValue('')" title="Clear Search">
-      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
-    </button>
+      <button
+        mat-icon-button
+        matSuffix
+        (click)="filterControl.setValue('')"
+        title="Clear Search"
+      >
+        <mat-icon
+          style="transform: scale(0.85)"
+          fontIcon="mdi-close-circle-outline"
+        />
+      </button>
     }
   </mat-form-field>
   @if (!showTemplates()) {
-  <mat-form-field style="width: 120px; margin-left: 10px;">
-    <mat-label>Move</mat-label>
-    <mat-select placeholder="Move" [value]="selectedMoveNumber" (selectionChange)="selectMove($event.value)"
-      (click)="$event.stopPropagation()">
-      <mat-option [value]="-1">All Moves</mat-option>
-      @for (move of moveList; track move.id) {
-      <mat-option [value]="move.moveNumber" title="{{ move.description }}">
-        {{ move.moveNumber }}
-      </mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
+    <mat-form-field style="width: 120px; margin-left: 10px">
+      <mat-label>Move</mat-label>
+      <mat-select
+        placeholder="Move"
+        [value]="selectedMoveNumber"
+        (selectionChange)="selectMove($event.value)"
+        (click)="$event.stopPropagation()"
+      >
+        <mat-option [value]="-1">All Moves</mat-option>
+        @for (move of moveList; track move.id) {
+          <mat-option [value]="move.moveNumber" title="{{ move.description }}">
+            {{ move.moveNumber }}
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
   }
   @if (!showTemplates()) {
-  <mat-form-field style="width: 150px; margin-left: 10px;">
-    <mat-label>Team</mat-label>
-    <mat-select placeholder="Team" [value]="selectedTeamId" (selectionChange)="selectTeam($event.value)"
-      (click)="$event.stopPropagation()">
-      <mat-option value="">All Teams</mat-option>
-      @for (team of mselTeamList; track team.id) {
-      <mat-option [value]="team.id">
-        {{ team.shortName }}
-      </mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
+    <mat-form-field style="width: 150px; margin-left: 10px">
+      <mat-label>Team</mat-label>
+      <mat-select
+        placeholder="Team"
+        [value]="selectedTeamId"
+        (selectionChange)="selectTeam($event.value)"
+        (click)="$event.stopPropagation()"
+      >
+        <mat-option value="">All Teams</mat-option>
+        @for (team of mselTeamList; track team.id) {
+          <mat-option [value]="team.id">
+            {{ team.shortName }}
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
   }
   <div class="button-end">
-    <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
-      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]" />
+    <mat-paginator
+      #paginator
+      [pageIndex]="0"
+      [pageSize]="20"
+      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"
+    />
   </div>
 </div>
 
 <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
-  <button mat-menu-item (click)="addOrEditCiteAction(null, false, false)" title="Add a new CITE Action">New CITE
-    Action</button>
+  <button
+    mat-menu-item
+    (click)="addOrEditCiteAction(null, false, false)"
+    title="Add a new CITE Action"
+  >
+    New CITE Action
+  </button>
   @for (template of templateList; track template.id) {
-  <button mat-menu-item (click)="addOrEditCiteAction(template, false, true)" title="{{ template.description }}">{{
-    template.description }}</button>
+    <button
+      mat-menu-item
+      (click)="addOrEditCiteAction(template, false, true)"
+      title="{{ template.description }}"
+    >
+      {{ template.description }}
+    </button>
   }
 </mat-menu>
 
 <div class="frame">
   <div class="table-container">
-    <table mat-table [dataSource]="citeActionDataSource" matSort (matSortChange)="sortChanged($event)">
+    <table
+      mat-table
+      [dataSource]="citeActionDataSource"
+      matSort
+      (matSortChange)="sortChanged($event)"
+    >
       <!-- action column -->
       <ng-container matColumnDef="action">
         <th mat-header-cell *matHeaderCellDef class="column-action">
           @if (showTemplates() && canEdit()) {
-          <button mat-icon-button (click)="addOrEditCiteAction(null, false, false); $event.stopPropagation();"
-            title="Add a template CITE Action" style="outline: none;">
-            <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle" />
-          </button>
-          <button mat-icon-button title="Upload CITE Action templates from JSON" style="outline: none;"
-            (click)="jsonInput.click(); $event.stopPropagation();">
-            <mat-icon class="mdi-24px" fontIcon="mdi-upload" />
-          </button>
-          <button mat-icon-button title="Download CITE Action templates as JSON" style="outline: none;"
-            (click)="openDownloadDialog(); $event.stopPropagation();">
-            <mat-icon class="mdi-24px" fontIcon="mdi-download" />
-          </button>
+            <button
+              mat-icon-button
+              (click)="
+                addOrEditCiteAction(null, false, false);
+                $event.stopPropagation()
+              "
+              title="Add a template CITE Action"
+              style="outline: none"
+            >
+              <mat-icon
+                class="mdi-24px center-self"
+                fontIcon="mdi-plus-circle"
+              />
+            </button>
+            <button
+              mat-icon-button
+              title="Upload CITE Action templates from JSON"
+              style="outline: none"
+              (click)="jsonInput.click(); $event.stopPropagation()"
+            >
+              <mat-icon class="mdi-24px" fontIcon="mdi-upload" />
+            </button>
+            <button
+              mat-icon-button
+              title="Download CITE Action templates as JSON"
+              style="outline: none"
+              (click)="openDownloadDialog(); $event.stopPropagation()"
+            >
+              <mat-icon class="mdi-24px" fontIcon="mdi-download" />
+            </button>
           }
-          @if (!showTemplates() && (canEdit() || msel.hasRole(loggedInUserId(), null).owner)) {
-          <button mat-icon-button [matMenuTriggerFor]="addMenu"
-            style="outline: none;" title="Add CITE Action"
-            (click)="$event.stopPropagation();">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle" />
-          </button>
+          @if (
+            !showTemplates() &&
+            (canEdit() || msel.hasRole(loggedInUserId(), null).owner)
+          ) {
+            <button
+              mat-icon-button
+              [matMenuTriggerFor]="addMenu"
+              style="outline: none"
+              title="Add CITE Action"
+              (click)="$event.stopPropagation()"
+            >
+              <mat-icon
+                class="mdi-24px self-center"
+                fontIcon="mdi-plus-circle"
+              />
+            </button>
           }
         </th>
         <td mat-cell *matCellDef="let element" class="column-action">
           @if (canEdit() || msel.hasRole(loggedInUserId(), null).owner) {
-          <button mat-icon-button title="Edit {{ element.description }}"
-            (click)="addOrEditCiteAction(element, false, false); $event.stopPropagation();">
-            <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" />
-          </button>
+            <button
+              mat-icon-button
+              title="Edit {{ element.description }}"
+              (click)="
+                addOrEditCiteAction(element, false, false);
+                $event.stopPropagation()
+              "
+            >
+              <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" />
+            </button>
           }
           @if (canEdit() || msel.hasRole(loggedInUserId(), null).owner) {
-          <button mat-icon-button (click)="deleteCiteAction(element); $event.stopPropagation();"
-            title="Delete {{ element.description }}">
-            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
-          </button>
+            <button
+              mat-icon-button
+              (click)="deleteCiteAction(element); $event.stopPropagation()"
+              title="Delete {{ element.description }}"
+            >
+              <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
+            </button>
           }
           @if (!showTemplates() && canEdit()) {
-          <button mat-icon-button (click)="addOrEditCiteAction(element, true, false); $event.stopPropagation();"
-            title="Make {{ element.description }} a template">
-            <mat-icon class="mdi-18px" fontIcon="mdi-card-plus-outline" />
-          </button>
+            <button
+              mat-icon-button
+              (click)="
+                addOrEditCiteAction(element, true, false);
+                $event.stopPropagation()
+              "
+              title="Make {{ element.description }} a template"
+            >
+              <mat-icon class="mdi-18px" fontIcon="mdi-card-plus-outline" />
+            </button>
           }
         </td>
       </ng-container>
       <!-- moveNumber column -->
       <ng-container matColumnDef="moveNumber">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-move">Move</th>
-        <td mat-cell *matCellDef="let element" class="column-move">{{ element.moveNumber }}</td>
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header
+          class="column-move"
+        >
+          Move
+        </th>
+        <td mat-cell *matCellDef="let element" class="column-move">
+          {{ element.moveNumber }}
+        </td>
       </ng-container>
       <!-- team column -->
       <ng-container matColumnDef="team">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-team">Team</th>
-        <td mat-cell *matCellDef="let element" class="column-team">{{ getTeamDisplay(element.teamId) }}</td>
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header
+          class="column-team"
+        >
+          Team
+        </th>
+        <td mat-cell *matCellDef="let element" class="column-team">
+          {{ getTeamDisplay(element.teamId) }}
+        </td>
       </ng-container>
       <!-- actionNumber column -->
       <ng-container matColumnDef="actionNumber">
-        <th mat-header-cell *matHeaderCellDef class="column-order">Display Order</th>
-        <td mat-cell *matCellDef="let element" class="column-order">{{ element.actionNumber }}</td>
+        <th mat-header-cell *matHeaderCellDef class="column-order">
+          Display Order
+        </th>
+        <td mat-cell *matCellDef="let element" class="column-order">
+          {{ element.actionNumber }}
+        </td>
       </ng-container>
       <!-- description column -->
       <ng-container matColumnDef="description">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-description">Description</th>
-        <td mat-cell *matCellDef="let element" class="column-description">{{ element.description }}</td>
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header
+          class="column-description"
+        >
+          Description
+        </th>
+        <td mat-cell *matCellDef="let element" class="column-description">
+          {{ element.description }}
+        </td>
       </ng-container>
       <!-- row definitions -->
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
   </div>
 </div>
 
-<input hidden type="file" #jsonInput accept=".json" (change)="selectFile($event)" />
+<input
+  hidden
+  type="file"
+  #jsonInput
+  accept=".json"
+  (change)="selectFile($event)"
+/>

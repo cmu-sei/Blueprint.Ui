@@ -2,7 +2,10 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { QueryEntity } from '@datorama/akita';
-import { TechniqueFrameworkState, TechniqueFrameworkStore } from './technique-framework.store';
+import {
+  TechniqueFrameworkState,
+  TechniqueFrameworkStore,
+} from './technique-framework.store';
 import { Injectable, inject } from '@angular/core';
 
 @Injectable({

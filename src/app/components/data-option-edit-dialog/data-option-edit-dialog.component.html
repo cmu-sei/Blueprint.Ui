@@ -11,40 +11,44 @@ project root for license information or contact permission@sei.cmu.edu for full 
   (cancel)="handleEditComplete(false)"
   (submit)="handleEditComplete(true)"
 >
-@if (data && data.dataOption) {
-  <div crucibleDialogContent>
-    <div>
-      <mat-form-field class="name-field full-width">
-        <mat-label>Display Order</mat-label>
-        <input matInput [(ngModel)]="data.dataOption.displayOrder" />
-      </mat-form-field>
-    </div>
-    <div class="add-margin">
+  @if (data && data.dataOption) {
+    <div crucibleDialogContent>
       <div>
         <mat-form-field class="name-field full-width">
-          <mat-label>ID</mat-label>
-          <input matInput [(ngModel)]="data.dataOption.optionName" />
+          <mat-label>Display Order</mat-label>
+          <input matInput [(ngModel)]="data.dataOption.displayOrder" />
         </mat-form-field>
       </div>
-    </div>
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="name-field full-width">
-          <mat-label>Name</mat-label>
-          <input matInput [(ngModel)]="data.dataOption.optionValue" />
-        </mat-form-field>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="name-field full-width">
+            <mat-label>ID</mat-label>
+            <input matInput [(ngModel)]="data.dataOption.optionName" />
+          </mat-form-field>
+        </div>
       </div>
-    </div>
-    @if (data.showDescription) {
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="name-field full-width">
-          <mat-label>Description</mat-label>
-          <textarea matInput [(ngModel)]="data.dataOption.optionDescription" rows="3"></textarea>
-        </mat-form-field>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="name-field full-width">
+            <mat-label>Name</mat-label>
+            <input matInput [(ngModel)]="data.dataOption.optionValue" />
+          </mat-form-field>
+        </div>
       </div>
+      @if (data.showDescription) {
+        <div class="add-margin">
+          <div>
+            <mat-form-field class="name-field full-width">
+              <mat-label>Description</mat-label>
+              <textarea
+                matInput
+                [(ngModel)]="data.dataOption.optionDescription"
+                rows="3"
+              ></textarea>
+            </mat-form-field>
+          </div>
+        </div>
+      }
     </div>
-    }
-  </div>
-}
+  }
 </crucible-dialog>
