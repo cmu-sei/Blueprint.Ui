@@ -17,7 +17,7 @@ export class SimpleDataSource<T> extends DataSource<T> {
   connect(collectionViewer: CollectionViewer): Observable<T[]> {
     return this.rows$;
   }
-  disconnect(collectionViewer: CollectionViewer): void { }
+  disconnect(collectionViewer: CollectionViewer): void {}
 }
 
 function defaultSort(a: any, b: any): number {
@@ -54,7 +54,7 @@ interface PropertySortFns<U> {
 /** RxJS operator to map a material Sort object to a sort function */
 function toSortFn<U>(
   sortFns: PropertySortFns<U> = {},
-  useDefault = true
+  useDefault = true,
 ): (sort$: Observable<Sort>) => Observable<undefined | SortFn<U>> {
   return (sort$) =>
     sort$.pipe(
@@ -76,7 +76,7 @@ function toSortFn<U>(
         }
 
         return sort.direction === 'asc' ? sortFn : (a: U, b: U) => sortFn(b, a);
-      })
+      }),
     );
 }
 
@@ -87,9 +87,9 @@ export function fromMatSort(sort: MatSort): Observable<Sort> {
       of({
         active: sort.active,
         direction: sort.direction,
-      })
+      }),
     ),
-    sort.sortChange.asObservable()
+    sort.sortChange.asObservable(),
   );
 }
 
@@ -97,7 +97,7 @@ export function fromMatSort(sort: MatSort): Observable<Sort> {
 export function sortRows<U>(
   sort$: Observable<Sort>,
   sortFns: PropertySortFns<U> = {},
-  useDefault = true
+  useDefault = true,
 ): (obs$: Observable<U[]>) => Observable<U[]> {
   return (rows$: Observable<U[]>) =>
     combineLatest(
@@ -110,7 +110,7 @@ export function sortRows<U>(
 
         const copy = rows.slice();
         return copy.sort(sortFn);
-      }
+      },
     );
 }
 
@@ -122,15 +122,15 @@ export function fromMatPaginator(pager: MatPaginator): Observable<PageEvent> {
         pageIndex: pager.pageIndex,
         pageSize: pager.pageSize,
         length: pager.length,
-      })
+      }),
     ),
-    pager.page.asObservable()
+    pager.page.asObservable(),
   );
 }
 
 /** RxJs operator to paginate an array based on an Observable of PageEvent objects **/
 export function paginateRows<U>(
-  page$: Observable<PageEvent>
+  page$: Observable<PageEvent>,
 ): (obs$: Observable<U[]>) => Observable<U[]> {
   return (rows$: Observable<U[]>) =>
     combineLatest(rows$, page$, (rows, page) => {

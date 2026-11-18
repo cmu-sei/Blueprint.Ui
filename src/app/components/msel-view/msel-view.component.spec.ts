@@ -39,7 +39,10 @@ import { IsDateTimeValuePipe } from 'src/app/utilities/date-time-value';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
-import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-load-api-stubs';
+import {
+  mselLoadApiProviders,
+  mselLoadApiStubs,
+} from 'src/app/test-utils/msel-load-api-stubs';
 
 @Component({ selector: 'app-duration-view', template: '', standalone: false })
 class DurationViewStub {
@@ -48,22 +51,78 @@ class DurationViewStub {
   readonly showRealTime = input<boolean>(undefined);
 }
 
-const MSEL: Msel = { id: 'msel-1', name: 'Exercise Alpha', teams: [], units: [], userMselRoles: [] };
+const MSEL: Msel = {
+  id: 'msel-1',
+  name: 'Exercise Alpha',
+  teams: [],
+  units: [],
+  userMselRoles: [],
+};
 const FIELDS: DataField[] = [
-  { id: 'df-title', mselId: 'msel-1', name: 'Title', dataType: DataFieldType.String, displayOrder: 1, onExerciseView: true },
-  { id: 'df-notes', mselId: 'msel-1', name: 'Planner Notes', dataType: DataFieldType.String, displayOrder: 2, onExerciseView: false },
-  { id: 'df-when', mselId: 'msel-1', name: 'When', dataType: DataFieldType.DateTime, displayOrder: 3, onExerciseView: true },
+  {
+    id: 'df-title',
+    mselId: 'msel-1',
+    name: 'Title',
+    dataType: DataFieldType.String,
+    displayOrder: 1,
+    onExerciseView: true,
+  },
+  {
+    id: 'df-notes',
+    mselId: 'msel-1',
+    name: 'Planner Notes',
+    dataType: DataFieldType.String,
+    displayOrder: 2,
+    onExerciseView: false,
+  },
+  {
+    id: 'df-when',
+    mselId: 'msel-1',
+    name: 'When',
+    dataType: DataFieldType.DateTime,
+    displayOrder: 3,
+    onExerciseView: true,
+  },
 ];
-const EVENTS: ScenarioEvent[] = [{ id: 'se-1', mselId: 'msel-1', scenarioEventType: EventType.Inject, deltaSeconds: 0, groupOrder: 1, isHidden: false }];
+const EVENTS: ScenarioEvent[] = [
+  {
+    id: 'se-1',
+    mselId: 'msel-1',
+    scenarioEventType: EventType.Inject,
+    deltaSeconds: 0,
+    groupOrder: 1,
+    isHidden: false,
+  },
+];
 const VALUES: DataValue[] = [
-  { id: 'dv-1', scenarioEventId: 'se-1', dataFieldId: 'df-title', value: 'Phishing wave' },
-  { id: 'dv-2', scenarioEventId: 'se-1', dataFieldId: 'df-notes', value: 'Planner only' },
+  {
+    id: 'dv-1',
+    scenarioEventId: 'se-1',
+    dataFieldId: 'df-title',
+    value: 'Phishing wave',
+  },
+  {
+    id: 'dv-2',
+    scenarioEventId: 'se-1',
+    dataFieldId: 'df-notes',
+    value: 'Planner only',
+  },
   // left behind when When was changed to DateTime
-  { id: 'dv-3', scenarioEventId: 'se-1', dataFieldId: 'df-when', value: 'Team 2' },
+  {
+    id: 'dv-3',
+    scenarioEventId: 'se-1',
+    dataFieldId: 'df-when',
+    value: 'Team 2',
+  },
 ];
 
 async function renderMselView() {
-  const apis = mselLoadApiStubs({ msel: MSEL, dataFields: FIELDS, dataValues: VALUES, scenarioEvents: EVENTS });
+  const apis = mselLoadApiStubs({
+    msel: MSEL,
+    dataFields: FIELDS,
+    dataValues: VALUES,
+    scenarioEvents: EVENTS,
+  });
   const competencyApi = {
     getMselCompetencies: vi.fn(() => of<MselCompetency[]>([])),
   } satisfies ApiStub<MselCompetencyService>;
@@ -123,7 +182,9 @@ describe('MselViewComponent', () => {
 
     expect(fixture.componentInstance).toBeInstanceOf(MselViewComponent);
     expect(apis.dataField.getDataFieldsByMsel).toHaveBeenCalledWith('msel-1');
-    expect(apis.scenarioEvent.getScenarioEventsByMsel).toHaveBeenCalledWith('msel-1');
+    expect(apis.scenarioEvent.getScenarioEventsByMsel).toHaveBeenCalledWith(
+      'msel-1',
+    );
     expect(competencyApi.getMselCompetencies).toHaveBeenCalledWith('msel-1');
   });
 
@@ -149,12 +210,21 @@ describe('MselViewComponent', () => {
     await renderMselView();
     const table = within(screen.getByRole('table'));
 
-    expect(table.getByText('Team 2')).toHaveAttribute('title', 'Not a date and time');
+    expect(table.getByText('Team 2')).toHaveAttribute(
+      'title',
+      'Not a date and time',
+    );
   });
 
   describe('on its own route', () => {
     const PLANNER: User = { id: 'user-1', name: 'Pat Planner' };
-    const TEAM: Team = { id: 'team-1', mselId: 'msel-1', name: 'Blue Team', shortName: 'BLUE', users: [PLANNER] };
+    const TEAM: Team = {
+      id: 'team-1',
+      mselId: 'msel-1',
+      name: 'Blue Team',
+      shortName: 'BLUE',
+      users: [PLANNER],
+    };
     const STANDALONE_MSEL: Msel = {
       ...MSEL,
       showMoveOnExerciseView: true,
@@ -162,18 +232,49 @@ describe('MselViewComponent', () => {
     };
     const STANDALONE_FIELDS: DataField[] = [
       ...FIELDS,
-      { id: 'df-card', mselId: 'msel-1', name: 'Gallery Card', dataType: DataFieldType.Card, displayOrder: 4, onExerciseView: true },
-      { id: 'df-owner', mselId: 'msel-1', name: 'Owner', dataType: DataFieldType.User, displayOrder: 5, onExerciseView: true },
+      {
+        id: 'df-card',
+        mselId: 'msel-1',
+        name: 'Gallery Card',
+        dataType: DataFieldType.Card,
+        displayOrder: 4,
+        onExerciseView: true,
+      },
+      {
+        id: 'df-owner',
+        mselId: 'msel-1',
+        name: 'Owner',
+        dataType: DataFieldType.User,
+        displayOrder: 5,
+        onExerciseView: true,
+      },
     ];
     const STANDALONE_VALUES: DataValue[] = [
       ...VALUES,
-      { id: 'dv-4', scenarioEventId: 'se-1', dataFieldId: 'df-card', value: 'card-1' },
-      { id: 'dv-5', scenarioEventId: 'se-1', dataFieldId: 'df-owner', value: 'user-1' },
+      {
+        id: 'dv-4',
+        scenarioEventId: 'se-1',
+        dataFieldId: 'df-card',
+        value: 'card-1',
+      },
+      {
+        id: 'dv-5',
+        scenarioEventId: 'se-1',
+        dataFieldId: 'df-owner',
+        value: 'user-1',
+      },
     ];
-    const CARDS: Card[] = [{ id: 'card-1', mselId: 'msel-1', name: 'Breaking News' }];
-    const MOVES: Move[] = [{ id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0 }];
+    const CARDS: Card[] = [
+      { id: 'card-1', mselId: 'msel-1', name: 'Breaking News' },
+    ];
+    const MOVES: Move[] = [
+      { id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0 },
+    ];
 
-    async function renderStandalone(msel: Msel = STANDALONE_MSEL, scenarioEvents: ScenarioEvent[] = EVENTS) {
+    async function renderStandalone(
+      msel: Msel = STANDALONE_MSEL,
+      scenarioEvents: ScenarioEvent[] = EVENTS,
+    ) {
       const apis = mselLoadApiStubs({
         msel,
         dataFields: STANDALONE_FIELDS,
@@ -195,16 +296,26 @@ describe('MselViewComponent', () => {
           MatSortModule,
           MatTooltipModule,
         ],
-        declarations: [MselViewComponent, DurationViewStub, IsDateTimeValuePipe],
+        declarations: [
+          MselViewComponent,
+          DurationViewStub,
+          IsDateTimeValuePipe,
+        ],
         providers: [
           ...mselLoadApiProviders(apis),
           {
             provide: MselCompetencyService,
-            useValue: { getMselCompetencies: vi.fn(() => of<MselCompetency[]>([])) } satisfies ApiStub<MselCompetencyService>,
+            useValue: {
+              getMselCompetencies: vi.fn(() => of<MselCompetency[]>([])),
+            } satisfies ApiStub<MselCompetencyService>,
           },
           {
             provide: CompetencyFrameworkService,
-            useValue: { getCompetencyFrameworks: vi.fn(() => of<CompetencyFramework[]>([])) } satisfies ApiStub<CompetencyFrameworkService>,
+            useValue: {
+              getCompetencyFrameworks: vi.fn(() =>
+                of<CompetencyFramework[]>([]),
+              ),
+            } satisfies ApiStub<CompetencyFrameworkService>,
           },
           { provide: ActivatedRoute, useValue: route },
           provideHttpClient(),
@@ -226,7 +337,9 @@ describe('MselViewComponent', () => {
       expect(apis.msel.getMsel).toHaveBeenCalledWith('msel-1');
       expect(apis.move.getMovesByMsel).toHaveBeenCalledWith('msel-1');
       expect(apis.card.getCardsByMsel).toHaveBeenCalledWith('msel-1');
-      expect(screen.getByRole('columnheader', { name: /Move/ })).toBeInTheDocument();
+      expect(
+        screen.getByRole('columnheader', { name: /Move/ }),
+      ).toBeInTheDocument();
     });
 
     /**
@@ -251,13 +364,21 @@ describe('MselViewComponent', () => {
     it('shows the Execution Time column', async () => {
       const { fixture } = await renderStandalone(
         { ...STANDALONE_MSEL, showTimeOnExerciseView: true },
-        [{ ...EVENTS[0], deltaSeconds: 900 }]
+        [{ ...EVENTS[0], deltaSeconds: 900 }],
       );
 
-      expect(screen.getByRole('columnheader', { name: /Execution Time/ })).toBeInTheDocument();
-      expect(screen.getByRole('columnheader', { name: /Title/ })).toBeInTheDocument();
+      expect(
+        screen.getByRole('columnheader', { name: /Execution Time/ }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('columnheader', { name: /Title/ }),
+      ).toBeInTheDocument();
       const times = fixture.debugElement.queryAll(By.css('app-duration-view'));
-      expect(times.map((t) => (t.componentInstance as DurationViewStub).durationSeconds())).toEqual([900]);
+      expect(
+        times.map((t) =>
+          (t.componentInstance as DurationViewStub).durationSeconds(),
+        ),
+      ).toEqual([900]);
     });
 
     /**
@@ -268,11 +389,13 @@ describe('MselViewComponent', () => {
     it('shows the Integration Target column', async () => {
       await renderStandalone(
         { ...STANDALONE_MSEL, showIntegrationTargetOnExerciseView: true },
-        [{ ...EVENTS[0], integrationTarget: 'Gallery' }]
+        [{ ...EVENTS[0], integrationTarget: 'Gallery' }],
       );
       const table = within(screen.getByRole('table'));
 
-      expect(table.getByRole('columnheader', { name: 'Integration Target' })).toBeInTheDocument();
+      expect(
+        table.getByRole('columnheader', { name: 'Integration Target' }),
+      ).toBeInTheDocument();
       expect(table.getByRole('cell', { name: 'Gallery' })).toBeInTheDocument();
     });
 
@@ -282,10 +405,14 @@ describe('MselViewComponent', () => {
      * Data: showIntegrationTargetOnExerciseView unset; Phishing wave targets Gallery.
      */
     it('hides the Integration Target column unless the MSEL shows it', async () => {
-      await renderStandalone(STANDALONE_MSEL, [{ ...EVENTS[0], integrationTarget: 'Gallery' }]);
+      await renderStandalone(STANDALONE_MSEL, [
+        { ...EVENTS[0], integrationTarget: 'Gallery' },
+      ]);
       const table = within(screen.getByRole('table'));
 
-      expect(table.queryByRole('columnheader', { name: 'Integration Target' })).not.toBeInTheDocument();
+      expect(
+        table.queryByRole('columnheader', { name: 'Integration Target' }),
+      ).not.toBeInTheDocument();
       expect(table.queryByText('Gallery')).not.toBeInTheDocument();
     });
   });

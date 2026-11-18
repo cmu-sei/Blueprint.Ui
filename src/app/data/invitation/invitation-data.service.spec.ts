@@ -12,7 +12,10 @@ import { InvitationQuery } from './invitation.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function invitation(overrides: Partial<Invitation> = {}): Invitation {
   return {
@@ -41,7 +44,10 @@ function setup(queryParams: Record<string, string> = {}) {
   TestBed.configureTestingModule({
     providers: [
       { provide: InvitationService, useValue: invitationApi },
-      { provide: Router, useValue: { navigate: vi.fn() } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate: vi.fn() } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -67,14 +73,21 @@ describe('InvitationDataService', () => {
   it('loadByMsel replaces the invitations, or empties them on failure', () => {
     const { service, query, invitationApi } = setup();
     invitationApi.getInvitations.mockReturnValueOnce(
-      of([invitation(), invitation({ id: 'inv-2', emailDomain: 'example.com' })]),
+      of([
+        invitation(),
+        invitation({ id: 'inv-2', emailDomain: 'example.com' }),
+      ]),
     );
-    invitationApi.getInvitations.mockReturnValueOnce(throwError(() => new Error('boom')));
+    invitationApi.getInvitations.mockReturnValueOnce(
+      throwError(() => new Error('boom')),
+    );
 
     service.loadByMsel('msel-1');
     expect(invitationApi.getInvitations).toHaveBeenCalledWith('msel-1');
     expect(domains(query.getAll())).toEqual(['example.org', 'example.com']);
-    expect(query.getEntity('inv-1').expirationDateTime).toEqual(new Date('2026-06-30T23:59:00Z'));
+    expect(query.getEntity('inv-1').expirationDateTime).toEqual(
+      new Date('2026-06-30T23:59:00Z'),
+    );
 
     service.loadByMsel('msel-1');
     expect(query.getAll()).toEqual([]);
@@ -88,9 +101,15 @@ describe('InvitationDataService', () => {
    */
   it('single-invitation calls keep the store in step with the API', () => {
     const { service, query, invitationApi } = setup();
-    invitationApi.getInvitation.mockReturnValue(of(invitation({ id: 'inv-2' })));
-    invitationApi.createInvitation.mockReturnValue(of(invitation({ id: 'inv-3', emailDomain: 'gov.test' })));
-    invitationApi.updateInvitation.mockReturnValue(of(invitation({ id: 'inv-2', wasDeactivated: true })));
+    invitationApi.getInvitation.mockReturnValue(
+      of(invitation({ id: 'inv-2' })),
+    );
+    invitationApi.createInvitation.mockReturnValue(
+      of(invitation({ id: 'inv-3', emailDomain: 'gov.test' })),
+    );
+    invitationApi.updateInvitation.mockReturnValue(
+      of(invitation({ id: 'inv-2', wasDeactivated: true })),
+    );
     invitationApi.deleteInvitation.mockReturnValue(of(null));
 
     service.loadById('inv-2');
@@ -120,8 +139,12 @@ describe('InvitationDataService', () => {
     const emissions = recordEmissions(query.selectAll());
 
     service.updateStore(invitation());
-    service.updateStore(invitation({ id: 'inv-2', emailDomain: 'example.com' }));
-    expect(domains(recordEmissions(service.InvitationList).at(-1))).toEqual(['example.com']);
+    service.updateStore(
+      invitation({ id: 'inv-2', emailDomain: 'example.com' }),
+    );
+    expect(domains(recordEmissions(service.InvitationList).at(-1))).toEqual([
+      'example.com',
+    ]);
 
     service.setActive('inv-2');
     service.deleteFromStore('inv-1');
@@ -142,24 +165,42 @@ describe('InvitationDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'loadById', endpoint: 'getInvitation', escapes: true, call: (s: InvitationDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createInvitation', escapes: true, call: (s: InvitationDataService) => s.add({ id: 'x-1' }) },
-    { method: 'update', endpoint: 'updateInvitation', escapes: true, call: (s: InvitationDataService) => s.update({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, invitationApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(InvitationStore).setLoading(false);
-    invitationApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'loadById',
+      endpoint: 'getInvitation',
+      escapes: true,
+      call: (s: InvitationDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createInvitation',
+      escapes: true,
+      call: (s: InvitationDataService) => s.add({ id: 'x-1' }),
+    },
+    {
+      method: 'update',
+      endpoint: 'updateInvitation',
+      escapes: true,
+      call: (s: InvitationDataService) => s.update({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, invitationApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(InvitationStore).setLoading(false);
+      invitationApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(InvitationQuery).getValue().loading).toBe(true);
-    // With no error callback the error escapes to ErrorService, the ErrorHandler
-    // app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(InvitationQuery).getValue().loading).toBe(true);
+      // With no error callback the error escapes to ErrorService, the ErrorHandler
+      // app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete escapes to the app's global ErrorHandler.
@@ -167,19 +208,26 @@ describe('InvitationDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteInvitation', call: (s: InvitationDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, invitationApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    invitationApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteInvitation',
+      call: (s: InvitationDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, invitationApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      invitationApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

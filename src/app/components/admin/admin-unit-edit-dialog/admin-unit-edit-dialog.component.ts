@@ -3,40 +3,57 @@
 // project root for license information.
 
 import { Component, inject, output } from '@angular/core';
-import { UntypedFormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  UntypedFormControl,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EDITOR_CONFIG } from 'src/app/utilities/editor-config';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
-import { MatFormField, MatLabel, MatInput, MatError } from '@angular/material/input';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
+import {
+  MatFormField,
+  MatLabel,
+  MatInput,
+  MatError,
+} from '@angular/material/input';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 
 @Component({
-    selector: 'app-admin-unit-edit-dialog',
-    templateUrl: './admin-unit-edit-dialog.component.html',
-    styleUrls: ['./admin-unit-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, ReactiveFormsModule, MatError, AngularEditorModule]
+  selector: 'app-admin-unit-edit-dialog',
+  templateUrl: './admin-unit-edit-dialog.component.html',
+  styleUrls: ['./admin-unit-edit-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    FormsModule,
+    ReactiveFormsModule,
+    MatError,
+    AngularEditorModule,
+  ],
 })
-
 export class AdminUnitEditDialogComponent {
   data = inject(MAT_DIALOG_DATA);
 
   readonly editComplete = output<any>();
 
-  public unitNameFormControl = new UntypedFormControl(
-    this.data.unit.name,
-    [
-      Validators.required,
-    ]
-  );
+  public unitNameFormControl = new UntypedFormControl(this.data.unit.name, [
+    Validators.required,
+  ]);
   public unitShortNameFormControl = new UntypedFormControl(
     this.data.unit.shortName,
-    [
-      Validators.required,
-    ]
+    [Validators.required],
   );
   public descriptionFormControl = new UntypedFormControl(
     this.data.unit.description,
-    []
+    [],
   );
   editorConfig = EDITOR_CONFIG;
 
@@ -56,9 +73,7 @@ export class AdminUnitEditDialogComponent {
     if (!saveChanges) {
       this.editComplete.emit({ saveChanges: false, unit: null });
     } else {
-      this.data.unit.name = this.unitNameFormControl.value
-        .toString()
-        .trim();
+      this.data.unit.name = this.unitNameFormControl.value.toString().trim();
       this.data.unit.shortName = this.unitShortNameFormControl.value
         .toString()
         .trim();
@@ -83,7 +98,8 @@ export class AdminUnitEditDialogComponent {
         this.data.unit.name = this.unitNameFormControl.value.toString();
         break;
       case 'shortName':
-        this.data.unit.shortName = this.unitShortNameFormControl.value.toString();
+        this.data.unit.shortName =
+          this.unitShortNameFormControl.value.toString();
         break;
       case 'description':
         this.data.unit.description = this.descriptionFormControl.value
@@ -96,7 +112,6 @@ export class AdminUnitEditDialogComponent {
   }
 
   getUserName(userId: string) {
-    return this.data.userList.find(u => u.id === userId).name;
+    return this.data.userList.find((u) => u.id === userId).name;
   }
-
 }

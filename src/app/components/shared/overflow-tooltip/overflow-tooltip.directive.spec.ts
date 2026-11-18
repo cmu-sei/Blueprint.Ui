@@ -14,18 +14,31 @@ import { renderComponent } from 'src/app/test-utils/render-component';
   imports: [OverflowTooltipDirective],
 })
 class HostComponent {
-  text = 'A description long enough to be clipped by a five-line clamp on a narrow card.';
+  text =
+    'A description long enough to be clipped by a five-line clamp on a narrow card.';
 }
 
 // jsdom lays nothing out, so the element's sizes are set by hand.
-function sized(element: HTMLElement, scrollHeight: number, clientHeight: number) {
-  Object.defineProperty(element, 'scrollHeight', { configurable: true, value: scrollHeight });
-  Object.defineProperty(element, 'clientHeight', { configurable: true, value: clientHeight });
+function sized(
+  element: HTMLElement,
+  scrollHeight: number,
+  clientHeight: number,
+) {
+  Object.defineProperty(element, 'scrollHeight', {
+    configurable: true,
+    value: scrollHeight,
+  });
+  Object.defineProperty(element, 'clientHeight', {
+    configurable: true,
+    value: clientHeight,
+  });
 }
 
 async function renderHost() {
   const rendered = await renderComponent(HostComponent, {});
-  const tooltip = rendered.fixture.debugElement.query(By.directive(MatTooltip)).injector.get(MatTooltip);
+  const tooltip = rendered.fixture.debugElement
+    .query(By.directive(MatTooltip))
+    .injector.get(MatTooltip);
   return { ...rendered, tooltip, text: screen.getByTestId('text') };
 }
 
@@ -42,7 +55,9 @@ describe('OverflowTooltipDirective', () => {
     fireEvent.mouseEnter(text);
 
     expect(tooltip.disabled).toBe(false);
-    expect(tooltip.message).toBe('A description long enough to be clipped by a five-line clamp on a narrow card.');
+    expect(tooltip.message).toBe(
+      'A description long enough to be clipped by a five-line clamp on a narrow card.',
+    );
     expect(text).toHaveAttribute('tabindex', '0');
     // a deliberate pause, not a pass of the pointer
     expect(tooltip.showDelay).toBe(800);

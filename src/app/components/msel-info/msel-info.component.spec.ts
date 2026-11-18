@@ -29,8 +29,17 @@ import userEvent from '@testing-library/user-event';
 import { Observable, of, throwError } from 'rxjs';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { ClipboardModule } from 'ngx-clipboard';
-import { NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel, NgxMatDatepickerInput, NgxMatDatetimepicker } from '@ngxmc/datetime-picker';
-import { ComnSettingsService, CrucibleDialogService } from '@cmusei/crucible-common';
+import {
+  NgxMatDatepickerActions,
+  NgxMatDatepickerApply,
+  NgxMatDatepickerCancel,
+  NgxMatDatepickerInput,
+  NgxMatDatetimepicker,
+} from '@ngxmc/datetime-picker';
+import {
+  ComnSettingsService,
+  CrucibleDialogService,
+} from '@cmusei/crucible-common';
 import {
   CasterDirectory,
   CasterService,
@@ -62,6 +71,7 @@ import {
   UserService,
 } from 'src/app/generated/blueprint.api';
 import { MselStore } from 'src/app/data/msel/msel.store';
+import { MoveStore } from 'src/app/data/move/move.store';
 import { UserStore } from 'src/app/data/user/user.store';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
@@ -98,26 +108,59 @@ const ME = 'user-me';
 const AUTHORED: MselScoringModel = {
   mselId: 'msel-1',
   description: 'Harbor Questions',
-  categories: [{ id: 'cat-1', displayOrder: '1' as unknown as number, description: 'Move 1', moveNumberFirstDisplay: 1, moveNumberLastDisplay: 1, options: [] }],
+  categories: [
+    {
+      id: 'cat-1',
+      displayOrder: '1' as unknown as number,
+      description: 'Move 1',
+      moveNumberFirstDisplay: 1,
+      moveNumberLastDisplay: 1,
+      options: [],
+    },
+  ],
 };
-const PAGE: MselPage = { id: 'page-1', mselId: 'msel-1', name: 'Read Ahead', content: '<p>Welcome</p>', allCanView: true };
+const PAGE: MselPage = {
+  id: 'page-1',
+  mselId: 'msel-1',
+  name: 'Read Ahead',
+  content: '<p>Welcome</p>',
+  allCanView: true,
+};
 const ALL = Object.values(SystemPermission);
-const allBut = (...missing: SystemPermission[]) => ALL.filter((p) => !missing.includes(p));
+const allBut = (...missing: SystemPermission[]) =>
+  ALL.filter((p) => !missing.includes(p));
 
 // Caster directories the user can deploy from, labelled "<project> / <directory>".
-const BASE: CasterDirectory = { id: 'dir-1', name: 'Base', projectId: 'proj-1', projectName: 'Range' };
-const EXTENDED: CasterDirectory = { id: 'dir-2', name: 'Extended', projectId: 'proj-2', projectName: 'Range' };
+const BASE: CasterDirectory = {
+  id: 'dir-1',
+  name: 'Base',
+  projectId: 'proj-1',
+  projectName: 'Range',
+};
+const EXTENDED: CasterDirectory = {
+  id: 'dir-2',
+  name: 'Extended',
+  projectId: 'proj-2',
+  projectName: 'Range',
+};
 // a copy of a Caster directory from another Caster: its project, and the chain from the root down to it
 const COPY: MselCasterExport = {
   mselId: 'msel-1',
   projectName: 'Topology',
-  directories: [{ level: 0, name: 'Root', files: [] }, { level: 1, name: 'Range', files: [] }],
+  directories: [
+    { level: 0, name: 'Root', files: [] },
+    { level: 1, name: 'Range', files: [] },
+  ],
   entries: [],
 };
 const VM_APP_WARNING =
   'No Player application opens the VM UI, so participants will not be able to reach the Caster VMs. Add one using {vmUrl}, for example {vmUrl}/views/{playerViewId}.';
 
-function msel(myRoles: MselRole[] = [], startTime?: Date, extra: Partial<Msel> = {}): Msel {
+function msel(
+  myRoles: MselRole[] = [],
+  startTime?: Date,
+  extra: Partial<Msel> = {},
+): Msel {
   return {
     ...(startTime ? { startTime } : {}),
     id: 'msel-1',
@@ -130,7 +173,12 @@ function msel(myRoles: MselRole[] = [], startTime?: Date, extra: Partial<Msel> =
     durationSeconds: 3600,
     teams: [],
     units: [],
-    userMselRoles: myRoles.map((role, i) => ({ id: `umr-${i}`, userId: ME, mselId: 'msel-1', role })),
+    userMselRoles: myRoles.map((role, i) => ({
+      id: `umr-${i}`,
+      userId: ME,
+      mselId: 'msel-1',
+      role,
+    })),
     ...extra,
   };
 }
@@ -149,6 +197,7 @@ async function renderInfo(
     casterCopy?: MselCasterExport | null;
     citeModels?: ScoringModel[];
     confirms?: boolean;
+    moves?: { moveNumber: number; deltaSeconds: number }[];
     updateMsel?: (id: string, edit: MselEdit) => Observable<Msel>;
   } = {},
 ) {
@@ -165,9 +214,16 @@ async function renderInfo(
     casterCopy = null,
     citeModels = [],
     confirms = true,
+    moves = [],
     // the API answers with the saved MSEL, which always has its created and modified dates
     updateMsel = (id: string, edit: MselEdit) =>
-      of<Msel>({ ...msel(myRoles, startTime, mselExtra), ...edit, id, dateCreated: new Date('2026-10-01T12:00:00Z'), dateModified: new Date() }),
+      of<Msel>({
+        ...msel(myRoles, startTime, mselExtra),
+        ...edit,
+        id,
+        dateCreated: new Date('2026-10-01T12:00:00Z'),
+        dateModified: new Date(),
+      }),
   } = overrides;
   const pageApi = {
     getMselPages: vi.fn(() => of(structuredClone([PAGE]))),
@@ -183,7 +239,9 @@ async function renderInfo(
     getScoringModels: vi.fn(() => of(structuredClone(citeModels))),
   } satisfies ApiStub<CiteService>;
   const userApi = {
-    getUser: vi.fn(() => of<User>({ id: 'user-creator', name: 'Casey Creator' })),
+    getUser: vi.fn(() =>
+      of<User>({ id: 'user-creator', name: 'Casey Creator' }),
+    ),
   } satisfies ApiStub<UserService>;
   const appApi = {
     getApplicationsByMsel: vi.fn(() => of(structuredClone(apps))),
@@ -197,20 +255,43 @@ async function renderInfo(
   const mselApi = {
     getMselIntegrationNames: vi.fn(() => of(structuredClone(names))),
     updateMsel: vi.fn(updateMsel),
-    pushIntegrations: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, status: MselItemStatus.Pushing })),
+    pushIntegrations: vi.fn((id: string) =>
+      of<Msel>({
+        ...msel(myRoles, startTime, mselExtra),
+        id,
+        status: MselItemStatus.Pushing,
+      }),
+    ),
   } satisfies ApiStub<MselService>;
   const imageApi = {
     getMselImage: vi.fn(() => of(new Blob(['image'], { type: 'image/png' }))),
-    setMselImage: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, imageDateModified: new Date('2026-10-23T12:00:00Z') })),
-    deleteMselImage: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, imageDateModified: null })),
+    setMselImage: vi.fn((id: string) =>
+      of<Msel>({
+        ...msel(myRoles, startTime, mselExtra),
+        id,
+        imageDateModified: new Date('2026-10-23T12:00:00Z'),
+      }),
+    ),
+    deleteMselImage: vi.fn((id: string) =>
+      of<Msel>({
+        ...msel(myRoles, startTime, mselExtra),
+        id,
+        imageDateModified: null,
+      }),
+    ),
   } satisfies ApiStub<MselImageService>;
   const scoringModelApi = {
     getMselScoringModel: vi.fn(() => of(structuredClone(authored))),
     deleteMselScoringModel: vi.fn(() => of<unknown>(null)),
   } satisfies ApiStub<MselScoringModelService>;
-  const systemMessage = { displayMessage: vi.fn() } satisfies Pick<SystemMessageService, 'displayMessage'>;
+  const systemMessage = { displayMessage: vi.fn() } satisfies Pick<
+    SystemMessageService,
+    'displayMessage'
+  >;
   // The user confirms every dialog, unless the test says otherwise.
-  const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(confirms).dialogRef);
+  const confirm = vi.fn(
+    () => dialogRefStub<unknown, boolean>(confirms).dialogRef,
+  );
   const dialog = { confirm } satisfies Pick<CrucibleDialogService, 'confirm'>;
   // MselInfoComponent loads the permissions itself in ngOnInit, so the real
   // service is provided over the stubbed endpoint, without priming it.
@@ -242,7 +323,10 @@ async function renderInfo(
       { replace: DurationEditComponent, with: DurationEditStub },
     ],
     providers: [
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: MselPageService, useValue: pageApi },
       { provide: MselCompetencyService, useValue: competencyApi },
@@ -258,13 +342,29 @@ async function renderInfo(
       { provide: SystemMessageService, useValue: systemMessage },
       {
         provide: ComnSettingsService,
-        useValue: { settings: { CasterUrl: casterUrl, VmUrl: 'http://vm.example' } } satisfies Pick<ComnSettingsService, 'settings'>,
+        useValue: {
+          settings: { CasterUrl: casterUrl, VmUrl: 'http://vm.example' },
+        } satisfies Pick<ComnSettingsService, 'settings'>,
       },
       { provide: CrucibleDialogService, useValue: dialog },
       unstubbed(MatDialog),
       // angular-editor injects HttpClient for its image upload.
       provideHttpClient(),
       provideHttpClientTesting(),
+      {
+        provide: MoveStore,
+        useFactory: () => {
+          const store = new MoveStore();
+          store.set(
+            moves.map((m) => ({
+              id: `move-${m.moveNumber}`,
+              mselId: 'msel-1',
+              ...m,
+            })),
+          );
+          return store;
+        },
+      },
       // The MSEL page loads the MSEL; the store is seeded instead.
       {
         provide: MselStore,
@@ -281,7 +381,19 @@ async function renderInfo(
   // ngModel applies [disabled] in a microtask.
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
-  return { ...rendered, pageApi, confirm, appApi, casterApi, casterCopyApi, mselApi, userApi, imageApi, scoringModelApi, systemMessage };
+  return {
+    ...rendered,
+    pageApi,
+    confirm,
+    appApi,
+    casterApi,
+    casterCopyApi,
+    mselApi,
+    userApi,
+    imageApi,
+    scoringModelApi,
+    systemMessage,
+  };
 }
 
 // The settings page is large, so queries go by label, title or text: whole-page
@@ -289,7 +401,8 @@ async function renderInfo(
 const nameInput = () => screen.getByLabelText('Name');
 const descriptionInput = () => screen.getByLabelText('Description');
 function durationEdit(fixture: ComponentFixture<unknown>): DurationEditStub {
-  return fixture.debugElement.query(By.directive(DurationEditStub)).componentInstance;
+  return fixture.debugElement.query(By.directive(DurationEditStub))
+    .componentInstance;
 }
 async function openPage() {
   const user = userEvent.setup();
@@ -313,7 +426,11 @@ describe('MselInfoComponent', () => {
    * Data: EditMsels with no role; or the Editor role with no permission.
    */
   it.each([
-    { label: 'with EditMsels', permissions: [SystemPermission.EditMsels], myRoles: [] },
+    {
+      label: 'with EditMsels',
+      permissions: [SystemPermission.EditMsels],
+      myRoles: [],
+    },
     { label: 'as an MSEL Editor', permissions: [], myRoles: [MselRole.Editor] },
   ])('edits the MSEL settings $label', async ({ permissions, myRoles }) => {
     const { fixture } = await renderInfo({ permissions, myRoles });
@@ -331,12 +448,17 @@ describe('MselInfoComponent', () => {
    */
   it('shows the whole description in a field that grows with it', async () => {
     const description = 'The port is closed. '.repeat(30);
-    const { fixture } = await renderInfo({ permissions: [SystemPermission.EditMsels], mselExtra: { description } });
+    const { fixture } = await renderInfo({
+      permissions: [SystemPermission.EditMsels],
+      mselExtra: { description },
+    });
     const field = descriptionInput() as HTMLTextAreaElement;
 
     expect(field.tagName).toBe('TEXTAREA');
     expect(field.value).toBe(description);
-    expect(fixture.debugElement.query(By.directive(CdkTextareaAutosize))).not.toBeNull();
+    expect(
+      fixture.debugElement.query(By.directive(CdkTextareaAutosize)),
+    ).not.toBeNull();
     const user = userEvent.setup();
     await user.clear(field);
     await user.type(field, 'One{Enter}line');
@@ -349,7 +471,10 @@ describe('MselInfoComponent', () => {
    * Data: every permission but EditMsels (near miss: ManageMsels); MSEL roles Viewer and Evaluator.
    */
   it('makes the MSEL settings read-only without EditMsels or the Editor role', async () => {
-    const { fixture } = await renderInfo({ permissions: allBut(SystemPermission.EditMsels), myRoles: [MselRole.Viewer, MselRole.Evaluator] });
+    const { fixture } = await renderInfo({
+      permissions: allBut(SystemPermission.EditMsels),
+      myRoles: [MselRole.Viewer, MselRole.Evaluator],
+    });
 
     expect(nameInput()).toBeDisabled();
     expect(descriptionInput()).toBeDisabled();
@@ -363,17 +488,90 @@ describe('MselInfoComponent', () => {
    * Data: ManageMsels with no role; or the Owner role. A pending MSEL using Player with one page.
    */
   it.each([
-    { label: 'with ManageMsels', permissions: [SystemPermission.ManageMsels], myRoles: [] },
+    {
+      label: 'with ManageMsels',
+      permissions: [SystemPermission.ManageMsels],
+      myRoles: [],
+    },
     { label: 'as the MSEL owner', permissions: [], myRoles: [MselRole.Owner] },
   ])('offers the managing actions $label', async ({ permissions, myRoles }) => {
     await renderInfo({ permissions, myRoles });
 
-    expect(screen.getByTitle('Delete this MSEL').querySelector('button')).toBeEnabled();
+    expect(
+      screen.getByTitle('Delete this MSEL').querySelector('button'),
+    ).toBeEnabled();
     expect(screen.getByTitle('Push Integrations')).toBeEnabled();
-    expect(screen.getByLabelText('Header Row Metadata (Height)')).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Header Row Metadata (Height)'),
+    ).toBeInTheDocument();
     expect(screen.getByText(/Add Page/)).toBeInTheDocument();
     await openPage();
     expect(screen.getByTitle('Edit Page')).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: Push Integrations is disabled while the MSEL's moves share a start time or are out of order, and the tab says
+   * which; moves in order leave it enabled with no warning.
+   * Interacts with: MselInfoComponent.moveProblems, real MoveStore (seeded), the Push Integrations button.
+   * Data: an owner; Move 0 and Move 1 both at +0s, or Move 1 at +600s.
+   */
+  it.each([
+    {
+      label: 'share a start time',
+      moves: [
+        { moveNumber: 0, deltaSeconds: 0 },
+        { moveNumber: 1, deltaSeconds: 0 },
+      ],
+      warning: '** Move 0 and Move 1 start at the same time.',
+    },
+    {
+      label: 'are in order',
+      moves: [
+        { moveNumber: 0, deltaSeconds: 0 },
+        { moveNumber: 1, deltaSeconds: 600 },
+      ],
+      warning: '',
+    },
+  ])(
+    'blocks Push Integrations when the moves $label',
+    async ({ moves, warning }) => {
+      await renderInfo({ myRoles: [MselRole.Owner], moves });
+
+      if (warning) {
+        expect(screen.getByTitle('Push Integrations')).toBeDisabled();
+        expect(screen.getByText(warning)).toBeInTheDocument();
+      } else {
+        expect(screen.getByTitle('Push Integrations')).toBeEnabled();
+        expect(
+          screen.queryByRole('status', { name: 'Moves to fix before pushing' }),
+        ).not.toBeInTheDocument();
+      }
+    },
+  );
+
+  /**
+   * Verifies: a template, which has no Push Integrations button, still lists the moves to fix, because launching by
+   * invitation pushes and the API refuses an invalid template.
+   * Interacts with: MselInfoComponent.moveProblems, real MoveStore (seeded).
+   * Data: a template whose Move 0 and Move 1 both start at +0s.
+   */
+  it('lists the moves to fix on a template', async () => {
+    await renderInfo({
+      myRoles: [MselRole.Owner],
+      mselExtra: { isTemplate: true },
+      moves: [
+        { moveNumber: 0, deltaSeconds: 0 },
+        { moveNumber: 1, deltaSeconds: 0 },
+      ],
+    });
+
+    expect(screen.queryByTitle('Push Integrations')).not.toBeInTheDocument();
+    expect(
+      screen.getByText('** Move 0 and Move 1 start at the same time.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/before anyone launches this template/),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -382,12 +580,19 @@ describe('MselInfoComponent', () => {
    * Data: every permission but ManageMsels (near miss: EditMsels); MSEL roles Editor and Approver.
    */
   it('hides the managing actions without ManageMsels or ownership', async () => {
-    await renderInfo({ permissions: allBut(SystemPermission.ManageMsels), myRoles: [MselRole.Editor, MselRole.Approver] });
+    await renderInfo({
+      permissions: allBut(SystemPermission.ManageMsels),
+      myRoles: [MselRole.Editor, MselRole.Approver],
+    });
 
     expect(screen.queryByTitle('Delete this MSEL')).not.toBeInTheDocument();
-    expect(screen.queryByTitle('You do not have permission to delete this MSEL')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTitle('You do not have permission to delete this MSEL'),
+    ).not.toBeInTheDocument();
     expect(screen.getByTitle('Push Integrations')).toBeDisabled();
-    expect(screen.queryByLabelText('Header Row Metadata (Height)')).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText('Header Row Metadata (Height)'),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText(/Add Page/)).not.toBeInTheDocument();
     await openPage();
     expect(screen.queryByTitle('Edit Page')).not.toBeInTheDocument();
@@ -400,14 +605,27 @@ describe('MselInfoComponent', () => {
    */
   it.each([
     { title: 'Push Integrations', mselExtra: {} },
-    { title: 'Remove Integrations', mselExtra: { status: MselItemStatus.Deployed, useCaster: true, casterDirectoryId: 'dir-1', casterWorkspaceId: 'ws-1' } },
-  ])('styles $title like the other stroked buttons', async ({ title, mselExtra }) => {
-    await renderInfo({ myRoles: [MselRole.Owner], mselExtra });
+    {
+      title: 'Remove Integrations',
+      mselExtra: {
+        status: MselItemStatus.Deployed,
+        useCaster: true,
+        casterDirectoryId: 'dir-1',
+        casterWorkspaceId: 'ws-1',
+      },
+    },
+  ])(
+    'styles $title like the other stroked buttons',
+    async ({ title, mselExtra }) => {
+      await renderInfo({ myRoles: [MselRole.Owner], mselExtra });
 
-    const stroked = Array.from(screen.getByRole('button', { name: 'Upload Image' }).classList).filter((c) => c.startsWith('mat-mdc-'));
-    expect(stroked).toContain('mat-mdc-outlined-button');
-    expect(screen.getByTitle(title)).toHaveClass(...stroked);
-  });
+      const stroked = Array.from(
+        screen.getByRole('button', { name: 'Upload Image' }).classList,
+      ).filter((c) => c.startsWith('mat-mdc-'));
+      expect(stroked).toContain('mat-mdc-outlined-button');
+      expect(screen.getByTitle(title)).toHaveClass(...stroked);
+    },
+  );
 
   /**
    * Verifies: a page's Delete button is offered and works without any MSEL permission or role (current behavior).
@@ -415,12 +633,21 @@ describe('MselInfoComponent', () => {
    * Data: no system permission; MSEL role Viewer; page Read Ahead.
    */
   it('lets a viewer delete a page', async () => {
-    const { pageApi, confirm } = await renderInfo({ permissions: [], myRoles: [MselRole.Viewer] });
+    const { pageApi, confirm } = await renderInfo({
+      permissions: [],
+      myRoles: [MselRole.Viewer],
+    });
 
     const user = await openPage();
     await user.click(screen.getByTitle('Delete Read Ahead'));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Page', confirmText: 'Delete', cancelText: 'Cancel' }));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Delete Page',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      }),
+    );
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
     expect(pageApi.deleteMselPage).toHaveBeenCalledWith('page-1');
   });
@@ -442,11 +669,16 @@ describe('MselInfoComponent', () => {
    * Data: createdBy user-creator; the store is replaced twice with a list that leaves the creator out.
    */
   it('looks the creator up once while the MSEL users reload', async () => {
-    const { fixture, userApi } = await renderInfo({ permissions: [SystemPermission.EditMsels] });
+    const { fixture, userApi } = await renderInfo({
+      permissions: [SystemPermission.EditMsels],
+    });
     const userStore = fixture.debugElement.injector.get(UserStore);
 
     userStore.set([{ id: 'user-other', name: 'Other User' }]);
-    userStore.set([{ id: 'user-other', name: 'Other User' }, { id: 'user-third', name: 'Third User' }]);
+    userStore.set([
+      { id: 'user-other', name: 'Other User' },
+      { id: 'user-third', name: 'Third User' },
+    ]);
     fixture.detectChanges();
 
     expect(userApi.getUser).toHaveBeenCalledTimes(1);
@@ -461,18 +693,26 @@ describe('MselInfoComponent', () => {
   it.each([
     { date: '2026-10-20T16:00:00Z', label: '20 Oct 2026 12:00 EDT' },
     { date: '2026-11-20T17:00:00Z', label: '20 Nov 2026 12:00 EST' },
-  ])('labels the start time with the zone in effect on that date ($label)', async ({ date, label }) => {
-    vi.stubEnv('TZ', 'America/New_York');
+  ])(
+    'labels the start time with the zone in effect on that date ($label)',
+    async ({ date, label }) => {
+      vi.stubEnv('TZ', 'America/New_York');
 
-    await renderInfo({ permissions: [SystemPermission.EditMsels], startTime: new Date(date) });
+      await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+        startTime: new Date(date),
+      });
 
-    expect(screen.getByText(label)).toBeInTheDocument();
-  });
+      expect(screen.getByText(label)).toBeInTheDocument();
+    },
+  );
 
   describe('Caster', () => {
     // The directory is chosen on the Caster tab, so the integration section has no mat-select while CITE is off.
     const directorySelects = (fixture: ComponentFixture<unknown>) =>
-      TestbedHarnessEnvironment.loader(fixture).getAllHarnesses(MatSelectHarness.with({ ancestor: '.integration-div' }));
+      TestbedHarnessEnvironment.loader(fixture).getAllHarnesses(
+        MatSelectHarness.with({ ancestor: '.integration-div' }),
+      );
     const openTabs = (fixture: ComponentFixture<MselInfoComponent>) =>
       recordEmissions(outputToObservable(fixture.componentInstance.openTab));
     const casterBox = () => screen.getByLabelText('Caster');
@@ -486,14 +726,21 @@ describe('MselInfoComponent', () => {
     it('summarizes the linked Caster directory', async () => {
       const { fixture, casterApi } = await renderInfo({
         permissions: [SystemPermission.EditMsels],
-        mselExtra: { usePlayer: true, useCaster: true, casterDirectoryId: 'dir-1' },
+        mselExtra: {
+          usePlayer: true,
+          useCaster: true,
+          casterDirectoryId: 'dir-1',
+        },
       });
 
       expect(casterBox()).toBeEnabled();
       expect(casterApi.getCasterDirectories).toHaveBeenCalledTimes(1);
       expect(await directorySelects(fixture)).toEqual([]);
       expect(screen.getByText('Range / Base')).toBeInTheDocument();
-      expect(screen.getByTitle('Open directory in Caster')).toHaveAttribute('href', 'http://caster.example/projects/proj-1?directory=dir-1');
+      expect(screen.getByTitle('Open directory in Caster')).toHaveAttribute(
+        'href',
+        'http://caster.example/projects/proj-1?directory=dir-1',
+      );
     });
 
     /**
@@ -508,8 +755,14 @@ describe('MselInfoComponent', () => {
         casterCopy: COPY,
       });
 
-      expect(screen.getByText('a copy of Topology / Root / Range, which the push imports as a new Caster project')).toBeInTheDocument();
-      expect(screen.queryByText(/Select the Caster directory/)).not.toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'a copy of Topology / Root / Range, which the push imports as a new Caster project',
+        ),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText(/Select the Caster directory/),
+      ).not.toBeInTheDocument();
       expect(pushButton()).toBeEnabled();
     });
 
@@ -519,10 +772,15 @@ describe('MselInfoComponent', () => {
      * Data: MSEL role Owner; a pending MSEL using Caster.
      */
     it('opens the Caster tab', async () => {
-      const { fixture } = await renderInfo({ myRoles: [MselRole.Owner], mselExtra: { useCaster: true } });
+      const { fixture } = await renderInfo({
+        myRoles: [MselRole.Owner],
+        mselExtra: { useCaster: true },
+      });
       const opened = openTabs(fixture);
 
-      await userEvent.setup().click(screen.getByRole('button', { name: 'Open the Caster tab' }));
+      await userEvent
+        .setup()
+        .click(screen.getByRole('button', { name: 'Open the Caster tab' }));
 
       expect(opened).toEqual(['Caster']);
     });
@@ -550,49 +808,94 @@ describe('MselInfoComponent', () => {
      * Data: EditMsels; a MSEL using Player and Caster with directory dir-1: Pushing after a failed Caster plan, Pulling, and Approved with a workspace a failed pull left.
      */
     it.each([
-      { label: 'a push failed at Caster', status: MselItemStatus.Pushing, integrationStatus: 'ERROR: Caster - planning failed - boom', casterWorkspaceId: 'ws-1' },
-      { label: 'a pull is under way', status: MselItemStatus.Pulling, integrationStatus: 'Pulling Integrations', casterWorkspaceId: 'ws-1' },
-      { label: 'a workspace is left over', status: MselItemStatus.Approved, integrationStatus: null, casterWorkspaceId: 'ws-1' },
-    ])('locks the integration settings when $label', async ({ status, integrationStatus, casterWorkspaceId }) => {
-      const { fixture } = await renderInfo({
-        permissions: [SystemPermission.EditMsels],
-        mselExtra: { status, integrationStatus, usePlayer: true, useCaster: true, casterDirectoryId: 'dir-1', casterWorkspaceId },
-      });
-      // the status covers the settings until it is closed
-      fixture.debugElement.query(By.directive(IntegrationStatusStub))?.componentInstance.closed.emit();
-      fixture.detectChanges();
-      await fixture.whenStable();
-      fixture.detectChanges();
+      {
+        label: 'a push failed at Caster',
+        status: MselItemStatus.Pushing,
+        integrationStatus: 'ERROR: Caster - planning failed - boom',
+        casterWorkspaceId: 'ws-1',
+      },
+      {
+        label: 'a pull is under way',
+        status: MselItemStatus.Pulling,
+        integrationStatus: 'Pulling Integrations',
+        casterWorkspaceId: 'ws-1',
+      },
+      {
+        label: 'a workspace is left over',
+        status: MselItemStatus.Approved,
+        integrationStatus: null,
+        casterWorkspaceId: 'ws-1',
+      },
+    ])(
+      'locks the integration settings when $label',
+      async ({ status, integrationStatus, casterWorkspaceId }) => {
+        const { fixture } = await renderInfo({
+          permissions: [SystemPermission.EditMsels],
+          mselExtra: {
+            status,
+            integrationStatus,
+            usePlayer: true,
+            useCaster: true,
+            casterDirectoryId: 'dir-1',
+            casterWorkspaceId,
+          },
+        });
+        // the status covers the settings until it is closed
+        fixture.debugElement
+          .query(By.directive(IntegrationStatusStub))
+          ?.componentInstance.closed.emit();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
 
-      expect(casterBox()).toBeDisabled();
-      expect(screen.getByLabelText('Player')).toBeDisabled();
-      expect(screen.getByLabelText('Gallery')).toBeDisabled();
-      expect(await directorySelects(fixture)).toEqual([]);
-      expect(screen.getByText('Range / Base')).toBeInTheDocument();
-    });
+        expect(casterBox()).toBeDisabled();
+        expect(screen.getByLabelText('Player')).toBeDisabled();
+        expect(screen.getByLabelText('Gallery')).toBeDisabled();
+        expect(await directorySelects(fixture)).toEqual([]);
+        expect(screen.getByText('Range / Base')).toBeInTheDocument();
+      },
+    );
 
     /**
      * Verifies: a deployed MSEL shows its Caster directory and workspace read-only, with the workspace name and links that open the workspace and the directory in their Caster project (a slash added to CasterUrl when missing), even with EditMsels.
      * Interacts with: MselService.getMselIntegrationNames (stub), getCasterWorkspaceUrl, ComnSettingsService (stub, CasterUrl).
      * Data: EditMsels; a deployed MSEL using Player and Caster with directory dir-1 (project proj-1) and workspace ws-1 named blueprint-msel-1; CasterUrl with and without a trailing slash.
      */
-    it.each(['http://caster.example/', 'http://caster.example'])('shows the deployed Caster workspace with CasterUrl %s', async (casterUrl) => {
-      const { fixture, mselApi } = await renderInfo({
-        permissions: [SystemPermission.EditMsels],
-        mselExtra: { status: MselItemStatus.Deployed, usePlayer: true, useCaster: true, casterDirectoryId: 'dir-1', casterWorkspaceId: 'ws-1' },
-        names: { casterDirectoryName: 'Range / Base', casterWorkspaceName: 'blueprint-msel-1' },
-        casterUrl,
-      });
+    it.each(['http://caster.example/', 'http://caster.example'])(
+      'shows the deployed Caster workspace with CasterUrl %s',
+      async (casterUrl) => {
+        const { fixture, mselApi } = await renderInfo({
+          permissions: [SystemPermission.EditMsels],
+          mselExtra: {
+            status: MselItemStatus.Deployed,
+            usePlayer: true,
+            useCaster: true,
+            casterDirectoryId: 'dir-1',
+            casterWorkspaceId: 'ws-1',
+          },
+          names: {
+            casterDirectoryName: 'Range / Base',
+            casterWorkspaceName: 'blueprint-msel-1',
+          },
+          casterUrl,
+        });
 
-      expect(mselApi.getMselIntegrationNames).toHaveBeenCalledWith('msel-1');
-      expect(casterBox()).toBeDisabled();
-      expect(await directorySelects(fixture)).toEqual([]);
-      expect(screen.getByText('Range / Base')).toBeInTheDocument();
-      expect(screen.getByTitle('ws-1')).toHaveTextContent('ws-1');
-      expect(screen.getByText('blueprint-msel-1')).toBeInTheDocument();
-      expect(screen.getByTitle('Open workspace in Caster')).toHaveAttribute('href', 'http://caster.example/projects/proj-1?workspace=ws-1');
-      expect(screen.getByTitle('Open directory in Caster')).toHaveAttribute('href', 'http://caster.example/projects/proj-1?directory=dir-1');
-    });
+        expect(mselApi.getMselIntegrationNames).toHaveBeenCalledWith('msel-1');
+        expect(casterBox()).toBeDisabled();
+        expect(await directorySelects(fixture)).toEqual([]);
+        expect(screen.getByText('Range / Base')).toBeInTheDocument();
+        expect(screen.getByTitle('ws-1')).toHaveTextContent('ws-1');
+        expect(screen.getByText('blueprint-msel-1')).toBeInTheDocument();
+        expect(screen.getByTitle('Open workspace in Caster')).toHaveAttribute(
+          'href',
+          'http://caster.example/projects/proj-1?workspace=ws-1',
+        );
+        expect(screen.getByTitle('Open directory in Caster')).toHaveAttribute(
+          'href',
+          'http://caster.example/projects/proj-1?directory=dir-1',
+        );
+      },
+    );
 
     /**
      * Verifies: when Caster does not list the deployed directory to this user, its name comes from Blueprint and there are no links to Caster.
@@ -602,15 +905,28 @@ describe('MselInfoComponent', () => {
     it('names a directory Caster does not list from Blueprint, without a Caster link', async () => {
       await renderInfo({
         permissions: [SystemPermission.EditMsels],
-        mselExtra: { status: MselItemStatus.Deployed, usePlayer: true, useCaster: true, casterDirectoryId: 'dir-1', casterWorkspaceId: 'ws-1' },
+        mselExtra: {
+          status: MselItemStatus.Deployed,
+          usePlayer: true,
+          useCaster: true,
+          casterDirectoryId: 'dir-1',
+          casterWorkspaceId: 'ws-1',
+        },
         directories: () => of<CasterDirectory[]>([]),
-        names: { casterDirectoryName: 'Range / Base', casterWorkspaceName: 'blueprint-msel-1' },
+        names: {
+          casterDirectoryName: 'Range / Base',
+          casterWorkspaceName: 'blueprint-msel-1',
+        },
       });
 
       expect(screen.getByText('Range / Base')).toBeInTheDocument();
       expect(screen.getByText('blueprint-msel-1')).toBeInTheDocument();
-      expect(screen.queryByTitle('Open workspace in Caster')).not.toBeInTheDocument();
-      expect(screen.queryByTitle('Open directory in Caster')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTitle('Open workspace in Caster'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTitle('Open directory in Caster'),
+      ).not.toBeInTheDocument();
     });
 
     /**
@@ -619,7 +935,9 @@ describe('MselInfoComponent', () => {
      * Data: EditMsels; a pending MSEL that does not use Caster.
      */
     it('loads the Caster directories once, when Caster is ticked', async () => {
-      const { casterApi, casterCopyApi } = await renderInfo({ permissions: [SystemPermission.EditMsels] });
+      const { casterApi, casterCopyApi } = await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+      });
       const user = userEvent.setup();
 
       expect(casterApi.getCasterDirectories).not.toHaveBeenCalled();
@@ -645,14 +963,20 @@ describe('MselInfoComponent', () => {
       const logged = vi.spyOn(console, 'error').mockImplementation(() => {});
       const failure = { status: 403 };
       const answers = [throwError(() => failure), of([BASE])];
-      const { casterApi } = await renderInfo({ permissions: [SystemPermission.EditMsels], directories: () => answers.shift() });
+      const { casterApi } = await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+        directories: () => answers.shift(),
+      });
       const user = userEvent.setup();
-      const error = 'Caster directories could not be loaded. You need access to Caster to choose one.';
+      const error =
+        'Caster directories could not be loaded. You need access to Caster to choose one.';
 
       await user.click(casterBox());
 
       expect(screen.getByText(error)).toBeInTheDocument();
-      expect(logged.mock.calls).toEqual([['Failed to load Caster directories:', failure]]);
+      expect(logged.mock.calls).toEqual([
+        ['Failed to load Caster directories:', failure],
+      ]);
 
       await user.click(casterBox());
       expect(screen.queryByText(error)).not.toBeInTheDocument();
@@ -668,14 +992,33 @@ describe('MselInfoComponent', () => {
      * Data: ManageMsels; a pending MSEL using only Caster, with directory dir-1; then one using Player and Caster with no directory.
      */
     it.each([
-      { label: 'Player', mselExtra: { usePlayer: false, useCaster: true, casterDirectoryId: 'dir-1' }, warning: 'Caster requires Player: the VMs are added to the Player view and its teams.' },
-      { label: 'a directory', mselExtra: { usePlayer: true, useCaster: true }, warning: 'Select the Caster directory to deploy on the Caster tab.' },
-    ])('blocks Push Integrations until Caster has $label', async ({ mselExtra, warning }) => {
-      await renderInfo({ permissions: [SystemPermission.ManageMsels], mselExtra });
+      {
+        label: 'Player',
+        mselExtra: {
+          usePlayer: false,
+          useCaster: true,
+          casterDirectoryId: 'dir-1',
+        },
+        warning:
+          'Caster requires Player: the VMs are added to the Player view and its teams.',
+      },
+      {
+        label: 'a directory',
+        mselExtra: { usePlayer: true, useCaster: true },
+        warning: 'Select the Caster directory to deploy on the Caster tab.',
+      },
+    ])(
+      'blocks Push Integrations until Caster has $label',
+      async ({ mselExtra, warning }) => {
+        await renderInfo({
+          permissions: [SystemPermission.ManageMsels],
+          mselExtra,
+        });
 
-      expect(screen.getByText(warning)).toBeInTheDocument();
-      expect(pushButton()).toBeDisabled();
-    });
+        expect(screen.getByText(warning)).toBeInTheDocument();
+        expect(pushButton()).toBeDisabled();
+      },
+    );
 
     /**
      * Verifies: with Player and a directory, Push Integrations is enabled and only an informational warning says no Player application opens the VM UI.
@@ -685,13 +1028,28 @@ describe('MselInfoComponent', () => {
     it('enables Push Integrations for a Caster set up with Player and a directory', async () => {
       const { appApi } = await renderInfo({
         permissions: [SystemPermission.ManageMsels],
-        mselExtra: { usePlayer: true, useCaster: true, casterDirectoryId: 'dir-1' },
-        apps: [{ id: 'app-1', mselId: 'msel-1', name: 'Mail', url: 'https://mail.example.com' }],
+        mselExtra: {
+          usePlayer: true,
+          useCaster: true,
+          casterDirectoryId: 'dir-1',
+        },
+        apps: [
+          {
+            id: 'app-1',
+            mselId: 'msel-1',
+            name: 'Mail',
+            url: 'https://mail.example.com',
+          },
+        ],
       });
 
       expect(appApi.getApplicationsByMsel).toHaveBeenCalledWith('msel-1');
       expect(pushButton()).toBeEnabled();
-      expect(screen.queryByText(/Caster requires Player|Select the Caster directory/)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(
+          /Caster requires Player|Select the Caster directory/,
+        ),
+      ).not.toBeInTheDocument();
       expect(screen.getByText(VM_APP_WARNING)).toBeInTheDocument();
     });
 
@@ -701,12 +1059,25 @@ describe('MselInfoComponent', () => {
      * Data: ManageMsels; a MSEL using Player and Caster with directory dir-1, pending with a {vmUrl} application, or deployed with only Mail.
      */
     it.each([
-      { label: 'an application opens the VM UI', status: MselItemStatus.Pending, url: '{vmUrl}/views/{playerViewId}' },
-      { label: 'the MSEL is deployed', status: MselItemStatus.Deployed, url: 'https://mail.example.com' },
+      {
+        label: 'an application opens the VM UI',
+        status: MselItemStatus.Pending,
+        url: '{vmUrl}/views/{playerViewId}',
+      },
+      {
+        label: 'the MSEL is deployed',
+        status: MselItemStatus.Deployed,
+        url: 'https://mail.example.com',
+      },
     ])('gives no VM UI warning when $label', async ({ status, url }) => {
       await renderInfo({
         permissions: [SystemPermission.ManageMsels],
-        mselExtra: { status, usePlayer: true, useCaster: true, casterDirectoryId: 'dir-1' },
+        mselExtra: {
+          status,
+          usePlayer: true,
+          useCaster: true,
+          casterDirectoryId: 'dir-1',
+        },
         apps: [{ id: 'app-1', mselId: 'msel-1', name: 'App', url }],
       });
 
@@ -720,18 +1091,36 @@ describe('MselInfoComponent', () => {
      * Data: ManageMsels with no role; or the Owner role. A deployed MSEL using only Caster, with directory dir-1 and workspace ws-1.
      */
     it.each([
-      { label: 'with ManageMsels', permissions: [SystemPermission.ManageMsels], myRoles: [] },
-      { label: 'as the MSEL owner', permissions: [], myRoles: [MselRole.Owner] },
-    ])('lets a Caster deployment be removed $label', async ({ permissions, myRoles }) => {
-      await renderInfo({
-        permissions,
-        myRoles,
-        mselExtra: { status: MselItemStatus.Deployed, useCaster: true, casterDirectoryId: 'dir-1', casterWorkspaceId: 'ws-1' },
-      });
+      {
+        label: 'with ManageMsels',
+        permissions: [SystemPermission.ManageMsels],
+        myRoles: [],
+      },
+      {
+        label: 'as the MSEL owner',
+        permissions: [],
+        myRoles: [MselRole.Owner],
+      },
+    ])(
+      'lets a Caster deployment be removed $label',
+      async ({ permissions, myRoles }) => {
+        await renderInfo({
+          permissions,
+          myRoles,
+          mselExtra: {
+            status: MselItemStatus.Deployed,
+            useCaster: true,
+            casterDirectoryId: 'dir-1',
+            casterWorkspaceId: 'ws-1',
+          },
+        });
 
-      expect(screen.getByTitle('Remove Integrations')).toBeEnabled();
-      expect(screen.queryByTitle('Push Integrations')).not.toBeInTheDocument();
-    });
+        expect(screen.getByTitle('Remove Integrations')).toBeEnabled();
+        expect(
+          screen.queryByTitle('Push Integrations'),
+        ).not.toBeInTheDocument();
+      },
+    );
 
     /**
      * Verifies: without ManageMsels and not the owner, Remove Integrations of a Caster deployment is disabled, even with EditMsels as an Editor.
@@ -742,7 +1131,12 @@ describe('MselInfoComponent', () => {
       await renderInfo({
         permissions: allBut(SystemPermission.ManageMsels),
         myRoles: [MselRole.Editor, MselRole.Approver],
-        mselExtra: { status: MselItemStatus.Deployed, useCaster: true, casterDirectoryId: 'dir-1', casterWorkspaceId: 'ws-1' },
+        mselExtra: {
+          status: MselItemStatus.Deployed,
+          useCaster: true,
+          casterDirectoryId: 'dir-1',
+          casterWorkspaceId: 'ws-1',
+        },
       });
 
       expect(screen.getByTitle('Remove Integrations')).toBeDisabled();
@@ -751,10 +1145,16 @@ describe('MselInfoComponent', () => {
 
   describe('Steamfitter', () => {
     const startSelect = (fixture: ComponentFixture<unknown>) =>
-      TestbedHarnessEnvironment.loader(fixture).getHarnessOrNull(MatSelectHarness.with({ selector: '[aria-label="Start the scenario"]' }));
+      TestbedHarnessEnvironment.loader(fixture).getHarnessOrNull(
+        MatSelectHarness.with({
+          selector: '[aria-label="Start the scenario"]',
+        }),
+      );
     const optionTexts = async (select: MatSelectHarness) => {
       await select.open();
-      const texts = await Promise.all((await select.getOptions()).map((option) => option.getText()));
+      const texts = await Promise.all(
+        (await select.getOptions()).map((option) => option.getText()),
+      );
       await select.close();
       return texts;
     };
@@ -767,17 +1167,28 @@ describe('MselInfoComponent', () => {
     it('offers when to start the Steamfitter scenario', async () => {
       const { fixture } = await renderInfo({
         permissions: [SystemPermission.EditMsels],
-        mselExtra: { useSteamfitter: true, steamfitterScenarioStartMode: SteamfitterScenarioStartMode.Manual },
+        mselExtra: {
+          useSteamfitter: true,
+          steamfitterScenarioStartMode: SteamfitterScenarioStartMode.Manual,
+        },
       });
 
       const select = await startSelect(fixture);
       expect(await select.getValueText()).toBe('Manually');
-      expect(await optionTexts(select)).toEqual(['Manually', 'When the push finishes', 'At the MSEL start time']);
+      expect(await optionTexts(select)).toEqual([
+        'Manually',
+        'When the push finishes',
+        'At the MSEL start time',
+      ]);
 
       await select.clickOptions({ text: 'At the MSEL start time' });
 
-      expect(fixture.componentInstance.msel.steamfitterScenarioStartMode).toBe(SteamfitterScenarioStartMode.AtStartTime);
-      expect(screen.getByText('Changes have not been saved!')).toBeInTheDocument();
+      expect(fixture.componentInstance.msel.steamfitterScenarioStartMode).toBe(
+        SteamfitterScenarioStartMode.AtStartTime,
+      );
+      expect(
+        screen.getByText('Changes have not been saved!'),
+      ).toBeInTheDocument();
     });
 
     /**
@@ -786,7 +1197,10 @@ describe('MselInfoComponent', () => {
      * Data: EditMsels; a pending MSEL not using Steamfitter.
      */
     it('hides when to start the scenario without Steamfitter', async () => {
-      const { fixture } = await renderInfo({ permissions: [SystemPermission.EditMsels], mselExtra: { useSteamfitter: false } });
+      const { fixture } = await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+        mselExtra: { useSteamfitter: false },
+      });
 
       expect(await startSelect(fixture)).toBeNull();
     });
@@ -822,7 +1236,11 @@ describe('MselInfoComponent', () => {
       const { fixture } = await renderInfo({
         permissions: allBut(SystemPermission.EditMsels),
         myRoles: [MselRole.Viewer],
-        mselExtra: { useSteamfitter: true, steamfitterScenarioStartMode: SteamfitterScenarioStartMode.AtStartTime },
+        mselExtra: {
+          useSteamfitter: true,
+          steamfitterScenarioStartMode:
+            SteamfitterScenarioStartMode.AtStartTime,
+        },
       });
 
       const select = await startSelect(fixture);
@@ -841,8 +1259,15 @@ describe('MselInfoComponent', () => {
       { status: 'Ended', label: '(Ended)' },
     ])('shows a $status scenario as $label', async ({ status, label }) => {
       await renderInfo({
-        mselExtra: { status: MselItemStatus.Deployed, useSteamfitter: true, steamfitterScenarioId: 'sc-1' },
-        names: { steamfitterScenarioName: 'Exercise Tasks', steamfitterScenarioStatus: status },
+        mselExtra: {
+          status: MselItemStatus.Deployed,
+          useSteamfitter: true,
+          steamfitterScenarioId: 'sc-1',
+        },
+        names: {
+          steamfitterScenarioName: 'Exercise Tasks',
+          steamfitterScenarioStatus: status,
+        },
       });
 
       expect(screen.getByText('Exercise Tasks')).toBeInTheDocument();
@@ -851,17 +1276,24 @@ describe('MselInfoComponent', () => {
 
     it('shows no scenario status when Steamfitter could not say', async () => {
       await renderInfo({
-        mselExtra: { status: MselItemStatus.Deployed, useSteamfitter: true, steamfitterScenarioId: 'sc-1' },
+        mselExtra: {
+          status: MselItemStatus.Deployed,
+          useSteamfitter: true,
+          steamfitterScenarioId: 'sc-1',
+        },
         names: { steamfitterScenarioName: '', steamfitterScenarioStatus: '' },
       });
 
       expect(screen.getByTitle('sc-1')).toBeInTheDocument();
-      expect(screen.queryByText(/Not started|Started|Ended/)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/Not started|Started|Ended/),
+      ).not.toBeInTheDocument();
     });
   });
 
   describe('Hide individual names from assessors', () => {
-    const box = () => screen.getByLabelText('Hide individual names from assessors');
+    const box = () =>
+      screen.getByLabelText('Hide individual names from assessors');
 
     /**
      * Verifies: ticking the box marks the MSEL changed, and Save sends hideNamesOnAssessorView.
@@ -869,16 +1301,22 @@ describe('MselInfoComponent', () => {
      * Data: EditMsels; a pending MSEL that shows names.
      */
     it('saves hiding names from assessors', async () => {
-      const { mselApi } = await renderInfo({ permissions: [SystemPermission.EditMsels] });
+      const { mselApi } = await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+      });
       const user = userEvent.setup();
 
       expect(box()).not.toBeChecked();
       await user.click(box());
-      expect(screen.getByText('Changes have not been saved!')).toBeInTheDocument();
+      expect(
+        screen.getByText('Changes have not been saved!'),
+      ).toBeInTheDocument();
       await user.click(screen.getAllByTitle('Save Changes')[0]);
 
       expect(mselApi.updateMsel).toHaveBeenCalledTimes(1);
-      expect(mselApi.updateMsel.mock.calls[0][1].hideNamesOnAssessorView).toBe(true);
+      expect(mselApi.updateMsel.mock.calls[0][1].hideNamesOnAssessorView).toBe(
+        true,
+      );
     });
 
     /**
@@ -887,7 +1325,13 @@ describe('MselInfoComponent', () => {
      * Data: EditMsels; a deployed MSEL that hides names.
      */
     it('keeps hiding names editable on a pushed MSEL', async () => {
-      await renderInfo({ permissions: [SystemPermission.EditMsels], mselExtra: { status: MselItemStatus.Deployed, hideNamesOnAssessorView: true } });
+      await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+        mselExtra: {
+          status: MselItemStatus.Deployed,
+          hideNamesOnAssessorView: true,
+        },
+      });
 
       expect(box()).toBeChecked();
       expect(box()).toBeEnabled();
@@ -899,7 +1343,11 @@ describe('MselInfoComponent', () => {
      * Data: every permission but EditMsels; the Owner role; a MSEL that hides names.
      */
     it('lets the MSEL owner change hiding names', async () => {
-      await renderInfo({ permissions: allBut(SystemPermission.EditMsels), myRoles: [MselRole.Owner], mselExtra: { hideNamesOnAssessorView: true } });
+      await renderInfo({
+        permissions: allBut(SystemPermission.EditMsels),
+        myRoles: [MselRole.Owner],
+        mselExtra: { hideNamesOnAssessorView: true },
+      });
 
       expect(box()).toBeEnabled();
     });
@@ -913,12 +1361,19 @@ describe('MselInfoComponent', () => {
     it.each([
       { label: 'a Viewer', role: MselRole.Viewer },
       { label: 'an Editor', role: MselRole.Editor },
-    ])('shows hiding names read-only to $label without EditMsels', async ({ role }) => {
-      await renderInfo({ permissions: allBut(SystemPermission.EditMsels), myRoles: [role], mselExtra: { hideNamesOnAssessorView: true } });
+    ])(
+      'shows hiding names read-only to $label without EditMsels',
+      async ({ role }) => {
+        await renderInfo({
+          permissions: allBut(SystemPermission.EditMsels),
+          myRoles: [role],
+          mselExtra: { hideNamesOnAssessorView: true },
+        });
 
-      expect(box()).toBeChecked();
-      expect(box()).toBeDisabled();
-    });
+        expect(box()).toBeChecked();
+        expect(box()).toBeDisabled();
+      },
+    );
   });
 
   describe('Push Integrations start time', () => {
@@ -935,32 +1390,58 @@ describe('MselInfoComponent', () => {
      * Data: the Owner role; a pending MSEL using Player, starting an hour ago, or with no start time (near miss: the year-1 date the Set a Start Time box clears to).
      */
     it.each([
-      { label: 'a start time in the past', startTime: () => new Date(Date.now() - HOUR), reason: /^The MSEL start time, .+, is in the past\. / },
-      { label: 'no start time', startTime: () => undefined, reason: /^This MSEL has no start time\. / },
-      { label: 'the cleared start time', startTime: () => new Date('0001-01-02T08:00:00'), reason: /^This MSEL has no start time\. / },
-    ])('sets the start time to now before pushing a MSEL with $label', async ({ startTime, reason }) => {
-      const { fixture, confirm, mselApi } = await renderInfo({ myRoles: [MselRole.Owner], startTime: startTime() });
+      {
+        label: 'a start time in the past',
+        startTime: () => new Date(Date.now() - HOUR),
+        reason: /^The MSEL start time, .+, is in the past\. /,
+      },
+      {
+        label: 'no start time',
+        startTime: () => undefined,
+        reason: /^This MSEL has no start time\. /,
+      },
+      {
+        label: 'the cleared start time',
+        startTime: () => new Date('0001-01-02T08:00:00'),
+        reason: /^This MSEL has no start time\. /,
+      },
+    ])(
+      'sets the start time to now before pushing a MSEL with $label',
+      async ({ startTime, reason }) => {
+        const { fixture, confirm, mselApi } = await renderInfo({
+          myRoles: [MselRole.Owner],
+          startTime: startTime(),
+        });
 
-      const before = Date.now();
-      await push(fixture);
-      const after = Date.now();
+        const before = Date.now();
+        await push(fixture);
+        const after = Date.now();
 
-      expect(confirm).toHaveBeenCalledTimes(1);
-      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({
-        title: 'Push Integrations',
-        message: expect.stringMatching(new RegExp(`${reason.source}The start time will be set to the current date and time before pushing\\.$`)),
-        confirmText: 'Continue',
-        cancelText: 'Cancel',
-      }));
-      expect(mselApi.updateMsel).toHaveBeenCalledTimes(1);
-      const [id, edit] = mselApi.updateMsel.mock.calls[0];
-      expect(id).toBe('msel-1');
-      expect(edit.startTime.valueOf()).toBeGreaterThanOrEqual(before);
-      expect(edit.startTime.valueOf()).toBeLessThanOrEqual(after);
-      expect(edit.durationSeconds).toBe(3600);
-      expect(mselApi.pushIntegrations).toHaveBeenCalledWith('msel-1');
-      expect(mselApi.updateMsel.mock.invocationCallOrder[0]).toBeLessThan(mselApi.pushIntegrations.mock.invocationCallOrder[0]);
-    });
+        expect(confirm).toHaveBeenCalledTimes(1);
+        expect(confirm).toHaveBeenCalledWith(
+          expect.objectContaining({
+            title: 'Push Integrations',
+            message: expect.stringMatching(
+              new RegExp(
+                `${reason.source}The start time will be set to the current date and time before pushing\\.$`,
+              ),
+            ),
+            confirmText: 'Continue',
+            cancelText: 'Cancel',
+          }),
+        );
+        expect(mselApi.updateMsel).toHaveBeenCalledTimes(1);
+        const [id, edit] = mselApi.updateMsel.mock.calls[0];
+        expect(id).toBe('msel-1');
+        expect(edit.startTime.valueOf()).toBeGreaterThanOrEqual(before);
+        expect(edit.startTime.valueOf()).toBeLessThanOrEqual(after);
+        expect(edit.durationSeconds).toBe(3600);
+        expect(mselApi.pushIntegrations).toHaveBeenCalledWith('msel-1');
+        expect(mselApi.updateMsel.mock.invocationCallOrder[0]).toBeLessThan(
+          mselApi.pushIntegrations.mock.invocationCallOrder[0],
+        );
+      },
+    );
 
     /**
      * Verifies: a start time still to come is kept, and the push is confirmed as before.
@@ -968,14 +1449,20 @@ describe('MselInfoComponent', () => {
      * Data: the Owner role; a pending MSEL using Player, starting in an hour.
      */
     it('pushes a MSEL whose start time is still to come without changing it', async () => {
-      const { fixture, confirm, mselApi } = await renderInfo({ myRoles: [MselRole.Owner], startTime: new Date(Date.now() + HOUR) });
+      const { fixture, confirm, mselApi } = await renderInfo({
+        myRoles: [MselRole.Owner],
+        startTime: new Date(Date.now() + HOUR),
+      });
 
       await push(fixture);
 
-      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({
-        title: 'Push Integrations',
-        message: 'Are you sure that you want to push MSEL data to the selected applications?',
-      }));
+      expect(confirm).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Push Integrations',
+          message:
+            'Are you sure that you want to push MSEL data to the selected applications?',
+        }),
+      );
       expect(mselApi.updateMsel).not.toHaveBeenCalled();
       expect(mselApi.pushIntegrations).toHaveBeenCalledWith('msel-1');
     });
@@ -986,11 +1473,20 @@ describe('MselInfoComponent', () => {
      * Data: the Owner role; a pending MSEL using Player, starting an hour ago.
      */
     it('neither saves nor pushes when the start time dialog is cancelled', async () => {
-      const { fixture, confirm, mselApi } = await renderInfo({ myRoles: [MselRole.Owner], startTime: new Date(Date.now() - HOUR), confirms: false });
+      const { fixture, confirm, mselApi } = await renderInfo({
+        myRoles: [MselRole.Owner],
+        startTime: new Date(Date.now() - HOUR),
+        confirms: false,
+      });
 
       await push(fixture);
 
-      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ confirmText: 'Continue', cancelText: 'Cancel' }));
+      expect(confirm).toHaveBeenCalledWith(
+        expect.objectContaining({
+          confirmText: 'Continue',
+          cancelText: 'Cancel',
+        }),
+      );
       expect(mselApi.updateMsel).not.toHaveBeenCalled();
       expect(mselApi.pushIntegrations).not.toHaveBeenCalled();
     });
@@ -1019,7 +1515,10 @@ describe('MselInfoComponent', () => {
       URL.createObjectURL = vi.fn(() => 'blob:card');
       URL.revokeObjectURL = vi.fn();
     });
-    const fileInput = (fixture: ComponentFixture<unknown>) => fixture.nativeElement.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = (fixture: ComponentFixture<unknown>) =>
+      fixture.nativeElement.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
 
     /**
      * Verifies: the owner, or a user with EditMsels, can upload a card image; an Editor without EditMsels sees only the no-image note.
@@ -1027,16 +1526,42 @@ describe('MselInfoComponent', () => {
      * Data: MSEL role Owner; EditMsels with no role; MSEL role Editor with no permission (near miss).
      */
     it.each([
-      { label: 'the owner', permissions: [] as SystemPermission[], myRoles: [MselRole.Owner], allowed: true },
-      { label: 'EditMsels', permissions: [SystemPermission.EditMsels], myRoles: [] as MselRole[], allowed: true },
-      { label: 'an Editor', permissions: [] as SystemPermission[], myRoles: [MselRole.Editor], allowed: false },
-    ])('offers Upload Image to $label: $allowed', async ({ permissions, myRoles, allowed }) => {
-      await renderInfo({ permissions, myRoles });
+      {
+        label: 'the owner',
+        permissions: [] as SystemPermission[],
+        myRoles: [MselRole.Owner],
+        allowed: true,
+      },
+      {
+        label: 'EditMsels',
+        permissions: [SystemPermission.EditMsels],
+        myRoles: [] as MselRole[],
+        allowed: true,
+      },
+      {
+        label: 'an Editor',
+        permissions: [] as SystemPermission[],
+        myRoles: [MselRole.Editor],
+        allowed: false,
+      },
+    ])(
+      'offers Upload Image to $label: $allowed',
+      async ({ permissions, myRoles, allowed }) => {
+        await renderInfo({ permissions, myRoles });
 
-      expect(screen.getByText("No image. The event's cards show a generated pattern.")).toBeInTheDocument();
-      expect(!!screen.queryByRole('button', { name: 'Upload Image' })).toBe(allowed);
-      expect(!!screen.queryByText('PNG, JPEG, GIF or WebP, up to 2 MB.')).toBe(allowed);
-    });
+        expect(
+          screen.getByText(
+            "No image. The event's cards show a generated pattern.",
+          ),
+        ).toBeInTheDocument();
+        expect(!!screen.queryByRole('button', { name: 'Upload Image' })).toBe(
+          allowed,
+        );
+        expect(
+          !!screen.queryByText('PNG, JPEG, GIF or WebP, up to 2 MB.'),
+        ).toBe(allowed);
+      },
+    );
 
     /**
      * Verifies: an uploaded image is sent to the API and then shown as the preview, with Replace Image and Remove Image offered.
@@ -1044,17 +1569,27 @@ describe('MselInfoComponent', () => {
      * Data: MSEL role Owner; a 1 KB PNG.
      */
     it('uploads an image and shows it', async () => {
-      const { fixture, imageApi } = await renderInfo({ myRoles: [MselRole.Owner] });
-      const file = new File([new Uint8Array(1024)], 'card.png', { type: 'image/png' });
+      const { fixture, imageApi } = await renderInfo({
+        myRoles: [MselRole.Owner],
+      });
+      const file = new File([new Uint8Array(1024)], 'card.png', {
+        type: 'image/png',
+      });
 
       await userEvent.setup().upload(fileInput(fixture), file);
       fixture.detectChanges();
 
       expect(imageApi.setMselImage.mock.calls).toEqual([['msel-1', file]]);
       expect(imageApi.getMselImage.mock.calls).toEqual([['msel-1']]);
-      expect(screen.getByAltText('Card image for Exercise Alpha')).toHaveAttribute('src', 'blob:card');
-      expect(screen.getByRole('button', { name: 'Replace Image' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Remove Image' })).toBeInTheDocument();
+      expect(
+        screen.getByAltText('Card image for Exercise Alpha'),
+      ).toHaveAttribute('src', 'blob:card');
+      expect(
+        screen.getByRole('button', { name: 'Replace Image' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Remove Image' }),
+      ).toBeInTheDocument();
     });
 
     /**
@@ -1063,12 +1598,19 @@ describe('MselInfoComponent', () => {
      * Data: MSEL role Owner; a PNG of 2 MB plus one byte.
      */
     it('refuses an image over 2 MB', async () => {
-      const { fixture, imageApi, systemMessage } = await renderInfo({ myRoles: [MselRole.Owner] });
-      const file = new File([new Uint8Array(2 * 1024 * 1024 + 1)], 'big.png', { type: 'image/png' });
+      const { fixture, imageApi, systemMessage } = await renderInfo({
+        myRoles: [MselRole.Owner],
+      });
+      const file = new File([new Uint8Array(2 * 1024 * 1024 + 1)], 'big.png', {
+        type: 'image/png',
+      });
 
       await userEvent.setup().upload(fileInput(fixture), file);
 
-      expect(systemMessage.displayMessage).toHaveBeenCalledWith('Image Too Large', 'Choose an image of 2 MB or less.');
+      expect(systemMessage.displayMessage).toHaveBeenCalledWith(
+        'Image Too Large',
+        'Choose an image of 2 MB or less.',
+      );
       expect(imageApi.setMselImage).not.toHaveBeenCalled();
     });
 
@@ -1078,15 +1620,26 @@ describe('MselInfoComponent', () => {
      * Data: MSEL role Owner; the MSEL has ImageDateModified set.
      */
     it('removes the image', async () => {
-      const { fixture, imageApi } = await renderInfo({ myRoles: [MselRole.Owner], mselExtra: { imageDateModified: new Date('2026-10-22T12:00:00Z') } });
-      expect(screen.getByAltText('Card image for Exercise Alpha')).toBeInTheDocument();
+      const { fixture, imageApi } = await renderInfo({
+        myRoles: [MselRole.Owner],
+        mselExtra: { imageDateModified: new Date('2026-10-22T12:00:00Z') },
+      });
+      expect(
+        screen.getByAltText('Card image for Exercise Alpha'),
+      ).toBeInTheDocument();
 
-      await userEvent.setup().click(screen.getByRole('button', { name: 'Remove Image' }));
+      await userEvent
+        .setup()
+        .click(screen.getByRole('button', { name: 'Remove Image' }));
       fixture.detectChanges();
 
       expect(imageApi.deleteMselImage.mock.calls).toEqual([['msel-1']]);
-      expect(screen.queryByAltText('Card image for Exercise Alpha')).not.toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Upload Image' })).toBeInTheDocument();
+      expect(
+        screen.queryByAltText('Card image for Exercise Alpha'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Upload Image' }),
+      ).toBeInTheDocument();
     });
   });
   describe('the CITE scoring model', () => {
@@ -1100,11 +1653,19 @@ describe('MselInfoComponent', () => {
      * Data: MSEL role Owner; a pending MSEL using CITE with no linked model; the authored model Harbor Questions, one category without options.
      */
     it('summarizes the authored model and pushes without a linked one', async () => {
-      const { scoringModelApi } = await renderInfo({ myRoles: [MselRole.Owner], mselExtra: cite, authored: AUTHORED });
+      const { scoringModelApi } = await renderInfo({
+        myRoles: [MselRole.Owner],
+        mselExtra: cite,
+        authored: AUTHORED,
+      });
 
-      expect(scoringModelApi.getMselScoringModel).toHaveBeenCalledWith('msel-1');
+      expect(scoringModelApi.getMselScoringModel).toHaveBeenCalledWith(
+        'msel-1',
+      );
       expect(screen.getByText('Scoring Model:')).toBeInTheDocument();
-      expect(screen.getByText('Harbor Questions (1 category, 0 options)')).toBeInTheDocument();
+      expect(
+        screen.getByText('Harbor Questions (1 category, 0 options)'),
+      ).toBeInTheDocument();
       expect(screen.getByTitle('Push Integrations')).toBeEnabled();
     });
 
@@ -1117,10 +1678,14 @@ describe('MselInfoComponent', () => {
       await renderInfo({
         myRoles: [MselRole.Owner],
         mselExtra: { ...cite, citeScoringModelId: 'cite-1' },
-        citeModels: [{ id: 'cite-1', description: 'Project Lagoon Questions by Move' }],
+        citeModels: [
+          { id: 'cite-1', description: 'Project Lagoon Questions by Move' },
+        ],
       });
 
-      expect(screen.getByText('Project Lagoon Questions by Move')).toBeInTheDocument();
+      expect(
+        screen.getByText('Project Lagoon Questions by Move'),
+      ).toBeInTheDocument();
       expect(screen.getByTitle('Push Integrations')).toBeEnabled();
     });
 
@@ -1133,8 +1698,12 @@ describe('MselInfoComponent', () => {
       await renderInfo({ myRoles: [MselRole.Owner], mselExtra: cite });
 
       expect(screen.getByText('not set')).toBeInTheDocument();
-      expect(screen.queryByRole('radio', { name: 'Link a CITE scoring model' })).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: /Scoring Model$/ })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('radio', { name: 'Link a CITE scoring model' }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /Scoring Model$/ }),
+      ).not.toBeInTheDocument();
       expect(screen.getByTitle('Push Integrations')).toBeDisabled();
     });
 
@@ -1144,10 +1713,17 @@ describe('MselInfoComponent', () => {
      * Data: MSEL role Owner; a pending MSEL using CITE.
      */
     it('opens the Scoring Model tab', async () => {
-      const { fixture } = await renderInfo({ myRoles: [MselRole.Owner], mselExtra: cite });
+      const { fixture } = await renderInfo({
+        myRoles: [MselRole.Owner],
+        mselExtra: cite,
+      });
       const opened = openTabs(fixture);
 
-      await userEvent.setup().click(screen.getByRole('button', { name: 'Open the Scoring Model tab' }));
+      await userEvent
+        .setup()
+        .click(
+          screen.getByRole('button', { name: 'Open the Scoring Model tab' }),
+        );
 
       expect(opened).toEqual(['Scoring Model']);
     });
@@ -1160,16 +1736,27 @@ describe('MselInfoComponent', () => {
     it('shows the evaluation after the push', async () => {
       await renderInfo({
         myRoles: [MselRole.Owner],
-        mselExtra: { ...cite, status: MselItemStatus.Deployed, citeEvaluationId: 'eval-1' },
+        mselExtra: {
+          ...cite,
+          status: MselItemStatus.Deployed,
+          citeEvaluationId: 'eval-1',
+        },
         authored: AUTHORED,
         names: { citeEvaluationName: 'Harbor Evaluation' },
       });
 
-      expect(screen.getByText('Harbor Questions (1 category, 0 options)')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Open the Scoring Model tab' })).toBeInTheDocument();
+      expect(
+        screen.getByText('Harbor Questions (1 category, 0 options)'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Open the Scoring Model tab' }),
+      ).toBeInTheDocument();
       expect(screen.getByText('Evaluation:')).toBeInTheDocument();
       expect(screen.getByText('Harbor Evaluation')).toBeInTheDocument();
-      expect(screen.getByTitle('Open in CITE')).toHaveAttribute('href', expect.stringContaining('evaluation=eval-1'));
+      expect(screen.getByTitle('Open in CITE')).toHaveAttribute(
+        'href',
+        expect.stringContaining('evaluation=eval-1'),
+      );
     });
   });
 

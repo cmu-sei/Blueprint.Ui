@@ -5,10 +5,7 @@
 import { TeamUserStore } from './team-user.store';
 import { TeamUserQuery } from './team-user.query';
 import { Injectable, inject } from '@angular/core';
-import {
-  TeamUser,
-  TeamUserService,
-} from 'src/app/generated/blueprint.api';
+import { TeamUser, TeamUserService } from 'src/app/generated/blueprint.api';
 import { take, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
@@ -30,18 +27,18 @@ export class TeamUserDataService {
         tap(() => {
           this.teamUserStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (teamUsers) => {
-          teamUsers.forEach(e => {
+          teamUsers.forEach((e) => {
             this.setAsDates(e);
           });
           this.teamUserStore.set(teamUsers);
         },
         (error) => {
           this.teamUserStore.set([]);
-        }
+        },
       );
   }
 
@@ -53,18 +50,18 @@ export class TeamUserDataService {
         tap(() => {
           this.teamUserStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (teamUsers) => {
-          teamUsers.forEach(e => {
+          teamUsers.forEach((e) => {
             this.setAsDates(e);
           });
           this.teamUserStore.set(teamUsers);
         },
         (error) => {
           this.teamUserStore.set([]);
-        }
+        },
       );
   }
 
@@ -76,7 +73,7 @@ export class TeamUserDataService {
         tap(() => {
           this.teamUserStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.teamUserStore.upsert(s.id, { ...s });
@@ -96,7 +93,7 @@ export class TeamUserDataService {
         tap(() => {
           this.teamUserStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.setAsDates(s);
@@ -130,5 +127,4 @@ export class TeamUserDataService {
     teamUser.dateCreated = new Date(teamUser.dateCreated);
     teamUser.dateModified = new Date(teamUser.dateModified);
   }
-
 }

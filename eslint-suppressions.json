@@ -1501,19 +1501,10 @@
     },
     "@typescript-eslint/no-unsafe-argument": {
       "count": 1
-    },
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 2
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 3
     }
   },
   "src/app/components/move-list/move-list.component.spec.ts": {
     "@angular-eslint/prefer-standalone": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
       "count": 1
     }
   },
@@ -1527,14 +1518,11 @@
     "@typescript-eslint/no-unsafe-member-access": {
       "count": 3
     },
-    "@typescript-eslint/prefer-for-of": {
-      "count": 1
-    },
     "@typescript-eslint/prefer-optional-chain": {
       "count": 1
     },
     "no-useless-assignment": {
-      "count": 2
+      "count": 1
     }
   },
   "src/app/components/msel-competencies/msel-competencies.component.html": {
@@ -3136,11 +3124,6 @@
     },
     "@typescript-eslint/no-unused-vars": {
       "count": 1
-    }
-  },
-  "src/app/data/scenario-event/scenario-event-data.service.spec.ts": {
-    "@typescript-eslint/dot-notation": {
-      "count": 7
     }
   },
   "src/app/data/scenario-event/scenario-event-data.service.ts": {

@@ -23,13 +23,13 @@ import { take, tap } from 'rxjs/operators';
 import { ipSortKey } from 'src/app/utilities/ip-address';
 import { getTimezoneAbbr } from 'src/app/utilities/timezone-abbr';
 
-
-export type IntegrationTarget = 'Gallery' | 'Steamfitter' | 'Email' | 'Notification';
+export type IntegrationTarget =
+  'Gallery' | 'Steamfitter' | 'Email' | 'Notification';
 export const IntegrationTarget = {
-    Gallery: 'Gallery' as IntegrationTarget,
-    Steamfitter: 'Steamfitter' as IntegrationTarget,
-    Email: 'Email' as IntegrationTarget,
-    Notification: 'Notification' as IntegrationTarget
+  Gallery: 'Gallery' as IntegrationTarget,
+  Steamfitter: 'Steamfitter' as IntegrationTarget,
+  Email: 'Email' as IntegrationTarget,
+  Notification: 'Notification' as IntegrationTarget,
 };
 
 export interface DataValuePlus extends DataValue {
@@ -79,7 +79,6 @@ export class ScenarioEventDataService {
   private scenarioEventStore = inject(ScenarioEventStore);
   private scenarioEventService = inject(ScenarioEventService);
 
-
   readonly baseSort: Sort[] = [
     { active: 'deltaSeconds', direction: 'asc' },
     { active: 'groupOrder', direction: 'asc' },
@@ -121,7 +120,7 @@ export class ScenarioEventDataService {
         tap(() => {
           this.scenarioEventStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (scenarioEvents) => {
@@ -129,7 +128,7 @@ export class ScenarioEventDataService {
         },
         (error) => {
           this.scenarioEventStore.set([]);
-        }
+        },
       );
   }
 
@@ -141,7 +140,7 @@ export class ScenarioEventDataService {
         tap(() => {
           this.scenarioEventStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.scenarioEventStore.upsert(s.id, { ...s });
@@ -160,7 +159,7 @@ export class ScenarioEventDataService {
         tap(() => {
           this.scenarioEventStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((scenarioEvents) => {
         this.scenarioEventStore.upsertMany(scenarioEvents);
@@ -175,7 +174,7 @@ export class ScenarioEventDataService {
         tap(() => {
           this.scenarioEventStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((scenarioEvents) => {
         this.scenarioEventStore.upsertMany(scenarioEvents);
@@ -190,7 +189,7 @@ export class ScenarioEventDataService {
         tap(() => {
           this.scenarioEventStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((scenarioEvents) => {
         this.scenarioEventStore.upsertMany(scenarioEvents);
@@ -231,7 +230,7 @@ export class ScenarioEventDataService {
   getDataValueFromView(
     view: ScenarioEventView,
     scenarioEvent: ScenarioEvent,
-    dataFieldName: string
+    dataFieldName: string,
   ): DataValuePlus {
     return this.getValueFromEvent(view, scenarioEvent, dataFieldName);
   }
@@ -239,7 +238,7 @@ export class ScenarioEventDataService {
   getDisplayValueFromView(
     view: ScenarioEventView,
     scenarioEvent: ScenarioEvent,
-    dataFieldName: string
+    dataFieldName: string,
   ): string {
     const value = this.getDataValueFromView(view, scenarioEvent, dataFieldName);
     switch (value.fieldType) {
@@ -255,7 +254,20 @@ export class ScenarioEventDataService {
 
         // Format as: dd MMM yyyy HH:mm TZ
         const day = String(date.getDate()).padStart(2, '0');
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const months = [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+        ];
         const month = months[date.getMonth()];
         const year = date.getFullYear();
         const hours = String(date.getHours()).padStart(2, '0');
@@ -285,13 +297,13 @@ export class ScenarioEventDataService {
       view.viewIndex.fieldMap,
       view.viewIndex.cardMap,
       view.viewIndex.userMap,
-      view.dataValues
+      view.dataValues,
     );
   }
 
   refreshScenarioEventViewEvents(
     view: ScenarioEventView,
-    scenarioEvents: ScenarioEvent[]
+    scenarioEvents: ScenarioEvent[],
   ) {
     const editableList: ScenarioEvent[] = [];
     const evtIndex = new Map<string, number>();
@@ -311,24 +323,24 @@ export class ScenarioEventDataService {
       view.mselScenarioEvents,
       view.viewIndex.valueMap,
       view.filterString,
-      view.showHiddenEvents
+      view.showHiddenEvents,
     );
     clonedList = this.sortScenarioEvents(
       clonedList,
       view.sort,
-      view.viewIndex.valueMap
+      view.viewIndex.valueMap,
     );
     view.displayedScenarioEvents = clonedList;
   }
 
   getMoveAndGroupNumbers(
     sortedScenarioEvents: ScenarioEvent[],
-    rawMoves: Move[]
+    rawMoves: Move[],
   ): Record<string, number[]>[] {
     const moveAndGroupNumbers: Record<string, number[]>[] = [];
     if (sortedScenarioEvents.length > 0) {
       const moves = rawMoves.sort((a, b) =>
-        +a.moveNumber < +b.moveNumber ? -1 : 1
+        +a.moveNumber < +b.moveNumber ? -1 : 1,
       );
       let m = moves.length > 0 ? -1 : 0;
       let group = 0;
@@ -336,17 +348,27 @@ export class ScenarioEventDataService {
       // loop through the chronological scenario events
       for (let s = 0; s < sortedScenarioEvents.length; s++) {
         const scenarioEvent = sortedScenarioEvents[s];
-        if (m < moves.length - 1 &&
+        if (
+          m < moves.length - 1 &&
           +scenarioEvent.deltaSeconds >= +moves[m + 1].deltaSeconds
         ) {
-          m++;
+          // go to the last move whose start this event has reached, so an event past a move with no events is
+          // in the right move, and one at a start two moves share (a MSEL saved before each move needed its
+          // own) is in the higher-numbered move
+          while (
+            m < moves.length - 1 &&
+            +scenarioEvent.deltaSeconds >= +moves[m + 1].deltaSeconds
+          ) {
+            m++;
+          }
           group = 0;
           groupSeconds = +scenarioEvent.deltaSeconds;
         } else if (+scenarioEvent.deltaSeconds > +groupSeconds) {
           group++;
           groupSeconds = +scenarioEvent.deltaSeconds;
         }
-        const moveNumber = m < 0 || moves.length === 0 ? -1 : +moves[m].moveNumber;
+        const moveNumber =
+          m < 0 || moves.length === 0 ? -1 : +moves[m].moveNumber;
         moveAndGroupNumbers[scenarioEvent.id] = [moveNumber, group];
       }
     }
@@ -358,7 +380,7 @@ export class ScenarioEventDataService {
     value: DataValue,
     fieldType: DataFieldType,
     cardMap: Map<string, string>,
-    userMap: Map<string, string>
+    userMap: Map<string, string>,
   ): string | number {
     switch (fieldType) {
       case DataFieldType.Card:
@@ -410,7 +432,7 @@ export class ScenarioEventDataService {
     fieldMap: Map<string, DataField>,
     cardMap: Map<string, string>,
     userMap: Map<string, string>,
-    dataValues: DataValue[]
+    dataValues: DataValue[],
   ): Map<string, Map<string, DataValuePlus>> {
     const valueMap = new Map<string, Map<string, DataValuePlus>>();
     for (const value of dataValues) {
@@ -425,7 +447,7 @@ export class ScenarioEventDataService {
           value,
           fieldType.dataType,
           cardMap,
-          userMap
+          userMap,
         );
         const dataValue: DataValuePlus = {
           ...value,
@@ -433,7 +455,10 @@ export class ScenarioEventDataService {
           valueArray: value.value ? value.value.split(', ') : [],
           fieldType: fieldType.dataType,
         };
-        if (fieldType.dataType === DataFieldType.IpAddress || fieldType.dataType === DataFieldType.Network) {
+        if (
+          fieldType.dataType === DataFieldType.IpAddress ||
+          fieldType.dataType === DataFieldType.Network
+        ) {
           dataValue.sortValue = ipSortKey(value.value);
         }
         eventProps.set(fieldType.name, dataValue);
@@ -445,7 +470,7 @@ export class ScenarioEventDataService {
 
   private dataValuesIncludesFilter(
     valueMap: Map<string, DataValuePlus>,
-    filterString: string
+    filterString: string,
   ) {
     for (const val of valueMap.values()) {
       if (
@@ -462,7 +487,7 @@ export class ScenarioEventDataService {
     scenarioEvents: ScenarioEvent[],
     valueMap: Map<string, Map<string, DataValuePlus>>,
     filterString: string,
-    showHidden: boolean
+    showHidden: boolean,
   ): ScenarioEvent[] {
     const clonedList: ScenarioEvent[] = [];
     if (scenarioEvents && scenarioEvents.length > 0) {
@@ -474,7 +499,7 @@ export class ScenarioEventDataService {
               !filterString ||
               this.dataValuesIncludesFilter(
                 eventValues,
-                filterString.toLowerCase()
+                filterString.toLowerCase(),
               )
             ) {
               const newScenarioEvent = { ...scenarioEvent };
@@ -490,7 +515,7 @@ export class ScenarioEventDataService {
   private getValueFromEvent(
     view: ScenarioEventView,
     scenarioEvent: ScenarioEvent,
-    dataFieldName: string
+    dataFieldName: string,
   ): DataValuePlus {
     if ('deltaSeconds' === dataFieldName) {
       const value = +scenarioEvent.deltaSeconds;
@@ -525,7 +550,7 @@ export class ScenarioEventDataService {
   private getSortAndFilterValueFromEvent(
     scenarioEvent: ScenarioEvent,
     valueMap: Map<string, Map<string, DataValuePlus>>,
-    fieldName: string
+    fieldName: string,
   ): string | number {
     if ('deltaSeconds' === fieldName) {
       return +scenarioEvent.deltaSeconds;
@@ -554,7 +579,7 @@ export class ScenarioEventDataService {
   private sortAsNumbers(
     a: string | number,
     b: string | number,
-    isAsc: boolean
+    isAsc: boolean,
   ): number {
     const dir = isAsc ? 1 : -1;
     const numValA = this.getNumOrDefault(a);
@@ -571,12 +596,12 @@ export class ScenarioEventDataService {
   private sortAsStrings(
     a: string | number,
     b: string | number,
-    isAsc: boolean
+    isAsc: boolean,
   ): number {
     const dir = isAsc ? 1 : -1;
     const strSortVal = Intl.Collator().compare(
       a ? a.toString().trim().toLowerCase() : '',
-      b ? b.toString().trim().toLowerCase() : ''
+      b ? b.toString().trim().toLowerCase() : '',
     );
     return strSortVal ? strSortVal * dir : strSortVal;
   }
@@ -585,7 +610,7 @@ export class ScenarioEventDataService {
     a: ScenarioEvent,
     b: ScenarioEvent,
     sorts: Sort[],
-    valueMap: Map<string, Map<string, DataValuePlus>>
+    valueMap: Map<string, Map<string, DataValuePlus>>,
   ): number {
     let sortVal = 0;
     for (const sort of sorts) {
@@ -593,12 +618,12 @@ export class ScenarioEventDataService {
       const sortValA = this.getSortAndFilterValueFromEvent(
         a,
         valueMap,
-        sort.active
+        sort.active,
       );
       const sortValB = this.getSortAndFilterValueFromEvent(
         b,
         valueMap,
-        sort.active
+        sort.active,
       );
       if (typeof sortValA === 'number' || typeof sortValB === 'number') {
         sortVal = this.sortAsNumbers(sortValA, sortValB, isAsc);
@@ -615,7 +640,7 @@ export class ScenarioEventDataService {
   private sortScenarioEvents(
     scenarioEvents: ScenarioEvent[],
     sort: Sort,
-    valueMap: Map<string, Map<string, DataValuePlus>>
+    valueMap: Map<string, Map<string, DataValuePlus>>,
   ): ScenarioEvent[] {
     const sorts: Sort[] = [];
     if (sort && sort.active && sort.direction) {
@@ -623,7 +648,7 @@ export class ScenarioEventDataService {
     }
     sorts.push(...this.baseSort);
     scenarioEvents.sort((a: ScenarioEvent, b: ScenarioEvent) =>
-      this.sortScenarioEventImpl(a, b, sorts, valueMap)
+      this.sortScenarioEventImpl(a, b, sorts, valueMap),
     );
     return scenarioEvents;
   }

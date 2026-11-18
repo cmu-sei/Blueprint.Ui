@@ -15,7 +15,12 @@ import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { Msel, MselRole, Organization, OrganizationService } from 'src/app/generated/blueprint.api';
+import {
+  Msel,
+  MselRole,
+  Organization,
+  OrganizationService,
+} from 'src/app/generated/blueprint.api';
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { OrganizationStore } from 'src/app/data/organization/organization.store';
 import { OrganizationListComponent } from './organization-list.component';
@@ -27,17 +32,44 @@ import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
 import { TestBed } from '@angular/core/testing';
 
 const ME = 'user-me';
-const TEMPLATE: Organization = { id: 'org-t', name: 'Template Agency', shortName: 'TA', summary: 'A template', isTemplate: true, mselId: null };
-const MSEL_ORG: Organization = { id: 'org-1', name: 'City Police', shortName: 'CPD', summary: 'Local police', mselId: 'msel-1' };
+const TEMPLATE: Organization = {
+  id: 'org-t',
+  name: 'Template Agency',
+  shortName: 'TA',
+  summary: 'A template',
+  isTemplate: true,
+  mselId: null,
+};
+const MSEL_ORG: Organization = {
+  id: 'org-1',
+  name: 'City Police',
+  shortName: 'CPD',
+  summary: 'Local police',
+  mselId: 'msel-1',
+};
 
 function msel(overrides: Partial<Msel> = {}): Msel {
-  return { id: 'msel-1', name: 'Exercise Alpha', createdBy: 'someone-else', userMselRoles: [], ...overrides };
+  return {
+    id: 'msel-1',
+    name: 'Exercise Alpha',
+    createdBy: 'someone-else',
+    userMselRoles: [],
+    ...overrides,
+  };
 }
 
 async function renderOrganizations(
-  overrides: { canEdit?: boolean; showTemplates?: boolean; activeMsel?: Msel | null } = {},
+  overrides: {
+    canEdit?: boolean;
+    showTemplates?: boolean;
+    activeMsel?: Msel | null;
+  } = {},
 ) {
-  const { canEdit = true, showTemplates = false, activeMsel = msel() } = overrides;
+  const {
+    canEdit = true,
+    showTemplates = false,
+    activeMsel = msel(),
+  } = overrides;
   const organizationApi = {
     getOrganizationTemplates: vi.fn(() => of([structuredClone(TEMPLATE)])),
     deleteOrganization: vi.fn(() => of<unknown>(null)),
@@ -94,7 +126,11 @@ const TEMPLATE_HEADER = [
   'Upload Organization templates from JSON',
   'Download Organization templates as JSON',
 ];
-const MSEL_ROW = ['Edit City Police', 'Delete City Police', 'Make City Police a template'];
+const MSEL_ROW = [
+  'Edit City Police',
+  'Delete City Police',
+  'Make City Police a template',
+];
 
 describe('OrganizationListComponent', () => {
   describe('templates (admin)', () => {
@@ -104,15 +140,25 @@ describe('OrganizationListComponent', () => {
      * Data: showTemplates true; canEdit true; no active MSEL.
      */
     it('offers template actions with canEdit', async () => {
-      const { organizationApi } = await renderOrganizations({ showTemplates: true, canEdit: true, activeMsel: null });
+      const { organizationApi } = await renderOrganizations({
+        showTemplates: true,
+        canEdit: true,
+        activeMsel: null,
+      });
 
       expect(organizationApi.getOrganizationTemplates).toHaveBeenCalledTimes(1);
       for (const title of TEMPLATE_HEADER) {
         expect(within(table()).getByTitle(title)).toBeInTheDocument();
       }
-      expect(within(table()).getByRole('button', { name: 'Edit Template Agency' })).toBeInTheDocument();
-      expect(within(table()).getByRole('button', { name: 'Delete Template Agency' })).toBeInTheDocument();
-      expect(within(table()).queryByText('City Police')).not.toBeInTheDocument();
+      expect(
+        within(table()).getByRole('button', { name: 'Edit Template Agency' }),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).getByRole('button', { name: 'Delete Template Agency' }),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).queryByText('City Police'),
+      ).not.toBeInTheDocument();
     });
 
     /**
@@ -121,14 +167,24 @@ describe('OrganizationListComponent', () => {
      * Data: showTemplates true; canEdit false; the active MSEL was created by the user (near miss: owner of a MSEL, not a template manager).
      */
     it('hides template actions without canEdit, even for an MSEL owner', async () => {
-      await renderOrganizations({ showTemplates: true, canEdit: false, activeMsel: msel({ createdBy: ME }) });
+      await renderOrganizations({
+        showTemplates: true,
+        canEdit: false,
+        activeMsel: msel({ createdBy: ME }),
+      });
 
       expect(within(table()).getByText('Template Agency')).toBeInTheDocument();
       for (const title of TEMPLATE_HEADER) {
         expect(within(table()).queryByTitle(title)).not.toBeInTheDocument();
       }
-      expect(within(table()).queryByRole('button', { name: 'Edit Template Agency' })).not.toBeInTheDocument();
-      expect(within(table()).queryByRole('button', { name: 'Delete Template Agency' })).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByRole('button', { name: 'Edit Template Agency' }),
+      ).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByRole('button', {
+          name: 'Delete Template Agency',
+        }),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -141,9 +197,13 @@ describe('OrganizationListComponent', () => {
     it('offers organization buttons with canEdit', async () => {
       await renderOrganizations({ canEdit: true });
 
-      expect(within(table()).getByTitle('Add organization')).toBeInTheDocument();
+      expect(
+        within(table()).getByTitle('Add organization'),
+      ).toBeInTheDocument();
       for (const name of MSEL_ROW) {
-        expect(within(table()).getByRole('button', { name })).toBeInTheDocument();
+        expect(
+          within(table()).getByRole('button', { name }),
+        ).toBeInTheDocument();
       }
     });
 
@@ -155,13 +215,27 @@ describe('OrganizationListComponent', () => {
     it('lets the MSEL owner edit organizations without canEdit, but not make templates', async () => {
       await renderOrganizations({
         canEdit: false,
-        activeMsel: msel({ userMselRoles: [{ id: 'umr-1', userId: ME, mselId: 'msel-1', role: MselRole.Owner }] }),
+        activeMsel: msel({
+          userMselRoles: [
+            { id: 'umr-1', userId: ME, mselId: 'msel-1', role: MselRole.Owner },
+          ],
+        }),
       });
 
-      expect(within(table()).getByTitle('Add organization')).toBeInTheDocument();
-      expect(within(table()).getByRole('button', { name: 'Edit City Police' })).toBeInTheDocument();
-      expect(within(table()).getByRole('button', { name: 'Delete City Police' })).toBeInTheDocument();
-      expect(within(table()).queryByRole('button', { name: 'Make City Police a template' })).not.toBeInTheDocument();
+      expect(
+        within(table()).getByTitle('Add organization'),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).getByRole('button', { name: 'Edit City Police' }),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).getByRole('button', { name: 'Delete City Police' }),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).queryByRole('button', {
+          name: 'Make City Police a template',
+        }),
+      ).not.toBeInTheDocument();
     });
 
     /**
@@ -172,13 +246,26 @@ describe('OrganizationListComponent', () => {
     it('hides organization buttons without canEdit for a non-owner', async () => {
       await renderOrganizations({
         canEdit: false,
-        activeMsel: msel({ userMselRoles: [{ id: 'umr-1', userId: ME, mselId: 'msel-1', role: MselRole.Editor }] }),
+        activeMsel: msel({
+          userMselRoles: [
+            {
+              id: 'umr-1',
+              userId: ME,
+              mselId: 'msel-1',
+              role: MselRole.Editor,
+            },
+          ],
+        }),
       });
 
       expect(within(table()).getByText('City Police')).toBeInTheDocument();
-      expect(within(table()).queryByTitle('Add organization')).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByTitle('Add organization'),
+      ).not.toBeInTheDocument();
       for (const name of MSEL_ROW) {
-        expect(within(table()).queryByRole('button', { name })).not.toBeInTheDocument();
+        expect(
+          within(table()).queryByRole('button', { name }),
+        ).not.toBeInTheDocument();
       }
     });
 
@@ -188,12 +275,22 @@ describe('OrganizationListComponent', () => {
      * Data: showTemplates false; canEdit true.
      */
     it('deletes an organization after confirmation', async () => {
-      const { organizationApi, confirm } = await renderOrganizations({ canEdit: true });
+      const { organizationApi, confirm } = await renderOrganizations({
+        canEdit: true,
+      });
       const user = userEvent.setup();
 
-      await user.click(within(table()).getByRole('button', { name: 'Delete City Police' }));
+      await user.click(
+        within(table()).getByRole('button', { name: 'Delete City Police' }),
+      );
 
-      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Organization', confirmText: 'Delete', cancelText: 'Cancel' }));
+      expect(confirm).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Delete Organization',
+          confirmText: 'Delete',
+          cancelText: 'Cancel',
+        }),
+      );
       expect(organizationApi.deleteOrganization).toHaveBeenCalledWith('org-1');
       expect(screen.getByText('No results found')).toBeInTheDocument();
     });
@@ -208,12 +305,20 @@ describe('OrganizationListComponent', () => {
   it.each([
     { showTemplates: true, reloads: 1 },
     { showTemplates: false, reloads: 0 },
-  ])('reloads $reloads time(s) with showTemplates $showTemplates when the hub connection is replaced', async ({ showTemplates, reloads }) => {
-    const { organizationApi } = await renderOrganizations({ showTemplates, activeMsel: showTemplates ? null : msel() });
-    const before = organizationApi.getOrganizationTemplates.mock.calls.length;
+  ])(
+    'reloads $reloads time(s) with showTemplates $showTemplates when the hub connection is replaced',
+    async ({ showTemplates, reloads }) => {
+      const { organizationApi } = await renderOrganizations({
+        showTemplates,
+        activeMsel: showTemplates ? null : msel(),
+      });
+      const before = organizationApi.getOrganizationTemplates.mock.calls.length;
 
-    TestBed.inject(HubReconnectService).announceReconnected();
+      TestBed.inject(HubReconnectService).announceReconnected();
 
-    expect(organizationApi.getOrganizationTemplates).toHaveBeenCalledTimes(before + reloads);
-  });
+      expect(organizationApi.getOrganizationTemplates).toHaveBeenCalledTimes(
+        before + reloads,
+      );
+    },
+  );
 });

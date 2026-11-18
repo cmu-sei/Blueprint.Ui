@@ -5,122 +5,180 @@ project root for license information.
 -->
 <div class="top-toolbar">
   <div class="sp-icon">
-    <mat-icon class="mdi-24px" fontIcon="mdi-terraform" [style.color]="'var(--mat-sys-primary)'" />
+    <mat-icon
+      class="mdi-24px"
+      fontIcon="mdi-terraform"
+      [style.color]="'var(--mat-sys-primary)'"
+    />
   </div>
   <span class="toolbar-title">Caster</span>
   @if (canEditDirectory()) {
-  <span class="edit-buttons-span">
-    <button mat-icon-button (click)="saveChanges()" style="outline: none;" title="Save Changes" [disabled]="!isChanged || busy">
-      <mat-icon class="mdi-24px self-center" fontIcon="mdi-content-save-outline" />
-    </button>
-    <button mat-icon-button (click)="cancelChanges()" style="outline: none;" title="Cancel Changes" [disabled]="!isChanged || busy">
-      <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline" />
-    </button>
-  </span>
-  @if (isChanged) {
-  <mat-label class="change-span">Changes have not been saved!</mat-label>
-  }
+    <span class="edit-buttons-span">
+      <button
+        mat-icon-button
+        (click)="saveChanges()"
+        style="outline: none"
+        title="Save Changes"
+        [disabled]="!isChanged || busy"
+      >
+        <mat-icon
+          class="mdi-24px self-center"
+          fontIcon="mdi-content-save-outline"
+        />
+      </button>
+      <button
+        mat-icon-button
+        (click)="cancelChanges()"
+        style="outline: none"
+        title="Cancel Changes"
+        [disabled]="!isChanged || busy"
+      >
+        <mat-icon
+          class="mdi-24px self-center"
+          fontIcon="mdi-close-circle-outline"
+        />
+      </button>
+    </span>
+    @if (isChanged) {
+      <mat-label class="change-span">Changes have not been saved!</mat-label>
+    }
   }
 </div>
 <div class="content-area">
   @if (msel.id) {
-  <p class="help">
-    The push deploys the Caster directory's topology in a workspace of its own. Downloading the MSEL file stores a copy
-    of the linked directory here, so the file carries it to another Caster.
-    @if (integrationsLocked()) {
-    Both are locked while the integrations are deployed; Remove Integrations on the Config tab unlocks them.
-    }
-  </p>
+    <p class="help">
+      The push deploys the Caster directory's topology in a workspace of its
+      own. Downloading the MSEL file stores a copy of the linked directory here,
+      so the file carries it to another Caster.
+      @if (integrationsLocked()) {
+        Both are locked while the integrations are deployed; Remove Integrations
+        on the Config tab unlocks them.
+      }
+    </p>
 
-  <h3 class="section-title">Caster Directory</h3>
-  <div class="link-row">
-    @if (directoryList.length > 0 && canEditDirectory()) {
-    <mat-form-field class="link-select" subscriptSizing="dynamic">
-      <mat-label>Caster Directory</mat-label>
-      <mat-select [(ngModel)]="casterDirectoryId" (selectionChange)="isChanged = true" [disabled]="busy">
-        <mat-option [value]="null">-- None --</mat-option>
-        @for (directory of directoryList; track directory.id) {
-        <mat-option [value]="directory.id">{{ directoryLabel(directory) }}</mat-option>
+    <h3 class="section-title">Caster Directory</h3>
+    <div class="link-row">
+      @if (directoryList.length > 0 && canEditDirectory()) {
+        <mat-form-field class="link-select" subscriptSizing="dynamic">
+          <mat-label>Caster Directory</mat-label>
+          <mat-select
+            [(ngModel)]="casterDirectoryId"
+            (selectionChange)="isChanged = true"
+            [disabled]="busy"
+          >
+            <mat-option [value]="null">-- None --</mat-option>
+            @for (directory of directoryList; track directory.id) {
+              <mat-option [value]="directory.id">{{
+                directoryLabel(directory)
+              }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      } @else if (msel.casterDirectoryId) {
+        <span class="link-label">Caster Directory:</span>
+        <span class="link-guid" [title]="msel.casterDirectoryId">{{
+          msel.casterDirectoryId
+        }}</span>
+        @if (linkedDirectory()) {
+          <span class="link-name">{{ directoryLabel(linkedDirectory()) }}</span>
         }
-      </mat-select>
-    </mat-form-field>
-    } @else if (msel.casterDirectoryId) {
-    <span class="link-label">Caster Directory:</span>
-    <span class="link-guid" [title]="msel.casterDirectoryId">{{ msel.casterDirectoryId }}</span>
-    @if (linkedDirectory()) {
-    <span class="link-name">{{ directoryLabel(linkedDirectory()) }}</span>
+      } @else {
+        <span class="link-none">No Caster directory is linked.</span>
+      }
+      @if (linkedDirectoryUrl() && !isChanged) {
+        <a
+          [href]="linkedDirectoryUrl()"
+          target="_blank"
+          class="link-open"
+          title="Open directory in Caster"
+        >
+          <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new" />
+        </a>
+      }
+    </div>
+    @if (directoryError) {
+      <span class="warning">{{ directoryError }}</span>
     }
-    } @else {
-    <span class="link-none">No Caster directory is linked.</span>
-    }
-    @if (linkedDirectoryUrl() && !isChanged) {
-    <a [href]="linkedDirectoryUrl()" target="_blank" class="link-open" title="Open directory in Caster">
-      <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new" />
-    </a>
-    }
-  </div>
-  @if (directoryError) {
-  <span class="warning">{{ directoryError }}</span>
-  }
-  <p class="help">{{ pushPlan() }}</p>
+    <p class="help">{{ pushPlan() }}</p>
 
-  <h3 class="section-title">Stored Copy</h3>
-  @if (canEditCopy()) {
-  <div class="copy-actions">
-    <button mat-stroked-button (click)="captureCopy()" [disabled]="busy || isChanged || !msel.casterDirectoryId"
-      matTooltip="Copy the linked directory, the directories above it and their shared files from Caster now. Downloading the MSEL file does the same.">
-      <mat-icon fontIcon="mdi-content-copy" />
-      Store a Copy Now
-    </button>
-    <button mat-stroked-button (click)="importCopy()" [disabled]="busy || isChanged || !copy || !!msel.casterDirectoryId"
-      matTooltip="Create a new Caster project from the copy, as you, and link the MSEL to it. A template needs this before it can be launched.">
-      <mat-icon fontIcon="mdi-import" />
-      Import into Caster
-    </button>
-    <button mat-stroked-button (click)="deleteCopy()" [disabled]="busy || !copy">
-      <mat-icon fontIcon="mdi-delete-outline" />
-      Delete the Copy
-    </button>
-  </div>
-  }
-  @if (copy) {
-  <div class="copy-details">
-    <span class="link-label">Project:</span>
-    <span>{{ copy.projectName }}</span>
-    <span class="link-label">Directory:</span>
-    <span>{{ copyPath() }}</span>
-    <span class="link-label">Copied:</span>
-    <span>{{ copy.dateExported | date: 'medium' }}{{ copy.exportedByName ? ' by ' + copy.exportedByName : '' }}</span>
-    @if (copy.sourceDirectoryId) {
-    <span class="link-label">From Directory:</span>
-    <span class="link-guid" [title]="copy.sourceDirectoryId">{{ copy.sourceDirectoryId }}</span>
+    <h3 class="section-title">Stored Copy</h3>
+    @if (canEditCopy()) {
+      <div class="copy-actions">
+        <button
+          mat-stroked-button
+          (click)="captureCopy()"
+          [disabled]="busy || isChanged || !msel.casterDirectoryId"
+          matTooltip="Copy the linked directory, the directories above it and their shared files from Caster now. Downloading the MSEL file does the same."
+        >
+          <mat-icon fontIcon="mdi-content-copy" />
+          Store a Copy Now
+        </button>
+        <button
+          mat-stroked-button
+          (click)="importCopy()"
+          [disabled]="busy || isChanged || !copy || !!msel.casterDirectoryId"
+          matTooltip="Create a new Caster project from the copy, as you, and link the MSEL to it. A template needs this before it can be launched."
+        >
+          <mat-icon fontIcon="mdi-import" />
+          Import into Caster
+        </button>
+        <button
+          mat-stroked-button
+          (click)="deleteCopy()"
+          [disabled]="busy || !copy"
+        >
+          <mat-icon fontIcon="mdi-delete-outline" />
+          Delete the Copy
+        </button>
+      </div>
     }
-  </div>
-  @for (warning of copy.warnings; track warning) {
-  <span class="warning">{{ warning }}</span>
-  }
-  @if (!contentsIncluded()) {
-  <p class="help">File contents are shown to the MSEL's owners and editors.</p>
-  }
-  <mat-accordion class="copy-files" multi>
-    @for (file of copyFiles(); track file.path) {
-    <mat-expansion-panel [disabled]="!contentsIncluded()">
-      <mat-expansion-panel-header>
-        <mat-panel-title class="file-path">{{ file.path }}</mat-panel-title>
-        @if (file.note) {
-        <mat-panel-description>{{ file.note }}</mat-panel-description>
+    @if (copy) {
+      <div class="copy-details">
+        <span class="link-label">Project:</span>
+        <span>{{ copy.projectName }}</span>
+        <span class="link-label">Directory:</span>
+        <span>{{ copyPath() }}</span>
+        <span class="link-label">Copied:</span>
+        <span
+          >{{ copy.dateExported | date: 'medium'
+          }}{{ copy.exportedByName ? ' by ' + copy.exportedByName : '' }}</span
+        >
+        @if (copy.sourceDirectoryId) {
+          <span class="link-label">From Directory:</span>
+          <span class="link-guid" [title]="copy.sourceDirectoryId">{{
+            copy.sourceDirectoryId
+          }}</span>
         }
-      </mat-expansion-panel-header>
-      <ng-template matExpansionPanelContent>
-        <pre class="file-content">{{ file.content }}</pre>
-      </ng-template>
-    </mat-expansion-panel>
-    } @empty {
-    <span class="link-none">The copy holds no files.</span>
+      </div>
+      @for (warning of copy.warnings; track warning) {
+        <span class="warning">{{ warning }}</span>
+      }
+      @if (!contentsIncluded()) {
+        <p class="help">
+          File contents are shown to the MSEL's owners and editors.
+        </p>
+      }
+      <mat-accordion class="copy-files" multi>
+        @for (file of copyFiles(); track file.path) {
+          <mat-expansion-panel [disabled]="!contentsIncluded()">
+            <mat-expansion-panel-header>
+              <mat-panel-title class="file-path">{{
+                file.path
+              }}</mat-panel-title>
+              @if (file.note) {
+                <mat-panel-description>{{ file.note }}</mat-panel-description>
+              }
+            </mat-expansion-panel-header>
+            <ng-template matExpansionPanelContent>
+              <pre class="file-content">{{ file.content }}</pre>
+            </ng-template>
+          </mat-expansion-panel>
+        } @empty {
+          <span class="link-none">The copy holds no files.</span>
+        }
+      </mat-accordion>
+    } @else if (copyLoaded) {
+      <span class="link-none">No copy is stored.</span>
     }
-  </mat-accordion>
-  } @else if (copyLoaded) {
-  <span class="link-none">No copy is stored.</span>
-  }
   }
 </div>

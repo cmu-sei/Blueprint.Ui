@@ -7,10 +7,7 @@
 import { DataValueStore } from './data-value.store';
 import { DataValueQuery } from './data-value.query';
 import { Injectable, inject } from '@angular/core';
-import {
-  DataValue,
-  DataValueService
-} from 'src/app/generated/blueprint.api';
+import { DataValue, DataValueService } from 'src/app/generated/blueprint.api';
 import { MselDataService } from '../msel/msel-data.service';
 import { map, take, tap } from 'rxjs/operators';
 
@@ -23,7 +20,6 @@ export class DataValueDataService {
   private dataValueQuery = inject(DataValueQuery);
   private dataValueStore = inject(DataValueStore);
 
-
   loadByMsel(mselId: string) {
     this.dataValueStore.setLoading(true);
     this.dataValueService
@@ -32,7 +28,7 @@ export class DataValueDataService {
         tap(() => {
           this.dataValueStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (dataValues) => {
@@ -40,7 +36,7 @@ export class DataValueDataService {
         },
         (error) => {
           this.dataValueStore.set([]);
-        }
+        },
       );
   }
 
@@ -52,7 +48,7 @@ export class DataValueDataService {
         tap(() => {
           this.dataValueStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.dataValueStore.upsert(s.id, { ...s });
@@ -71,7 +67,7 @@ export class DataValueDataService {
         tap(() => {
           this.dataValueStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((dv) => {
         this.dataValueStore.upsert(dv.id, dv);
@@ -86,7 +82,7 @@ export class DataValueDataService {
         tap(() => {
           this.dataValueStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((dv) => {
         this.dataValueStore.upsert(dv.id, dv);
@@ -109,5 +105,4 @@ export class DataValueDataService {
   deleteFromStore(id: string) {
     this.dataValueStore.remove(id);
   }
-
 }

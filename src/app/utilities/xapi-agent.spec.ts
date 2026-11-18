@@ -3,7 +3,12 @@
 // project root for license information.
 
 import { describe, it, expect } from 'vitest';
-import { agentIdentityKey, agentName, isAnonymousActor, isAnonymousAgentObject } from './xapi-agent';
+import {
+  agentIdentityKey,
+  agentName,
+  isAnonymousActor,
+  isAnonymousAgentObject,
+} from './xapi-agent';
 
 describe('agentIdentityKey', () => {
   /**
@@ -12,10 +17,20 @@ describe('agentIdentityKey', () => {
    * Data: one agent per identifier, the first also carrying a name and an mbox.
    */
   it('keys an agent by the first identifier it has', () => {
-    expect(agentIdentityKey({ name: 'Ann', mbox: 'mailto:ann@x', account: { homePage: 'https://id', name: 'ann' } })).toBe('account:https://id|ann');
-    expect(agentIdentityKey({ mbox: 'mailto:ann@x', name: 'Ann' })).toBe('mbox:mailto:ann@x');
+    expect(
+      agentIdentityKey({
+        name: 'Ann',
+        mbox: 'mailto:ann@x',
+        account: { homePage: 'https://id', name: 'ann' },
+      }),
+    ).toBe('account:https://id|ann');
+    expect(agentIdentityKey({ mbox: 'mailto:ann@x', name: 'Ann' })).toBe(
+      'mbox:mailto:ann@x',
+    );
     expect(agentIdentityKey({ mbox_sha1sum: 'abc' })).toBe('sha1:abc');
-    expect(agentIdentityKey({ openid: 'https://openid/ann' })).toBe('openid:https://openid/ann');
+    expect(agentIdentityKey({ openid: 'https://openid/ann' })).toBe(
+      'openid:https://openid/ann',
+    );
     expect(agentIdentityKey({ name: 'Ann' })).toBe('name:Ann');
   });
 
@@ -25,7 +40,12 @@ describe('agentIdentityKey', () => {
    * Data: an agent with only account.homePage; an agent with only objectType; undefined.
    */
   it('gives no key for an account with no name, or for no identity', () => {
-    expect(agentIdentityKey({ objectType: 'Agent', account: { homePage: 'https://lrs' } })).toBe('');
+    expect(
+      agentIdentityKey({
+        objectType: 'Agent',
+        account: { homePage: 'https://lrs' },
+      }),
+    ).toBe('');
     expect(agentIdentityKey({ objectType: 'Agent' })).toBe('');
     expect(agentIdentityKey(undefined)).toBe('');
   });
@@ -39,9 +59,18 @@ describe('agentName', () => {
    */
   it('calls an agent by the most readable identifier it has', () => {
     expect(agentName({ name: 'Ann', account: { name: 'ann' } })).toBe('Ann');
-    expect(agentName({ account: { homePage: 'https://id', name: 'ann' }, mbox: 'mailto:ann@x' })).toBe('ann');
-    expect(agentName({ mbox: 'mailto:ann@example.com' })).toBe('ann@example.com');
-    expect(agentName({ openid: 'https://openid/ann' })).toBe('https://openid/ann');
+    expect(
+      agentName({
+        account: { homePage: 'https://id', name: 'ann' },
+        mbox: 'mailto:ann@x',
+      }),
+    ).toBe('ann');
+    expect(agentName({ mbox: 'mailto:ann@example.com' })).toBe(
+      'ann@example.com',
+    );
+    expect(agentName({ openid: 'https://openid/ann' })).toBe(
+      'https://openid/ann',
+    );
     expect(agentName({ mbox_sha1sum: 'abc' })).toBe('');
   });
 });
@@ -55,7 +84,12 @@ describe('isAnonymousActor', () => {
   it('finds an actor anonymous only when it is a person with no identity', () => {
     expect(isAnonymousActor({})).toBe(true);
     expect(isAnonymousActor({ objectType: 'Agent' })).toBe(true);
-    expect(isAnonymousActor({ objectType: 'Agent', account: { homePage: 'https://lrs' } })).toBe(true);
+    expect(
+      isAnonymousActor({
+        objectType: 'Agent',
+        account: { homePage: 'https://lrs' },
+      }),
+    ).toBe(true);
     expect(isAnonymousActor({ objectType: 'Group' })).toBe(false);
     expect(isAnonymousActor({ mbox_sha1sum: 'abc' })).toBe(false);
     expect(isAnonymousActor(undefined)).toBe(false);
@@ -71,7 +105,9 @@ describe('isAnonymousAgentObject', () => {
   it('finds an object anonymous only when it is an Agent with no identity', () => {
     expect(isAnonymousAgentObject({ objectType: 'Agent' })).toBe(true);
     expect(isAnonymousAgentObject({})).toBe(false);
-    expect(isAnonymousAgentObject({ objectType: 'Agent', name: 'Ann' })).toBe(false);
+    expect(isAnonymousAgentObject({ objectType: 'Agent', name: 'Ann' })).toBe(
+      false,
+    );
     expect(isAnonymousAgentObject(undefined)).toBe(false);
   });
 });

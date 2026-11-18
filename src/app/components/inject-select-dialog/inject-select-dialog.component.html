@@ -13,13 +13,14 @@ project root for license information.
 >
   @if (!!data && data.catalog) {
     <div crucibleDialogContent>
-      <app-inject-list [catalog]="data.catalog"
+      <app-inject-list
+        [catalog]="data.catalog"
         [injectType]="data.injectType"
         [injectList]="data.injectList"
         [isContentDeveloper]="false"
         [loggedInUserId]="data.loggedInUserId"
-        (selectedInjectIdList)="selectedInjectIdList=$event"
-       />
+        (selectedInjectIdList)="selectedInjectIdList = $event"
+      />
     </div>
   }
 </crucible-dialog>

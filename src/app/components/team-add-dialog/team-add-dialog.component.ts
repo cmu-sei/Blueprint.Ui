@@ -5,19 +5,39 @@
 import { Component, inject, output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Unit } from 'src/app/generated/blueprint.api';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective, CrucibleDialogActionsDirective } from '@cmusei/crucible-common';
-import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+  CrucibleDialogActionsDirective,
+} from '@cmusei/crucible-common';
+import {
+  MatFormField,
+  MatLabel,
+  MatInput,
+  MatSuffix,
+} from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 
 @Component({
-    selector: 'app-team-add-dialog',
-    templateUrl: './team-add-dialog.component.html',
-    styleUrls: ['./team-add-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatIcon, MatButton, CrucibleDialogActionsDirective]
+  selector: 'app-team-add-dialog',
+  templateUrl: './team-add-dialog.component.html',
+  styleUrls: ['./team-add-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    FormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatIcon,
+    MatButton,
+    CrucibleDialogActionsDirective,
+  ],
 })
-
 export class TeamAddDialogComponent {
   data = inject(MAT_DIALOG_DATA);
 
@@ -45,10 +65,9 @@ export class TeamAddDialogComponent {
   filteredList(): Unit[] {
     const filteredList = [...this.data?.unitList];
     const filterValue = this.filterString.toLowerCase();
-    return filteredList.filter(u => {
+    return filteredList.filter((u) => {
       const testString = u.name.toLowerCase() + u.shortName.toLowerCase();
       return testString.indexOf(filterValue) > -1;
     });
   }
-
 }

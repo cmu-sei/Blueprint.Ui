@@ -5,34 +5,48 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
-import {
-  ComnSettingsService,
-  ComnAuthService,
-} from '@cmusei/crucible-common';
+import { ComnSettingsService, ComnAuthService } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { UserQuery } from 'src/app/data/user/user.query';
-import {
-  Msel,
-  User,
-} from 'src/app/generated/blueprint.api';
+import { Msel, User } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { PlayerApplicationDataService } from 'src/app/data/player-application/player-application-data.service';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
 import { ErrorService } from 'src/app/services/error/error.service';
-import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
+import {
+  ApplicationArea,
+  SignalRService,
+} from 'src/app/services/signalr.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
-import { MatCard, MatCardHeader, MatCardTitle, MatCardSubtitle, MatCardContent, MatCardActions } from '@angular/material/card';
+import {
+  MatCard,
+  MatCardHeader,
+  MatCardTitle,
+  MatCardSubtitle,
+  MatCardContent,
+  MatCardActions,
+} from '@angular/material/card';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatButton } from '@angular/material/button';
 import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
-    selector: 'app-launch',
-    templateUrl: './launch.component.html',
-    styleUrls: ['./launch.component.scss'],
-    imports: [TopbarComponent, MatCard, MatCardHeader, MatCardTitle, MatCardSubtitle, MatCardContent, MatProgressSpinner, MatCardActions, MatButton]
+  selector: 'app-launch',
+  templateUrl: './launch.component.html',
+  styleUrls: ['./launch.component.scss'],
+  imports: [
+    TopbarComponent,
+    MatCard,
+    MatCardHeader,
+    MatCardTitle,
+    MatCardSubtitle,
+    MatCardContent,
+    MatProgressSpinner,
+    MatCardActions,
+    MatButton,
+  ],
 })
 export class LaunchComponent implements OnDestroy, OnInit {
   private userDataService = inject(UserDataService);
@@ -69,12 +83,13 @@ export class LaunchComponent implements OnDestroy, OnInit {
     // set image
     this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace(
       'white',
-      'blue'
+      'blue',
     );
     this.titleService.setTitle(this.appTitle);
     // Set the display settings from config file
     // subscribe to users
-    this.userQuery.selectAll()
+    this.userQuery
+      .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((users) => {
         this.userList = users;
@@ -97,11 +112,10 @@ export class LaunchComponent implements OnDestroy, OnInit {
         this.launchMselList = msels;
       });
     // subscribe to MSEL updates to track integration status changes
-    this.mselDataService.MselList
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((msels) => {
+    this.mselDataService.MselList.pipe(takeUntil(this.unsubscribe$)).subscribe(
+      (msels) => {
         if (!this.launchedMsel?.id) return;
-        const updatedMsel = msels.find(m => m.id === this.launchedMsel.id);
+        const updatedMsel = msels.find((m) => m.id === this.launchedMsel.id);
         if (!updatedMsel) return;
         this.launchedMsel = updatedMsel;
         if (updatedMsel.integrationStatus) {
@@ -141,7 +155,8 @@ export class LaunchComponent implements OnDestroy, OnInit {
             this.launchStatus = '';
           }
         }
-      });
+      },
+    );
     // subscribe to route changes
     this.activatedRoute.queryParamMap
       .pipe(takeUntil(this.unsubscribe$))
@@ -191,7 +206,7 @@ export class LaunchComponent implements OnDestroy, OnInit {
           this.launchedMsel = { name: '' };
           this.showChoices = true;
           this.errorService.handleError(error);
-        }
+        },
       );
   }
 

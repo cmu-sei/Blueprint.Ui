@@ -6,7 +6,11 @@ import { Component, Type, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
-import { GroupMembership, GroupService, User } from 'src/app/generated/blueprint.api';
+import {
+  GroupMembership,
+  GroupService,
+  User,
+} from 'src/app/generated/blueprint.api';
 import { UserStore } from 'src/app/data/user/user.store';
 import { AdminGroupsDetailComponent } from './admin-groups-detail.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
@@ -32,13 +36,19 @@ const USERS: User[] = [
   { id: 'user-a', name: 'Alice' },
   { id: 'user-b', name: 'Bob' },
 ];
-const MEMBERSHIP: GroupMembership = { id: 'gm-1', groupId: 'group-1', userId: 'user-a' };
+const MEMBERSHIP: GroupMembership = {
+  id: 'gm-1',
+  groupId: 'group-1',
+  userId: 'user-a',
+};
 
 async function renderDetail(overrides: { canEdit?: boolean } = {}) {
   const { canEdit = true } = overrides;
   const groupApi = {
     getGroupMemberships: vi.fn(() => of([structuredClone(MEMBERSHIP)])),
-    createGroupMembership: vi.fn(() => of<GroupMembership>({ id: 'gm-2', groupId: 'group-1', userId: 'user-b' })),
+    createGroupMembership: vi.fn(() =>
+      of<GroupMembership>({ id: 'gm-2', groupId: 'group-1', userId: 'user-b' }),
+    ),
     deleteGroupMembership: vi.fn(() => of<unknown>(null)),
   } satisfies ApiStub<GroupService>;
   const rendered = await renderComponent(AdminGroupsDetailComponent, {
@@ -106,7 +116,10 @@ describe('AdminGroupsDetailComponent', () => {
     child(fixture, MembershipListStub).createMembership.emit('user-b');
     child(fixture, MemberListStub).deleteMembership.emit('gm-1');
 
-    expect(groupApi.createGroupMembership).toHaveBeenCalledWith('group-1', { groupId: 'group-1', userId: 'user-b' });
+    expect(groupApi.createGroupMembership).toHaveBeenCalledWith('group-1', {
+      groupId: 'group-1',
+      userId: 'user-b',
+    });
     expect(groupApi.deleteGroupMembership).toHaveBeenCalledWith('gm-1');
   });
 });

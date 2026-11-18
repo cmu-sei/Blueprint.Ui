@@ -13,7 +13,13 @@ import { Competency } from 'src/app/generated/blueprint.api';
 import { AdminCompetencyEditDialogComponent } from './admin-competency-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const COMPETENCY = { id: 'c-1', competencyFrameworkId: 'fw-1', idNumber: 'K0001', shortName: 'Networking', description: 'Network knowledge' } as Competency;
+const COMPETENCY = {
+  id: 'c-1',
+  competencyFrameworkId: 'fw-1',
+  idNumber: 'K0001',
+  shortName: 'Networking',
+  description: 'Network knowledge',
+} as Competency;
 
 function dialogData(overrides: Partial<typeof COMPETENCY> = {}) {
   return { competency: { ...structuredClone(COMPETENCY), ...overrides } };
@@ -21,7 +27,12 @@ function dialogData(overrides: Partial<typeof COMPETENCY> = {}) {
 
 async function renderAdminCompetencyEditDialog(data = dialogData()) {
   const rendered = await renderComponent(AdminCompetencyEditDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, MatFormFieldModule, MatInputModule, MatSelectModule],
+    imports: [
+      ...CRUCIBLE_DIALOG_IMPORTS,
+      MatFormFieldModule,
+      MatInputModule,
+      MatSelectModule,
+    ],
     declarations: [AdminCompetencyEditDialogComponent],
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
   });
@@ -29,7 +40,9 @@ async function renderAdminCompetencyEditDialog(data = dialogData()) {
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
   const results: unknown[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results };
 }
 
@@ -42,8 +55,12 @@ describe('AdminCompetencyEditDialogComponent', () => {
   it('renders with the default test providers', async () => {
     const { fixture } = await renderAdminCompetencyEditDialog();
 
-    expect(fixture.componentInstance).toBeInstanceOf(AdminCompetencyEditDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Edit Competency' })).toBeInTheDocument();
+    expect(fixture.componentInstance).toBeInstanceOf(
+      AdminCompetencyEditDialogComponent,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Edit Competency' }),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -70,7 +87,9 @@ describe('AdminCompetencyEditDialogComponent', () => {
    * Data: a competency with no ID number and no short name.
    */
   it('disables Save for an incomplete competency', async () => {
-    await renderAdminCompetencyEditDialog(dialogData({ idNumber: '', shortName: '' }));
+    await renderAdminCompetencyEditDialog(
+      dialogData({ idNumber: '', shortName: '' }),
+    );
 
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
   });

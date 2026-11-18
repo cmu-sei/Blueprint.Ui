@@ -52,24 +52,71 @@ class DataValueStub {
   readonly userOptions = input<unknown[]>(undefined);
 }
 
-const PHISH: Injectm = { id: 'inj-1', name: 'Phish', description: 'Phishing email', injectTypeId: 'it-email', dataValues: [] };
-const NOTE: Injectm = { id: 'inj-2', name: 'Ransom note', description: 'Ransom', injectTypeId: 'it-email', requiresInjectId: 'inj-1', dataValues: [] };
+const PHISH: Injectm = {
+  id: 'inj-1',
+  name: 'Phish',
+  description: 'Phishing email',
+  injectTypeId: 'it-email',
+  dataValues: [],
+};
+const NOTE: Injectm = {
+  id: 'inj-2',
+  name: 'Ransom note',
+  description: 'Ransom',
+  injectTypeId: 'it-email',
+  requiresInjectId: 'inj-1',
+  dataValues: [],
+};
 // An inject of another catalog, as that catalog's own inject list loads it.
-const OTHER_CATALOG_INJECT: Injectm = { id: 'inj-9', name: 'Wiper', description: 'Disk wiper', injectTypeId: 'it-email', dataValues: [] };
-const CATALOG: Catalog = { id: 'cat-1', name: 'Ransomware Catalog', injectTypeId: 'it-email' };
+const OTHER_CATALOG_INJECT: Injectm = {
+  id: 'inj-9',
+  name: 'Wiper',
+  description: 'Disk wiper',
+  injectTypeId: 'it-email',
+  dataValues: [],
+};
+const CATALOG: Catalog = {
+  id: 'cat-1',
+  name: 'Ransomware Catalog',
+  injectTypeId: 'it-email',
+};
 const EMAIL: InjectType = { id: 'it-email', name: 'Email' };
 
 async function renderInjectList(
-  overrides: { canEdit?: boolean; isEditMode?: boolean; catalog?: Catalog; injectType?: InjectType } = {},
+  overrides: {
+    canEdit?: boolean;
+    isEditMode?: boolean;
+    catalog?: Catalog;
+    injectType?: InjectType;
+  } = {},
 ) {
-  const { canEdit = true, isEditMode = true, catalog = CATALOG, injectType = {} } = overrides;
+  const {
+    canEdit = true,
+    isEditMode = true,
+    catalog = CATALOG,
+    injectType = {},
+  } = overrides;
   const catalogInjectApi = {
     getCatalogInjects: vi.fn((catalogId: string) =>
       of<CatalogInject[]>(
         structuredClone(
           catalogId === 'cat-1'
-            ? [{ id: 'ci-1', catalogId: 'cat-1', injectId: 'inj-1', inject: PHISH }]
-            : [{ id: 'ci-9', catalogId: 'cat-2', injectId: 'inj-9', inject: OTHER_CATALOG_INJECT }],
+            ? [
+                {
+                  id: 'ci-1',
+                  catalogId: 'cat-1',
+                  injectId: 'inj-1',
+                  inject: PHISH,
+                },
+              ]
+            : [
+                {
+                  id: 'ci-9',
+                  catalogId: 'cat-2',
+                  injectId: 'inj-9',
+                  inject: OTHER_CATALOG_INJECT,
+                },
+              ],
         ),
       ),
     ),
@@ -85,7 +132,14 @@ async function renderInjectList(
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
   const dialog = { confirm } satisfies Pick<CrucibleDialogService, 'confirm'>;
   const rendered = await renderComponent(InjectListComponent, {
-    imports: [MatButtonModule, MatCheckboxModule, MatIconModule, MatMenuModule, MatSortModule, MatTableModule],
+    imports: [
+      MatButtonModule,
+      MatCheckboxModule,
+      MatIconModule,
+      MatMenuModule,
+      MatSortModule,
+      MatTableModule,
+    ],
     declarations: [InjectListComponent, DataValueStub],
     providers: [
       { provide: CatalogInjectService, useValue: catalogInjectApi },
@@ -94,10 +148,18 @@ async function renderInjectList(
       { provide: CrucibleDialogService, useValue: dialog },
       unstubbed(MatDialog),
     ],
-    inputs: { canEdit, isEditMode, catalog, injectType, loggedInUserId: 'user-1' },
+    inputs: {
+      canEdit,
+      isEditMode,
+      catalog,
+      injectType,
+      loggedInUserId: 'user-1',
+    },
   });
   const selections: string[][] = [];
-  rendered.fixture.componentInstance.selectedInjectIdList.subscribe((ids) => selections.push([...ids]));
+  rendered.fixture.componentInstance.selectedInjectIdList.subscribe((ids) =>
+    selections.push([...ids]),
+  );
   return { ...rendered, catalogInjectApi, injectApi, confirm, selections };
 }
 
@@ -131,7 +193,9 @@ describe('InjectListComponent', () => {
     expect(within(table()).getByText('Phish')).toBeInTheDocument();
     expect(within(table()).queryByTitle('Add Inject')).not.toBeInTheDocument();
     for (const name of ROW_ACTIONS) {
-      expect(within(table()).queryByRole('button', { name })).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByRole('button', { name }),
+      ).not.toBeInTheDocument();
     }
   });
 
@@ -141,12 +205,19 @@ describe('InjectListComponent', () => {
    * Data: canEdit true; catalog cat-1 holding Phish.
    */
   it('removes an inject from the catalog', async () => {
-    const { catalogInjectApi, confirm } = await renderInjectList({ canEdit: true });
+    const { catalogInjectApi, confirm } = await renderInjectList({
+      canEdit: true,
+    });
     const user = userEvent.setup();
 
-    await user.click(within(table()).getByRole('button', { name: 'Delete Phish inject' }));
+    await user.click(
+      within(table()).getByRole('button', { name: 'Delete Phish inject' }),
+    );
 
-    expect(catalogInjectApi.deleteCatalogInjectByIds).toHaveBeenCalledWith('cat-1', 'inj-1');
+    expect(catalogInjectApi.deleteCatalogInjectByIds).toHaveBeenCalledWith(
+      'cat-1',
+      'inj-1',
+    );
     expect(confirm).not.toHaveBeenCalled();
   });
 
@@ -181,12 +252,20 @@ describe('InjectListComponent', () => {
     const user = userEvent.setup();
 
     expect(injectApi.getInjectsByInjectType).toHaveBeenCalledWith('it-email');
-    const noteRow = within(table()).getByText('Ransom note').closest('mat-row') as HTMLElement;
+    const noteRow = within(table())
+      .getByText('Ransom note')
+      .closest('mat-row') as HTMLElement;
     await user.click(within(noteRow).getByRole('checkbox'));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Inject Requires Additional Injects' }));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Inject Requires Additional Injects' }),
+    );
     expect(selections).toEqual([['inj-1', 'inj-2']]);
-    expect(within(table()).queryByRole('button', { name: 'Edit Ransom note inject' })).not.toBeInTheDocument();
+    expect(
+      within(table()).queryByRole('button', {
+        name: 'Edit Ransom note inject',
+      }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -200,7 +279,11 @@ describe('InjectListComponent', () => {
 
     TestBed.inject(HubReconnectService).announceReconnected();
 
-    expect(catalogInjectApi.getCatalogInjects).toHaveBeenCalledTimes(before + 1);
-    expect(catalogInjectApi.getCatalogInjects).toHaveBeenLastCalledWith('cat-1');
+    expect(catalogInjectApi.getCatalogInjects).toHaveBeenCalledTimes(
+      before + 1,
+    );
+    expect(catalogInjectApi.getCatalogInjects).toHaveBeenLastCalledWith(
+      'cat-1',
+    );
   });
 });

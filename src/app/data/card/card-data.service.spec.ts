@@ -18,7 +18,10 @@ import { CardQuery } from './card.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function card(overrides: Partial<Card> = {}): Card {
   return {
@@ -49,7 +52,10 @@ function setup(queryParams: Record<string, string> = {}) {
   TestBed.configureTestingModule({
     providers: [
       { provide: CardService, useValue: cardApi },
-      { provide: Router, useValue: { navigate } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -116,9 +122,15 @@ describe('CardDataService', () => {
    */
   it('loadById, add and updateCard store the API result', () => {
     const { service, query, cardApi } = setup();
-    cardApi.getCard.mockReturnValue(of(card({ id: 'card-2', name: 'Arrest Card' })));
-    cardApi.createCard.mockReturnValue(of(card({ id: 'card-3', name: 'Ransom Card' })));
-    cardApi.updateCard.mockReturnValue(of(card({ id: 'card-2', name: 'Arrest Card v2' })));
+    cardApi.getCard.mockReturnValue(
+      of(card({ id: 'card-2', name: 'Arrest Card' })),
+    );
+    cardApi.createCard.mockReturnValue(
+      of(card({ id: 'card-3', name: 'Ransom Card' })),
+    );
+    cardApi.updateCard.mockReturnValue(
+      of(card({ id: 'card-2', name: 'Arrest Card v2' })),
+    );
 
     service.loadById('card-2');
     service.add(card({ id: undefined, name: 'Ransom Card' }));
@@ -162,14 +174,20 @@ describe('CardDataService', () => {
     const upload = new File(['[]'], 'cards.json');
     cardApi.uploadJsonCards.mockReturnValueOnce(
       of(
-        { type: HttpEventType.UploadProgress, loaded: 1, total: 4 } satisfies HttpUploadProgressEvent,
+        {
+          type: HttpEventType.UploadProgress,
+          loaded: 1,
+          total: 4,
+        } satisfies HttpUploadProgressEvent,
         new HttpResponse({ status: 200, body: [card()] }),
       ),
     );
     cardApi.uploadJsonCards.mockReturnValueOnce(
       of(new HttpResponse({ status: 200, body: null })),
     );
-    cardApi.uploadJsonCards.mockReturnValueOnce(throwError(() => new Error('bad')));
+    cardApi.uploadJsonCards.mockReturnValueOnce(
+      throwError(() => new Error('bad')),
+    );
 
     service.uploadJson(upload, 'events', true);
     service.uploadJson(upload, 'events', true);
@@ -213,7 +231,13 @@ describe('CardDataService', () => {
   it('CardList filters on the cardmask query param', () => {
     const { service, route } = setup({ cardmask: 'detained' });
     service.updateStore(card());
-    service.updateStore(card({ id: 'card-2', name: 'Arrest Card', description: 'Suspect detained' }));
+    service.updateStore(
+      card({
+        id: 'card-2',
+        name: 'Arrest Card',
+        description: 'Suspect detained',
+      }),
+    );
     const emissions = recordEmissions(service.CardList);
 
     expect(names(emissions.at(-1))).toEqual(['Arrest Card']);
@@ -244,25 +268,48 @@ describe('CardDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'loadTemplates', endpoint: 'getCardTemplates', escapes: false, call: (s: CardDataService) => s.loadTemplates() },
-    { method: 'loadById', endpoint: 'getCard', escapes: true, call: (s: CardDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createCard', escapes: true, call: (s: CardDataService) => s.add({ id: 'x-1' }) },
-    { method: 'updateCard', endpoint: 'updateCard', escapes: true, call: (s: CardDataService) => s.updateCard({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, cardApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(CardStore).setLoading(false);
-    cardApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'loadTemplates',
+      endpoint: 'getCardTemplates',
+      escapes: false,
+      call: (s: CardDataService) => s.loadTemplates(),
+    },
+    {
+      method: 'loadById',
+      endpoint: 'getCard',
+      escapes: true,
+      call: (s: CardDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createCard',
+      escapes: true,
+      call: (s: CardDataService) => s.add({ id: 'x-1' }),
+    },
+    {
+      method: 'updateCard',
+      endpoint: 'updateCard',
+      escapes: true,
+      call: (s: CardDataService) => s.updateCard({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, cardApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(CardStore).setLoading(false);
+      cardApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(CardQuery).getValue().loading).toBe(true);
-    // An empty error callback swallows the error; with no callback it escapes to
-    // ErrorService, the ErrorHandler app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(CardQuery).getValue().loading).toBe(true);
+      // An empty error callback swallows the error; with no callback it escapes to
+      // ErrorService, the ErrorHandler app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete escapes to the app's global ErrorHandler.
@@ -270,19 +317,26 @@ describe('CardDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteCard', call: (s: CardDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, cardApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    cardApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteCard',
+      call: (s: CardDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, cardApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      cardApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

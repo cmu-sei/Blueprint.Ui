@@ -7,7 +7,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { MatIconRegistry } from '@angular/material/icon';
 import { of } from 'rxjs';
-import { ComnAuthQuery, ComnAuthService, CrucibleThemeService, Theme } from '@cmusei/crucible-common';
+import {
+  ComnAuthQuery,
+  ComnAuthService,
+  CrucibleThemeService,
+  Theme,
+} from '@cmusei/crucible-common';
 import { AppComponent } from './app.component';
 import { activatedRouteStub } from './test-utils/activated-route';
 import { renderComponent } from './test-utils/render-component';
@@ -15,7 +20,9 @@ import { renderComponent } from './test-utils/render-component';
 @Component({ selector: 'comn-header-bar', template: '', standalone: false })
 class HeaderBarStub {}
 
-async function renderApp(overrides: { queryParams?: Record<string, string>; userTheme?: Theme } = {}) {
+async function renderApp(
+  overrides: { queryParams?: Record<string, string>; userTheme?: Theme } = {},
+) {
   const { queryParams = {}, userTheme = Theme.LIGHT } = overrides;
   const applyTheme = vi.fn();
   const setUserTheme = vi.fn();
@@ -25,9 +32,27 @@ async function renderApp(overrides: { queryParams?: Record<string, string>; user
     providers: [
       // The real registry, so the icon registration can be observed.
       { provide: MatIconRegistry, useClass: MatIconRegistry },
-      { provide: CrucibleThemeService, useValue: { applyTheme } satisfies Pick<CrucibleThemeService, 'applyTheme'> },
-      { provide: ComnAuthService, useValue: { setUserTheme } satisfies Pick<ComnAuthService, 'setUserTheme'> },
-      { provide: ComnAuthQuery, useValue: { userTheme$: of(userTheme) } satisfies Pick<ComnAuthQuery, 'userTheme$'> },
+      {
+        provide: CrucibleThemeService,
+        useValue: { applyTheme } satisfies Pick<
+          CrucibleThemeService,
+          'applyTheme'
+        >,
+      },
+      {
+        provide: ComnAuthService,
+        useValue: { setUserTheme } satisfies Pick<
+          ComnAuthService,
+          'setUserTheme'
+        >,
+      },
+      {
+        provide: ComnAuthQuery,
+        useValue: { userTheme$: of(userTheme) } satisfies Pick<
+          ComnAuthQuery,
+          'userTheme$'
+        >,
+      },
       { provide: ActivatedRoute, useValue: route },
     ],
     configureTestBed: () => {
@@ -48,7 +73,9 @@ afterEach(() => {
   try {
     renderedFixture?.destroy();
   } catch (error) {
-    if (!(error instanceof Error && error.message === 'Method not implemented.')) {
+    if (!(
+      error instanceof Error && error.message === 'Method not implemented.'
+    )) {
       throw error;
     }
   }
@@ -62,15 +89,22 @@ describe('AppComponent', () => {
    * Data: user theme dark; no theme query parameter.
    */
   it('renders with the default test providers', async () => {
-    const { fixture, applyTheme, setUserTheme } = await renderApp({ userTheme: Theme.DARK });
+    const { fixture, applyTheme, setUserTheme } = await renderApp({
+      userTheme: Theme.DARK,
+    });
     const registry = TestBed.inject(MatIconRegistry);
 
     expect(fixture.componentInstance).toBeInstanceOf(AppComponent);
     expect(registry.setDefaultFontSetClass).toHaveBeenCalledWith('mdi');
-    expect(registry.addSvgIcon).toHaveBeenCalledWith('crucible-icon-blueprint', expect.anything());
+    expect(registry.addSvgIcon).toHaveBeenCalledWith(
+      'crucible-icon-blueprint',
+      expect.anything(),
+    );
     expect(applyTheme).toHaveBeenCalledWith(Theme.DARK);
     expect(setUserTheme).not.toHaveBeenCalled();
-    expect(fixture.nativeElement.querySelector('main.app-main router-outlet')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('main.app-main router-outlet'),
+    ).not.toBeNull();
   });
 
   /**
@@ -79,7 +113,9 @@ describe('AppComponent', () => {
    * Data: ?theme=dark-theme.
    */
   it('takes the theme from the query string', async () => {
-    const { setUserTheme } = await renderApp({ queryParams: { theme: Theme.DARK } });
+    const { setUserTheme } = await renderApp({
+      queryParams: { theme: Theme.DARK },
+    });
 
     expect(setUserTheme).toHaveBeenCalledWith(Theme.DARK);
   });

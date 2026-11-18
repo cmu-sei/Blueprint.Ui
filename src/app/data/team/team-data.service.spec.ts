@@ -12,7 +12,10 @@ import { TeamQuery } from './team.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function team(overrides: Partial<Team> = {}): Team {
   return {
@@ -40,7 +43,10 @@ function setup(queryParams: Record<string, string> = {}) {
   TestBed.configureTestingModule({
     providers: [
       { provide: TeamService, useValue: teamApi },
-      { provide: Router, useValue: { navigate } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -65,7 +71,7 @@ describe('TeamDataService', () => {
    * Interacts with: TeamService getMyTeams / getTeamsByUser / getTeamsByMsel (stubs), real TeamStore and TeamQuery.
    * Data: a different team from each endpoint.
    */
-  it('each loader replaces the store with its endpoint\'s teams', () => {
+  it("each loader replaces the store with its endpoint's teams", () => {
     const { service, query, teamApi } = setup();
     teamApi.getMyTeams.mockReturnValueOnce(of([team({ name: 'Mine A' })]));
     teamApi.getMyTeams.mockReturnValueOnce(of([team({ name: 'Mine B' })]));
@@ -158,7 +164,9 @@ describe('TeamDataService', () => {
   it('updateTeam stores the saved team', () => {
     const { service, query, teamApi } = setup();
     service.updateStore(team());
-    teamApi.updateTeam.mockReturnValue(of(team({ name: 'Red Cell (renamed)' })));
+    teamApi.updateTeam.mockReturnValue(
+      of(team({ name: 'Red Cell (renamed)' })),
+    );
 
     service.updateTeam(team({ name: 'client edit' }));
 
@@ -222,11 +230,19 @@ describe('TeamDataService', () => {
   it('teamList filters and sorts from the query params', () => {
     const { service, route } = setup();
     service.updateStore(team({ id: 'id-red' }));
-    service.updateStore(team({ id: 'id-blue', name: 'Blue Team', shortName: 'BLUE' }));
-    service.updateStore(team({ id: 'id-grn', name: 'Green Team', shortName: 'GRN' }));
+    service.updateStore(
+      team({ id: 'id-blue', name: 'Blue Team', shortName: 'BLUE' }),
+    );
+    service.updateStore(
+      team({ id: 'id-grn', name: 'Green Team', shortName: 'GRN' }),
+    );
     const emissions = recordEmissions(service.teamList);
 
-    expect(names(emissions.at(-1))).toEqual(['Blue Team', 'Green Team', 'Red Cell']);
+    expect(names(emissions.at(-1))).toEqual([
+      'Blue Team',
+      'Green Team',
+      'Red Cell',
+    ]);
 
     route.setQueryParams({ filter: 'team' });
     expect(names(emissions.at(-1))).toEqual(['Blue Team', 'Green Team']);
@@ -238,10 +254,18 @@ describe('TeamDataService', () => {
     expect(names(emissions.at(-1))).toEqual(['Red Cell']);
 
     route.setQueryParams({ sortdir: 'desc' });
-    expect(names(emissions.at(-1))).toEqual(['Red Cell', 'Green Team', 'Blue Team']);
+    expect(names(emissions.at(-1))).toEqual([
+      'Red Cell',
+      'Green Team',
+      'Blue Team',
+    ]);
 
     route.setQueryParams({ sorton: 'shortName', sortdir: 'asc' });
-    expect(names(emissions.at(-1))).toEqual(['Blue Team', 'Green Team', 'Red Cell']);
+    expect(names(emissions.at(-1))).toEqual([
+      'Blue Team',
+      'Green Team',
+      'Red Cell',
+    ]);
   });
 
   /**
@@ -266,25 +290,48 @@ describe('TeamDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'loadById', endpoint: 'getTeam', escapes: true, call: (s: TeamDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createTeam', escapes: true, call: (s: TeamDataService) => s.add({ id: 'x-1' }) },
-    { method: 'addFromUnit', endpoint: 'createTeamFromUnit', escapes: true, call: (s: TeamDataService) => s.addFromUnit('msel-1', 'unit-1') },
-    { method: 'updateTeam', endpoint: 'updateTeam', escapes: true, call: (s: TeamDataService) => s.updateTeam({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, teamApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(TeamStore).setLoading(false);
-    teamApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'loadById',
+      endpoint: 'getTeam',
+      escapes: true,
+      call: (s: TeamDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createTeam',
+      escapes: true,
+      call: (s: TeamDataService) => s.add({ id: 'x-1' }),
+    },
+    {
+      method: 'addFromUnit',
+      endpoint: 'createTeamFromUnit',
+      escapes: true,
+      call: (s: TeamDataService) => s.addFromUnit('msel-1', 'unit-1'),
+    },
+    {
+      method: 'updateTeam',
+      endpoint: 'updateTeam',
+      escapes: true,
+      call: (s: TeamDataService) => s.updateTeam({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, teamApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(TeamStore).setLoading(false);
+      teamApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(TeamQuery).getValue().loading).toBe(true);
-    // With no error callback the error escapes to ErrorService, the ErrorHandler
-    // app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(TeamQuery).getValue().loading).toBe(true);
+      // With no error callback the error escapes to ErrorService, the ErrorHandler
+      // app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete escapes to the app's global ErrorHandler.
@@ -292,19 +339,26 @@ describe('TeamDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteTeam', call: (s: TeamDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, teamApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    teamApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteTeam',
+      call: (s: TeamDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, teamApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      teamApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

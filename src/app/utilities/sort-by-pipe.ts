@@ -9,7 +9,6 @@ import { orderBy } from 'lodash';
 
 @Pipe({ name: 'sortBy' })
 export class SortByPipe implements PipeTransform {
-
   transform(value: any[], order: any = '', column: string = ''): any[] {
     // no array
     if (!value || order === '' || !order) {
@@ -34,16 +33,13 @@ export class SortByPipe implements PipeTransform {
 
 @Pipe({ name: 'displayOrder' })
 export class DisplayOrderPipe implements PipeTransform {
-
   transform(value: any[]): any[] {
     // check for valid array
     if (!value || value.length < 2) {
       return value;
     }
     // sort by displayOrder
-    const temp = value.map(x => x);
-    return temp.sort((a: any, b: any) =>
-      (a.displayOrder - b.displayOrder)
-    );
+    const temp = value.map((x) => x);
+    return temp.sort((a: any, b: any) => a.displayOrder - b.displayOrder);
   }
 }

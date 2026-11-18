@@ -23,8 +23,18 @@ import { renderComponent } from 'src/app/test-utils/render-component';
 
 const START = new Date('2026-01-01T12:00:00Z');
 
-async function renderDurationEdit(overrides: { canEdit?: boolean; durationSeconds?: number; startTime?: Date } = {}) {
-  const { canEdit = true, durationSeconds = 90061, startTime = START } = overrides;
+async function renderDurationEdit(
+  overrides: {
+    canEdit?: boolean;
+    durationSeconds?: number;
+    startTime?: Date;
+  } = {},
+) {
+  const {
+    canEdit = true,
+    durationSeconds = 90061,
+    startTime = START,
+  } = overrides;
   const rendered = await renderComponent(DurationEditComponent, {
     imports: [
       MatButtonModule,
@@ -40,7 +50,13 @@ async function renderDurationEdit(overrides: { canEdit?: boolean; durationSecond
       NgxMatDatetimepicker,
     ],
     declarations: [DurationEditComponent, TimezoneAbbrPipe],
-    inputs: { canEdit, durationSeconds, startTime, timeName: 'Inject Time', postScript: 'from start' },
+    inputs: {
+      canEdit,
+      durationSeconds,
+      startTime,
+      timeName: 'Inject Time',
+      postScript: 'from start',
+    },
   });
   const changes: number[] = [];
   rendered.fixture.componentInstance.change.subscribe((s) => changes.push(s));
@@ -49,7 +65,8 @@ async function renderDurationEdit(overrides: { canEdit?: boolean; durationSecond
 
 const days = () => screen.getByTitle('Days from Start') as HTMLInputElement;
 const hours = () => screen.getByTitle('Hours from Start') as HTMLInputElement;
-const minutes = () => screen.getByTitle('Minutes from Start') as HTMLInputElement;
+const minutes = () =>
+  screen.getByTitle('Minutes from Start') as HTMLInputElement;
 
 describe('DurationEditComponent', () => {
   // A test that sets TZ runs in a zone with daylight saving time; this restores the host's.
@@ -100,7 +117,9 @@ describe('DurationEditComponent', () => {
     expect(days()).toBeDisabled();
     expect(hours()).toBeDisabled();
     expect(minutes()).toBeDisabled();
-    expect(screen.getByTitle('Choose Date/Time').querySelector('button')).toBeDisabled();
+    expect(
+      screen.getByTitle('Choose Date/Time').querySelector('button'),
+    ).toBeDisabled();
     expect(fixture.componentInstance.endTimeFormControl.disabled).toBe(true);
 
     await user.click(screen.getByTitle('plus/minus'));
@@ -123,7 +142,10 @@ describe('DurationEditComponent', () => {
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
     expect(fixture.componentInstance.durationSeconds).toBe(-90061);
     expect(fixture.componentInstance.sign).toBe(1);
-    expect(screen.getByTitle('plus/minus')).toHaveAttribute('fonticon', 'mdi-plus');
+    expect(screen.getByTitle('plus/minus')).toHaveAttribute(
+      'fonticon',
+      'mdi-plus',
+    );
 
     await user.clear(days());
     await user.type(days(), '2');
@@ -139,7 +161,10 @@ describe('DurationEditComponent', () => {
   it('labels the end time with the zone in effect on that date', async () => {
     vi.stubEnv('TZ', 'America/New_York');
 
-    await renderDurationEdit({ startTime: new Date('2026-10-20T16:00:00Z'), durationSeconds: 30 * 86400 });
+    await renderDurationEdit({
+      startTime: new Date('2026-10-20T16:00:00Z'),
+      durationSeconds: 30 * 86400,
+    });
 
     expect(screen.getByText('19 Nov 2026 11:00 EST')).toBeInTheDocument();
   });

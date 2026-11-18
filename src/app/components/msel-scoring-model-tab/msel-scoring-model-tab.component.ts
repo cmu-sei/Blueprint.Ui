@@ -2,7 +2,14 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, OnDestroy, OnInit, inject, input, viewChild } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
@@ -26,7 +33,10 @@ import { MselQuery } from 'src/app/data/msel/msel.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { showCiteAccessDenied } from 'src/app/utilities/cite-access';
-import { canEditScoringModel, integrationsLocked } from 'src/app/utilities/msel-permissions';
+import {
+  canEditScoringModel,
+  integrationsLocked,
+} from 'src/app/utilities/msel-permissions';
 import { normalizeScoringModel } from 'src/app/utilities/scoring-model';
 import { MselScoringModelComponent } from '../msel-scoring-model/msel-scoring-model.component';
 
@@ -41,7 +51,19 @@ export type ScoringModelSource = 'link' | 'author';
   selector: 'app-msel-scoring-model-tab',
   templateUrl: './msel-scoring-model-tab.component.html',
   styleUrls: ['./msel-scoring-model-tab.component.scss'],
-  imports: [FormsModule, MatIcon, MatIconButton, MatLabel, MatFormField, MatSelect, MatOption, MatRadioGroup, MatRadioButton, MatTooltip, MselScoringModelComponent],
+  imports: [
+    FormsModule,
+    MatIcon,
+    MatIconButton,
+    MatLabel,
+    MatFormField,
+    MatSelect,
+    MatOption,
+    MatRadioGroup,
+    MatRadioButton,
+    MatTooltip,
+    MselScoringModelComponent,
+  ],
 })
 export class MselScoringModelTabComponent implements OnInit, OnDestroy {
   private mselQuery = inject(MselQuery);
@@ -83,7 +105,10 @@ export class MselScoringModelTabComponent implements OnInit, OnDestroy {
       });
     this.citeService.getScoringModels().subscribe({
       // the models an evaluation was made from belong to it; only the templates can be linked or copied
-      next: (scoringModels) => (this.scoringModelList = (scoringModels || []).filter((sm) => !sm.evaluationId)),
+      next: (scoringModels) =>
+        (this.scoringModelList = (scoringModels || []).filter(
+          (sm) => !sm.evaluationId,
+        )),
       error: (error) => {
         console.error('Failed to load CITE scoring models:', error);
         this.scoringModelList = [];
@@ -92,7 +117,10 @@ export class MselScoringModelTabComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.permissionDataService.load().pipe(takeUntil(this.unsubscribe$)).subscribe();
+    this.permissionDataService
+      .load()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe();
   }
 
   private loadAuthoredScoringModel(mselId: string) {
@@ -107,10 +135,13 @@ export class MselScoringModelTabComponent implements OnInit, OnDestroy {
           if (this.msel.id !== mselId) {
             return;
           }
-          this.authoredScoringModel = model ? normalizeScoringModel(model) : null;
+          this.authoredScoringModel = model
+            ? normalizeScoringModel(model)
+            : null;
           this.source = model ? 'author' : 'link';
         },
-        error: (error) => console.error('Failed to load the MSEL scoring model:', error),
+        error: (error) =>
+          console.error('Failed to load the MSEL scoring model:', error),
       });
   }
 
@@ -120,12 +151,21 @@ export class MselScoringModelTabComponent implements OnInit, OnDestroy {
 
   // linking and authoring follow the same API rule, and the same lock
   canEdit(): boolean {
-    return !this.integrationsLocked() &&
-      canEditScoringModel(this.msel, this.loggedInUserId(), this.permissionDataService.hasPermission(SystemPermission.EditMsels));
+    return (
+      !this.integrationsLocked() &&
+      canEditScoringModel(
+        this.msel,
+        this.loggedInUserId(),
+        this.permissionDataService.hasPermission(SystemPermission.EditMsels),
+      )
+    );
   }
 
   linkedScoringModelName(): string {
-    return this.scoringModelList.find((sm) => sm.id === this.msel.citeScoringModelId)?.description ?? '';
+    return (
+      this.scoringModelList.find((sm) => sm.id === this.msel.citeScoringModelId)
+        ?.description ?? ''
+    );
   }
 
   onSourceChange(source: ScoringModelSource) {
@@ -152,16 +192,18 @@ export class MselScoringModelTabComponent implements OnInit, OnDestroy {
           this.keepAuthoredSource();
           return;
         }
-        this.mselScoringModelService.deleteMselScoringModel(this.msel.id).subscribe({
-          next: () => {
-            this.authoredScoringModel = null;
-            this.source = 'link';
-          },
-          error: (err) => {
-            this.keepAuthoredSource();
-            this.errorService.handleError(err);
-          },
-        });
+        this.mselScoringModelService
+          .deleteMselScoringModel(this.msel.id)
+          .subscribe({
+            next: () => {
+              this.authoredScoringModel = null;
+              this.source = 'link';
+            },
+            error: (err) => {
+              this.keepAuthoredSource();
+              this.errorService.handleError(err);
+            },
+          });
       });
   }
 
@@ -175,7 +217,9 @@ export class MselScoringModelTabComponent implements OnInit, OnDestroy {
 
   saveChanges() {
     this.mselScoringModelService
-      .linkMselScoringModel(this.msel.id, { citeScoringModelId: this.msel.citeScoringModelId || null })
+      .linkMselScoringModel(this.msel.id, {
+        citeScoringModelId: this.msel.citeScoringModelId || null,
+      })
       .subscribe({
         next: (msel) => {
           this.isChanged = false;
@@ -197,7 +241,9 @@ export class MselScoringModelTabComponent implements OnInit, OnDestroy {
   }
 
   hasPendingChanges(): boolean {
-    return (this.source === 'link' && this.isChanged) || !!this.authored()?.isDirty();
+    return (
+      (this.source === 'link' && this.isChanged) || !!this.authored()?.isDirty()
+    );
   }
 
   ngOnDestroy() {

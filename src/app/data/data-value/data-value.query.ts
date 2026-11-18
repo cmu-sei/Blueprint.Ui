@@ -5,10 +5,7 @@
 */
 
 import { Order, Query, QueryConfig, QueryEntity } from '@datorama/akita';
-import {
-  DataValueState,
-  DataValueStore,
-} from './data-value.store';
+import { DataValueState, DataValueStore } from './data-value.store';
 import { DataValue } from 'src/app/generated/blueprint.api';
 import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
@@ -28,7 +25,7 @@ export class DataValueQuery extends QueryEntity<DataValueState> {
     const store = inject(DataValueStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

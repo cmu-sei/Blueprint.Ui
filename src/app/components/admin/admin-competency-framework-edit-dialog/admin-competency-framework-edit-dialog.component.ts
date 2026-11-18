@@ -4,21 +4,35 @@
 
 import { Component, OnInit, inject, output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { ProficiencyScale, ProficiencyScaleService } from 'src/app/generated/blueprint.api';
+import {
+  ProficiencyScale,
+  ProficiencyScaleService,
+} from 'src/app/generated/blueprint.api';
 import { take } from 'rxjs/operators';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
 import { MatFormField, MatLabel, MatInput } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 
 @Component({
-    selector: 'app-admin-competency-framework-edit-dialog',
-    templateUrl: './admin-competency-framework-edit-dialog.component.html',
-    styleUrls: ['./admin-competency-framework-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, MatSelect, MatOption]
+  selector: 'app-admin-competency-framework-edit-dialog',
+  templateUrl: './admin-competency-framework-edit-dialog.component.html',
+  styleUrls: ['./admin-competency-framework-edit-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    FormsModule,
+    MatSelect,
+    MatOption,
+  ],
 })
-
 export class AdminCompetencyFrameworkEditDialogComponent implements OnInit {
   data = inject(MAT_DIALOG_DATA);
   private proficiencyScaleService = inject(ProficiencyScaleService);
@@ -27,9 +41,10 @@ export class AdminCompetencyFrameworkEditDialogComponent implements OnInit {
   proficiencyScales: ProficiencyScale[] = [];
 
   ngOnInit() {
-    this.proficiencyScaleService.getProficiencyScales()
+    this.proficiencyScaleService
+      .getProficiencyScales()
       .pipe(take(1))
-      .subscribe(scales => {
+      .subscribe((scales) => {
         this.proficiencyScales = scales;
       });
   }
@@ -53,5 +68,4 @@ export class AdminCompetencyFrameworkEditDialogComponent implements OnInit {
       }
     }
   }
-
 }

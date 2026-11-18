@@ -20,7 +20,10 @@ import { MatOption, MatSelect } from '@angular/material/select';
 import { MatTooltip } from '@angular/material/tooltip';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { ComnSettingsService, CrucibleDialogService } from '@cmusei/crucible-common';
+import {
+  ComnSettingsService,
+  CrucibleDialogService,
+} from '@cmusei/crucible-common';
 import {
   CasterDirectory,
   CasterService,
@@ -33,7 +36,11 @@ import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { ErrorService } from 'src/app/services/error/error.service';
-import { canEditCasterCopy, canUpdateMsel, integrationsLocked } from 'src/app/utilities/msel-permissions';
+import {
+  canEditCasterCopy,
+  canUpdateMsel,
+  integrationsLocked,
+} from 'src/app/utilities/msel-permissions';
 
 /** A file of the stored copy, by where it sits in the directory chain. */
 export interface CasterCopyFile {
@@ -104,7 +111,8 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
         }
         const isNewMsel = this.msel.id !== msel.id;
         // a save, or an import, can change the directory, and a pending choice is kept only on the same MSEL
-        const directoryChanged = this.msel.casterDirectoryId !== msel.casterDirectoryId;
+        const directoryChanged =
+          this.msel.casterDirectoryId !== msel.casterDirectoryId;
         Object.assign(this.msel, msel);
         if (isNewMsel || !this.isChanged || directoryChanged) {
           this.casterDirectoryId = msel.casterDirectoryId ?? null;
@@ -117,7 +125,10 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.permissionDataService.load().pipe(takeUntil(this.unsubscribe$)).subscribe();
+    this.permissionDataService
+      .load()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe();
     this.loadDirectories();
   }
 
@@ -138,7 +149,8 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Failed to load Caster directories:', error);
           this.directoryList = [];
-          this.directoryError = 'Caster directories could not be loaded. You need access to Caster to choose one.';
+          this.directoryError =
+            'Caster directories could not be loaded. You need access to Caster to choose one.';
           this.directoriesRequested = false;
         },
       });
@@ -160,7 +172,10 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
           this.copyLoaded = true;
         },
         error: (error) => {
-          console.error('Failed to load the MSEL copy of its Caster directory:', error);
+          console.error(
+            'Failed to load the MSEL copy of its Caster directory:',
+            error,
+          );
           this.copyLoaded = true;
         },
       });
@@ -176,11 +191,17 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
 
   // the directory is one of the MSEL's settings, saved as they are
   canEditDirectory(): boolean {
-    return !this.integrationsLocked() && canUpdateMsel(this.msel, this.loggedInUserId(), this.hasEditMsels());
+    return (
+      !this.integrationsLocked() &&
+      canUpdateMsel(this.msel, this.loggedInUserId(), this.hasEditMsels())
+    );
   }
 
   canEditCopy(): boolean {
-    return !this.integrationsLocked() && canEditCasterCopy(this.msel, this.loggedInUserId(), this.hasEditMsels());
+    return (
+      !this.integrationsLocked() &&
+      canEditCasterCopy(this.msel, this.loggedInUserId(), this.hasEditMsels())
+    );
   }
 
   directoryLabel(directory: CasterDirectory): string {
@@ -197,8 +218,10 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
     if (!directory) {
       return '';
     }
-    const casterUrl = (this.settingsService.settings as { CasterUrl?: string }).CasterUrl || '';
-    const baseUrl = casterUrl && !casterUrl.endsWith('/') ? `${casterUrl}/` : casterUrl;
+    const casterUrl =
+      (this.settingsService.settings as { CasterUrl?: string }).CasterUrl || '';
+    const baseUrl =
+      casterUrl && !casterUrl.endsWith('/') ? `${casterUrl}/` : casterUrl;
     return `${baseUrl}projects/${directory.projectId}?directory=${directory.id}`;
   }
 
@@ -216,14 +239,18 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
     if (!this.copy) {
       return [];
     }
-    const directories = [...(this.copy.directories || [])].sort((a, b) => Number(a.level) - Number(b.level));
+    const directories = [...(this.copy.directories || [])].sort(
+      (a, b) => Number(a.level) - Number(b.level),
+    );
     const exported = directories[directories.length - 1];
     const above: CasterCopyFile[] = directories.slice(0, -1).flatMap((d, i) =>
       (d.files || []).map((f) => ({
-        path: [...directories.slice(0, i + 1).map((x) => x.name), f.name].join('/'),
+        path: [...directories.slice(0, i + 1).map((x) => x.name), f.name].join(
+          '/',
+        ),
         note: 'shared from above',
         content: f.content ?? '',
-      }))
+      })),
     );
     const own: CasterCopyFile[] = (this.copy.entries || []).map((e) => ({
       path: `${exported?.name ?? ''}/${e.path}`,
@@ -239,14 +266,17 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
       return 'The push creates a workspace in the linked directory.';
     }
     if (this.copy) {
-      return 'No directory is linked, so the push imports the copy into Caster as a new project, as you, links the MSEL to it, and creates a workspace there. You need Caster\'s Create Projects permission.';
+      return "No directory is linked, so the push imports the copy into Caster as a new project, as you, links the MSEL to it, and creates a workspace there. You need Caster's Create Projects permission.";
     }
     return 'Link a Caster directory, or upload a MSEL file that carries a copy of one, before pushing.';
   }
 
   saveChanges() {
     // the API deletes the copy of a directory when the MSEL links another one
-    const replacesCopy = !!this.copy && !!this.casterDirectoryId && this.casterDirectoryId !== this.msel.casterDirectoryId;
+    const replacesCopy =
+      !!this.copy &&
+      !!this.casterDirectoryId &&
+      this.casterDirectoryId !== this.msel.casterDirectoryId;
     if (!replacesCopy) {
       this.doSave(false);
       return;
@@ -263,7 +293,10 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
   }
 
   private doSave(replacesCopy: boolean) {
-    const update: Msel = { ...(this.mselQuery.getActive() as MselPlus), casterDirectoryId: this.casterDirectoryId || null };
+    const update: Msel = {
+      ...(this.mselQuery.getActive() as MselPlus),
+      casterDirectoryId: this.casterDirectoryId || null,
+    };
     this.busy = true;
     this.mselDataService.updateMsel(update).subscribe({
       next: () => {
@@ -318,7 +351,10 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
         }
         this.copy = copy;
         if (copy.warnings?.length) {
-          this.showMessage('Copy Stored With Warnings', copy.warnings.join('\n'));
+          this.showMessage(
+            'Copy Stored With Warnings',
+            copy.warnings.join('\n'),
+          );
         }
       },
       error: (err) => {
@@ -342,25 +378,30 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
           return;
         }
         this.busy = true;
-        this.mselCasterExportService.importMselCasterExport(this.msel.id).subscribe({
-          next: (result) => {
-            this.busy = false;
-            // the new directory is not in the list loaded before it existed
-            this.directoriesRequested = false;
-            this.loadDirectories();
-            if (result.msel) {
-              this.mselDataService.setAsDates(result.msel);
-              this.mselDataService.updateStore(result.msel);
-            }
-            if (result.lockedFiles?.length) {
-              this.showMessage('Imported Without Some Files', `Caster did not import these locked files: ${result.lockedFiles.join(', ')}`);
-            }
-          },
-          error: (err) => {
-            this.busy = false;
-            this.errorService.handleError(err);
-          },
-        });
+        this.mselCasterExportService
+          .importMselCasterExport(this.msel.id)
+          .subscribe({
+            next: (result) => {
+              this.busy = false;
+              // the new directory is not in the list loaded before it existed
+              this.directoriesRequested = false;
+              this.loadDirectories();
+              if (result.msel) {
+                this.mselDataService.setAsDates(result.msel);
+                this.mselDataService.updateStore(result.msel);
+              }
+              if (result.lockedFiles?.length) {
+                this.showMessage(
+                  'Imported Without Some Files',
+                  `Caster did not import these locked files: ${result.lockedFiles.join(', ')}`,
+                );
+              }
+            },
+            error: (err) => {
+              this.busy = false;
+              this.errorService.handleError(err);
+            },
+          });
       });
   }
 
@@ -381,26 +422,35 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
           return;
         }
         this.busy = true;
-        this.mselCasterExportService.deleteMselCasterExport(this.msel.id).subscribe({
-          next: () => {
-            this.busy = false;
-            this.copy = null;
-          },
-          error: (err) => {
-            this.busy = false;
-            this.errorService.handleError(err);
-          },
-        });
+        this.mselCasterExportService
+          .deleteMselCasterExport(this.msel.id)
+          .subscribe({
+            next: () => {
+              this.busy = false;
+              this.copy = null;
+            },
+            error: (err) => {
+              this.busy = false;
+              this.errorService.handleError(err);
+            },
+          });
       });
   }
 
   private copyTaken(): string {
-    const date = this.copy?.dateExported ? new Date(this.copy.dateExported).toLocaleString() : '';
+    const date = this.copy?.dateExported
+      ? new Date(this.copy.dateExported).toLocaleString()
+      : '';
     return date ? `on ${date}` : 'earlier';
   }
 
   private showMessage(title: string, message: string) {
-    this.dialogService.confirm({ title, message, confirmText: '', cancelText: 'OK' });
+    this.dialogService.confirm({
+      title,
+      message,
+      confirmText: '',
+      cancelText: 'OK',
+    });
   }
 
   ngOnDestroy() {

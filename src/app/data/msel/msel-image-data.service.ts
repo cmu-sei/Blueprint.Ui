@@ -16,8 +16,10 @@ import { MselDataService } from './msel-data.service';
 export class MselImageDataService implements OnDestroy {
   private mselImageService = inject(MselImageService);
   private mselDataService = inject(MselDataService);
-  private urls = new Map<string, { key: string; url$: Observable<string | null>; url?: string }>();
-
+  private urls = new Map<
+    string,
+    { key: string; url$: Observable<string | null>; url?: string }
+  >();
 
   imageUrl(msel: Msel): Observable<string | null> {
     if (!msel?.imageDateModified) {
@@ -29,12 +31,16 @@ export class MselImageDataService implements OnDestroy {
       return cached.url$;
     }
     this.revoke(msel.id);
-    const entry: { key: string; url$: Observable<string | null>; url?: string } = { key, url$: null };
+    const entry: {
+      key: string;
+      url$: Observable<string | null>;
+      url?: string;
+    } = { key, url$: null };
     entry.url$ = this.mselImageService.getMselImage(msel.id).pipe(
       map((blob: Blob) => (entry.url = URL.createObjectURL(blob))),
       // A missing or unreadable image leaves the card on its generated pattern.
       catchError(() => of(null)),
-      shareReplay(1)
+      shareReplay(1),
     );
     this.urls.set(msel.id, entry);
     return entry.url$;
@@ -43,7 +49,7 @@ export class MselImageDataService implements OnDestroy {
   setImage(mselId: string, file: File): Observable<Msel> {
     return this.mselImageService.setMselImage(mselId, file).pipe(
       take(1),
-      tap((msel) => this.updateStore(msel))
+      tap((msel) => this.updateStore(msel)),
     );
   }
 
@@ -53,7 +59,7 @@ export class MselImageDataService implements OnDestroy {
       tap((msel: Msel) => {
         this.revoke(mselId);
         this.updateStore(msel);
-      })
+      }),
     );
   }
 
@@ -64,7 +70,10 @@ export class MselImageDataService implements OnDestroy {
   // Only the image marker changes, so the rest of the stored MSEL, such as
   // its roles, is left as it is.
   private updateStore(msel: Msel) {
-    this.mselDataService.updateImageDateModified(msel.id, msel.imageDateModified ?? null);
+    this.mselDataService.updateImageDateModified(
+      msel.id,
+      msel.imageDateModified ?? null,
+    );
   }
 
   private revoke(mselId: string) {

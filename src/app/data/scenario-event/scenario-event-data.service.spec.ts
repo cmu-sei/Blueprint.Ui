@@ -21,7 +21,10 @@ import { ScenarioEventQuery } from './scenario-event.query';
 import { ScenarioEventStore } from './scenario-event.store';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function event(overrides: Partial<ScenarioEvent> = {}): ScenarioEvent {
   return {
@@ -230,7 +233,12 @@ describe('ScenarioEventDataService', () => {
       dataFieldId: string,
       v: string,
     ): DataValue {
-      return { id: `${scenarioEventId}-${dataFieldId}`, scenarioEventId, dataFieldId, value: v };
+      return {
+        id: `${scenarioEventId}-${dataFieldId}`,
+        scenarioEventId,
+        dataFieldId,
+        value: v,
+      };
     }
 
     // ScenarioEventView declares getter-only members that the list component
@@ -457,12 +465,14 @@ describe('ScenarioEventDataService', () => {
       index(service, v);
       const se = event({ deltaSeconds: 90, groupOrder: 3 });
 
-      expect(service.getDataValueFromView(v, se, 'deltaSeconds')).toMatchObject({
-        value: '90',
-        sortAndFilterValue: 90,
-        fieldType: DataFieldType.Integer,
-        scenarioEventId: 'se-1',
-      });
+      expect(service.getDataValueFromView(v, se, 'deltaSeconds')).toMatchObject(
+        {
+          value: '90',
+          sortAndFilterValue: 90,
+          fieldType: DataFieldType.Integer,
+          scenarioEventId: 'se-1',
+        },
+      );
       expect(service.getDataValueFromView(v, se, 'groupOrder').value).toBe('3');
       expect(service.getDataValueFromView(v, se, 'Title')).toMatchObject({
         value: '',
@@ -490,7 +500,9 @@ describe('ScenarioEventDataService', () => {
       const se1 = event();
       const se2 = event({ id: 'se-2' });
 
-      expect(service.getDisplayValueFromView(v, se1, 'Card')).toBe('Breach Card');
+      expect(service.getDisplayValueFromView(v, se1, 'Card')).toBe(
+        'Breach Card',
+      );
       expect(service.getDisplayValueFromView(v, se1, 'Owner')).toBe(
         'Alice Analyst',
       );
@@ -498,7 +510,9 @@ describe('ScenarioEventDataService', () => {
         /^04 Mar 2026 05:06 \S+$/,
       );
       expect(service.getDisplayValueFromView(v, se1, 'Title')).toBe('Phishing');
-      expect(service.getDisplayValueFromView(v, se2, 'When')).toBe('not a date');
+      expect(service.getDisplayValueFromView(v, se2, 'When')).toBe(
+        'not a date',
+      );
       expect(service.getDisplayValueFromView(v, se2, 'Title')).toBe('');
     });
 
@@ -518,8 +532,12 @@ describe('ScenarioEventDataService', () => {
       });
       index(service, v);
 
-      expect(service.getDisplayValueFromView(v, event(), 'When')).toBe('12 Oct 2026 12:00 EDT');
-      expect(service.getDisplayValueFromView(v, event({ id: 'se-2' }), 'When')).toBe('12 Nov 2026 12:00 EST');
+      expect(service.getDisplayValueFromView(v, event(), 'When')).toBe(
+        '12 Oct 2026 12:00 EDT',
+      );
+      expect(
+        service.getDisplayValueFromView(v, event({ id: 'se-2' }), 'When'),
+      ).toBe('12 Nov 2026 12:00 EST');
     });
 
     /**
@@ -541,13 +559,48 @@ describe('ScenarioEventDataService', () => {
         { id: 'm1', moveNumber: 1, deltaSeconds: 0 },
       ];
 
-      const numbers = service.getMoveAndGroupNumbers(events, moves);
+      const numbers = service.getMoveAndGroupNumbers(
+        events,
+        moves,
+      ) as unknown as Record<string, number[]>;
 
-      expect(numbers['e0a']).toEqual([1, 0]);
-      expect(numbers['e0b']).toEqual([1, 0]);
-      expect(numbers['e60']).toEqual([1, 1]);
-      expect(numbers['e300']).toEqual([2, 0]);
-      expect(numbers['e400']).toEqual([2, 1]);
+      expect(numbers.e0a).toEqual([1, 0]);
+      expect(numbers.e0b).toEqual([1, 0]);
+      expect(numbers.e60).toEqual([1, 1]);
+      expect(numbers.e300).toEqual([2, 0]);
+      expect(numbers.e400).toEqual([2, 1]);
+    });
+
+    /**
+     * Verifies: every event at a start time two moves share is in the higher-numbered move, and an event past a
+     * move with no events is in its own move. Advancing one move per event put the first such event a move early.
+     * Interacts with: ScenarioEventDataService.getMoveAndGroupNumbers.
+     * Data: Move 0 and Move 1 both at 0, an empty Move 2 at 100, Move 3 at 200; events at 0, 0, 60 and 250.
+     */
+    it('getMoveAndGroupNumbers puts events at a shared start time in the higher-numbered move', () => {
+      const { service } = setup();
+      const events = [
+        event({ id: 'a', deltaSeconds: 0 }),
+        event({ id: 'b', deltaSeconds: 0 }),
+        event({ id: 'c', deltaSeconds: 60 }),
+        event({ id: 'd', deltaSeconds: 250 }),
+      ];
+      const moves = [
+        { id: 'm0', moveNumber: 0, deltaSeconds: 0 },
+        { id: 'm1', moveNumber: 1, deltaSeconds: 0 },
+        { id: 'm2', moveNumber: 2, deltaSeconds: 100 },
+        { id: 'm3', moveNumber: 3, deltaSeconds: 200 },
+      ];
+
+      const numbers = service.getMoveAndGroupNumbers(
+        events,
+        moves,
+      ) as unknown as Record<string, number[]>;
+
+      expect(numbers.a).toEqual([1, 0]);
+      expect(numbers.b).toEqual([1, 0]);
+      expect(numbers.c).toEqual([1, 1]);
+      expect(numbers.d).toEqual([3, 0]);
     });
 
     /**
@@ -558,12 +611,15 @@ describe('ScenarioEventDataService', () => {
     it('getMoveAndGroupNumbers uses -1 when there are no moves', () => {
       const { service } = setup();
       const numbers = service.getMoveAndGroupNumbers(
-        [event({ id: 'a', deltaSeconds: 0 }), event({ id: 'b', deltaSeconds: 5 })],
+        [
+          event({ id: 'a', deltaSeconds: 0 }),
+          event({ id: 'b', deltaSeconds: 5 }),
+        ],
         [],
-      );
+      ) as unknown as Record<string, number[]>;
 
-      expect(numbers['a']).toEqual([-1, 0]);
-      expect(numbers['b']).toEqual([-1, 1]);
+      expect(numbers.a).toEqual([-1, 0]);
+      expect(numbers.b).toEqual([-1, 1]);
       expect(service.getMoveAndGroupNumbers([], [])).toEqual([]);
     });
   });
@@ -574,25 +630,49 @@ describe('ScenarioEventDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'loadById', endpoint: 'getScenarioEvent', escapes: true, call: (s: ScenarioEventDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createScenarioEvent', escapes: true, call: (s: ScenarioEventDataService) => s.add({ id: 'x-1' }) },
-    { method: 'addInjects', endpoint: 'createScenarioEventsFromInjects', escapes: true, call: (s: ScenarioEventDataService) => s.addInjects({ mselId: 'msel-1' }) },
-    { method: 'updateScenarioEvent', endpoint: 'updateScenarioEvent', escapes: true, call: (s: ScenarioEventDataService) => s.updateScenarioEvent({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, scenarioEventApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(ScenarioEventStore).setLoading(false);
-    scenarioEventApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'loadById',
+      endpoint: 'getScenarioEvent',
+      escapes: true,
+      call: (s: ScenarioEventDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createScenarioEvent',
+      escapes: true,
+      call: (s: ScenarioEventDataService) => s.add({ id: 'x-1' }),
+    },
+    {
+      method: 'addInjects',
+      endpoint: 'createScenarioEventsFromInjects',
+      escapes: true,
+      call: (s: ScenarioEventDataService) => s.addInjects({ mselId: 'msel-1' }),
+    },
+    {
+      method: 'updateScenarioEvent',
+      endpoint: 'updateScenarioEvent',
+      escapes: true,
+      call: (s: ScenarioEventDataService) =>
+        s.updateScenarioEvent({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, scenarioEventApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(ScenarioEventStore).setLoading(false);
+      scenarioEventApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(ScenarioEventQuery).getValue().loading).toBe(true);
-    // With no error callback the error escapes to ErrorService, the ErrorHandler
-    // app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(ScenarioEventQuery).getValue().loading).toBe(true);
+      // With no error callback the error escapes to ErrorService, the ErrorHandler
+      // app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete, batchDelete, copyScenarioEventsToMsel escapes to the app's global ErrorHandler.
@@ -600,23 +680,39 @@ describe('ScenarioEventDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteScenarioEvent', call: (s: ScenarioEventDataService) => s.delete('x-1') },
-    { method: 'batchDelete', endpoint: 'batchDeleteScenarioEvents', call: (s: ScenarioEventDataService) => s.batchDelete(['x-1']) },
-    { method: 'copyScenarioEventsToMsel', endpoint: 'copyScenarioEventsToMsel', call: (s: ScenarioEventDataService) => s.copyScenarioEventsToMsel('msel-1', ['x-1']) },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, scenarioEventApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    scenarioEventApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteScenarioEvent',
+      call: (s: ScenarioEventDataService) => s.delete('x-1'),
+    },
+    {
+      method: 'batchDelete',
+      endpoint: 'batchDeleteScenarioEvents',
+      call: (s: ScenarioEventDataService) => s.batchDelete(['x-1']),
+    },
+    {
+      method: 'copyScenarioEventsToMsel',
+      endpoint: 'copyScenarioEventsToMsel',
+      call: (s: ScenarioEventDataService) =>
+        s.copyScenarioEventsToMsel('msel-1', ['x-1']),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, scenarioEventApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      scenarioEventApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });
 
 describe('ScenarioEventQuery', () => {
@@ -630,7 +726,10 @@ describe('ScenarioEventQuery', () => {
     const injector = Injector.create({
       providers: [{ provide: ScenarioEventStore, useValue: store }],
     });
-    const query = runInInjectionContext(injector, () => new ScenarioEventQuery());
+    const query = runInInjectionContext(
+      injector,
+      () => new ScenarioEventQuery(),
+    );
     store.set([
       event({ id: 'late', deltaSeconds: 120 }),
       event({ id: 'mid-2', deltaSeconds: 60, groupOrder: 2 }),
@@ -644,6 +743,8 @@ describe('ScenarioEventQuery', () => {
       'mid-2',
       'late',
     ]);
-    expect((await firstValueFrom(query.selectById('mid-1'))).groupOrder).toBe(1);
+    expect((await firstValueFrom(query.selectById('mid-1'))).groupOrder).toBe(
+      1,
+    );
   });
 });

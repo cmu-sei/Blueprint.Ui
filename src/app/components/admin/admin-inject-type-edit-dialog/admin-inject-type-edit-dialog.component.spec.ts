@@ -11,10 +11,17 @@ import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
 import { AdminInjectTypeEditDialogComponent } from './admin-inject-type-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const INJECT_TYPE = { id: 'it-email', name: 'Email', description: 'An email inject' };
+const INJECT_TYPE = {
+  id: 'it-email',
+  name: 'Email',
+  description: 'An email inject',
+};
 
 function dialogData(overrides: Partial<typeof INJECT_TYPE> = {}) {
-  return { injectType: { ...structuredClone(INJECT_TYPE), ...overrides }, teamList: [] };
+  return {
+    injectType: { ...structuredClone(INJECT_TYPE), ...overrides },
+    teamList: [],
+  };
 }
 
 async function renderAdminInjectTypeEditDialog(data = dialogData()) {
@@ -27,7 +34,9 @@ async function renderAdminInjectTypeEditDialog(data = dialogData()) {
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
   const results: unknown[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results };
 }
 
@@ -40,8 +49,12 @@ describe('AdminInjectTypeEditDialogComponent', () => {
   it('renders with the default test providers', async () => {
     const { fixture } = await renderAdminInjectTypeEditDialog();
 
-    expect(fixture.componentInstance).toBeInstanceOf(AdminInjectTypeEditDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Edit Inject Type' })).toBeInTheDocument();
+    expect(fixture.componentInstance).toBeInstanceOf(
+      AdminInjectTypeEditDialogComponent,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Edit Inject Type' }),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -79,11 +92,15 @@ describe('AdminInjectTypeEditDialogComponent', () => {
    * Data: an inject type with no description.
    */
   it('saves an incomplete inject type when handleEditComplete is called', async () => {
-    const { fixture, data, results } = await renderAdminInjectTypeEditDialog(dialogData({ description: '' }));
+    const { fixture, data, results } = await renderAdminInjectTypeEditDialog(
+      dialogData({ description: '' }),
+    );
 
     fixture.componentInstance.handleEditComplete(true);
 
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
-    expect(results).toEqual([{ saveChanges: true, injectType: data.injectType }]);
+    expect(results).toEqual([
+      { saveChanges: true, injectType: data.injectType },
+    ]);
   });
 });

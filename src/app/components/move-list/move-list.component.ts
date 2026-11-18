@@ -1,9 +1,32 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, AfterViewInit, inject, input, viewChild } from '@angular/core';
-import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+  Component,
+  OnDestroy,
+  AfterViewInit,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
+import {
+  UntypedFormControl,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import {
+  MatTableDataSource,
+  MatTable,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -24,17 +47,48 @@ import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
+import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
+import {
+  MOVE_ORDER_RULE,
+  moveOrderPushProblems,
+} from '../../utilities/move-order';
 
 @Component({
-    selector: 'app-move-list',
-    templateUrl: './move-list.component.html',
-    styleUrls: ['./move-list.component.scss'],
-    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatSortHeader, DurationViewComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, DatePipe, TimezoneAbbrPipe]
+  selector: 'app-move-list',
+  templateUrl: './move-list.component.html',
+  styleUrls: ['./move-list.component.scss'],
+  imports: [
+    MatIcon,
+    MatFormField,
+    MatInput,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatPaginator,
+    MatTable,
+    MatSort,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCellDef,
+    MatCell,
+    MatSortHeader,
+    DurationViewComponent,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+    DatePipe,
+    TimezoneAbbrPipe,
+  ],
 })
 export class MoveListComponent implements OnDestroy, AfterViewInit {
   private mselQuery = inject(MselQuery);
   private moveDataService = inject(MoveDataService);
   private moveQuery = inject(MoveQuery);
+  private scenarioEventQuery = inject(ScenarioEventQuery);
+  private eventStarts: { mselId: string; deltaSeconds: number }[] = [];
   dialog = inject(MatDialog);
   dialogService = inject(CrucibleDialogService);
 
@@ -49,12 +103,20 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
   sort: Sort = { active: 'moveNumber', direction: 'asc' };
   displayedMoves: Move[] = [];
   moveDataSource = new MatTableDataSource<Move>(new Array<Move>());
-  displayedColumns: string[] = ['action', 'moveNumber', 'timeToggle', 'moveStartTime', 'situationTime', 'description'];
+  displayedColumns: string[] = [
+    'action',
+    'moveNumber',
+    'timeToggle',
+    'moveStartTime',
+    'situationTime',
+    'description',
+  ];
   isAddingMove = false;
   editingId = '';
   showRealTime = false;
   maxMoveNumber = Number.MIN_SAFE_INTEGER;
   maxMoveStartSeconds = 0;
+  readonly moveOrderRule = MOVE_ORDER_RULE;
 
   private unsubscribe$ = new Subject();
   // context menu
@@ -71,6 +133,15 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
         this.moveList = moves;
         this.displayedMoves = this.getSortedMoves(this.getFilteredMoves());
         this.setNewMoveDefaults();
+      });
+    this.scenarioEventQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((events) => {
+        this.eventStarts = (events ?? []).map((e) => ({
+          mselId: e.mselId,
+          deltaSeconds: e.deltaSeconds,
+        }));
       });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>)
@@ -97,7 +168,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
   getSortedMoves(moves: Move[]) {
     if (moves) {
       moves.sort((a, b) =>
-        this.sortMoves(a, b, this.sort.active, this.sort.direction)
+        this.sortMoves(a, b, this.sort.active, this.sort.direction),
       );
     }
     this.moveDataSource.data = moves || [];
@@ -109,9 +180,11 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
     let editMove: Move = {};
     if (!move) {
       dialogTitle = 'Add a Move';
+      // each move starts after the one before it, so a new move starts an hour after the latest
       editMove = {
         moveNumber: this.maxMoveNumber + 1,
-        deltaSeconds: this.maxMoveStartSeconds,
+        deltaSeconds:
+          this.mselMoves().length > 0 ? this.maxMoveStartSeconds + 3600 : 0,
         description: '',
         situationDescription: '',
         situationTime: new Date(),
@@ -130,6 +203,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
       data: {
         move: editMove,
         mselStartTime: this.msel.startTime,
+        otherMoves: this.mselMoves().filter((m) => m.id !== editMove.id),
         title: dialogTitle,
       },
     });
@@ -155,8 +229,15 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
       return;
     }
     this.dialogService
-      .confirm({ title: 'Delete Move', message: 'Are you sure that you want to delete ' + move.description + '?', confirmText: 'Delete', cancelText: 'Cancel'
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Delete Move',
+        message:
+          'Are you sure that you want to delete ' + move.description + '?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.moveDataService.delete(move.id);
           this.editingId = '';
@@ -168,7 +249,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
     this.sort =
       sort && sort.active ? sort : { active: 'moveNumber', direction: 'asc' };
     this.displayedMoves = this.displayedMoves.sort((a, b) =>
-      this.sortMoves(a, b, sort.active, sort.direction)
+      this.sortMoves(a, b, sort.active, sort.direction),
     );
     this.moveDataSource.data = this.displayedMoves;
   }
@@ -189,10 +270,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
         return (a.situationTime < b.situationTime ? -1 : 1) * (isAsc ? 1 : -1);
         break;
       case 'description':
-        return (
-          (a.description < b.description ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
+        return (a.description < b.description ? -1 : 1) * (isAsc ? 1 : -1);
         break;
       case 'situationDescription':
         return (
@@ -215,12 +293,10 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
   // A new move gets the next move number and the latest start offset of this MSEL's moves.
   private setNewMoveDefaults() {
     const moves = this.mselMoves();
-    this.maxMoveNumber = moves.length > 0
-      ? Math.max(...moves.map((o) => +o.moveNumber))
-      : 0;
-    this.maxMoveStartSeconds = moves.length > 0
-      ? Math.max(...moves.map((o) => +o.deltaSeconds))
-      : 0;
+    this.maxMoveNumber =
+      moves.length > 0 ? Math.max(...moves.map((o) => +o.moveNumber)) : 0;
+    this.maxMoveStartSeconds =
+      moves.length > 0 ? Math.max(...moves.map((o) => +o.deltaSeconds)) : 0;
   }
 
   getFilteredMoves(): Move[] {
@@ -232,25 +308,21 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
         filteredMoves = filteredMoves.filter(
           (a) =>
             a.description.toLowerCase().includes(filterString) ||
-            a.situationDescription.toLowerCase().includes(filterString)
+            a.situationDescription.toLowerCase().includes(filterString),
         );
       }
     }
     return filteredMoves;
   }
 
-  badMoveTimeOrder(): boolean {
-    const orderedMoves = this.mselMoves().sort((a, b) =>
-      +a.moveNumber < +b.moveNumber ? -1 : 1
+  // what stops a push: moves that share a start time or are out of order, and events in no move
+  moveOrderProblems(): string[] {
+    return moveOrderPushProblems(
+      this.mselMoves(),
+      this.eventStarts
+        .filter((e) => e.mselId === this.msel.id)
+        .map((e) => e.deltaSeconds),
     );
-    let deltaSeconds = Number.MIN_SAFE_INTEGER;
-    for (let index = 0; index < orderedMoves.length; index++) {
-      if (+orderedMoves[index].deltaSeconds <= +deltaSeconds) {
-        return true;
-      }
-      deltaSeconds = orderedMoves[index].deltaSeconds;
-    }
-    return false;
   }
 
   ngOnDestroy() {

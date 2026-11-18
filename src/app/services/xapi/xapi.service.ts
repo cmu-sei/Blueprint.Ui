@@ -31,7 +31,7 @@ export class XApiService {
       catchError((error) => {
         console.error('xAPI tracking error:', error);
         return of(null);
-      })
+      }),
     );
   }
 
@@ -46,7 +46,7 @@ export class XApiService {
       catchError((error) => {
         console.error('xAPI tracking error:', error);
         return of(null);
-      })
+      }),
     );
   }
 }

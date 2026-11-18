@@ -13,27 +13,66 @@ import { PlayerApplicationQuery } from 'src/app/data/player-application/player-a
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { PlayerApplicationTeamDataService } from 'src/app/data/team/player-application-team-data.service';
 import { TeamQuery } from 'src/app/data/team/team.query';
-import { MatTable, MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
-import { animate, state, style, transition, trigger } from '@angular/animations';
+import {
+  MatTable,
+  MatTableDataSource,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
+import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 
 @Component({
-    selector: 'app-player-team-app-order',
-    templateUrl: './player-team-app-order.component.html',
-    styleUrls: ['./player-team-app-order.component.scss'],
-    animations: [
-        trigger('detailExpand', [
-            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-            state('expanded', style({ height: '*', visibility: 'visible' })),
-            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-        ]),
-    ],
-    imports: [MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatIconButton, MatIcon, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
+  selector: 'app-player-team-app-order',
+  templateUrl: './player-team-app-order.component.html',
+  styleUrls: ['./player-team-app-order.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state(
+        'collapsed',
+        style({ height: '0px', minHeight: '0', visibility: 'hidden' }),
+      ),
+      state('expanded', style({ height: '*', visibility: 'visible' })),
+      transition(
+        'expanded <=> collapsed',
+        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+      ),
+    ]),
+  ],
+  imports: [
+    MatTable,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCellDef,
+    MatCell,
+    MatIconButton,
+    MatIcon,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+  ],
 })
 export class PlayerTeamAppOrderComponent implements OnDestroy {
   private playerApplicationQuery = inject(PlayerApplicationQuery);
-  private playerApplicationTeamDataService = inject(PlayerApplicationTeamDataService);
+  private playerApplicationTeamDataService = inject(
+    PlayerApplicationTeamDataService,
+  );
   private teamQuery = inject(TeamQuery);
   dialogService = inject(CrucibleDialogService);
 
@@ -48,7 +87,8 @@ export class PlayerTeamAppOrderComponent implements OnDestroy {
   teamDataSource = new MatTableDataSource<Team>(new Array<Team>());
   displayedColumns: string[] = ['name'];
   expandedElementId = '';
-  isExpansionDetailRow = (i: number, row: Object) => (row as Team).id === this.expandedElementId;
+  isExpansionDetailRow = (i: number, row: Object) =>
+    (row as Team).id === this.expandedElementId;
   private allTeams: Team[] = [];
   activeTeams: Team[] = [];
   private unsubscribe$ = new Subject();
@@ -60,14 +100,20 @@ export class PlayerTeamAppOrderComponent implements OnDestroy {
         this.playerApplicationTeamList = playerApplicationTeams;
       });
     // subscribe to playerApplications
-    this.playerApplicationQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(playerApplications => {
-      this.playerApplicationList = playerApplications;
-    });
+    this.playerApplicationQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((playerApplications) => {
+        this.playerApplicationList = playerApplications;
+      });
     // subscribe to teams directly from the store
-    this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
-      this.activeTeams = teams;
-      this.teamDataSource.data = teams;
-    });
+    this.teamQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((teams) => {
+        this.activeTeams = teams;
+        this.teamDataSource.data = teams;
+      });
   }
 
   getActiveTeams(): Team[] {
@@ -94,23 +140,27 @@ export class PlayerTeamAppOrderComponent implements OnDestroy {
   }
 
   getTeamApplications(teamId: string): PlayerApplicationTeam[] {
-    const tas = this.playerApplicationTeamList.filter(m => m.teamId === teamId).sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
+    const tas = this.playerApplicationTeamList
+      .filter((m) => m.teamId === teamId)
+      .sort((a, b) => (+a.displayOrder > +b.displayOrder ? 1 : -1));
     return tas;
   }
 
   getTeamName(teamId: string): string {
-    const team = this.activeTeams.find(m => m.id === teamId);
+    const team = this.activeTeams.find((m) => m.id === teamId);
     return team ? team.shortName + ' - ' + team.name : '';
   }
 
   getApplicationName(applicationId: string): string {
-    const playerApplication = this.playerApplicationList.find(m => m.id === applicationId);
+    const playerApplication = this.playerApplicationList.find(
+      (m) => m.id === applicationId,
+    );
     return playerApplication ? playerApplication.name : 'not found';
   }
 
   moveUp(item: PlayerApplicationTeam) {
     const itemList = this.getTeamApplications(item.teamId);
-    const index = itemList.findIndex(m => m.id === item.id);
+    const index = itemList.findIndex((m) => m.id === item.id);
     if (index > 0) {
       item.displayOrder = index;
     } else {
@@ -121,7 +171,7 @@ export class PlayerTeamAppOrderComponent implements OnDestroy {
 
   moveDown(item: PlayerApplicationTeam) {
     const itemList = this.getTeamApplications(item.teamId);
-    const index = itemList.findIndex(m => m.id === item.id);
+    const index = itemList.findIndex((m) => m.id === item.id);
     if (index < itemList.length - 1) {
       item.displayOrder = index + 2;
     } else {
@@ -131,7 +181,9 @@ export class PlayerTeamAppOrderComponent implements OnDestroy {
   }
 
   saveTeamApplicationOrder(playerApplicationTeam: PlayerApplicationTeam) {
-    this.playerApplicationTeamDataService.updatePlayerApplicationTeam(playerApplicationTeam);
+    this.playerApplicationTeamDataService.updatePlayerApplicationTeam(
+      playerApplicationTeam,
+    );
   }
 
   ngOnDestroy() {

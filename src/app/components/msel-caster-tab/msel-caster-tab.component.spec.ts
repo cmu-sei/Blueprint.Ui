@@ -9,7 +9,10 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
-import { ComnSettingsService, CrucibleDialogService } from '@cmusei/crucible-common';
+import {
+  ComnSettingsService,
+  CrucibleDialogService,
+} from '@cmusei/crucible-common';
 import {
   CasterDirectory,
   CasterService,
@@ -32,8 +35,18 @@ import { renderComponent } from 'src/app/test-utils/render-component';
 import { MselCasterTabComponent } from './msel-caster-tab.component';
 
 const ME = 'user-me';
-const BASE: CasterDirectory = { id: 'dir-1', name: 'Base', projectId: 'proj-1', projectName: 'Range' };
-const EXTENDED: CasterDirectory = { id: 'dir-2', name: 'Extended', projectId: 'proj-1', projectName: 'Range' };
+const BASE: CasterDirectory = {
+  id: 'dir-1',
+  name: 'Base',
+  projectId: 'proj-1',
+  projectName: 'Range',
+};
+const EXTENDED: CasterDirectory = {
+  id: 'dir-2',
+  name: 'Extended',
+  projectId: 'proj-1',
+  projectName: 'Range',
+};
 // a copy of Topology's directory Range, below its root directory Root
 const COPY: MselCasterExport = {
   mselId: 'msel-1',
@@ -42,12 +55,20 @@ const COPY: MselCasterExport = {
   dateExported: new Date('2026-11-01T12:00:00Z'),
   exportedByName: 'Pat Planner',
   directories: [
-    { level: 0, name: 'Root', files: [{ name: 'providers.tf', content: 'terraform {}' }] },
+    {
+      level: 0,
+      name: 'Root',
+      files: [{ name: 'providers.tf', content: 'terraform {}' }],
+    },
     { level: 1, name: 'Range', files: [] },
   ],
   entries: [
     { path: 'main.tf', workspace: null, content: 'variable "blue" {}' },
-    { path: '__Workspaces__/topology/topology.auto.tfvars', workspace: 'topology', content: 'blue = "x"' },
+    {
+      path: '__Workspaces__/topology/topology.auto.tfvars',
+      workspace: 'topology',
+      content: 'blue = "x"',
+    },
   ],
   warnings: [],
   contentsIncluded: true,
@@ -63,39 +84,76 @@ function msel(myRoles: MselRole[] = [], extra: Partial<Msel> = {}): Msel {
     createdBy: 'user-creator',
     teams: [],
     units: [],
-    userMselRoles: myRoles.map((role, i) => ({ id: `umr-${i}`, userId: ME, mselId: 'msel-1', role })),
+    userMselRoles: myRoles.map((role, i) => ({
+      id: `umr-${i}`,
+      userId: ME,
+      mselId: 'msel-1',
+      role,
+    })),
     ...extra,
   };
 }
 
 async function renderTab(
-  overrides: { permissions?: SystemPermission[]; myRoles?: MselRole[]; mselExtra?: Partial<Msel>; copy?: MselCasterExport | null } = {},
+  overrides: {
+    permissions?: SystemPermission[];
+    myRoles?: MselRole[];
+    mselExtra?: Partial<Msel>;
+    copy?: MselCasterExport | null;
+  } = {},
 ) {
-  const { permissions = [], myRoles = [MselRole.Owner], mselExtra = {}, copy = null } = overrides;
-  const casterApi = { getCasterDirectories: vi.fn(() => of([BASE, EXTENDED])) } satisfies ApiStub<CasterService>;
+  const {
+    permissions = [],
+    myRoles = [MselRole.Owner],
+    mselExtra = {},
+    copy = null,
+  } = overrides;
+  const casterApi = {
+    getCasterDirectories: vi.fn(() => of([BASE, EXTENDED])),
+  } satisfies ApiStub<CasterService>;
   const copyApi = {
     getMselCasterExport: vi.fn(() => of(structuredClone(copy))),
-    captureMselCasterExport: vi.fn(() => of<MselCasterExport>({ ...structuredClone(COPY), projectName: 'Range Project' })),
+    captureMselCasterExport: vi.fn(() =>
+      of<MselCasterExport>({
+        ...structuredClone(COPY),
+        projectName: 'Range Project',
+      }),
+    ),
     deleteMselCasterExport: vi.fn(() => of<unknown>(null)),
     // the API links the MSEL to the directory the import made
     importMselCasterExport: vi.fn(() =>
-      of<MselCasterImportResult>({ casterDirectoryId: 'dir-new', lockedFiles: [], msel: { ...msel(myRoles, mselExtra), casterDirectoryId: 'dir-new' } })),
+      of<MselCasterImportResult>({
+        casterDirectoryId: 'dir-new',
+        lockedFiles: [],
+        msel: { ...msel(myRoles, mselExtra), casterDirectoryId: 'dir-new' },
+      }),
+    ),
   } satisfies ApiStub<MselCasterExportService>;
-  const mselApi = { updateMsel: vi.fn((_id: string, body: Msel) => of(structuredClone(body))) } satisfies ApiStub<MselService>;
+  const mselApi = {
+    updateMsel: vi.fn((_id: string, body: Msel) => of(structuredClone(body))),
+  } satisfies ApiStub<MselService>;
   // The user confirms every dialog.
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
   const permissionApis = permissionApiStubs({ system: permissions });
   const rendered = await renderComponent(MselCasterTabComponent, {
     providers: [
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: CasterService, useValue: casterApi },
       { provide: MselCasterExportService, useValue: copyApi },
       { provide: MselService, useValue: mselApi },
-      { provide: CrucibleDialogService, useValue: { confirm } satisfies Pick<CrucibleDialogService, 'confirm'> },
+      {
+        provide: CrucibleDialogService,
+        useValue: { confirm } satisfies Pick<CrucibleDialogService, 'confirm'>,
+      },
       {
         provide: ComnSettingsService,
-        useValue: { settings: { CasterUrl: 'http://caster.example' } } satisfies Pick<ComnSettingsService, 'settings'>,
+        useValue: {
+          settings: { CasterUrl: 'http://caster.example' },
+        } satisfies Pick<ComnSettingsService, 'settings'>,
       },
       {
         provide: MselStore,
@@ -116,9 +174,12 @@ async function renderTab(
 }
 
 const directorySelects = (fixture: ComponentFixture<unknown>) =>
-  TestbedHarnessEnvironment.loader(fixture).getAllHarnesses(MatSelectHarness.with({ ancestor: '.link-select' }));
+  TestbedHarnessEnvironment.loader(fixture).getAllHarnesses(
+    MatSelectHarness.with({ ancestor: '.link-select' }),
+  );
 const button = (name: string) => screen.getByRole('button', { name });
-const storedDirectoryId = () => TestBed.inject(MselStore).getValue().entities['msel-1'].casterDirectoryId;
+const storedDirectoryId = () =>
+  TestBed.inject(MselStore).getValue().entities['msel-1'].casterDirectoryId;
 
 describe('MselCasterTabComponent', () => {
   /**
@@ -131,15 +192,22 @@ describe('MselCasterTabComponent', () => {
     const [select] = await directorySelects(fixture);
 
     await select.open();
-    expect(await Promise.all((await select.getOptions()).map((o) => o.getText()))).toEqual(['-- None --', 'Range / Base', 'Range / Extended']);
+    expect(
+      await Promise.all((await select.getOptions()).map((o) => o.getText())),
+    ).toEqual(['-- None --', 'Range / Base', 'Range / Extended']);
     await select.clickOptions({ text: 'Range / Extended' });
     fixture.detectChanges();
-    expect(screen.getByText('Changes have not been saved!')).toBeInTheDocument();
+    expect(
+      screen.getByText('Changes have not been saved!'),
+    ).toBeInTheDocument();
     expect(fixture.componentInstance.hasPendingChanges()).toBe(true);
     await userEvent.setup().click(button('Save Changes'));
     fixture.detectChanges();
 
-    expect(mselApi.updateMsel).toHaveBeenCalledExactlyOnceWith('msel-1', expect.objectContaining({ casterDirectoryId: 'dir-2' }));
+    expect(mselApi.updateMsel).toHaveBeenCalledExactlyOnceWith(
+      'msel-1',
+      expect.objectContaining({ casterDirectoryId: 'dir-2' }),
+    );
     expect(storedDirectoryId()).toBe('dir-2');
     expect(fixture.componentInstance.hasPendingChanges()).toBe(false);
   });
@@ -150,7 +218,10 @@ describe('MselCasterTabComponent', () => {
    * Data: MSEL role Owner; a pending MSEL linked to dir-1 with a copy; Range / Extended chosen.
    */
   it('asks before linking another directory replaces the copy', async () => {
-    const { fixture, mselApi, confirm } = await renderTab({ copy: COPY, mselExtra: { casterDirectoryId: 'dir-1' } });
+    const { fixture, mselApi, confirm } = await renderTab({
+      copy: COPY,
+      mselExtra: { casterDirectoryId: 'dir-1' },
+    });
     const [select] = await directorySelects(fixture);
 
     await select.clickOptions({ text: 'Range / Extended' });
@@ -158,8 +229,16 @@ describe('MselCasterTabComponent', () => {
     await userEvent.setup().click(button('Save Changes'));
     fixture.detectChanges();
 
-    expect(confirm).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ title: 'Link Another Directory', confirmText: 'Link' }));
-    expect(mselApi.updateMsel).toHaveBeenCalledExactlyOnceWith('msel-1', expect.objectContaining({ casterDirectoryId: 'dir-2' }));
+    expect(confirm).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        title: 'Link Another Directory',
+        confirmText: 'Link',
+      }),
+    );
+    expect(mselApi.updateMsel).toHaveBeenCalledExactlyOnceWith(
+      'msel-1',
+      expect.objectContaining({ casterDirectoryId: 'dir-2' }),
+    );
     expect(screen.getByText('No copy is stored.')).toBeInTheDocument();
   });
 
@@ -169,7 +248,9 @@ describe('MselCasterTabComponent', () => {
    * Data: MSEL role Owner; a pending MSEL linked to dir-1; Range / Extended chosen.
    */
   it('cancels a chosen directory', async () => {
-    const { fixture, mselApi } = await renderTab({ mselExtra: { casterDirectoryId: 'dir-1' } });
+    const { fixture, mselApi } = await renderTab({
+      mselExtra: { casterDirectoryId: 'dir-1' },
+    });
     const [select] = await directorySelects(fixture);
 
     await select.clickOptions({ text: 'Range / Extended' });
@@ -187,13 +268,21 @@ describe('MselCasterTabComponent', () => {
    * Data: MSEL role Editor, no permission; a pending MSEL linked to dir-1 (Range / Base) with no copy.
    */
   it('shows the directory read-only to an Editor, who may still copy it', async () => {
-    const { fixture } = await renderTab({ myRoles: [MselRole.Editor], mselExtra: { casterDirectoryId: 'dir-1' } });
+    const { fixture } = await renderTab({
+      myRoles: [MselRole.Editor],
+      mselExtra: { casterDirectoryId: 'dir-1' },
+    });
 
     expect(await directorySelects(fixture)).toEqual([]);
-    expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Save Changes' }),
+    ).not.toBeInTheDocument();
     expect(screen.getByTitle('dir-1')).toHaveTextContent('dir-1');
     expect(screen.getByText('Range / Base')).toBeInTheDocument();
-    expect(screen.getByTitle('Open directory in Caster')).toHaveAttribute('href', 'http://caster.example/projects/proj-1?directory=dir-1');
+    expect(screen.getByTitle('Open directory in Caster')).toHaveAttribute(
+      'href',
+      'http://caster.example/projects/proj-1?directory=dir-1',
+    );
     expect(button('Store a Copy Now')).toBeEnabled();
   });
 
@@ -206,8 +295,12 @@ describe('MselCasterTabComponent', () => {
     await renderTab({ myRoles: [MselRole.Viewer], copy: COPY });
 
     expect(screen.getByText('Topology')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Store a Copy Now' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Delete the Copy' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Store a Copy Now' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Delete the Copy' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -222,8 +315,16 @@ describe('MselCasterTabComponent', () => {
     expect(screen.getByText('Topology')).toBeInTheDocument();
     expect(screen.getByText('Root / Range')).toBeInTheDocument();
     expect(screen.getByText(/by Pat Planner/)).toBeInTheDocument();
-    expect(screen.getByText(/the push imports the copy into Caster as a new project/)).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { expanded: false }).map((b) => b.textContent.trim())).toEqual([
+    expect(
+      screen.getByText(
+        /the push imports the copy into Caster as a new project/,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen
+        .getAllByRole('button', { expanded: false })
+        .map((b) => b.textContent.trim()),
+    ).toEqual([
       'Root/providers.tfshared from above',
       'Range/main.tf',
       'Range/__Workspaces__/topology/topology.auto.tfvarsworkspace topology',
@@ -240,10 +341,19 @@ describe('MselCasterTabComponent', () => {
    * Data: MSEL role Viewer; a pending MSEL with a copy answered without contents.
    */
   it('lists the files without their contents for a contributor who may not change the copy', async () => {
-    await renderTab({ myRoles: [MselRole.Viewer], copy: { ...COPY, contentsIncluded: false } });
+    await renderTab({
+      myRoles: [MselRole.Viewer],
+      copy: { ...COPY, contentsIncluded: false },
+    });
 
-    expect(screen.getByText("File contents are shown to the MSEL's owners and editors.")).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Range\/main\.tf/ })).toHaveAttribute('aria-disabled', 'true');
+    expect(
+      screen.getByText(
+        "File contents are shown to the MSEL's owners and editors.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /^Range\/main\.tf/ }),
+    ).toHaveAttribute('aria-disabled', 'true');
   });
 
   /**
@@ -263,12 +373,22 @@ describe('MselCasterTabComponent', () => {
    * Data: MSEL role Owner; a pending MSEL linked to dir-1 with a copy.
    */
   it('stores a new copy of the linked directory', async () => {
-    const { fixture, copyApi, confirm } = await renderTab({ copy: COPY, mselExtra: { casterDirectoryId: 'dir-1' } });
+    const { fixture, copyApi, confirm } = await renderTab({
+      copy: COPY,
+      mselExtra: { casterDirectoryId: 'dir-1' },
+    });
     await userEvent.setup().click(button('Store a Copy Now'));
     fixture.detectChanges();
 
-    expect(confirm).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ title: 'Store a New Copy', confirmText: 'Replace' }));
-    expect(copyApi.captureMselCasterExport).toHaveBeenCalledExactlyOnceWith('msel-1');
+    expect(confirm).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        title: 'Store a New Copy',
+        confirmText: 'Replace',
+      }),
+    );
+    expect(copyApi.captureMselCasterExport).toHaveBeenCalledExactlyOnceWith(
+      'msel-1',
+    );
     expect(screen.getByText('Range Project')).toBeInTheDocument();
   });
 
@@ -283,7 +403,9 @@ describe('MselCasterTabComponent', () => {
     await userEvent.setup().click(button('Import into Caster'));
     fixture.detectChanges();
 
-    expect(copyApi.importMselCasterExport).toHaveBeenCalledExactlyOnceWith('msel-1');
+    expect(copyApi.importMselCasterExport).toHaveBeenCalledExactlyOnceWith(
+      'msel-1',
+    );
     expect(storedDirectoryId()).toBe('dir-new');
     expect(casterApi.getCasterDirectories).toHaveBeenCalledTimes(2);
     expect(button('Import into Caster')).toBeDisabled();
@@ -295,13 +417,20 @@ describe('MselCasterTabComponent', () => {
    * Data: MSEL role Owner; a pending MSEL linked to dir-1 with a copy.
    */
   it('deletes the copy', async () => {
-    const { fixture, copyApi, confirm } = await renderTab({ copy: COPY, mselExtra: { casterDirectoryId: 'dir-1' } });
+    const { fixture, copyApi, confirm } = await renderTab({
+      copy: COPY,
+      mselExtra: { casterDirectoryId: 'dir-1' },
+    });
 
     await userEvent.setup().click(button('Delete the Copy'));
     fixture.detectChanges();
 
-    expect(confirm).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ title: 'Delete the Copy' }));
-    expect(copyApi.deleteMselCasterExport).toHaveBeenCalledExactlyOnceWith('msel-1');
+    expect(confirm).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ title: 'Delete the Copy' }),
+    );
+    expect(copyApi.deleteMselCasterExport).toHaveBeenCalledExactlyOnceWith(
+      'msel-1',
+    );
     expect(screen.getByText('No copy is stored.')).toBeInTheDocument();
   });
 
@@ -314,12 +443,22 @@ describe('MselCasterTabComponent', () => {
     const { fixture } = await renderTab({
       permissions: [SystemPermission.EditMsels],
       copy: COPY,
-      mselExtra: { status: MselItemStatus.Deployed, casterDirectoryId: 'dir-1', casterWorkspaceId: 'ws-1' },
+      mselExtra: {
+        status: MselItemStatus.Deployed,
+        casterDirectoryId: 'dir-1',
+        casterWorkspaceId: 'ws-1',
+      },
     });
 
     expect(await directorySelects(fixture)).toEqual([]);
-    expect(screen.getByText(/locked while the integrations are deployed/)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Store a Copy Now' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/locked while the integrations are deployed/),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Store a Copy Now' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Save Changes' }),
+    ).not.toBeInTheDocument();
   });
 });

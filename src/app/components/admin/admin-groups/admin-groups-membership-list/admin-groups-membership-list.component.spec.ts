@@ -39,7 +39,9 @@ async function renderMembershipList(overrides: { canEdit?: boolean } = {}) {
     inputs: { canEdit, users: USERS },
   });
   const added: string[] = [];
-  rendered.fixture.componentInstance.createMembership.subscribe((id) => added.push(id));
+  rendered.fixture.componentInstance.createMembership.subscribe((id) =>
+    added.push(id),
+  );
   return { ...rendered, added };
 }
 
@@ -69,7 +71,11 @@ describe('AdminGroupsMembershipListComponent', () => {
     await renderMembershipList({ canEdit: false });
 
     expect(within(table()).getByText('Bob')).toBeInTheDocument();
-    expect(within(table()).getByRole('button', { name: 'Copy: user-b' })).toBeInTheDocument();
-    expect(within(table()).queryByRole('button', { name: 'Add Bob' })).not.toBeInTheDocument();
+    expect(
+      within(table()).getByRole('button', { name: 'Copy: user-b' }),
+    ).toBeInTheDocument();
+    expect(
+      within(table()).queryByRole('button', { name: 'Add Bob' }),
+    ).not.toBeInTheDocument();
   });
 });

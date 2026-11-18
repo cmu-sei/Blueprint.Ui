@@ -4,7 +4,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
-import { PlayerApplicationTeam, PlayerApplicationTeamService } from 'src/app/generated/blueprint.api';
+import {
+  PlayerApplicationTeam,
+  PlayerApplicationTeamService,
+} from 'src/app/generated/blueprint.api';
 import { PlayerApplicationTeamDataService } from './player-application-team-data.service';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { getDefaultProviders } from 'src/app/test-utils/default-test-providers';
@@ -108,7 +111,9 @@ describe('PlayerApplicationTeamDataService', () => {
     );
     patApi.deletePlayerApplicationTeam.mockReturnValue(of(null));
 
-    service.updatePlayerApplicationTeam(appTeam({ id: 'pat-2', displayOrder: 5 }));
+    service.updatePlayerApplicationTeam(
+      appTeam({ id: 'pat-2', displayOrder: 5 }),
+    );
     expect(patApi.updatePlayerApplicationTeam).toHaveBeenCalledWith(
       'pat-2',
       expect.objectContaining({ displayOrder: 5 }),

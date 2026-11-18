@@ -11,14 +11,25 @@ import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of, Subject } from 'rxjs';
 import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
-import { Msel, MselService, User, UserService } from 'src/app/generated/blueprint.api';
-import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
+import {
+  Msel,
+  MselService,
+  User,
+  UserService,
+} from 'src/app/generated/blueprint.api';
+import {
+  ApplicationArea,
+  SignalRService,
+} from 'src/app/services/signalr.service';
 import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
 import { LaunchComponent } from './launch.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
-import { captureUnhandledRejections, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRejections,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 @Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
@@ -28,16 +39,28 @@ class TopbarStub {
   readonly urlNavigate = output<string>();
 }
 
-const TEMPLATE: Msel = { id: 'msel-t', name: 'Ransomware Starter', description: 'A launchable template' };
+const TEMPLATE: Msel = {
+  id: 'msel-t',
+  name: 'Ransomware Starter',
+  description: 'A launchable template',
+};
 
-async function renderLaunch(logout: ComnAuthService['logout'] = () => Promise.resolve()) {
+async function renderLaunch(
+  logout: ComnAuthService['logout'] = () => Promise.resolve(),
+) {
   // The launch answer is held, so the test can watch the in-progress state.
   const launched = new Subject<Msel>();
   const mselApi = {
     getMyLaunchMsels: vi.fn(() => of(structuredClone([TEMPLATE]))),
     launchMselByInvitation: vi.fn(() => launched),
     // what a reload after a replaced hub connection finds: a status the page has not heard about
-    getMsel: vi.fn((id: string) => of<Msel>({ id, name: 'Ransomware Starter', integrationStatus: 'Adding teams ...' })),
+    getMsel: vi.fn((id: string) =>
+      of<Msel>({
+        id,
+        name: 'Ransomware Starter',
+        integrationStatus: 'Adding teams ...',
+      }),
+    ),
   } satisfies ApiStub<MselService>;
   const userApi = {
     getUsers: vi.fn(() => of<User[]>([])),
@@ -47,12 +70,13 @@ async function renderLaunch(logout: ComnAuthService['logout'] = () => Promise.re
     join: vi.fn(),
     selectMsel: vi.fn(),
     leave: vi.fn(),
-  } satisfies Pick<SignalRService, 'startConnection' | 'join' | 'selectMsel' | 'leave'>;
+  } satisfies Pick<
+    SignalRService,
+    'startConnection' | 'join' | 'selectMsel' | 'leave'
+  >;
   const rendered = await renderComponent(LaunchComponent, {
     imports: [MatButtonModule, MatCardModule, MatProgressSpinnerModule],
-    childStubs: [
-      { replace: TopbarComponent, with: TopbarStub },
-    ],
+    childStubs: [{ replace: TopbarComponent, with: TopbarStub }],
     providers: [
       { provide: MselService, useValue: mselApi },
       { provide: UserService, useValue: userApi },
@@ -66,7 +90,12 @@ async function renderLaunch(logout: ComnAuthService['logout'] = () => Promise.re
       },
       {
         provide: ComnSettingsService,
-        useValue: { settings: { AppTopBarImage: '/assets/img/logo-white.png', PlayerUrl: 'https://player.example.com' } } satisfies Pick<ComnSettingsService, 'settings'>,
+        useValue: {
+          settings: {
+            AppTopBarImage: '/assets/img/logo-white.png',
+            PlayerUrl: 'https://player.example.com',
+          },
+        } satisfies Pick<ComnSettingsService, 'settings'>,
       },
     ],
   });
@@ -102,7 +131,9 @@ describe('LaunchComponent', () => {
     expect(fixture.componentInstance).toBeInstanceOf(LaunchComponent);
     expect(signalR.startConnection).toHaveBeenCalledWith(ApplicationArea.home);
     expect(signalR.join).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole('button', { name: 'Start Ransomware Starter' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Start Ransomware Starter' }),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -114,7 +145,9 @@ describe('LaunchComponent', () => {
     const { fixture, mselApi, signalR, launched } = await renderLaunch();
     const user = userEvent.setup();
 
-    await user.click(screen.getByRole('button', { name: 'Start Ransomware Starter' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Start Ransomware Starter' }),
+    );
     expect(mselApi.launchMselByInvitation).toHaveBeenCalledWith('msel-t', '');
     expect(screen.getByText('Starting the event ...')).toBeInTheDocument();
 
@@ -138,7 +171,9 @@ describe('LaunchComponent', () => {
     hubReconnect.announceReconnected();
     expect(mselApi.getMsel).not.toHaveBeenCalled();
 
-    await user.click(screen.getByRole('button', { name: 'Start Ransomware Starter' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Start Ransomware Starter' }),
+    );
     launched.next({ id: 'msel-new', name: 'Ransomware Starter' });
     hubReconnect.announceReconnected();
     fixture.detectChanges();

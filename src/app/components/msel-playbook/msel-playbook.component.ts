@@ -3,11 +3,8 @@
  Released under a MIT (SEI)-style license. See LICENSE.md in the
  project root for license information.
 */
-import {
-  ComnSettingsService,
-  Theme
-} from '@cmusei/crucible-common';
-import { ActivatedRoute} from '@angular/router';
+import { ComnSettingsService, Theme } from '@cmusei/crucible-common';
+import { ActivatedRoute } from '@angular/router';
 import { takeUntil } from 'rxjs/operators';
 import { Subject, Observable, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -72,14 +69,22 @@ export interface PlaybookCompetencyGroup {
 // groups in heading order; a heading that two groups share gets each one's qualifier (a framework's version, a team's
 // short name), so neither group is mistaken for the other
 function namedGroups(
-  groups: { key: string; name: string; qualifier: string; competencies: Competency[] }[],
+  groups: {
+    key: string;
+    name: string;
+    qualifier: string;
+    competencies: Competency[];
+  }[],
 ): PlaybookCompetencyGroup[] {
   const counts = new Map<string, number>();
   groups.forEach((g) => counts.set(g.name, (counts.get(g.name) ?? 0) + 1));
   return groups
     .map((g) => ({
       key: g.key,
-      name: counts.get(g.name) > 1 && g.qualifier && g.qualifier !== g.name ? `${g.name} (${g.qualifier})` : g.name,
+      name:
+        counts.get(g.name) > 1 && g.qualifier && g.qualifier !== g.name
+          ? `${g.name} (${g.qualifier})`
+          : g.name,
       competencies: g.competencies.sort(byIdNumber),
     }))
     .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
@@ -93,50 +98,79 @@ export function frameworkCompetencyGroups(
   mselCompetencies: MselCompetency[],
   frameworks: CompetencyFramework[],
 ): PlaybookCompetencyGroup[] {
-  const frameworksById = new Map(frameworks.map((f) => [f.id, f] as [string, CompetencyFramework]));
+  const frameworksById = new Map(
+    frameworks.map((f) => [f.id, f] as [string, CompetencyFramework]),
+  );
   const byFramework = new Map<string, Competency[]>();
-  for (const competency of mselCompetencies.map((mc) => mc.competency).filter((c): c is Competency => !!c)) {
-    const key = frameworksById.has(competency.competencyFrameworkId) ? competency.competencyFrameworkId : '';
+  for (const competency of mselCompetencies
+    .map((mc) => mc.competency)
+    .filter((c): c is Competency => !!c)) {
+    const key = frameworksById.has(competency.competencyFrameworkId)
+      ? competency.competencyFrameworkId
+      : '';
     byFramework.set(key, [...(byFramework.get(key) ?? []), competency]);
   }
   const known = [...byFramework.entries()]
     .filter(([key]) => key)
     .map(([key, competencies]) => {
       const framework = frameworksById.get(key);
-      return { key, name: framework.name?.trim() || 'Unnamed framework', qualifier: framework.version?.trim() ?? '', competencies };
+      return {
+        key,
+        name: framework.name?.trim() || 'Unnamed framework',
+        qualifier: framework.version?.trim() ?? '',
+        competencies,
+      };
     });
   const groups = namedGroups(known);
   const unknown = byFramework.get('');
   if (unknown) {
-    groups.push({ key: '', name: groups.length ? 'Other competencies' : 'Competencies', competencies: unknown.sort(byIdNumber) });
+    groups.push({
+      key: '',
+      name: groups.length ? 'Other competencies' : 'Competencies',
+      competencies: unknown.sort(byIdNumber),
+    });
   }
   return groups;
 }
 
 /** Each team's competencies, keyed by team id so same-named teams stay apart; teams not on the MSEL are left out. */
-export function teamCompetencyGroups(teamCompetencies: TeamCompetency[], teams: Team[]): PlaybookCompetencyGroup[] {
+export function teamCompetencyGroups(
+  teamCompetencies: TeamCompetency[],
+  teams: Team[],
+): PlaybookCompetencyGroup[] {
   const teamsById = new Map(teams.map((t) => [t.id, t] as [string, Team]));
   const byTeam = new Map<string, Competency[]>();
-  for (const tc of teamCompetencies.filter((tc) => tc.competency && teamsById.has(tc.teamId))) {
+  for (const tc of teamCompetencies.filter(
+    (tc) => tc.competency && teamsById.has(tc.teamId),
+  )) {
     byTeam.set(tc.teamId, [...(byTeam.get(tc.teamId) ?? []), tc.competency]);
   }
   return namedGroups(
     [...byTeam.entries()].map(([key, competencies]) => {
       const team = teamsById.get(key);
-      return { key, name: team.name || team.shortName || '', qualifier: team.shortName ?? '', competencies };
+      return {
+        key,
+        name: team.name || team.shortName || '',
+        qualifier: team.shortName ?? '',
+        competencies,
+      };
     }),
   );
 }
 
 /** A competency as the print lists it, in full: its ID number, then its name, or its description where it has no name. */
 export function competencyLabel(competency: Competency): string {
-  const name = competency.shortName?.trim() || competency.description?.trim() || '';
+  const name =
+    competency.shortName?.trim() || competency.description?.trim() || '';
   return [competency.idNumber?.trim(), name].filter((part) => part).join(' ');
 }
 
 // competencies in ID number order, the numbers inside them compared as numbers (T-2 before T-10)
 function byIdNumber(a: Competency, b: Competency): number {
-  return (a.idNumber ?? '').localeCompare(b.idNumber ?? '', undefined, { numeric: true, sensitivity: 'base' });
+  return (a.idNumber ?? '').localeCompare(b.idNumber ?? '', undefined, {
+    numeric: true,
+    sensitivity: 'base',
+  });
 }
 
 /** One move as the print-all output shows it: its title page, contents entry and events. */
@@ -150,13 +184,23 @@ export interface PlaybookPrintMove {
 }
 
 /** Waits until the images under root have loaded, or failed, for at most timeoutMs, so a print doesn't catch a blank where one goes. */
-export function imagesReady(root: ParentNode, timeoutMs = 10000): Promise<void> {
+export function imagesReady(
+  root: ParentNode,
+  timeoutMs = 10000,
+): Promise<void> {
   const decoded = Array.from(root.querySelectorAll('img')).map((img) =>
-    typeof img.decode === 'function' ? img.decode().catch(() => undefined) : undefined
+    typeof img.decode === 'function'
+      ? img.decode().catch(() => undefined)
+      : undefined,
   );
   let timer: ReturnType<typeof setTimeout>;
-  const timeout = new Promise<void>((resolve) => (timer = setTimeout(resolve, timeoutMs)));
-  return Promise.race([Promise.all(decoded).then(() => undefined), timeout]).finally(() => clearTimeout(timer));
+  const timeout = new Promise<void>(
+    (resolve) => (timer = setTimeout(resolve, timeoutMs)),
+  );
+  return Promise.race([
+    Promise.all(decoded).then(() => undefined),
+    timeout,
+  ]).finally(() => clearTimeout(timer));
 }
 
 /**
@@ -188,10 +232,18 @@ export function formatPlaybookDuration(totalSeconds: number): string {
 }
 
 @Component({
-    selector: 'app-msel-playbook',
-    templateUrl: './msel-playbook.component.html',
-    styleUrls: ['./msel-playbook.component.scss'],
-    imports: [MatPaginator, MatIconButton, MatIcon, DurationViewComponent, DatePipe, NgTemplateOutlet, TimezoneAbbrPipe]
+  selector: 'app-msel-playbook',
+  templateUrl: './msel-playbook.component.html',
+  styleUrls: ['./msel-playbook.component.scss'],
+  imports: [
+    MatPaginator,
+    MatIconButton,
+    MatIcon,
+    DurationViewComponent,
+    DatePipe,
+    NgTemplateOutlet,
+    TimezoneAbbrPipe,
+  ],
 })
 export class MselPlaybookComponent implements OnDestroy {
   private settingsService = inject(ComnSettingsService);
@@ -338,17 +390,17 @@ export class MselPlaybookComponent implements OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((scenarioEvents) => {
         this.mselScenarioEvents = this.getEditableScenarioEvents(
-          scenarioEvents as ScenarioEvent[]
+          scenarioEvents as ScenarioEvent[],
         );
         if (scenarioEvents && scenarioEvents.length > 0) {
           this.moveAndGroupNumbers =
             this.scenarioEventDataService.getMoveAndGroupNumbers(
               this.mselScenarioEvents,
-              this.moveList
+              this.moveList,
             );
           this.filteredScenarioEventList = this.getFilteredScenarioEvents();
           this.sortedScenarioEvents = this.getSortedScenarioEvents(
-            this.filteredScenarioEventList
+            this.filteredScenarioEventList,
           );
           this.setPageSizeOptions();
         }
@@ -358,20 +410,24 @@ export class MselPlaybookComponent implements OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((moves) => {
         this.moveList = moves.sort((a, b) =>
-          +a.moveNumber < +b.moveNumber ? -1 : 1
+          +a.moveNumber < +b.moveNumber ? -1 : 1,
         );
         this.moveAndGroupNumbers =
           this.scenarioEventDataService.getMoveAndGroupNumbers(
             this.mselScenarioEvents,
-            this.moveList
+            this.moveList,
           );
       });
     this.mselPageQuery
       .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((pages) => {
-        this.mselPages = pages.filter(p => p.includeInPlaybook);
-        this.pagesTitledInContent = new Set(this.mselPages.filter(p => opensWithHeading(p.content, p.name)).map(p => p.id));
+        this.mselPages = pages.filter((p) => p.includeInPlaybook);
+        this.pagesTitledInContent = new Set(
+          this.mselPages
+            .filter((p) => opensWithHeading(p.content, p.name))
+            .map((p) => p.id),
+        );
       });
   }
 
@@ -389,16 +445,26 @@ export class MselPlaybookComponent implements OnDestroy {
     this.competencyData = null;
     this.setCompetencyGroups();
     forkJoin({
-      msel: this.mselCompetencyService.getMselCompetencies(msel.id).pipe(catchError(() => of([]))),
-      teams: this.teamCompetencyService.getMselTeamCompetencies(msel.id).pipe(catchError(() => of([]))),
-      frameworks: this.competencyFrameworkService.getCompetencyFrameworks().pipe(catchError(() => of([]))),
+      msel: this.mselCompetencyService
+        .getMselCompetencies(msel.id)
+        .pipe(catchError(() => of([]))),
+      teams: this.teamCompetencyService
+        .getMselTeamCompetencies(msel.id)
+        .pipe(catchError(() => of([]))),
+      frameworks: this.competencyFrameworkService
+        .getCompetencyFrameworks()
+        .pipe(catchError(() => of([]))),
     })
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(({ msel: mselCompetencies, teams, frameworks }) => {
         if (msel.id !== this.competenciesMselId) {
           return;
         }
-        this.competencyData = { mselCompetencies, teamCompetencies: teams, frameworks };
+        this.competencyData = {
+          mselCompetencies,
+          teamCompetencies: teams,
+          frameworks,
+        };
         this.setCompetencyGroups();
       });
   }
@@ -406,8 +472,12 @@ export class MselPlaybookComponent implements OnDestroy {
   // the team groups use the MSEL's current teams, so this runs again on each MSEL update
   private setCompetencyGroups() {
     const data = this.competencyData;
-    this.competencyGroups = data ? frameworkCompetencyGroups(data.mselCompetencies, data.frameworks) : [];
-    this.teamCompetencyGroups = data ? teamCompetencyGroups(data.teamCompetencies, this.msel.teams ?? []) : [];
+    this.competencyGroups = data
+      ? frameworkCompetencyGroups(data.mselCompetencies, data.frameworks)
+      : [];
+    this.teamCompetencyGroups = data
+      ? teamCompetencyGroups(data.teamCompetencies, this.msel.teams ?? [])
+      : [];
   }
 
   competencyLabel(competency: Competency): string {
@@ -437,12 +507,16 @@ export class MselPlaybookComponent implements OnDestroy {
     editableMsel.teams = (editableMsel.teams ?? [])
       .slice(0)
       .sort((a, b) =>
-        (a.shortName ?? '').toLowerCase() < (b.shortName ?? '').toLowerCase() ? -1 : 1
+        (a.shortName ?? '').toLowerCase() < (b.shortName ?? '').toLowerCase()
+          ? -1
+          : 1,
       );
     editableMsel.units = (editableMsel.units ?? [])
       .slice(0)
       .sort((a, b) =>
-        (a.shortName ?? '').toLowerCase() < (b.shortName ?? '').toLowerCase() ? -1 : 1
+        (a.shortName ?? '').toLowerCase() < (b.shortName ?? '').toLowerCase()
+          ? -1
+          : 1,
       );
 
     return editableMsel;
@@ -454,7 +528,7 @@ export class MselPlaybookComponent implements OnDestroy {
         .filter((df) => df.onScenarioEventList)
         .sort((a, b) => (+a.displayOrder > +b.displayOrder ? 1 : -1));
       this.allDataFields = dataFields.sort((a, b) =>
-        +a.displayOrder > +b.displayOrder ? 1 : -1
+        +a.displayOrder > +b.displayOrder ? 1 : -1,
       );
     }
     // create date form controls
@@ -495,8 +569,8 @@ export class MselPlaybookComponent implements OnDestroy {
             that
               .getDataValue(a, df.name)
               .value?.toLowerCase()
-              .includes(filterString)
-          )
+              .includes(filterString),
+          ),
         );
         return filteredScenarioEvents;
       }
@@ -506,7 +580,7 @@ export class MselPlaybookComponent implements OnDestroy {
 
   getDataValue(
     scenarioEvent: ScenarioEvent,
-    dataFieldName: string
+    dataFieldName: string,
   ): DataValuePlus {
     if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
       return this.blankDataValue;
@@ -518,7 +592,7 @@ export class MselPlaybookComponent implements OnDestroy {
     let dataValuePlus = this.dataValues.find(
       (dv) =>
         dv.dataFieldId === dataFieldId &&
-        dv.scenarioEventId === scenarioEvent.id
+        dv.scenarioEventId === scenarioEvent.id,
     ) as DataValuePlus;
     if (dataValuePlus) {
       dataValuePlus.valueArray = dataValuePlus.value
@@ -532,7 +606,7 @@ export class MselPlaybookComponent implements OnDestroy {
 
   getDataFieldIdByName(scenarioEvent: ScenarioEvent, name: string): string {
     const dataField = this.allDataFields.find(
-      (df) => df.name.toLowerCase() === name.toLowerCase()
+      (df) => df.name.toLowerCase() === name.toLowerCase(),
     );
     return dataField ? dataField.id : '';
   }
@@ -542,11 +616,11 @@ export class MselPlaybookComponent implements OnDestroy {
     if (scenarioEvents) {
       if (scenarioEvents.length > 0 && this.sort && this.sort.direction) {
         sortedScenarioEvents = (scenarioEvents as ScenarioEvent[]).sort(
-          (a: ScenarioEvent, b: ScenarioEvent) => this.sortScenarioEvents(a, b)
+          (a: ScenarioEvent, b: ScenarioEvent) => this.sortScenarioEvents(a, b),
         );
       } else {
         sortedScenarioEvents = (scenarioEvents as ScenarioEvent[]).sort(
-          (a, b) => (+a.deltaSeconds > +b.deltaSeconds ? 1 : -1)
+          (a, b) => (+a.deltaSeconds > +b.deltaSeconds ? 1 : -1),
         );
       }
     }
@@ -584,7 +658,7 @@ export class MselPlaybookComponent implements OnDestroy {
     const dataValue = this.dataValues.find(
       (dv) =>
         dv.dataFieldId === dataField.id &&
-        dv.scenarioEventId === scenarioEvent.id
+        dv.scenarioEventId === scenarioEvent.id,
     );
 
     if (dataValue) {
@@ -593,7 +667,9 @@ export class MselPlaybookComponent implements OnDestroy {
       } else if (dataValue.value == null) {
         return '';
       } else {
-        return this.printing ? this.printable(dataValue.value) : dataValue.value;
+        return this.printing
+          ? this.printable(dataValue.value)
+          : dataValue.value;
       }
     } else {
       return '';
@@ -625,7 +701,7 @@ export class MselPlaybookComponent implements OnDestroy {
     const titleDataValue = this.dataValues.find(
       (dv) =>
         dv.dataFieldId === titleField.id &&
-        dv.scenarioEventId === scenarioEvent.id
+        dv.scenarioEventId === scenarioEvent.id,
     );
     return titleDataValue ? titleDataValue.value : '';
   }
@@ -721,14 +797,23 @@ export class MselPlaybookComponent implements OnDestroy {
     for (const move of this.moveList) {
       const moveNumber = +move.moveNumber;
       if (!byNumber.has(moveNumber)) {
-        byNumber.set(moveNumber, { moveNumber, label: `Move ${moveNumber}`, move, events: [] });
+        byNumber.set(moveNumber, {
+          moveNumber,
+          label: `Move ${moveNumber}`,
+          move,
+          events: [],
+        });
       }
     }
     for (const scenarioEvent of this.getPagedScenarioEvents()) {
       const moveNumber = this.getMoveNumber(scenarioEvent.id);
       let printMove = byNumber.get(moveNumber);
       if (!printMove) {
-        printMove = { moveNumber, label: this.unmovedLabel(moveNumber), events: [] };
+        printMove = {
+          moveNumber,
+          label: this.unmovedLabel(moveNumber),
+          events: [],
+        };
         byNumber.set(moveNumber, printMove);
       }
       printMove.events.push(scenarioEvent);
@@ -740,7 +825,9 @@ export class MselPlaybookComponent implements OnDestroy {
     if (moveNumber >= 0) {
       return `Move ${moveNumber}`;
     }
-    return this.moveList.length ? `Before Move ${this.moveList[0].moveNumber}` : 'Scenario Events';
+    return this.moveList.length
+      ? `Before Move ${this.moveList[0].moveNumber}`
+      : 'Scenario Events';
   }
 
   getTeamNames(): string {
@@ -765,25 +852,41 @@ export class MselPlaybookComponent implements OnDestroy {
 }
 
 // content that shows without text: when one of these comes first, the content doesn't open with a heading
-const NON_TEXT_CONTENT = 'img, svg, video, audio, iframe, object, embed, canvas, hr';
+const NON_TEXT_CONTENT =
+  'img, svg, video, audio, iframe, object, embed, canvas, hr';
 
 // whether a page's content starts with a heading that says its name, as a drafted profiles page does; the first thing
 // that shows (text or an image) must be in that heading, wrappers and empty paragraphs aside
-export function opensWithHeading(content: string | null | undefined, name: string | null | undefined): boolean {
+export function opensWithHeading(
+  content: string | null | undefined,
+  name: string | null | undefined,
+): boolean {
   if (!content || !name) {
     return false;
   }
   const doc = new DOMParser().parseFromString(content, 'text/html');
-  const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
-    acceptNode: (node) =>
-      node.nodeType === Node.TEXT_NODE
-        ? (node.textContent ?? '').trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP
-        : (node as Element).matches(NON_TEXT_CONTENT) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP,
-  });
+  const walker = doc.createTreeWalker(
+    doc.body,
+    NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
+    {
+      acceptNode: (node) =>
+        node.nodeType === Node.TEXT_NODE
+          ? (node.textContent ?? '').trim()
+            ? NodeFilter.FILTER_ACCEPT
+            : NodeFilter.FILTER_SKIP
+          : (node as Element).matches(NON_TEXT_CONTENT)
+            ? NodeFilter.FILTER_ACCEPT
+            : NodeFilter.FILTER_SKIP,
+    },
+  );
   const first = walker.nextNode();
-  const firstElement = first?.nodeType === Node.TEXT_NODE ? first.parentElement : (first as Element | null);
+  const firstElement =
+    first?.nodeType === Node.TEXT_NODE
+      ? first.parentElement
+      : (first as Element | null);
   const heading = firstElement?.closest('h1, h2, h3, h4, h5, h6');
-  const normalize = (text: string) => text.replace(/\s+/g, ' ').trim().toLowerCase();
+  const normalize = (text: string) =>
+    text.replace(/\s+/g, ' ').trim().toLowerCase();
   return !!heading && normalize(heading.textContent ?? '') === normalize(name);
 }
 
@@ -806,6 +909,8 @@ export function withoutMedia(html: string): string {
     note.appendChild(label);
     player.replaceWith(note);
   });
-  template.content.querySelectorAll('details').forEach((details) => details.setAttribute('open', ''));
+  template.content
+    .querySelectorAll('details')
+    .forEach((details) => details.setAttribute('open', ''));
   return template.innerHTML;
 }

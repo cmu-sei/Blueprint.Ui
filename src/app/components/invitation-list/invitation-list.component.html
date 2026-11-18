@@ -6,99 +6,183 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <div class="cssLayoutRowStartCenter">
   <div class="sp-icon">
-    <mat-icon class="mdi-24px" fontIcon="mdi-email-open" [style.color]="'var(--mat-sys-primary)'" />
+    <mat-icon
+      class="mdi-24px"
+      fontIcon="mdi-email-open"
+      [style.color]="'var(--mat-sys-primary)'"
+    />
   </div>
-  <mat-form-field style="width: 300px; margin-left: 10px;">
-    <input matInput [(ngModel)]="filterString" (ngModelChange)="applyFilter($event)" placeholder="Search" />
+  <mat-form-field style="width: 300px; margin-left: 10px">
+    <input
+      matInput
+      [(ngModel)]="filterString"
+      (ngModelChange)="applyFilter($event)"
+      placeholder="Search"
+    />
     @if (filterString) {
-    <button mat-icon-button matSuffix (click)="applyFilter('')" title="Clear Search">
-      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
-    </button>
+      <button
+        mat-icon-button
+        matSuffix
+        (click)="applyFilter('')"
+        title="Clear Search"
+      >
+        <mat-icon
+          style="transform: scale(0.85)"
+          fontIcon="mdi-close-circle-outline"
+        />
+      </button>
     }
   </mat-form-field>
   <div class="button-end">
-    <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
-      [pageSizeOptions]="[5, 10, 15, 20, 25, 50]" />
+    <mat-paginator
+      #paginator
+      [pageIndex]="0"
+      [pageSize]="20"
+      [pageSizeOptions]="[5, 10, 15, 20, 25, 50]"
+    />
   </div>
 </div>
 
 @if (msel) {
-<div class="frame">
-  <div class="table-container">
-    <table mat-table [dataSource]="invitationDataSource" matSort (matSortChange)="sortChanged($event)">
-      <!-- action column -->
-      <ng-container matColumnDef="action">
-        <th mat-header-cell *matHeaderCellDef class="column-action">
-          @if (canEditMsel() || msel.hasRole(loggedInUserId(), null).owner) {
-          <button mat-icon-button (click)="addOrEditInvitation(null, false)" style="outline: none;"
-            title="Add an invitation">
-            <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle" />
-          </button>
-          }
-        </th>
-        <td mat-cell *matCellDef="let element" class="column-action">
-          @if (canEditMsel() || msel.hasRole(loggedInUserId(), null).owner) {
-          <button mat-icon-button
-            (click)="addOrEditInvitation(element, true); $event.stopPropagation();"
-            title="Edit {{ element.emailDomain }} invitation">
-            <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" />
-          </button>
-          }
-          <button mat-icon-button ngxClipboard [cbContent]="getInvitationLink(element.teamId)"
-            title="Copy Invitation Link: {{ getInvitationLink(element.teamId) }}"
-            [disabled]="getInvitationLink(element.teamId).length === 0">
-            <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" />
-          </button>
-          @if (canEditMsel() || msel.hasRole(loggedInUserId(), null).owner) {
-          <button mat-icon-button (click)="deleteInvitation(element); $event.stopPropagation();"
-            title="Delete {{ element.emailDomain }} invitation">
-            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
-          </button>
-          }
-        </td>
-      </ng-container>
-      <!-- team column -->
-      <ng-container matColumnDef="teamId">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-team">Team Short Name</th>
-        <td mat-cell *matCellDef="let element" class="column-team">
-          {{ getTeamName(element.teamId) }}
-        </td>
-      </ng-container>
-      <!-- emailDomain column -->
-      <ng-container matColumnDef="emailDomain">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-email-domain">Email Domain</th>
-        <td mat-cell *matCellDef="let element" class="column-email-domain">
-          {{ element.emailDomain }}
-        </td>
-      </ng-container>
-      <!-- expirationDateTime column -->
-      <ng-container matColumnDef="expirationDateTime">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-expires">Expiration</th>
-        <td mat-cell *matCellDef="let element" class="column-expires">
-          {{ element.expirationDateTime | date: 'dd MMM yyyy HH:mm' }}
-        </td>
-      </ng-container>
-      <!-- maxUsersAllowed column -->
-      <ng-container matColumnDef="usesAllowed">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-uses">Max Uses</th>
-        <td mat-cell *matCellDef="let element" class="column-uses">
-          {{ element.maxUsersAllowed }}
-        </td>
-      </ng-container>
-      <!-- usesRemaining column -->
-      <ng-container matColumnDef="usesRemaining">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-uses">Remaining Uses</th>
-        <td mat-cell *matCellDef="let element" class="column-uses">
-          {{ element.maxUsersAllowed - element.userCount }}
-        </td>
-      </ng-container>
-      <!-- row definitions -->
-      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    </table>
-    @if (invitationDataSource?.filteredData.length === 0) {
-    <div class="no-results">No invitations found</div>
-    }
+  <div class="frame">
+    <div class="table-container">
+      <table
+        mat-table
+        [dataSource]="invitationDataSource"
+        matSort
+        (matSortChange)="sortChanged($event)"
+      >
+        <!-- action column -->
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef class="column-action">
+            @if (canEditMsel() || msel.hasRole(loggedInUserId(), null).owner) {
+              <button
+                mat-icon-button
+                (click)="addOrEditInvitation(null, false)"
+                style="outline: none"
+                title="Add an invitation"
+              >
+                <mat-icon
+                  class="mdi-24px center-self"
+                  fontIcon="mdi-plus-circle"
+                />
+              </button>
+            }
+          </th>
+          <td mat-cell *matCellDef="let element" class="column-action">
+            @if (canEditMsel() || msel.hasRole(loggedInUserId(), null).owner) {
+              <button
+                mat-icon-button
+                (click)="
+                  addOrEditInvitation(element, true); $event.stopPropagation()
+                "
+                title="Edit {{ element.emailDomain }} invitation"
+              >
+                <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" />
+              </button>
+            }
+            <button
+              mat-icon-button
+              ngxClipboard
+              [cbContent]="getInvitationLink(element.teamId)"
+              title="Copy Invitation Link: {{
+                getInvitationLink(element.teamId)
+              }}"
+              [disabled]="getInvitationLink(element.teamId).length === 0"
+            >
+              <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" />
+            </button>
+            @if (canEditMsel() || msel.hasRole(loggedInUserId(), null).owner) {
+              <button
+                mat-icon-button
+                (click)="deleteInvitation(element); $event.stopPropagation()"
+                title="Delete {{ element.emailDomain }} invitation"
+              >
+                <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
+              </button>
+            }
+          </td>
+        </ng-container>
+        <!-- team column -->
+        <ng-container matColumnDef="teamId">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            class="column-team"
+          >
+            Team Short Name
+          </th>
+          <td mat-cell *matCellDef="let element" class="column-team">
+            {{ getTeamName(element.teamId) }}
+          </td>
+        </ng-container>
+        <!-- emailDomain column -->
+        <ng-container matColumnDef="emailDomain">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            class="column-email-domain"
+          >
+            Email Domain
+          </th>
+          <td mat-cell *matCellDef="let element" class="column-email-domain">
+            {{ element.emailDomain }}
+          </td>
+        </ng-container>
+        <!-- expirationDateTime column -->
+        <ng-container matColumnDef="expirationDateTime">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            class="column-expires"
+          >
+            Expiration
+          </th>
+          <td mat-cell *matCellDef="let element" class="column-expires">
+            {{ element.expirationDateTime | date: 'dd MMM yyyy HH:mm' }}
+          </td>
+        </ng-container>
+        <!-- maxUsersAllowed column -->
+        <ng-container matColumnDef="usesAllowed">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            class="column-uses"
+          >
+            Max Uses
+          </th>
+          <td mat-cell *matCellDef="let element" class="column-uses">
+            {{ element.maxUsersAllowed }}
+          </td>
+        </ng-container>
+        <!-- usesRemaining column -->
+        <ng-container matColumnDef="usesRemaining">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            class="column-uses"
+          >
+            Remaining Uses
+          </th>
+          <td mat-cell *matCellDef="let element" class="column-uses">
+            {{ element.maxUsersAllowed - element.userCount }}
+          </td>
+        </ng-container>
+        <!-- row definitions -->
+        <tr
+          mat-header-row
+          *matHeaderRowDef="displayedColumns; sticky: true"
+        ></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+      @if (invitationDataSource?.filteredData.length === 0) {
+        <div class="no-results">No invitations found</div>
+      }
+    </div>
   </div>
-</div>
 }
