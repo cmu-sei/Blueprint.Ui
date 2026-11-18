@@ -70,7 +70,7 @@ export function toForm(
   ],
 })
 export class AdminTechniqueFrameworkDialogComponent {
-  /** True while the page saves what was submitted: Save waits for the answer. */
+  /** True while the page saves what was submitted: Save and the fields wait for the answer, so nothing typed meanwhile is lost. */
   readonly saving = signal(false);
   data = inject<{ title: string; form: TechniqueFrameworkForm }>(
     MAT_DIALOG_DATA,

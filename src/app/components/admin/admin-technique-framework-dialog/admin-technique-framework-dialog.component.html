@@ -19,6 +19,7 @@ project root for license information.
           matInput
           required
           [(ngModel)]="form.name"
+          [disabled]="saving()"
           title="The framework's name"
         />
       </mat-form-field>
@@ -30,6 +31,7 @@ project root for license information.
           matInput
           rows="2"
           [(ngModel)]="form.description"
+          [disabled]="saving()"
           title="What the framework covers"
         ></textarea>
       </mat-form-field>
@@ -42,6 +44,7 @@ project root for license information.
           matInput
           required
           [(ngModel)]="form.domain"
+          [disabled]="saving()"
           title="The domain its releases are filed under"
         />
         <mat-hint>Unique. A MSEL pins one release per domain.</mat-hint>
@@ -50,6 +53,7 @@ project root for license information.
         <mat-label>Family</mat-label>
         <mat-select
           [(ngModel)]="form.isDefensive"
+          [disabled]="saving()"
           title="Whether its techniques are attacks or defences"
         >
           <mat-option [value]="false">Attack</mat-option>
@@ -60,6 +64,7 @@ project root for license information.
         <mat-label>File Format</mat-label>
         <mat-select
           [(ngModel)]="form.format"
+          [disabled]="saving()"
           title="The format its release files are published in"
         >
           @for (format of formats; track format.value) {
@@ -77,6 +82,7 @@ project root for license information.
           rows="16"
           spellcheck="false"
           [(ngModel)]="form.settingsJson"
+          [disabled]="saving()"
           title="Match conditions, format options, mappings, links and download hints"
         ></textarea>
         <mat-hint

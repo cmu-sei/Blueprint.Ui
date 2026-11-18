@@ -55,7 +55,7 @@ export function isWebAddress(url: string | null | undefined): boolean {
   ],
 })
 export class AdminTechniqueReleaseNoticeDialogComponent {
-  /** True while the page saves what was submitted: Save waits for the answer. */
+  /** True while the page saves what was submitted: Save and the fields wait for the answer, so nothing typed meanwhile is lost. */
   readonly saving = signal(false);
   data = inject<{
     release: TechniqueRelease;

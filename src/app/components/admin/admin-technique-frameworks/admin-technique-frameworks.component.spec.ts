@@ -254,8 +254,8 @@ describe('AdminTechniqueFrameworksComponent', () => {
   });
 
   /**
-   * Verifies: Save is disabled while a save is under way, so a second one cannot start and the first answer cannot
-   * close the dialog over newer input; a refused save enables it again.
+   * Verifies: Save and the fields are disabled while a save is under way, so a second save cannot start and the
+   * first answer cannot close the dialog over newer input; a refused save enables them again.
    * Interacts with: TechniqueFrameworkService.updateTechniqueFramework (stub answering when the test says), crucible-dialog submitDisabled.
    * Data: the Attacks definition, saved and then refused.
    */
@@ -275,6 +275,8 @@ describe('AdminTechniqueFrameworksComponent', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled(),
     );
+    // nothing can be typed that the first answer would close the dialog over
+    expect(screen.getByRole('textbox', { name: 'Name' })).toBeDisabled();
     const failure = new Error('400');
     answer.error(failure);
     await flush();
@@ -282,6 +284,7 @@ describe('AdminTechniqueFrameworksComponent', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled(),
     );
+    expect(screen.getByRole('textbox', { name: 'Name' })).toBeEnabled();
     expect(frameworkApi.updateTechniqueFramework).toHaveBeenCalledTimes(1);
   });
 
