@@ -15,10 +15,10 @@ import { AngularEditorModule } from '@kolkov/angular-editor';
 import { FormsModule } from '@angular/forms';
 
 @Component({
-    selector: 'app-msel-pageapp',
-    templateUrl: './msel-page.component.html',
-    styleUrls: ['./msel-page.component.scss'],
-    imports: [AngularEditorModule, FormsModule]
+  selector: 'app-msel-pageapp',
+  templateUrl: './msel-page.component.html',
+  styleUrls: ['./msel-page.component.scss'],
+  imports: [AngularEditorModule, FormsModule],
 })
 export class MselPageComponent implements OnDestroy {
   private activatedRoute = inject(ActivatedRoute);
@@ -33,25 +33,28 @@ export class MselPageComponent implements OnDestroy {
   viewConfig = VIEW_CONFIG;
 
   constructor() {
-    this._document.getElementById('appTitle').innerHTML = this.settingsService.settings.AppTitle + ' MSEL Page';
+    this._document.getElementById('appTitle').innerHTML =
+      this.settingsService.settings.AppTitle + ' MSEL Page';
     // subscribe to route changes
-    this.activatedRoute.paramMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
-      const mselPageId = params.get('id');
-      if (mselPageId) {
-        this.mselPageDataService.loadById(mselPageId);
-        this.mselPageDataService.setActive(mselPageId);
-      } else {
-        this.mselPageDataService.setActive('');
-      }
-    });
+    this.activatedRoute.paramMap
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((params) => {
+        const mselPageId = params.get('id');
+        if (mselPageId) {
+          this.mselPageDataService.loadById(mselPageId);
+          this.mselPageDataService.setActive(mselPageId);
+        } else {
+          this.mselPageDataService.setActive('');
+        }
+      });
     // subscribe to the mselPage
-    (this.mselPageQuery.selectActive() as Observable<MselPage>).pipe(takeUntil(this.unsubscribe$)).subscribe(mselPage => {
-      if (mselPage) {
-        this.mselPage = mselPage;
-      }
-    });
-
-
+    (this.mselPageQuery.selectActive() as Observable<MselPage>)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((mselPage) => {
+        if (mselPage) {
+          this.mselPage = mselPage;
+        }
+      });
   }
 
   ngOnDestroy() {

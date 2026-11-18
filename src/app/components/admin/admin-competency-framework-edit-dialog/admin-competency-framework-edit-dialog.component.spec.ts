@@ -10,31 +10,59 @@ import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
 import { of } from 'rxjs';
-import { CompetencyFramework, ProficiencyScale, ProficiencyScaleService } from 'src/app/generated/blueprint.api';
+import {
+  CompetencyFramework,
+  ProficiencyScale,
+  ProficiencyScaleService,
+} from 'src/app/generated/blueprint.api';
 import { AdminCompetencyFrameworkEditDialogComponent } from './admin-competency-framework-edit-dialog.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const FRAMEWORK = { id: 'fw-1', name: 'NICE', version: '2.1.0', source: 'NIST', description: 'Workforce framework', defaultProficiencyScaleId: 'scale-1' } as CompetencyFramework;
+const FRAMEWORK = {
+  id: 'fw-1',
+  name: 'NICE',
+  version: '2.1.0',
+  source: 'NIST',
+  description: 'Workforce framework',
+  defaultProficiencyScaleId: 'scale-1',
+} as CompetencyFramework;
 
 function dialogData(overrides: Partial<typeof FRAMEWORK> = {}) {
-  return { competencyFramework: { ...structuredClone(FRAMEWORK), ...overrides } };
+  return {
+    competencyFramework: { ...structuredClone(FRAMEWORK), ...overrides },
+  };
 }
 
 async function renderAdminCompetencyFrameworkEditDialog(data = dialogData()) {
   const scaleApi = {
-    getProficiencyScales: vi.fn(() => of<ProficiencyScale[]>([{ id: 'scale-1', name: 'Five Point' }])),
+    getProficiencyScales: vi.fn(() =>
+      of<ProficiencyScale[]>([{ id: 'scale-1', name: 'Five Point' }]),
+    ),
   } satisfies ApiStub<ProficiencyScaleService>;
-  const rendered = await renderComponent(AdminCompetencyFrameworkEditDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, MatFormFieldModule, MatInputModule, MatSelectModule],
-    declarations: [AdminCompetencyFrameworkEditDialogComponent],
-    providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, { provide: ProficiencyScaleService, useValue: scaleApi }],
-  });
+  const rendered = await renderComponent(
+    AdminCompetencyFrameworkEditDialogComponent,
+    {
+      imports: [
+        ...CRUCIBLE_DIALOG_IMPORTS,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+      ],
+      declarations: [AdminCompetencyFrameworkEditDialogComponent],
+      providers: [
+        { provide: MAT_DIALOG_DATA, useValue: data },
+        { provide: ProficiencyScaleService, useValue: scaleApi },
+      ],
+    },
+  );
   // ngModel writes the values into the inputs in a microtask.
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
   const results: unknown[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results, scaleApi };
 }
 
@@ -47,9 +75,15 @@ describe('AdminCompetencyFrameworkEditDialogComponent', () => {
   it('renders with the default test providers', async () => {
     const { fixture } = await renderAdminCompetencyFrameworkEditDialog();
 
-    expect(fixture.componentInstance).toBeInstanceOf(AdminCompetencyFrameworkEditDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Edit Competency Framework' })).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: 'Proficiency Scale' })).toHaveTextContent('Five Point');
+    expect(fixture.componentInstance).toBeInstanceOf(
+      AdminCompetencyFrameworkEditDialogComponent,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Edit Competency Framework' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('combobox', { name: 'Proficiency Scale' }),
+    ).toHaveTextContent('Five Point');
   });
 
   /**
@@ -87,11 +121,14 @@ describe('AdminCompetencyFrameworkEditDialogComponent', () => {
    * Data: a framework with no name.
    */
   it('saves an incomplete framework when handleEditComplete is called', async () => {
-    const { fixture, data, results } = await renderAdminCompetencyFrameworkEditDialog(dialogData({ name: '' }));
+    const { fixture, data, results } =
+      await renderAdminCompetencyFrameworkEditDialog(dialogData({ name: '' }));
 
     fixture.componentInstance.handleEditComplete(true);
 
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
-    expect(results).toEqual([{ saveChanges: true, competencyFramework: data.competencyFramework }]);
+    expect(results).toEqual([
+      { saveChanges: true, competencyFramework: data.competencyFramework },
+    ]);
   });
 });

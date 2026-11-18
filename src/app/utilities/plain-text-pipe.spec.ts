@@ -13,7 +13,10 @@ describe('PlainTextPipe', () => {
    * Data: HTML with a paragraph and a multi-line tag; a line break; '', null and undefined.
    */
   it.each([
-    { input: '<p>Phishing</p><b\nclass="x">email</b>', output: ' Phishing  email ' },
+    {
+      input: '<p>Phishing</p><b\nclass="x">email</b>',
+      output: ' Phishing  email ',
+    },
     { input: 'line<br/>break', output: 'line break' },
     { input: '', output: '' },
     { input: null, output: null },

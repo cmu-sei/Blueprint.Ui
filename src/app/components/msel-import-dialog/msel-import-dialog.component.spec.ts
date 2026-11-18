@@ -22,10 +22,20 @@ import { MselImportDialogComponent } from './msel-import-dialog.component';
 async function renderMselImport() {
   const result = new Subject<MselImportResult>();
   const file = new File(['{}'], 'exercise.json', { type: 'application/json' });
-  const api = { importJsonMsel: vi.fn(() => result) } satisfies ApiStub<MselService>;
-  const { dialogRef, close } = dialogRefStub<MselImportDialogComponent, string>();
+  const api = {
+    importJsonMsel: vi.fn(() => result),
+  } satisfies ApiStub<MselService>;
+  const { dialogRef, close } = dialogRefStub<
+    MselImportDialogComponent,
+    string
+  >();
   const rendered = await renderComponent(MselImportDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
+    imports: [
+      ...CRUCIBLE_DIALOG_IMPORTS,
+      MatButtonModule,
+      MatIconModule,
+      MatProgressSpinnerModule,
+    ],
     providers: [
       { provide: MselService, useValue: api },
       { provide: MAT_DIALOG_DATA, useValue: { file } },
@@ -61,7 +71,9 @@ describe('MselImportDialogComponent', () => {
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Close' })).toBeDisabled();
     expect(dialogRef.disableClose).toBe(true);
-    expect(screen.queryByRole('button', { name: 'Open MSEL' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Open MSEL' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -75,32 +87,56 @@ describe('MselImportDialogComponent', () => {
 
     result.next({
       msel: { id: 'imported-1', name: 'Imported Exercise' },
-      imported: { moves: 1, scenarioEvents: 2, cards: 3, teams: 4, dataFields: 5, pages: 6 },
+      imported: {
+        moves: 1,
+        scenarioEvents: 2,
+        cards: 3,
+        teams: 4,
+        dataFields: 5,
+        pages: 6,
+      },
       changes: [{ field: 'name', message: 'The exercise name was adjusted.' }],
-      failures: [{ step: 'citeScoringModel', message: 'CITE could not be reached.' }],
+      failures: [
+        { step: 'citeScoringModel', message: 'CITE could not be reached.' },
+      ],
     });
     fixture.detectChanges();
     expect(TestBed.inject(MselQuery).getById('imported-1')).toMatchObject({
-      id: 'imported-1', name: 'Imported Exercise',
+      id: 'imported-1',
+      name: 'Imported Exercise',
     });
 
     expect(screen.getByText('Imported Exercise')).toBeInTheDocument();
-    const imported = within(screen.getByRole('heading', { name: 'Imported' }).closest('section'));
+    const imported = within(
+      screen.getByRole('heading', { name: 'Imported' }).closest('section'),
+    );
     const countRows = imported.getAllByRole('listitem');
     expect(countRows).toHaveLength(6);
     const expectedCounts = [
-      ['1', 'Moves'], ['2', 'Scenario Events'], ['3', 'Cards'],
-      ['4', 'Teams'], ['5', 'Data Fields'], ['6', 'Pages'],
+      ['1', 'Moves'],
+      ['2', 'Scenario Events'],
+      ['3', 'Cards'],
+      ['4', 'Teams'],
+      ['5', 'Data Fields'],
+      ['6', 'Pages'],
     ];
     countRows.forEach((item, index) => {
       const [count, label] = expectedCounts[index];
       expect(within(item).getByText(count)).toBeInTheDocument();
       expect(within(item).getByText(label)).toBeInTheDocument();
     });
-    expect(screen.getByRole('heading', { name: 'Changed' })).toBeInTheDocument();
-    expect(screen.getByText('The exercise name was adjusted.')).toBeInTheDocument();
-    const failed = within(screen.getByRole('heading', { name: 'Failed' }).closest('section'));
-    expect(failed.getByRole('listitem')).toHaveTextContent('citeScoringModel: CITE could not be reached.');
+    expect(
+      screen.getByRole('heading', { name: 'Changed' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('The exercise name was adjusted.'),
+    ).toBeInTheDocument();
+    const failed = within(
+      screen.getByRole('heading', { name: 'Failed' }).closest('section'),
+    );
+    expect(failed.getByRole('listitem')).toHaveTextContent(
+      'citeScoringModel: CITE could not be reached.',
+    );
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Close' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'Open MSEL' })).toBeEnabled();
@@ -120,8 +156,12 @@ describe('MselImportDialogComponent', () => {
 
     expect(screen.getByText('Imported Exercise')).toBeInTheDocument();
     expect(screen.queryAllByRole('listitem')).toEqual([]);
-    expect(screen.queryByRole('heading', { name: 'Changed' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: 'Failed' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: 'Changed' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: 'Failed' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -149,26 +189,57 @@ describe('MselImportDialogComponent', () => {
    * Data: network status 0, problem title/detail, title alone, message, and missing-message fallbacks.
    */
   it.each([
-    { label: 'status 0', error: new HttpErrorResponse({ status: 0, error: { title: 'Ignored title' } }), message: 'The API could not be reached.' },
-    { label: 'title and detail', error: new HttpErrorResponse({ status: 400, error: { title: 'Invalid file.', detail: 'No MSEL was found.' } }), message: 'Invalid file. No MSEL was found.' },
-    { label: 'title alone', error: { error: { title: 'Invalid file.' } }, message: 'Invalid file.' },
-    { label: 'message fallback', error: new Error('Request rejected.'), message: 'Request rejected.' },
+    {
+      label: 'status 0',
+      error: new HttpErrorResponse({
+        status: 0,
+        error: { title: 'Ignored title' },
+      }),
+      message: 'The API could not be reached.',
+    },
+    {
+      label: 'title and detail',
+      error: new HttpErrorResponse({
+        status: 400,
+        error: { title: 'Invalid file.', detail: 'No MSEL was found.' },
+      }),
+      message: 'Invalid file. No MSEL was found.',
+    },
+    {
+      label: 'title alone',
+      error: { error: { title: 'Invalid file.' } },
+      message: 'Invalid file.',
+    },
+    {
+      label: 'message fallback',
+      error: new Error('Request rejected.'),
+      message: 'Request rejected.',
+    },
     { label: 'empty error fallback', error: {}, message: 'The import failed.' },
-    { label: 'detail without title fallback', error: { error: { detail: 'No MSEL was found.' } }, message: 'The import failed.' },
-  ])('shows the $label import error and permits closing', async ({ error, message }) => {
-    const { fixture, result, dialogRef, close } = await renderMselImport();
-    expect(dialogRef.disableClose).toBe(true);
+    {
+      label: 'detail without title fallback',
+      error: { error: { detail: 'No MSEL was found.' } },
+      message: 'The import failed.',
+    },
+  ])(
+    'shows the $label import error and permits closing',
+    async ({ error, message }) => {
+      const { fixture, result, dialogRef, close } = await renderMselImport();
+      expect(dialogRef.disableClose).toBe(true);
 
-    result.error(error);
-    fixture.detectChanges();
+      result.error(error);
+      fixture.detectChanges();
 
-    expect(screen.getByRole('alert')).toHaveTextContent(message);
-    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Open MSEL' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Close' })).toBeEnabled();
-    expect(dialogRef.disableClose).toBe(false);
-    const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: 'Close' }));
-    expect(close.mock.calls).toEqual([[]]);
-  });
+      expect(screen.getByRole('alert')).toHaveTextContent(message);
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Open MSEL' }),
+      ).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Close' })).toBeEnabled();
+      expect(dialogRef.disableClose).toBe(false);
+      const user = userEvent.setup();
+      await user.click(screen.getByRole('button', { name: 'Close' }));
+      expect(close.mock.calls).toEqual([[]]);
+    },
+  );
 });

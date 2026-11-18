@@ -4,7 +4,9 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information.
 -->
 <crucible-dialog
-  [dialogTitle]="(data.competency.id ? 'Edit ' : 'Add ') + (typeHint || 'Competency')"
+  [dialogTitle]="
+    (data.competency.id ? 'Edit ' : 'Add ') + (typeHint || 'Competency')
+  "
   [submitDisabled]="!errorFree()"
   [guardUnsavedWork]="true"
   (cancel)="handleEditComplete(false)"
@@ -13,29 +15,33 @@ project root for license information.
   @if (!!data && data.competency !== undefined && data.competency !== null) {
     <div crucibleDialogContent>
       @if (availableTypes.length > 0) {
-      <div class="add-margin">
-        <mat-form-field class="full-width">
-          <mat-label>Type</mat-label>
-          <mat-select [value]="typeHint" (selectionChange)="onTypeChange($event.value)" [disabled]="typeHintLocked">
-            @for (t of availableTypes; track t) {
-            <mat-option [value]="t">{{ t }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-      </div>
+        <div class="add-margin">
+          <mat-form-field class="full-width">
+            <mat-label>Type</mat-label>
+            <mat-select
+              [value]="typeHint"
+              (selectionChange)="onTypeChange($event.value)"
+              [disabled]="typeHintLocked"
+            >
+              @for (t of availableTypes; track t) {
+                <mat-option [value]="t">{{ t }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
       }
       @if (availableParents.length > 0) {
-      <div class="add-margin">
-        <mat-form-field class="full-width">
-          <mat-label>Category</mat-label>
-          <mat-select [(ngModel)]="data.competency.parentId">
-            <mat-option [value]="null">None</mat-option>
-            @for (p of availableParents; track p.id) {
-            <mat-option [value]="p.id">{{ p.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-      </div>
+        <div class="add-margin">
+          <mat-form-field class="full-width">
+            <mat-label>Category</mat-label>
+            <mat-select [(ngModel)]="data.competency.parentId">
+              <mat-option [value]="null">None</mat-option>
+              @for (p of availableParents; track p.id) {
+                <mat-option [value]="p.id">{{ p.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
       }
       <div class="add-margin">
         <mat-form-field class="full-width">
@@ -44,7 +50,8 @@ project root for license information.
             type="text"
             matInput
             placeholder="ID Number"
-            [(ngModel)]="data.competency.idNumber">
+            [(ngModel)]="data.competency.idNumber"
+          />
         </mat-form-field>
       </div>
       <div class="add-margin">
@@ -54,7 +61,8 @@ project root for license information.
             type="text"
             matInput
             placeholder="Short Name"
-            [(ngModel)]="data.competency.shortName">
+            [(ngModel)]="data.competency.shortName"
+          />
         </mat-form-field>
       </div>
       <div class="add-margin">
@@ -64,7 +72,8 @@ project root for license information.
             matInput
             rows="3"
             placeholder="Description"
-            [(ngModel)]="data.competency.description">
+            [(ngModel)]="data.competency.description"
+          >
           </textarea>
         </mat-form-field>
       </div>

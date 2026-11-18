@@ -5,10 +5,7 @@
 */
 
 import { Order, Query, QueryConfig, QueryEntity } from '@datorama/akita';
-import {
-  DataFieldState,
-  DataFieldStore,
-} from './data-field.store';
+import { DataFieldState, DataFieldStore } from './data-field.store';
 import { DataField } from 'src/app/generated/blueprint.api';
 import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
@@ -28,7 +25,7 @@ export class DataFieldQuery extends QueryEntity<DataFieldState> {
     const store = inject(DataFieldStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

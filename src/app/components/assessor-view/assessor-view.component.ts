@@ -1,9 +1,23 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, DoCheck, OnDestroy, HostListener, inject, input } from '@angular/core';
+import {
+  Component,
+  DoCheck,
+  OnDestroy,
+  HostListener,
+  inject,
+  input,
+} from '@angular/core';
 import { Subject, Subscription, Observable, fromEvent, of } from 'rxjs';
-import { takeUntil, debounceTime, distinctUntilChanged, mergeMap, delay, take } from 'rxjs/operators';
+import {
+  takeUntil,
+  debounceTime,
+  distinctUntilChanged,
+  mergeMap,
+  delay,
+  take,
+} from 'rxjs/operators';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { HttpClient } from '@angular/common/http';
 import { ComnSettingsService, Theme } from '@cmusei/crucible-common';
@@ -38,7 +52,11 @@ import { MselCompetencyQuery } from 'src/app/data/msel-competency/msel-competenc
 import { MselCompetencyDataService } from 'src/app/data/msel-competency/msel-competency-data.service';
 import { TeamCompetencyQuery } from 'src/app/data/team-competency/team-competency.query';
 import { TeamCompetencyDataService } from 'src/app/data/team-competency/team-competency-data.service';
-import { CiteService, CompetencyFrameworkService, ProficiencyScaleService } from 'src/app/generated/blueprint.api/api/api';
+import {
+  CiteService,
+  CompetencyFrameworkService,
+  ProficiencyScaleService,
+} from 'src/app/generated/blueprint.api/api/api';
 import {
   DataValuePlus,
   ScenarioEventDataService,
@@ -50,13 +68,18 @@ import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { Router } from '@angular/router';
 import { getTimezoneAbbr } from 'src/app/utilities/timezone-abbr';
 import { MatIcon } from '@angular/material/icon';
-import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
+import {
+  MatFormField,
+  MatLabel,
+  MatInput,
+  MatSuffix,
+} from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatProgressBar } from '@angular/material/progress-bar';
-import { DatePipe, DOCUMENT, NgClass, NgTemplateOutlet } from '@angular/common';
+import { DatePipe, DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
 import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import { formatPrintDuration, plainText, printFooterCss } from 'src/app/utilities/print-report';
@@ -66,7 +89,13 @@ import { DurationViewComponent } from '../shared/duration-view/duration-view.com
 import { DataValueComponent } from '../data-value/data-value.component';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
 import { TeamResponsesComponent } from '../team-responses/team-responses.component';
-import { agentIdentityKey, agentName, isAnonymousActor, isAnonymousAgentObject, XApiAgent } from 'src/app/utilities/xapi-agent';
+import {
+  agentIdentityKey,
+  agentName,
+  isAnonymousActor,
+  isAnonymousAgentObject,
+  XApiAgent,
+} from 'src/app/utilities/xapi-agent';
 
 /** A team's CITE answers for one move, as the Team Responses panel shows them. */
 export interface TeamResponsesState {
@@ -86,17 +115,25 @@ export interface TeamResponsesState {
 export const TEAM_RESPONSES_STALE_MS = 60_000;
 
 /** Statuses that say what the team answered, as opposed to why there is nothing to read. */
-const SETTLED_TEAM_RESPONSE_STATUSES: ReadonlySet<CiteTeamResponsesStatus> = new Set([
-  CiteTeamResponsesStatus.Answered,
-  CiteTeamResponsesStatus.NotAnswered,
-]);
+const SETTLED_TEAM_RESPONSE_STATUSES: ReadonlySet<CiteTeamResponsesStatus> =
+  new Set([
+    CiteTeamResponsesStatus.Answered,
+    CiteTeamResponsesStatus.NotAnswered,
+  ]);
 
 export interface XApiStatement {
   id?: string;
   actor?: XApiAgent;
   verb?: { id?: string; display?: { 'en-US'?: string } };
   /** An activity, or an Agent or Group when the statement is about a person or a team. */
-  object?: XApiAgent & { id?: string; definition?: { name?: { 'en-US'?: string }; type?: string; extensions?: Record<string, any> } };
+  object?: XApiAgent & {
+    id?: string;
+    definition?: {
+      name?: { 'en-US'?: string };
+      type?: string;
+      extensions?: Record<string, any>;
+    };
+  };
   result?: {
     score?: { raw?: number; scaled?: number; min?: number; max?: number };
     completion?: boolean;
@@ -109,8 +146,14 @@ export interface XApiStatement {
     platform?: string;
     extensions?: Record<string, any>;
     contextActivities?: {
-      grouping?: { id?: string; definition?: { name?: { 'en-US'?: string }; type?: string } }[];
-      other?: { id?: string; definition?: { name?: { 'en-US'?: string }; type?: string } }[];
+      grouping?: {
+        id?: string;
+        definition?: { name?: { 'en-US'?: string }; type?: string };
+      }[];
+      other?: {
+        id?: string;
+        definition?: { name?: { 'en-US'?: string }; type?: string };
+      }[];
     };
   };
 }
@@ -216,12 +259,37 @@ interface StatementListCacheEntry {
 }
 
 @Component({
-    selector: 'app-assessor-view',
-    templateUrl: './assessor-view.component.html',
-    styleUrls: ['./assessor-view.component.scss'],
-    imports: [MatIcon, MatSort, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatSelect, MatOption, MatSortHeader, MatProgressBar, NgClass, NgTemplateOutlet, MatTooltip, MatButton, CdkTextareaAutosize, DurationViewComponent, DataValueComponent, CardEditDialogComponent, TeamResponsesComponent, DatePipe, TimezoneAbbrPipe]
+  selector: 'app-assessor-view',
+  templateUrl: './assessor-view.component.html',
+  styleUrls: ['./assessor-view.component.scss'],
+  imports: [
+    MatIcon,
+    MatSort,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    FormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatSelect,
+    MatOption,
+    MatSortHeader,
+    MatProgressBar,
+    NgTemplateOutlet,
+    MatTooltip,
+    MatButton,
+    CdkTextareaAutosize,
+    DurationViewComponent,
+    DataValueComponent,
+    CardEditDialogComponent,
+    TeamResponsesComponent,
+    DatePipe,
+    TimezoneAbbrPipe,
+  ],
 })
-export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventView {
+export class AssessorViewComponent
+  implements DoCheck, OnDestroy, ScenarioEventView
+{
   private mselQuery = inject(MselQuery);
   private dataFieldQuery = inject(DataFieldQuery);
   private dataValueQuery = inject(DataValueQuery);
@@ -284,8 +352,16 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     : 0.4;
 
   private static FILTERABLE_TYPES = new Set([
-    'Organization', 'Team', 'TeamsMultiple', 'Status', 'Card',
-    'SourceType', 'Move', 'IntegrationTarget', 'Checkbox', 'Competency',
+    'Organization',
+    'Team',
+    'TeamsMultiple',
+    'Status',
+    'Card',
+    'SourceType',
+    'Move',
+    'IntegrationTarget',
+    'Checkbox',
+    'Competency',
   ]);
 
   sortableDataTypes = this.scenarioEventDataService.sortableDataTypes;
@@ -325,7 +401,10 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   teamCompetencies: TeamCompetency[] = [];
   proficiencyScale: ProficiencyScale | null = null;
   proficiencyLevels: ProficiencyLevel[] = [];
-  eventRatings = new Map<string, Map<string, { levelId: string; comment: string }>>();
+  eventRatings = new Map<
+    string,
+    Map<string, { levelId: string; comment: string }>
+  >();
   submittedAssertions = new Set<string>();
   submittingAssertions = new Set<string>();
   assertionTeam = new Map<string, string>();
@@ -338,7 +417,10 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
    * - assertion: the team of an assertion already submitted for the context. An evidence
    *   filter change replaces it; loading statements never replaces picked or filter.
    */
-  private assertionTeamSource = new Map<string, 'picked' | 'filter' | 'assertion'>();
+  private assertionTeamSource = new Map<
+    string,
+    'picked' | 'filter' | 'assertion'
+  >();
   // Contexts whose filter preselect is up to date with the filter, the teams and the competencies.
   private assertionTeamPreselected = new Set<string>();
 
@@ -354,7 +436,10 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   private baseMoveCompetencies = new Map<number, Competency[]>();
   private baseGroupCompetencies = new Map<string, Competency[]>();
   private teamCompIdSets = new Map<string, Set<string>>();
-  private statementSectionsCache = new Map<string, { key: string; value: any; preview: string }[]>();
+  private statementSectionsCache = new Map<
+    string,
+    { key: string; value: any; preview: string }[]
+  >();
   private competencyFrameworkCache = new Map<string, CompetencyFramework>();
   private competencyTypeCache = new Map<string, string>();
 
@@ -365,7 +450,11 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     this.apiUrl = this.settingsService.settings.ApiUrl;
     this.showRealTime = this.uiDataService.useRealTime();
     const savedGrouping = this.uiDataService.getStatementGrouping();
-    if (savedGrouping === 'user' || savedGrouping === 'team' || savedGrouping === 'off') {
+    if (
+      savedGrouping === 'user' ||
+      savedGrouping === 'team' ||
+      savedGrouping === 'off'
+    ) {
       this.savedStatementGrouping = savedGrouping;
     }
 
@@ -380,10 +469,13 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
 
     (this.mselQuery.selectActive() as Observable<MselPlus>)
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(msel => {
+      .subscribe((msel) => {
         if (msel) {
           const mselChanged = this.msel.id !== msel.id;
-          const hidingChanged = !mselChanged && !!this.msel.hideNamesOnAssessorView !== !!msel.hideNamesOnAssessorView;
+          const hidingChanged =
+            !mselChanged &&
+            !!this.msel.hideNamesOnAssessorView !==
+              !!msel.hideNamesOnAssessorView;
           this.msel = { ...msel } as MselPlus;
           if (mselChanged) {
             this.resetTeamResponses();
@@ -399,99 +491,121 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
         }
       });
 
-    this.dataFieldQuery.selectAll()
+    this.dataFieldQuery
+      .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(dataFields => {
+      .subscribe((dataFields) => {
         this.allDataFields = dataFields;
         this.competencyFieldIds = dataFields
-          .filter(df => df.dataType?.toString() === 'Competency')
-          .map(df => df.id);
+          .filter((df) => df.dataType?.toString() === 'Competency')
+          .map((df) => df.id);
         this.rebuildCompetencyCaches();
         this.assessorDataFields = dataFields
-          .filter(df => df.isAssessorVisible)
+          .filter((df) => df.isAssessorVisible)
           .sort((a, b) => (+a.displayOrder > +b.displayOrder ? 1 : -1));
         this.scenarioEventDataService.updateScenarioEventViewDataFields(this);
         this.scenarioEventDataService.updateScenarioEventViewDataValues(this);
-        this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
+        this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
+          this,
+        );
         this.redistributeStatementsIfLoaded();
       });
 
-    this.dataValueQuery.selectAll()
+    this.dataValueQuery
+      .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(dataValues => {
+      .subscribe((dataValues) => {
         this.dataValues = [];
-        dataValues.forEach(dv => {
+        dataValues.forEach((dv) => {
           this.dataValues.push({ ...dv });
         });
         this.scenarioEventDataService.updateScenarioEventViewDataValues(this);
-        this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
+        this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
+          this,
+        );
         this.rebuildCompetencyCaches();
         this.redistributeStatementsIfLoaded();
       });
 
-    this.scenarioEventQuery.selectAll()
+    this.scenarioEventQuery
+      .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(scenarioEvents => {
-        this.scenarioEventDataService.refreshScenarioEventViewEvents(this, scenarioEvents);
+      .subscribe((scenarioEvents) => {
+        this.scenarioEventDataService.refreshScenarioEventViewEvents(
+          this,
+          scenarioEvents,
+        );
         if (scenarioEvents && scenarioEvents.length > 0) {
-          this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(
-            this.mselScenarioEvents, this.moveList
+          this.moveAndGroupNumbers =
+            this.scenarioEventDataService.getMoveAndGroupNumbers(
+              this.mselScenarioEvents,
+              this.moveList,
+            );
+          this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
+            this,
           );
-          this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
           this.rebuildCompetencyCaches();
         }
         this.redistributeStatementsIfLoaded();
       });
 
-    this.cardQuery.selectAll()
+    this.cardQuery
+      .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(cards => {
+      .subscribe((cards) => {
         this.cardList = cards;
         this.scenarioEventDataService.updateScenarioEventViewCards(this);
         this.redistributeStatementsIfLoaded();
       });
     this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
 
-    this.moveQuery.selectAll()
+    this.moveQuery
+      .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(moves => {
+      .subscribe((moves) => {
         this.moveList = moves.sort((a, b) =>
-          +a.moveNumber < +b.moveNumber ? -1 : 1
+          +a.moveNumber < +b.moveNumber ? -1 : 1,
         );
-        this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(
-          this.mselScenarioEvents, this.moveList
-        );
+        this.moveAndGroupNumbers =
+          this.scenarioEventDataService.getMoveAndGroupNumbers(
+            this.mselScenarioEvents,
+            this.moveList,
+          );
         this.rebuildCompetencyCaches();
         this.redistributeStatementsIfLoaded();
       });
 
-    this.organizationQuery.selectAll()
+    this.organizationQuery
+      .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(organizations => {
+      .subscribe((organizations) => {
         this.organizationList = organizations.filter(
-          org => !org.isTemplate && org.mselId === this.msel.id
+          (org) => !org.isTemplate && org.mselId === this.msel.id,
         );
       });
 
-    this.teamQuery.selectAll()
+    this.teamQuery
+      .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(teams => {
+      .subscribe((teams) => {
         this.teamList = teams;
         this.assertionTeamPreselected.clear();
       });
 
-    this.mselCompetencyQuery.selectAll()
+    this.mselCompetencyQuery
+      .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(mcs => {
+      .subscribe((mcs) => {
         this.mselCompetencies = mcs;
         this.loadProficiencyScale();
         this.loadCompetencyFrameworks();
         this.rebuildCompetencyCaches();
       });
 
-    this.teamCompetencyQuery.selectAll()
+    this.teamCompetencyQuery
+      .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(tcs => {
+      .subscribe((tcs) => {
         this.teamCompetencies = tcs;
         this.rebuildTeamCompIdSets();
       });
@@ -500,9 +614,9 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       .pipe(
         debounceTime(250),
         distinctUntilChanged(),
-        mergeMap(search => of(search).pipe(delay(250)))
+        mergeMap((search) => of(search).pipe(delay(250))),
       )
-      .subscribe(event => {
+      .subscribe((event) => {
         this.applyFilter(this.filterString);
       });
   }
@@ -520,19 +634,26 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     return false;
   }
 
-  getDataValue(scenarioEvent: ScenarioEvent, dataFieldName: string): DataValuePlus {
+  getDataValue(
+    scenarioEvent: ScenarioEvent,
+    dataFieldName: string,
+  ): DataValuePlus {
     if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
       return this.blankDataValue;
     }
-    return this.scenarioEventDataService.getDataValueFromView(this, scenarioEvent, dataFieldName);
+    return this.scenarioEventDataService.getDataValueFromView(
+      this,
+      scenarioEvent,
+      dataFieldName,
+    );
   }
 
   getSortedOrganizationOptions(): string[] {
     let orgs: string[] = [];
-    this.organizationList.forEach(o => {
+    this.organizationList.forEach((o) => {
       orgs.push(o.shortName);
     });
-    this.msel.teams?.forEach(t => {
+    this.msel.teams?.forEach((t) => {
       orgs.push(t.shortName);
     });
     orgs = orgs.sort((a, b) => (a < b ? -1 : 1));
@@ -635,11 +756,11 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     if (this.sectionTeamInitialized.has(sectionKey)) return;
     this.sectionTeamInitialized.add(sectionKey);
 
-    const event = this.mselScenarioEvents.find(e => e.id === eventId);
+    const event = this.mselScenarioEvents.find((e) => e.id === eventId);
     if (!event) return;
 
-    const orgField = this.assessorDataFields.find(df =>
-      df.dataType?.toString().toLowerCase() === 'organization'
+    const orgField = this.assessorDataFields.find(
+      (df) => df.dataType?.toString().toLowerCase() === 'organization',
     );
     if (!orgField) return;
 
@@ -647,20 +768,23 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     const orgValue = (dv.value || '').trim();
     if (!orgValue || orgValue.toUpperCase() === 'ALL') return;
 
-    const orgNames = orgValue.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+    const orgNames = orgValue
+      .split(',')
+      .map((s) => s.trim().toLowerCase())
+      .filter((s) => s);
     const matchedIds = this.teamList
-      .filter(t =>
-        orgNames.includes((t.shortName || '').toLowerCase()) ||
-        orgNames.includes((t.name || '').toLowerCase())
+      .filter(
+        (t) =>
+          orgNames.includes((t.shortName || '').toLowerCase()) ||
+          orgNames.includes((t.name || '').toLowerCase()),
       )
-      .map(t => t.id);
+      .map((t) => t.id);
 
     if (matchedIds.length > 0) {
       this.sectionTeamFilter.set(sectionKey, matchedIds);
       this.assertionTeamPreselected.delete(eventId);
     }
   }
-
 
   refreshStatements() {
     this.refreshTeamResponses();
@@ -676,31 +800,32 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
         params.since = latest.timestamp;
       }
     }
-    this.http.get<any>(`${baseUrl}api/xapi/statements`, { params })
-      .subscribe({
-        next: (response) => {
-          if (this.restartStatementsIfStale()) return;
-          const statements = response?.statements || response || [];
-          const newStmts: XApiStatement[] = Array.isArray(statements) ? statements : [];
-          const existingIds = new Set(this.allMselStatements.map(s => s.id));
-          const added = newStmts.filter(s => !s.id || !existingIds.has(s.id));
-          if (added.length > 0) {
-            this.allMselStatements.push(...added);
-            this.allMselStatements.sort((a, b) =>
-              (a.timestamp || '').localeCompare(b.timestamp || '')
-            );
-            this.distributeStatements();
-            this.buildVerbList();
-          }
-          this.statementsLoading = false;
-          this.loadingStatements.delete('_all');
-        },
-        error: () => {
-          if (this.restartStatementsIfStale()) return;
-          this.statementsLoading = false;
-          this.loadingStatements.delete('_all');
+    this.http.get<any>(`${baseUrl}api/xapi/statements`, { params }).subscribe({
+      next: (response) => {
+        if (this.restartStatementsIfStale()) return;
+        const statements = response?.statements || response || [];
+        const newStmts: XApiStatement[] = Array.isArray(statements)
+          ? statements
+          : [];
+        const existingIds = new Set(this.allMselStatements.map((s) => s.id));
+        const added = newStmts.filter((s) => !s.id || !existingIds.has(s.id));
+        if (added.length > 0) {
+          this.allMselStatements.push(...added);
+          this.allMselStatements.sort((a, b) =>
+            (a.timestamp || '').localeCompare(b.timestamp || ''),
+          );
+          this.distributeStatements();
+          this.buildVerbList();
         }
-      });
+        this.statementsLoading = false;
+        this.loadingStatements.delete('_all');
+      },
+      error: () => {
+        if (this.restartStatementsIfStale()) return;
+        this.statementsLoading = false;
+        this.loadingStatements.delete('_all');
+      },
+    });
   }
 
   /** Who a statement is about, for its actor column; Unknown when the statement does not say. */
@@ -731,9 +856,12 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   /** The activity's name or id, or the person or team the statement is about; '' when it has none. */
   private objectName(stmt: XApiStatement): string {
     const object = stmt.object;
-    const name = object?.definition?.name?.['en-US'] || agentName(object) || object?.id;
+    const name =
+      object?.definition?.name?.['en-US'] || agentName(object) || object?.id;
     if (name) return name;
-    return this.hidesNames && isAnonymousAgentObject(object) ? 'Name hidden' : '';
+    return this.hidesNames && isAnonymousAgentObject(object)
+      ? 'Name hidden'
+      : '';
   }
 
   getPlatformClass(stmt: XApiStatement): string {
@@ -748,7 +876,8 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   private buildVerbList() {
     const verbs = new Set<string>();
     for (const stmt of this.allMselStatements) {
-      const verb = stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '';
+      const verb =
+        stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '';
       if (verb) verbs.add(verb);
     }
     this.availableVerbs = Array.from(verbs).sort();
@@ -805,7 +934,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   expandAll() {
     // Expand all moves, groups, and events
     const rows = this.displayRows;
-    rows.forEach(row => {
+    rows.forEach((row) => {
       if (row.type === 'move' && row.moveNumber !== undefined) {
         this.expandedMoveNumbers.add(row.moveNumber);
       } else if (row.type === 'group' && row.groupKey) {
@@ -828,7 +957,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
 
   get isFullyExpanded(): boolean {
     const rows = this.displayRows;
-    return rows.every(row => {
+    return rows.every((row) => {
       if (row.type === 'move' && row.moveNumber !== undefined) {
         return this.expandedMoveNumbers.has(row.moveNumber);
       } else if (row.type === 'group' && row.groupKey) {
@@ -841,9 +970,11 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   }
 
   get isFullyCollapsed(): boolean {
-    return this.expandedMoveNumbers.size === 0 &&
-           this.expandedGroupKeys.size === 0 &&
-           this.expandedEventIds.size === 0;
+    return (
+      this.expandedMoveNumbers.size === 0 &&
+      this.expandedGroupKeys.size === 0 &&
+      this.expandedEventIds.size === 0
+    );
   }
 
   expandAllInMove(moveNumber: number) {
@@ -851,10 +982,18 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     this.expandedMoveNumbers.add(moveNumber);
     // Expand all groups and events in this move
     const rows = this.displayRows;
-    rows.forEach(row => {
-      if (row.type === 'group' && row.moveNumber === moveNumber && row.groupKey) {
+    rows.forEach((row) => {
+      if (
+        row.type === 'group' &&
+        row.moveNumber === moveNumber &&
+        row.groupKey
+      ) {
         this.expandedGroupKeys.add(row.groupKey);
-      } else if (row.type === 'event' && row.moveNumber === moveNumber && row.event?.id) {
+      } else if (
+        row.type === 'event' &&
+        row.moveNumber === moveNumber &&
+        row.event?.id
+      ) {
         this.expandedEventIds.add(row.event.id);
         this.initEventTeamDefault(row.event.id);
       }
@@ -867,10 +1006,18 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   collapseAllInMove(moveNumber: number) {
     // Collapse all groups and events in this move
     const rows = this.displayRows;
-    rows.forEach(row => {
-      if (row.type === 'group' && row.moveNumber === moveNumber && row.groupKey) {
+    rows.forEach((row) => {
+      if (
+        row.type === 'group' &&
+        row.moveNumber === moveNumber &&
+        row.groupKey
+      ) {
         this.expandedGroupKeys.delete(row.groupKey);
-      } else if (row.type === 'event' && row.moveNumber === moveNumber && row.event?.id) {
+      } else if (
+        row.type === 'event' &&
+        row.moveNumber === moveNumber &&
+        row.event?.id
+      ) {
         this.expandedEventIds.delete(row.event.id);
       }
     });
@@ -884,8 +1031,13 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     this.expandedGroupKeys.add(groupKey);
     // Expand all events in this group
     const rows = this.displayRows;
-    rows.forEach(row => {
-      if (row.type === 'event' && row.moveNumber === moveNumber && row.groupNumber === groupOrder && row.event?.id) {
+    rows.forEach((row) => {
+      if (
+        row.type === 'event' &&
+        row.moveNumber === moveNumber &&
+        row.groupNumber === groupOrder &&
+        row.event?.id
+      ) {
         this.expandedEventIds.add(row.event.id);
         this.initEventTeamDefault(row.event.id);
       }
@@ -898,8 +1050,13 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   collapseAllInGroup(moveNumber: number, groupOrder: number) {
     // Collapse all events in this group
     const rows = this.displayRows;
-    rows.forEach(row => {
-      if (row.type === 'event' && row.moveNumber === moveNumber && row.groupNumber === groupOrder && row.event?.id) {
+    rows.forEach((row) => {
+      if (
+        row.type === 'event' &&
+        row.moveNumber === moveNumber &&
+        row.groupNumber === groupOrder &&
+        row.event?.id
+      ) {
         this.expandedEventIds.delete(row.event.id);
       }
     });
@@ -923,28 +1080,41 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   }
 
   getMoveStatements(moveNumber: number): XApiStatement[] {
-    return this.moveStatements.get(moveNumber) || AssessorViewComponent.EMPTY_STATEMENTS;
+    return (
+      this.moveStatements.get(moveNumber) ||
+      AssessorViewComponent.EMPTY_STATEMENTS
+    );
   }
 
   getGroupStatements(groupKey: string): XApiStatement[] {
-    return this.groupStatements.get(groupKey) || AssessorViewComponent.EMPTY_STATEMENTS;
+    return (
+      this.groupStatements.get(groupKey) ||
+      AssessorViewComponent.EMPTY_STATEMENTS
+    );
   }
 
   /** All of a section's statements; sections are keyed move-N, group-N-M and event-<id>. */
   getSectionStatements(sectionKey: string): XApiStatement[] {
-    if (sectionKey.startsWith('move-')) return this.getMoveStatements(+sectionKey.slice('move-'.length));
-    if (sectionKey.startsWith('group-')) return this.getGroupStatements(sectionKey.slice('group-'.length));
+    if (sectionKey.startsWith('move-'))
+      return this.getMoveStatements(+sectionKey.slice('move-'.length));
+    if (sectionKey.startsWith('group-'))
+      return this.getGroupStatements(sectionKey.slice('group-'.length));
     return this.getStatements(sectionKey.slice('event-'.length));
   }
 
   /** A section's filtered statements and the rows shown for them. */
   getSectionStatementList(sectionKey: string): StatementListCacheEntry {
-    return this.getStatementList(sectionKey, this.getSectionStatements(sectionKey), sectionKey.startsWith('event-'));
+    return this.getStatementList(
+      sectionKey,
+      this.getSectionStatements(sectionKey),
+      sectionKey.startsWith('event-'),
+    );
   }
 
   /** The grouping in effect: the saved choice, or Team when User was saved but isn't offered. */
   get statementGrouping(): StatementGrouping {
-    if (this.savedStatementGrouping === 'user' && !this.userGroupingAvailable) return 'team';
+    if (this.savedStatementGrouping === 'user' && !this.userGroupingAvailable)
+      return 'team';
     return this.savedStatementGrouping;
   }
 
@@ -964,7 +1134,10 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     } else {
       this.expandedStatementGroups.add(key);
     }
-    this.statementGroupExpansionVersions.set(sectionKey, (this.statementGroupExpansionVersions.get(sectionKey) ?? 0) + 1);
+    this.statementGroupExpansionVersions.set(
+      sectionKey,
+      (this.statementGroupExpansionVersions.get(sectionKey) ?? 0) + 1,
+    );
   }
 
   /**
@@ -973,7 +1146,11 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
    * selects and distributeStatements always store new arrays, so a reference check is enough.
    * Opening or closing a group rebuilds only its own section's rows.
    */
-  private getStatementList(sectionKey: string, source: XApiStatement[], isEvent = false): StatementListCacheEntry {
+  private getStatementList(
+    sectionKey: string,
+    source: XApiStatement[],
+    isEvent = false,
+  ): StatementListCacheEntry {
     const deps: unknown[] = [
       source,
       this.statementGrouping,
@@ -999,7 +1176,8 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       };
       this.statementListCache.set(sectionKey, entry);
     }
-    const expansionVersion = this.statementGroupExpansionVersions.get(sectionKey) ?? 0;
+    const expansionVersion =
+      this.statementGroupExpansionVersions.get(sectionKey) ?? 0;
     if (entry.itemsVersion !== expansionVersion) {
       entry.items = this.buildStatementItems(sectionKey, entry.groups);
       entry.itemsVersion = expansionVersion;
@@ -1012,18 +1190,37 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
    * same actor) in the same move, group and inject, with the same result. Groups are placed
    * by their newest statement, oldest first like the list itself.
    */
-  private buildStatementGroups(stmts: XApiStatement[], mode: StatementGrouping): StatementGroup[] {
+  private buildStatementGroups(
+    stmts: XApiStatement[],
+    mode: StatementGrouping,
+  ): StatementGroup[] {
     const groups: StatementGroup[] = [];
     const byKey = new Map<string, StatementGroup>();
     stmts.forEach((stmt, i) => {
       const key = mode === 'off' ? null : this.statementGroupKey(stmt, mode);
       if (key === null) {
-        groups.push({ key: `s:${i}:${stmt.id ?? ''}`, statements: [stmt], newest: '', timeStart: '', timeEnd: '', actorLabel: '', objectLabel: '' });
+        groups.push({
+          key: `s:${i}:${stmt.id ?? ''}`,
+          statements: [stmt],
+          newest: '',
+          timeStart: '',
+          timeEnd: '',
+          actorLabel: '',
+          objectLabel: '',
+        });
         return;
       }
       let group = byKey.get(key);
       if (!group) {
-        group = { key: `g:${key}`, statements: [], newest: '', timeStart: '', timeEnd: '', actorLabel: '', objectLabel: '' };
+        group = {
+          key: `g:${key}`,
+          statements: [],
+          newest: '',
+          timeStart: '',
+          timeEnd: '',
+          actorLabel: '',
+          objectLabel: '',
+        };
         byKey.set(key, group);
         groups.push(group);
       }
@@ -1032,11 +1229,15 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     for (const group of groups) {
       const stmts = group.statements;
       for (const stmt of stmts) {
-        if ((stmt.timestamp || '') > group.newest) group.newest = stmt.timestamp || '';
+        if ((stmt.timestamp || '') > group.newest)
+          group.newest = stmt.timestamp || '';
       }
       if (stmts.length > 1) {
         group.timeStart = this.formatTimestamp(stmts[0].timestamp);
-        group.timeEnd = this.formatRangeEnd(stmts[0].timestamp, stmts[stmts.length - 1].timestamp);
+        group.timeEnd = this.formatRangeEnd(
+          stmts[0].timestamp,
+          stmts[stmts.length - 1].timestamp,
+        );
         group.actorLabel = this.statementGroupActorLabel(stmts, mode);
         group.objectLabel = this.getObjectLabel(stmts[0]);
       }
@@ -1045,7 +1246,10 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     return groups.sort((a, b) => a.newest.localeCompare(b.newest));
   }
 
-  private buildStatementItems(sectionKey: string, groups: StatementGroup[]): StatementListItem[] {
+  private buildStatementItems(
+    sectionKey: string,
+    groups: StatementGroup[],
+  ): StatementListItem[] {
     const items: StatementListItem[] = [];
     for (const group of groups) {
       if (group.statements.length === 1) {
@@ -1054,18 +1258,31 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       }
       items.push({ key: group.key, group });
       if (this.isStatementGroupExpanded(sectionKey, group.key)) {
-        group.statements.forEach((stmt, i) => items.push({ ...this.statementItem(`${group.key}#${i}`, stmt), member: true }));
+        group.statements.forEach((stmt, i) =>
+          items.push({
+            ...this.statementItem(`${group.key}#${i}`, stmt),
+            member: true,
+          }),
+        );
       }
     }
     return items;
   }
 
   private statementItem(key: string, stmt: XApiStatement): StatementListItem {
-    return { key, stmt, actorLabel: this.getActorLabel(stmt), objectLabel: this.getObjectLabel(stmt) };
+    return {
+      key,
+      stmt,
+      actorLabel: this.getActorLabel(stmt),
+      objectLabel: this.getObjectLabel(stmt),
+    };
   }
 
   /** The key repeated statements share, or null for a statement that is always its own row. */
-  private statementGroupKey(stmt: XApiStatement, mode: StatementGrouping): string | null {
+  private statementGroupKey(
+    stmt: XApiStatement,
+    mode: StatementGrouping,
+  ): string | null {
     if (this.isNeverGrouped(stmt)) return null;
     const result = stmt.result;
     return JSON.stringify([
@@ -1079,14 +1296,22 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       this.statementEventId(stmt),
       mode === 'user' ? agentIdentityKey(stmt.actor) : '',
       // A scored statement is never grouped, so the score is not part of the key.
-      result ? [result.success ?? null, result.completion ?? null, result.response ?? null] : null,
+      result
+        ? [
+            result.success ?? null,
+            result.completion ?? null,
+            result.response ?? null,
+          ]
+        : null,
     ]);
   }
 
   /** The scenario event (inject) a statement was recorded against, or ''. */
   private statementEventId(stmt: XApiStatement): string {
     const grouping = stmt.context?.contextActivities?.grouping || [];
-    const event = grouping.find(g => (g.id || '').includes('scenarioevents/'));
+    const event = grouping.find((g) =>
+      (g.id || '').includes('scenarioevents/'),
+    );
     return event ? event.id.split('scenarioevents/').pop() : '';
   }
 
@@ -1095,14 +1320,21 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     const verbId = (stmt.verb?.id || '').toLowerCase();
     if (verbId.endsWith('/asserted')) return true;
     const platform = (stmt.context?.platform || '').toLowerCase();
-    if (platform === 'cite' && AssessorViewComponent.CITE_RESULT_VERB.test(verbId)) return true;
+    if (
+      platform === 'cite' &&
+      AssessorViewComponent.CITE_RESULT_VERB.test(verbId)
+    )
+      return true;
     return stmt.result?.score != null;
   }
 
   // CITE sends dod-isd verbs/submitted when a submission is completed and verbs/evaluated when it is scored.
   private static CITE_RESULT_VERB = /\/(submitted|scored|evaluated)$/;
 
-  private statementGroupActorLabel(stmts: XApiStatement[], mode: StatementGrouping): string {
+  private statementGroupActorLabel(
+    stmts: XApiStatement[],
+    mode: StatementGrouping,
+  ): string {
     if (mode === 'user') return this.getActorLabel(stmts[0]);
     const people = new Map<string, XApiStatement>();
     for (const stmt of stmts) {
@@ -1110,7 +1342,12 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       if (identity && !people.has(identity)) people.set(identity, stmt);
     }
     // With every name hidden there is no telling whether one person did these or several.
-    if (people.size === 0 && this.hidesNames && stmts.every((stmt) => isAnonymousActor(stmt.actor))) return 'Names hidden';
+    if (
+      people.size === 0 &&
+      this.hidesNames &&
+      stmts.every((stmt) => isAnonymousActor(stmt.actor))
+    )
+      return 'Names hidden';
     if (people.size === 0) return this.getActorLabel(stmts[0]);
     const first = this.getActorLabel(people.values().next().value);
     const others = people.size - 1;
@@ -1129,12 +1366,13 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
    */
   private hasAgentIdentity(stmt: XApiStatement): boolean {
     const actor = stmt.actor;
-    if (!actor || (actor.objectType && actor.objectType !== 'Agent')) return false;
+    if (!actor || (actor.objectType && actor.objectType !== 'Agent'))
+      return false;
     return agentIdentityKey(actor) !== '';
   }
 
   getMoveDescription(moveNumber: number): string {
-    const move = this.moveList.find(m => +m.moveNumber === moveNumber);
+    const move = this.moveList.find((m) => +m.moveNumber === moveNumber);
     return move?.description || `Move ${moveNumber}`;
   }
 
@@ -1143,15 +1381,21 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   }
 
   get filterableFields(): DataField[] {
-    return this.assessorDataFields.filter(df =>
-      AssessorViewComponent.FILTERABLE_TYPES.has(df.dataType?.toString() || '')
-      || (df.isChosenFromList && df.dataOptions?.length > 0)
+    return this.assessorDataFields.filter(
+      (df) =>
+        AssessorViewComponent.FILTERABLE_TYPES.has(
+          df.dataType?.toString() || '',
+        ) ||
+        (df.isChosenFromList && df.dataOptions?.length > 0),
     );
   }
 
   getFieldDistinctValues(df: DataField): string[] {
     if (df.dataOptions?.length > 0) {
-      return df.dataOptions.map(o => o.optionName).filter(n => !!n).sort();
+      return df.dataOptions
+        .map((o) => o.optionName)
+        .filter((n) => !!n)
+        .sort();
     }
     if (df.dataType === 'Checkbox') {
       return ['Unchecked', 'Checked'];
@@ -1189,27 +1433,47 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   private applyTopFieldFilters(events: ScenarioEvent[]): ScenarioEvent[] {
     for (const [fieldId, selected] of this.topFieldFilters) {
       if (selected.length === 0) continue;
-      const df = this.assessorDataFields.find(d => d.id === fieldId);
+      const df = this.assessorDataFields.find((d) => d.id === fieldId);
       if (!df) continue;
-      events = events.filter(event => {
+      events = events.filter((event) => {
         const dv = this.getDataValue(event, df.name);
         let val = (dv.value || '').trim();
         if (df.dataType === 'Checkbox') {
           val = val === 'true' ? 'true' : 'false';
-          const mappedSelected = selected.map(s => s === 'Checked' ? 'true' : s === 'Unchecked' ? 'false' : s);
-          return mappedSelected.some(s => val.toLowerCase() === s.toLowerCase());
+          const mappedSelected = selected.map((s) =>
+            s === 'Checked' ? 'true' : s === 'Unchecked' ? 'false' : s,
+          );
+          return mappedSelected.some(
+            (s) => val.toLowerCase() === s.toLowerCase(),
+          );
         }
         if (!val) return false;
         if (val.toUpperCase() === 'ALL') return true;
-        return selected.some(s => val.toLowerCase().includes(s.toLowerCase()));
+        return selected.some((s) =>
+          val.toLowerCase().includes(s.toLowerCase()),
+        );
       });
     }
     return events;
   }
 
-  get displayRows(): { type: 'move' | 'group' | 'event'; moveNumber?: number; groupNumber?: number; groupKey?: string; event?: ScenarioEvent; rowIndex?: number }[] {
+  get displayRows(): {
+    type: 'move' | 'group' | 'event';
+    moveNumber?: number;
+    groupNumber?: number;
+    groupKey?: string;
+    event?: ScenarioEvent;
+    rowIndex?: number;
+  }[] {
     const filtered = this.applyTopFieldFilters(this.displayedScenarioEvents);
-    const rows: { type: 'move' | 'group' | 'event'; moveNumber?: number; groupNumber?: number; groupKey?: string; event?: ScenarioEvent; rowIndex?: number }[] = [];
+    const rows: {
+      type: 'move' | 'group' | 'event';
+      moveNumber?: number;
+      groupNumber?: number;
+      groupKey?: string;
+      event?: ScenarioEvent;
+      rowIndex?: number;
+    }[] = [];
     let lastMove = -1;
     let lastGroup = '';
     let rowIndex = 0;
@@ -1225,26 +1489,42 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
         lastGroup = '';
       }
       if (groupKey !== lastGroup) {
-        rows.push({ type: 'group', moveNumber: moveNum, groupNumber: groupNum, groupKey });
+        rows.push({
+          type: 'group',
+          moveNumber: moveNum,
+          groupNumber: groupNum,
+          groupKey,
+        });
         lastGroup = groupKey;
       }
-      rows.push({ type: 'event', event, rowIndex: ++rowIndex, moveNumber: moveNum, groupNumber: groupNum, groupKey });
+      rows.push({
+        type: 'event',
+        event,
+        rowIndex: ++rowIndex,
+        moveNumber: moveNum,
+        groupNumber: groupNum,
+        groupKey,
+      });
     }
     return rows;
   }
 
-  private applyStatementFilters(stmts: XApiStatement[], sectionKey?: string): XApiStatement[] {
+  private applyStatementFilters(
+    stmts: XApiStatement[],
+    sectionKey?: string,
+  ): XApiStatement[] {
     if (sectionKey) {
       const sources = this.sectionSourceFilter.get(sectionKey);
       if (sources && sources.length > 0) {
-        stmts = stmts.filter(s =>
-          sources.includes((s.context?.platform || '').toLowerCase())
+        stmts = stmts.filter((s) =>
+          sources.includes((s.context?.platform || '').toLowerCase()),
         );
       }
       const verbs = this.sectionVerbFilter.get(sectionKey);
       if (verbs && verbs.length > 0) {
-        stmts = stmts.filter(s => {
-          const v = s.verb?.display?.['en-US'] || s.verb?.id?.split('/').pop() || '';
+        stmts = stmts.filter((s) => {
+          const v =
+            s.verb?.display?.['en-US'] || s.verb?.id?.split('/').pop() || '';
           return verbs.includes(v);
         });
       }
@@ -1252,13 +1532,13 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       if (teamIds && teamIds.length > 0) {
         const teamNames = new Set<string>();
         for (const id of teamIds) {
-          const team = this.teamList.find(t => t.id === id);
+          const team = this.teamList.find((t) => t.id === id);
           if (team) {
             if (team.shortName) teamNames.add(team.shortName);
             if (team.name) teamNames.add(team.name);
           }
         }
-        stmts = stmts.filter(s => teamNames.has(s.context?.team?.name || ''));
+        stmts = stmts.filter((s) => teamNames.has(s.context?.team?.name || ''));
       }
     }
     return stmts;
@@ -1271,14 +1551,17 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     this.loadingStatements.add('_all');
 
     const baseUrl = this.apiUrl.endsWith('/') ? this.apiUrl : this.apiUrl + '/';
-    this.http.get<any>(`${baseUrl}api/xapi/statements`, { params: { mselId: this.msel.id } })
+    this.http
+      .get<any>(`${baseUrl}api/xapi/statements`, {
+        params: { mselId: this.msel.id },
+      })
       .subscribe({
         next: (response) => {
           if (this.restartStatementsIfStale(onDone)) return;
           const statements = response?.statements || response || [];
           this.allMselStatements = Array.isArray(statements) ? statements : [];
           this.allMselStatements.sort((a, b) =>
-            (a.timestamp || '').localeCompare(b.timestamp || '')
+            (a.timestamp || '').localeCompare(b.timestamp || ''),
           );
           this.statementsLoaded = true;
           this.statementsFailed = false;
@@ -1297,7 +1580,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
           this.statementsLoading = false;
           this.loadingStatements.delete('_all');
           onDone?.();
-        }
+        },
       });
   }
 
@@ -1339,13 +1622,17 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     for (const stmt of this.allMselStatements) {
       const verb = stmt.verb?.id || '';
       const platform = (stmt.context?.platform || '').toLowerCase();
-      if (platform === 'blueprint' && verb.endsWith('/launched') && (stmt.timestamp || '') > launchTimestamp) {
+      if (
+        platform === 'blueprint' &&
+        verb.endsWith('/launched') &&
+        (stmt.timestamp || '') > launchTimestamp
+      ) {
         launchTimestamp = stmt.timestamp || '';
       }
     }
     if (launchTimestamp) {
-      this.allMselStatements = this.allMselStatements.filter(s =>
-        (s.timestamp || '') >= launchTimestamp
+      this.allMselStatements = this.allMselStatements.filter(
+        (s) => (s.timestamp || '') >= launchTimestamp,
       );
     }
   }
@@ -1354,14 +1641,20 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     this.statementListCache.clear();
     // A reload can bring the same statements back with or without names, so the previews are rebuilt too.
     this.statementSectionsCache.clear();
-    this.userGroupingAvailable = this.allMselStatements.some(s => this.hasAgentIdentity(s));
+    this.userGroupingAvailable = this.allMselStatements.some((s) =>
+      this.hasAgentIdentity(s),
+    );
     this.eventStatements.clear();
     this.moveStatements.clear();
     this.groupStatements.clear();
     for (const event of this.mselScenarioEvents) {
       this.eventStatements.set(event.id, []);
     }
-    if (this.mselScenarioEvents.length === 0 || this.allMselStatements.length === 0) return;
+    if (
+      this.mselScenarioEvents.length === 0 ||
+      this.allMselStatements.length === 0
+    )
+      return;
 
     const moveGroupToEvents = new Map<string, ScenarioEvent[]>();
     const knownMoveNumbers = new Set<number>();
@@ -1383,7 +1676,9 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
 
     for (const stmt of this.allMselStatements) {
       const grouping = stmt.context?.contextActivities?.grouping || [];
-      const eventGrouping = grouping.find(g => (g.id || '').includes('scenarioevents/'));
+      const eventGrouping = grouping.find((g) =>
+        (g.id || '').includes('scenarioevents/'),
+      );
       if (eventGrouping) {
         const eventId = eventGrouping.id.split('scenarioevents/').pop();
         if (this.eventStatements.has(eventId)) {
@@ -1398,12 +1693,17 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       // Resolve move number (explicit, by name, or null)
       let moveNum = moveInfo.number;
       if (moveNum == null && moveInfo.name) {
-        const move = this.moveList.find(m => m.description?.toLowerCase() === moveInfo.name);
+        const move = this.moveList.find(
+          (m) => m.description?.toLowerCase() === moveInfo.name,
+        );
         if (move) moveNum = +move.moveNumber;
       }
 
       if (moveNum != null && knownMoveNumbers.has(moveNum)) {
-        matchedTimeline.push({ timestamp: stmt.timestamp || '', moveNumber: moveNum });
+        matchedTimeline.push({
+          timestamp: stmt.timestamp || '',
+          moveNumber: moveNum,
+        });
 
         // If we have a group, add to group bucket only (not move)
         if (moveInfo.group != null) {
@@ -1412,7 +1712,11 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
 
           const stmtPlatform = (stmt.context?.platform || '').toLowerCase();
           if (moveGroupToEvents.has(gk)) {
-            const event = this.getStatementEventMatch(moveGroupToEvents.get(gk), stmt, stmtPlatform);
+            const event = this.getStatementEventMatch(
+              moveGroupToEvents.get(gk),
+              stmt,
+              stmtPlatform,
+            );
             if (event) {
               this.eventStatements.get(event.id).push(stmt);
               matchedEvent = true;
@@ -1425,7 +1729,8 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
           }
         } else {
           // Move-only (no group) — add to move bucket
-          if (!this.moveStatements.has(moveNum)) this.moveStatements.set(moveNum, []);
+          if (!this.moveStatements.has(moveNum))
+            this.moveStatements.set(moveNum, []);
           this.moveStatements.get(moveNum).push(stmt);
         }
       }
@@ -1438,7 +1743,9 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
         const moveInfo = this.extractMoveFromStatement(stmt);
         let moveNum = moveInfo.number;
         if (moveNum == null && moveInfo.name) {
-          const move = this.moveList.find(m => m.description?.toLowerCase() === moveInfo.name);
+          const move = this.moveList.find(
+            (m) => m.description?.toLowerCase() === moveInfo.name,
+          );
           if (move) moveNum = +move.moveNumber;
         }
         if (moveNum != null) continue; // already handled
@@ -1452,26 +1759,37 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
             break;
           }
         }
-        if (!this.moveStatements.has(inferredMove)) this.moveStatements.set(inferredMove, []);
+        if (!this.moveStatements.has(inferredMove))
+          this.moveStatements.set(inferredMove, []);
         this.moveStatements.get(inferredMove).push(stmt);
       }
     }
 
     for (const bucket of this.eventStatements.values()) {
-      bucket.sort((a, b) => (a.timestamp || '').localeCompare(b.timestamp || ''));
+      bucket.sort((a, b) =>
+        (a.timestamp || '').localeCompare(b.timestamp || ''),
+      );
     }
     for (const bucket of this.moveStatements.values()) {
-      bucket.sort((a, b) => (a.timestamp || '').localeCompare(b.timestamp || ''));
+      bucket.sort((a, b) =>
+        (a.timestamp || '').localeCompare(b.timestamp || ''),
+      );
     }
     for (const bucket of this.groupStatements.values()) {
-      bucket.sort((a, b) => (a.timestamp || '').localeCompare(b.timestamp || ''));
+      bucket.sort((a, b) =>
+        (a.timestamp || '').localeCompare(b.timestamp || ''),
+      );
     }
 
     this.syncAssertionsFromStatements();
   }
 
   private syncAssertionsFromStatements() {
-    if (this.mselCompetencies.length === 0 || this.proficiencyLevels.length === 0) return;
+    if (
+      this.mselCompetencies.length === 0 ||
+      this.proficiencyLevels.length === 0
+    )
+      return;
 
     for (const stmt of this.allMselStatements) {
       const assertion = this.readAssertion(stmt);
@@ -1503,8 +1821,11 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
 
       for (const ck of keysToPopulate) {
         const ratingMapKey = teamId ? `${ck}::${teamId}` : ck;
-        if (!this.eventRatings.has(ratingMapKey)) this.eventRatings.set(ratingMapKey, new Map());
-        const existing = this.eventRatings.get(ratingMapKey).get(mc.competency.id);
+        if (!this.eventRatings.has(ratingMapKey))
+          this.eventRatings.set(ratingMapKey, new Map());
+        const existing = this.eventRatings
+          .get(ratingMapKey)
+          .get(mc.competency.id);
         if (!existing || !existing.levelId) {
           this.eventRatings.get(ratingMapKey).set(mc.competency.id, ratingData);
         }
@@ -1598,8 +1919,11 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
           moveName = name.toLowerCase() || null;
         } else {
           const uuidMatch = id.match(/\/move\/([0-9a-f-]{36})$/i);
-          const move = (uuidMatch && this.moveList.find(m => m.id === uuidMatch[1]))
-            || this.moveList.find(m => m.description?.toLowerCase() === name.toLowerCase());
+          const move =
+            (uuidMatch && this.moveList.find((m) => m.id === uuidMatch[1])) ||
+            this.moveList.find(
+              (m) => m.description?.toLowerCase() === name.toLowerCase(),
+            );
           if (move) {
             moveNumber = +move.moveNumber;
             moveName = (move.description || '').toLowerCase() || null;
@@ -1616,7 +1940,11 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     const objectName = stmt.object?.definition?.name?.['en-US'] || '';
     const prefixMatch = objectName.match(/^(\d+)-(\d+)\s/);
     if (prefixMatch) {
-      return { name: null, number: parseInt(prefixMatch[1], 10), group: parseInt(prefixMatch[2], 10) };
+      return {
+        name: null,
+        number: parseInt(prefixMatch[1], 10),
+        group: parseInt(prefixMatch[2], 10),
+      };
     }
     return { name: null, number: null, group: null };
   }
@@ -1624,53 +1952,86 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   private getStatementEventMatch(
     groupEvents: ScenarioEvent[],
     stmt: XApiStatement,
-    platform: string
+    platform: string,
   ): ScenarioEvent | null {
     if (!platform) return null;
 
-    const platformEvents = groupEvents.filter(event => this.eventTargetsPlatform(event, platform));
+    const platformEvents = groupEvents.filter((event) =>
+      this.eventTargetsPlatform(event, platform),
+    );
     if (platformEvents.length === 1) return platformEvents[0];
     if (platform !== 'gallery') return null;
 
-    const titleMatches = platformEvents.filter(event => this.eventMatchesGalleryArticleName(event, stmt));
+    const titleMatches = platformEvents.filter((event) =>
+      this.eventMatchesGalleryArticleName(event, stmt),
+    );
     if (titleMatches.length === 1) return titleMatches[0];
     if (titleMatches.length > 1) return null;
 
-    const cardMatches = platformEvents.filter(event => this.eventMatchesGalleryCard(event, stmt));
+    const cardMatches = platformEvents.filter((event) =>
+      this.eventMatchesGalleryCard(event, stmt),
+    );
     return cardMatches.length === 1 ? cardMatches[0] : null;
   }
 
-  private eventTargetsPlatform(event: ScenarioEvent, platform: string): boolean {
+  private eventTargetsPlatform(
+    event: ScenarioEvent,
+    platform: string,
+  ): boolean {
     return (event.integrationTarget || '')
       .split(',')
-      .map(target => target.trim().toLowerCase())
+      .map((target) => target.trim().toLowerCase())
       .includes(platform);
   }
 
-  private eventMatchesGalleryArticleName(event: ScenarioEvent, stmt: XApiStatement): boolean {
-    const statementName = this.normalizeMatchText(stmt.object?.definition?.name?.['en-US']);
+  private eventMatchesGalleryArticleName(
+    event: ScenarioEvent,
+    stmt: XApiStatement,
+  ): boolean {
+    const statementName = this.normalizeMatchText(
+      stmt.object?.definition?.name?.['en-US'],
+    );
     const galleryArticleName = this.getEventGalleryValue(event, 'Name');
-    return !!statementName && statementName === this.normalizeMatchText(galleryArticleName);
+    return (
+      !!statementName &&
+      statementName === this.normalizeMatchText(galleryArticleName)
+    );
   }
 
-  private eventMatchesGalleryCard(event: ScenarioEvent, stmt: XApiStatement): boolean {
+  private eventMatchesGalleryCard(
+    event: ScenarioEvent,
+    stmt: XApiStatement,
+  ): boolean {
     const statementCardId = this.getStatementCardId(stmt);
     const eventCardId = this.getEventGalleryCardId(event);
-    return !!statementCardId && !!eventCardId && statementCardId === eventCardId;
+    return (
+      !!statementCardId && !!eventCardId && statementCardId === eventCardId
+    );
   }
 
-  private getEventGalleryValue(event: ScenarioEvent, parameter: string): string {
-    const dataField = this.allDataFields.find(field => field.galleryArticleParameter === parameter);
+  private getEventGalleryValue(
+    event: ScenarioEvent,
+    parameter: string,
+  ): string {
+    const dataField = this.allDataFields.find(
+      (field) => field.galleryArticleParameter === parameter,
+    );
     if (!dataField?.id) return '';
 
-    return this.dataValues.find(value =>
-      value.scenarioEventId === event.id && value.dataFieldId === dataField.id
-    )?.value || '';
+    return (
+      this.dataValues.find(
+        (value) =>
+          value.scenarioEventId === event.id &&
+          value.dataFieldId === dataField.id,
+      )?.value || ''
+    );
   }
 
   private getEventGalleryCardId(event: ScenarioEvent): string {
     const blueprintCardId = this.getEventGalleryValue(event, 'CardId');
-    const card = this.cardList.find(candidate => candidate.id === blueprintCardId);
+    const card = this.cardList.find(
+      (candidate) => candidate.id === blueprintCardId,
+    );
     return this.getIdSegment(card?.galleryId || blueprintCardId);
   }
 
@@ -1680,7 +2041,9 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       ...(contextActivities?.other || []),
       ...(contextActivities?.grouping || []),
     ];
-    const cardActivity = activities.find(activity => (activity.id || '').includes('/card/'));
+    const cardActivity = activities.find((activity) =>
+      (activity.id || '').includes('/card/'),
+    );
     return this.getIdSegment(cardActivity?.id);
   }
 
@@ -1693,21 +2056,33 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   }
 
   getStatements(eventId: string): XApiStatement[] {
-    return this.eventStatements.get(eventId) || AssessorViewComponent.EMPTY_STATEMENTS;
+    return (
+      this.eventStatements.get(eventId) ||
+      AssessorViewComponent.EMPTY_STATEMENTS
+    );
   }
 
   getFilteredStatements(eventId: string): XApiStatement[] {
-    return this.getStatementList(`event-${eventId}`, this.getStatements(eventId), true).filtered;
+    return this.getStatementList(
+      `event-${eventId}`,
+      this.getStatements(eventId),
+      true,
+    ).filtered;
   }
 
   private filterToSelectedMove(stmts: XApiStatement[]): XApiStatement[] {
     if (this.selectedMoveNumber != null) {
-      const move = this.moveList.find(m => +m.moveNumber === +this.selectedMoveNumber);
+      const move = this.moveList.find(
+        (m) => +m.moveNumber === +this.selectedMoveNumber,
+      );
       const targetName = move?.description?.toLowerCase();
       const targetNum = +this.selectedMoveNumber;
-      stmts = stmts.filter(s => {
+      stmts = stmts.filter((s) => {
         const info = this.extractMoveFromStatement(s);
-        return (targetName && info.name === targetName) || (info.number != null && info.number === targetNum);
+        return (
+          (targetName && info.name === targetName) ||
+          (info.number != null && info.number === targetNum)
+        );
       });
     }
     return stmts;
@@ -1732,12 +2107,19 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     for (const g of grouping) {
       const id = g.id || '';
       const name = g.definition?.name?.['en-US'] || '';
-      if (id.includes('/move/') && !id.includes('/group/') && !id.includes('/inject/')) {
+      if (
+        id.includes('/move/') &&
+        !id.includes('/group/') &&
+        !id.includes('/inject/')
+      ) {
         const numMatch = id.match(/\/move\/(\d+)$/);
         if (numMatch) return `M${numMatch[1]}`;
         const uuidMatch = id.match(/\/move\/([0-9a-f-]{36})$/i);
-        const move = (uuidMatch && this.moveList.find(m => m.id === uuidMatch[1]))
-          || this.moveList.find(m => m.description?.toLowerCase() === name.toLowerCase());
+        const move =
+          (uuidMatch && this.moveList.find((m) => m.id === uuidMatch[1])) ||
+          this.moveList.find(
+            (m) => m.description?.toLowerCase() === name.toLowerCase(),
+          );
         return move ? `M${move.moveNumber}` : name;
       }
     }
@@ -1774,12 +2156,22 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     navigator.clipboard.writeText(JSON.stringify(stmt, null, 2));
   }
 
-  getStatementSections(stmt: XApiStatement): { key: string; value: any; preview: string }[] {
+  getStatementSections(
+    stmt: XApiStatement,
+  ): { key: string; value: any; preview: string }[] {
     if (stmt.id && this.statementSectionsCache.has(stmt.id)) {
       return this.statementSectionsCache.get(stmt.id);
     }
     const sections: { key: string; value: any; preview: string }[] = [];
-    const keyOrder = ['actor', 'verb', 'object', 'result', 'context', 'timestamp', 'id'];
+    const keyOrder = [
+      'actor',
+      'verb',
+      'object',
+      'result',
+      'context',
+      'timestamp',
+      'id',
+    ];
     const raw = stmt as Record<string, any>;
     for (const key of keyOrder) {
       if (raw[key] === undefined) continue;
@@ -1796,8 +2188,12 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       } else if (key === 'result') {
         const parts: string[] = [];
         if (val?.score?.raw != null) parts.push(`score: ${val.score.raw}`);
-        if (val?.response) parts.push(`"${val.response.substring(0, 40)}${val.response.length > 40 ? '...' : ''}"`);
-        if (val?.completion != null) parts.push(val.completion ? 'complete' : 'incomplete');
+        if (val?.response)
+          parts.push(
+            `"${val.response.substring(0, 40)}${val.response.length > 40 ? '...' : ''}"`,
+          );
+        if (val?.completion != null)
+          parts.push(val.completion ? 'complete' : 'incomplete');
         preview = parts.join(', ');
       } else if (key === 'context') {
         const parts: string[] = [];
@@ -1825,9 +2221,11 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   }
 
   toggleJsonSection(stmtId: string, key: string) {
-    if (!this.expandedJsonSections.has(stmtId)) this.expandedJsonSections.set(stmtId, new Set());
+    if (!this.expandedJsonSections.has(stmtId))
+      this.expandedJsonSections.set(stmtId, new Set());
     const set = this.expandedJsonSections.get(stmtId);
-    if (set.has(key)) set.delete(key); else set.add(key);
+    if (set.has(key)) set.delete(key);
+    else set.add(key);
   }
 
   formatJson(value: any): string {
@@ -1858,7 +2256,20 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   private timestampParts(timestamp: string): { date: string; time: string } {
     const d = new Date(timestamp);
     const day = String(d.getDate()).padStart(2, '0');
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     const hours = String(d.getHours()).padStart(2, '0');
     const minutes = String(d.getMinutes()).padStart(2, '0');
     return {
@@ -1874,16 +2285,19 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     const firstComp = this.mselCompetencies[0]?.competency;
     if (!firstComp?.competencyFrameworkId) return;
 
-    this.competencyFrameworkService.getCompetencyFramework(firstComp.competencyFrameworkId)
+    this.competencyFrameworkService
+      .getCompetencyFramework(firstComp.competencyFrameworkId)
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(fw => {
+      .subscribe((fw) => {
         if (fw?.defaultProficiencyScaleId) {
-          this.proficiencyScaleService.getProficiencyScale(fw.defaultProficiencyScaleId)
+          this.proficiencyScaleService
+            .getProficiencyScale(fw.defaultProficiencyScaleId)
             .pipe(takeUntil(this.unsubscribe$))
-            .subscribe(scale => {
+            .subscribe((scale) => {
               this.proficiencyScale = scale;
-              this.proficiencyLevels = (scale?.proficiencyLevels || [])
-                .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+              this.proficiencyLevels = (scale?.proficiencyLevels || []).sort(
+                (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0),
+              );
             });
         }
       });
@@ -1901,9 +2315,10 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     // Load frameworks that aren't already cached
     for (const fwId of frameworkIds) {
       if (!this.competencyFrameworkCache.has(fwId)) {
-        this.competencyFrameworkService.getCompetencyFramework(fwId)
+        this.competencyFrameworkService
+          .getCompetencyFramework(fwId)
           .pipe(takeUntil(this.unsubscribe$))
-          .subscribe(fw => {
+          .subscribe((fw) => {
             if (fw) {
               this.competencyFrameworkCache.set(fwId, fw);
             }
@@ -1922,7 +2337,11 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     this.baseMoveCompetencies.clear();
     this.baseGroupCompetencies.clear();
 
-    if (this.competencyFieldIds.length === 0 || this.mselCompetencies.length === 0) return;
+    if (
+      this.competencyFieldIds.length === 0 ||
+      this.mselCompetencies.length === 0
+    )
+      return;
 
     const idNumberToComp = new Map<string, Competency>();
     for (const mc of this.mselCompetencies) {
@@ -1935,8 +2354,8 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       const comps: Competency[] = [];
       const seen = new Set<string>();
       for (const fieldId of this.competencyFieldIds) {
-        const dv = this.dataValues.find(v =>
-          v.scenarioEventId === event.id && v.dataFieldId === fieldId
+        const dv = this.dataValues.find(
+          (v) => v.scenarioEventId === event.id && v.dataFieldId === fieldId,
         );
         if (dv?.value) {
           for (const raw of dv.value.split(',')) {
@@ -1986,7 +2405,8 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     this.assertionTeamPreselected.clear();
     this.teamCompIdSets.clear();
     for (const tc of this.teamCompetencies) {
-      if (!this.teamCompIdSets.has(tc.teamId)) this.teamCompIdSets.set(tc.teamId, new Set());
+      if (!this.teamCompIdSets.has(tc.teamId))
+        this.teamCompIdSets.set(tc.teamId, new Set());
       this.teamCompIdSets.get(tc.teamId).add(tc.competencyId);
     }
   }
@@ -1996,7 +2416,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     if (!teamId || this.teamCompIdSets.size === 0) return comps;
     const compIds = this.teamCompIdSets.get(teamId);
     if (!compIds) return comps;
-    const filtered = comps.filter(c => compIds.has(c.id));
+    const filtered = comps.filter((c) => compIds.has(c.id));
     return filtered.length > 0 ? filtered : comps;
   }
 
@@ -2038,7 +2458,10 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       type = 'Work Role';
     } else if (/^[TKSA][\d-]/.test(idNumber)) {
       const prefixMap: Record<string, string> = {
-        'T': 'Task', 'K': 'Knowledge', 'S': 'Skill', 'A': 'Ability',
+        T: 'Task',
+        K: 'Knowledge',
+        S: 'Skill',
+        A: 'Ability',
       };
       type = prefixMap[idNumber.charAt(0)] || '';
     } else if (/^[A-Z]{2}-[A-Z]{3}-\d+$/.test(idNumber)) {
@@ -2060,7 +2483,10 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     return teamId ? `${contextKey}::${teamId}` : contextKey;
   }
 
-  getRating(contextKey: string, competencyId: string): { levelId: string; comment: string } {
+  getRating(
+    contextKey: string,
+    competencyId: string,
+  ): { levelId: string; comment: string } {
     const key = this.ratingKey(contextKey);
     const map = this.eventRatings.get(key);
     return map?.get(competencyId) ?? { levelId: '', comment: '' };
@@ -2113,9 +2539,12 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   private preselectAssertionTeam(contextKey: string, filterChanged = false) {
     this.assertionTeamPreselected.add(contextKey);
     const source = this.assertionTeamSource.get(contextKey);
-    if (source === 'picked' || (source === 'assertion' && !filterChanged)) return;
+    if (source === 'picked' || (source === 'assertion' && !filterChanged))
+      return;
     const teamIds = this.getSectionTeams(this.sectionKeyForContext(contextKey));
-    const offered = teamIds.length === 1 && this.getTeamsForContext(contextKey).some(t => t.id === teamIds[0]);
+    const offered =
+      teamIds.length === 1 &&
+      this.getTeamsForContext(contextKey).some((t) => t.id === teamIds[0]);
     if (offered) {
       this.assertionTeam.set(contextKey, teamIds[0]);
       this.assertionTeamSource.set(contextKey, 'filter');
@@ -2135,11 +2564,15 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   // Filter sections are keyed move-N, group-N-M and event-<id>; assessment contexts
   // are move-N, group-N-M and the bare event id.
   private sectionKeyForContext(contextKey: string): string {
-    return contextKey.startsWith('move-') || contextKey.startsWith('group-') ? contextKey : `event-${contextKey}`;
+    return contextKey.startsWith('move-') || contextKey.startsWith('group-')
+      ? contextKey
+      : `event-${contextKey}`;
   }
 
   private contextKeyForSection(sectionKey: string): string {
-    return sectionKey.startsWith('event-') ? sectionKey.slice('event-'.length) : sectionKey;
+    return sectionKey.startsWith('event-')
+      ? sectionKey.slice('event-'.length)
+      : sectionKey;
   }
 
   /**
@@ -2147,16 +2580,21 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
    * the move the context is in. Group and event rows show their move's answers.
    * A lookup only: ngDoCheck starts the loads. Null when no team is chosen.
    */
-  getTeamResponses(contextKey: string, moveNumber: number): TeamResponsesState | null {
+  getTeamResponses(
+    contextKey: string,
+    moveNumber: number,
+  ): TeamResponsesState | null {
     const teamId = this.getAssertionTeam(contextKey);
     if (!teamId || moveNumber === null || moveNumber === undefined) {
       return null;
     }
-    return this.teamResponses.get(this.teamResponsesKey(teamId, moveNumber)) ?? null;
+    return (
+      this.teamResponses.get(this.teamResponsesKey(teamId, moveNumber)) ?? null
+    );
   }
 
   getTeamShortName(teamId: string): string {
-    return this.teamList.find(t => t.id === teamId)?.shortName ?? '';
+    return this.teamList.find((t) => t.id === teamId)?.shortName ?? '';
   }
 
   /**
@@ -2169,7 +2607,10 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     const visible = this.visibleTeamResponses();
     for (const [key, target] of visible) {
       const state = this.teamResponses.get(key);
-      if (!state || (!this.shownTeamResponses.has(key) && this.isStale(state))) {
+      if (
+        !state ||
+        (!this.shownTeamResponses.has(key) && this.isStale(state))
+      ) {
         this.loadTeamResponses(key, target);
       }
     }
@@ -2211,7 +2652,11 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
    */
   private isStale(state: TeamResponsesState): boolean {
     if (state.loading) return false;
-    if (state.error || !state.responses?.status || !SETTLED_TEAM_RESPONSE_STATUSES.has(state.responses.status)) {
+    if (
+      state.error ||
+      !state.responses?.status ||
+      !SETTLED_TEAM_RESPONSE_STATUSES.has(state.responses.status)
+    ) {
       return true;
     }
     return Date.now() - state.fetchedAt > TEAM_RESPONSES_STALE_MS;
@@ -2222,28 +2667,48 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
    * expanded row on a MSEL using CITE, with competencies and a team chosen.
    * Panels for the same team and move share one entry.
    */
-  private visibleTeamResponses(): Map<string, { teamId: string; moveNumber: number }> {
+  private visibleTeamResponses(): Map<
+    string,
+    { teamId: string; moveNumber: number }
+  > {
     const visible = new Map<string, { teamId: string; moveNumber: number }>();
-    if (!this.msel.id || !this.msel.useCite || this.teamList.length === 0 || this.isFullyCollapsed) {
+    if (
+      !this.msel.id ||
+      !this.msel.useCite ||
+      this.teamList.length === 0 ||
+      this.isFullyCollapsed
+    ) {
       return visible;
     }
     const add = (contextKey: string, moveNumber: number) => {
       const teamId = this.getAssertionTeam(contextKey);
       if (teamId && moveNumber !== null && moveNumber !== undefined) {
-        visible.set(this.teamResponsesKey(teamId, moveNumber), { teamId, moveNumber });
+        visible.set(this.teamResponsesKey(teamId, moveNumber), {
+          teamId,
+          moveNumber,
+        });
       }
     };
     for (const row of this.displayRows) {
       if (row.type === 'move') {
-        if (this.expandedMoveNumbers.has(row.moveNumber) && this.getMoveCompetencies(row.moveNumber).length > 0) {
+        if (
+          this.expandedMoveNumbers.has(row.moveNumber) &&
+          this.getMoveCompetencies(row.moveNumber).length > 0
+        ) {
           add('move-' + row.moveNumber, row.moveNumber);
         }
       } else if (row.type === 'group') {
-        if (this.expandedGroupKeys.has(row.groupKey) && this.getGroupCompetencies(row.groupKey).length > 0) {
+        if (
+          this.expandedGroupKeys.has(row.groupKey) &&
+          this.getGroupCompetencies(row.groupKey).length > 0
+        ) {
           add('group-' + row.groupKey, row.moveNumber);
         }
       } else if (row.event?.id) {
-        if (this.expandedEventIds.has(row.event.id) && this.getEventCompetencies(row.event.id).length > 0) {
+        if (
+          this.expandedEventIds.has(row.event.id) &&
+          this.getEventCompetencies(row.event.id).length > 0
+        ) {
           add(row.event.id, row.moveNumber);
         }
       }
@@ -2256,7 +2721,10 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   }
 
   /** Reads one team's answers, keeping the previous ones on screen meanwhile. */
-  private loadTeamResponses(key: string, target: { teamId: string; moveNumber: number }) {
+  private loadTeamResponses(
+    key: string,
+    target: { teamId: string; moveNumber: number },
+  ) {
     this.teamResponseLoads.get(key)?.unsubscribe();
     const previous = this.teamResponses.get(key);
     this.teamResponses.set(key, {
@@ -2267,12 +2735,19 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       fetchedAt: previous?.fetchedAt ?? 0,
     });
     const mselId = this.msel.id;
-    const load = this.citeService.getMselCiteTeamResponses(mselId, target.moveNumber, target.teamId)
+    const load = this.citeService
+      .getMselCiteTeamResponses(mselId, target.moveNumber, target.teamId)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe({
         next: (responses) => {
           if (this.msel.id !== mselId) return;
-          this.teamResponses.set(key, { ...target, loading: false, error: null, responses, fetchedAt: Date.now() });
+          this.teamResponses.set(key, {
+            ...target,
+            loading: false,
+            error: null,
+            responses,
+            fetchedAt: Date.now(),
+          });
         },
         error: () => {
           if (this.msel.id !== mselId) return;
@@ -2283,7 +2758,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
             responses: this.teamResponses.get(key)?.responses ?? null,
             fetchedAt: Date.now(),
           });
-        }
+        },
       });
     this.teamResponseLoads.set(key, load);
   }
@@ -2324,10 +2799,10 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     }
 
     // Get competency IDs in this context
-    const contextCompIds = new Set(competencies.map(c => c.id));
+    const contextCompIds = new Set(competencies.map((c) => c.id));
 
     // Filter teams to only those with assignments to these competencies
-    const filteredTeams = this.teamList.filter(team => {
+    const filteredTeams = this.teamList.filter((team) => {
       const teamCompIds = this.teamCompIdSets.get(team.id);
       if (!teamCompIds) return false;
       // Team has assignment if it has at least one competency from this context
@@ -2349,11 +2824,17 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   canSubmitRating(eventId: string, competencyId: string): boolean {
     const rating = this.getRating(eventId, competencyId);
     const teamId = this.getAssertionTeam(eventId);
-    return !!rating.levelId && !!teamId && !this.submittingAssertions.has(this.assertionKey(eventId, competencyId));
+    return (
+      !!rating.levelId &&
+      !!teamId &&
+      !this.submittingAssertions.has(this.assertionKey(eventId, competencyId))
+    );
   }
 
   isRatingSubmitted(eventId: string, competencyId: string): boolean {
-    return this.submittedAssertions.has(this.assertionKey(eventId, competencyId));
+    return this.submittedAssertions.has(
+      this.assertionKey(eventId, competencyId),
+    );
   }
 
   submitRating(contextKey: string, competencyId: string) {
@@ -2393,7 +2874,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       },
       error: () => {
         this.submittingAssertions.delete(key);
-      }
+      },
     });
   }
 
@@ -2408,7 +2889,9 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
 
   getContextCompetencies(contextKey: string): Competency[] {
     if (contextKey.startsWith('move-')) {
-      return this.getMoveCompetencies(parseInt(contextKey.replace('move-', ''), 10));
+      return this.getMoveCompetencies(
+        parseInt(contextKey.replace('move-', ''), 10),
+      );
     } else if (contextKey.startsWith('group-')) {
       return this.getGroupCompetencies(contextKey.replace('group-', ''));
     }
@@ -2438,7 +2921,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   }
 
   getLevelName(levelId: string): string {
-    const level = this.proficiencyLevels.find(l => l.id === levelId);
+    const level = this.proficiencyLevels.find((l) => l.id === levelId);
     return level ? `${level.name} (${level.value})` : '';
   }
 

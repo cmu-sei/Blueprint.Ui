@@ -10,7 +10,6 @@ import { MselPlus } from 'src/app/data/msel/msel-data.service';
 export class IntegrationInProgressGuard implements CanDeactivate<any> {
   private mselQuery = inject(MselQuery);
 
-
   canDeactivate(): boolean {
     const msel = this.mselQuery.getActive() as MselPlus;
     if (
@@ -18,7 +17,7 @@ export class IntegrationInProgressGuard implements CanDeactivate<any> {
       !msel.integrationStatus.startsWith('ERROR')
     ) {
       return confirm(
-        'An integration push is in progress. Are you sure you want to leave?'
+        'An integration push is in progress. Are you sure you want to leave?',
       );
     }
     return true;

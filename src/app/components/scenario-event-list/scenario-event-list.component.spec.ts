@@ -72,19 +72,65 @@ class DataValueStub {
 }
 
 const ME = 'user-me';
-const TITLE: DataField = { id: 'df-title', mselId: 'msel-1', name: 'Title', dataType: DataFieldType.String, displayOrder: 1, onScenarioEventList: true, isInformationField: true };
+const TITLE: DataField = {
+  id: 'df-title',
+  mselId: 'msel-1',
+  name: 'Title',
+  dataType: DataFieldType.String,
+  displayOrder: 1,
+  onScenarioEventList: true,
+  isInformationField: true,
+};
 const EVENTS: ScenarioEvent[] = [
-  { id: 'se-1', mselId: 'msel-1', scenarioEventType: EventType.Inject, deltaSeconds: 0, groupOrder: 1, isHidden: false },
-  { id: 'se-2', mselId: 'msel-1', scenarioEventType: EventType.Inject, deltaSeconds: 60, groupOrder: 1, isHidden: true },
+  {
+    id: 'se-1',
+    mselId: 'msel-1',
+    scenarioEventType: EventType.Inject,
+    deltaSeconds: 0,
+    groupOrder: 1,
+    isHidden: false,
+  },
+  {
+    id: 'se-2',
+    mselId: 'msel-1',
+    scenarioEventType: EventType.Inject,
+    deltaSeconds: 60,
+    groupOrder: 1,
+    isHidden: true,
+  },
   // A non-Inject event renders its values in a separate branch of the row template.
-  { id: 'se-3', mselId: 'msel-1', scenarioEventType: EventType.Information, deltaSeconds: 120, groupOrder: 1, isHidden: false },
+  {
+    id: 'se-3',
+    mselId: 'msel-1',
+    scenarioEventType: EventType.Information,
+    deltaSeconds: 120,
+    groupOrder: 1,
+    isHidden: false,
+  },
 ];
 const VALUES: DataValue[] = [
-  { id: 'dv-1', scenarioEventId: 'se-1', dataFieldId: 'df-title', value: 'Phishing wave' },
-  { id: 'dv-2', scenarioEventId: 'se-2', dataFieldId: 'df-title', value: 'Ransom note' },
-  { id: 'dv-3', scenarioEventId: 'se-3', dataFieldId: 'df-title', value: 'Status update' },
+  {
+    id: 'dv-1',
+    scenarioEventId: 'se-1',
+    dataFieldId: 'df-title',
+    value: 'Phishing wave',
+  },
+  {
+    id: 'dv-2',
+    scenarioEventId: 'se-2',
+    dataFieldId: 'df-title',
+    value: 'Ransom note',
+  },
+  {
+    id: 'dv-3',
+    scenarioEventId: 'se-3',
+    dataFieldId: 'df-title',
+    value: 'Status update',
+  },
 ];
-const ALL_BUT_EDIT_MSELS = Object.values(SystemPermission).filter((p) => p !== SystemPermission.EditMsels);
+const ALL_BUT_EDIT_MSELS = Object.values(SystemPermission).filter(
+  (p) => p !== SystemPermission.EditMsels,
+);
 
 function msel(myRoles: MselRole[] = [], extra: Partial<Msel> = {}): Msel {
   return {
@@ -93,12 +139,20 @@ function msel(myRoles: MselRole[] = [], extra: Partial<Msel> = {}): Msel {
     createdBy: 'someone-else',
     teams: [],
     units: [],
-    userMselRoles: myRoles.map((role, i) => ({ id: `umr-${i}`, userId: ME, mselId: 'msel-1', role })),
+    userMselRoles: myRoles.map((role, i) => ({
+      id: `umr-${i}`,
+      userId: ME,
+      mselId: 'msel-1',
+      role,
+    })),
     ...extra,
   };
 }
 
-function seeded<S extends { set(entities: unknown[]): void }>(Store: new () => S, entities: unknown[]) {
+function seeded<S extends { set(entities: unknown[]): void }>(
+  Store: new () => S,
+  entities: unknown[],
+) {
   return {
     provide: Store,
     useFactory: () => {
@@ -110,15 +164,28 @@ function seeded<S extends { set(entities: unknown[]): void }>(Store: new () => S
 }
 
 async function renderEventList(
-  overrides: { permissions?: SystemPermission[]; myRoles?: MselRole[]; isStarterMsel?: boolean; mselExtra?: Partial<Msel> } = {},
+  overrides: {
+    permissions?: SystemPermission[];
+    myRoles?: MselRole[];
+    isStarterMsel?: boolean;
+    mselExtra?: Partial<Msel>;
+  } = {},
 ) {
-  const { permissions = [], myRoles = [], isStarterMsel = false, mselExtra = {} } = overrides;
+  const {
+    permissions = [],
+    myRoles = [],
+    isStarterMsel = false,
+    mselExtra = {},
+  } = overrides;
   const mselApi = {
     getMyMsels: vi.fn(() => of<Msel[]>([])),
   } satisfies ApiStub<MselService>;
   const eventApi = {
-    updateScenarioEvent: vi.fn((id: string, se: ScenarioEvent) => of([structuredClone(se)])),
+    updateScenarioEvent: vi.fn((id: string, se: ScenarioEvent) =>
+      of([structuredClone(se)]),
+    ),
     deleteScenarioEvent: vi.fn(() => of<unknown>(null)),
+    batchDeleteScenarioEvents: vi.fn(() => of<unknown>(null)),
   } satisfies ApiStub<ScenarioEventService>;
   // The user confirms every dialog.
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
@@ -128,9 +195,12 @@ async function renderEventList(
   const permissionApis = permissionApiStubs({ system: permissions });
   // Edit opens ScenarioEventEditDialogComponent and subscribes to its editComplete;
   // the stand-in ref carries that emitter, which never fires here.
-  const editRef = Object.assign(dialogRefStub<ScenarioEventEditDialogComponent>().dialogRef, {
-    componentInstance: { editComplete: new EventEmitter<unknown>() },
-  });
+  const editRef = Object.assign(
+    dialogRefStub<ScenarioEventEditDialogComponent>().dialogRef,
+    {
+      componentInstance: { editComplete: new EventEmitter<unknown>() },
+    },
+  );
   const open = vi.fn().mockReturnValue(editRef);
   const rendered = await renderComponent(ScenarioEventListComponent, {
     imports: [
@@ -149,12 +219,18 @@ async function renderEventList(
       { replace: DataValueComponent, with: DataValueStub },
     ],
     providers: [
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: MselService, useValue: mselApi },
       { provide: ScenarioEventService, useValue: eventApi },
       { provide: CrucibleDialogService, useValue: dialog },
-      { provide: MatDialog, useValue: { open } satisfies Pick<MatDialog, 'open'> },
+      {
+        provide: MatDialog,
+        useValue: { open } satisfies Pick<MatDialog, 'open'>,
+      },
       // The MSEL page loads all of this; the stores are seeded instead.
       {
         provide: MselStore,
@@ -175,13 +251,22 @@ async function renderEventList(
 }
 
 const table = () => screen.getByRole('table');
-const row = (n: number) => within(within(table()).getByTitle(`Event ${n} Action List`).closest('tr') as HTMLElement);
+const row = (n: number) =>
+  within(
+    within(table())
+      .getByTitle(`Event ${n} Action List`)
+      .closest('tr') as HTMLElement,
+  );
 function dataValues(fixture: ComponentFixture<unknown>): DataValueStub[] {
-  return fixture.debugElement.queryAll(By.directive(DataValueStub)).map((d) => d.componentInstance);
+  return fixture.debugElement
+    .queryAll(By.directive(DataValueStub))
+    .map((d) => d.componentInstance);
 }
 async function openEventMenu(n: number) {
   const user = userEvent.setup();
-  await user.click(row(n).getByRole('button', { name: `Event ${n} Action List` }));
+  await user.click(
+    row(n).getByRole('button', { name: `Event ${n} Action List` }),
+  );
   return user;
 }
 
@@ -196,9 +281,15 @@ describe('ScenarioEventListComponent', () => {
    * Data: two Inject events, Phishing wave (0 s, shown) and Ransom note (60 s, hidden), and an Information event, Status update (120 s).
    */
   it('lists the events with their values', async () => {
-    const { fixture } = await renderEventList({ permissions: [SystemPermission.EditMsels] });
+    const { fixture } = await renderEventList({
+      permissions: [SystemPermission.EditMsels],
+    });
 
-    expect(dataValues(fixture).map((v) => v.value())).toEqual(['Phishing wave', 'Ransom note', 'Status update']);
+    expect(dataValues(fixture).map((v) => v.value())).toEqual([
+      'Phishing wave',
+      'Ransom note',
+      'Status update',
+    ]);
   });
 
   /**
@@ -207,7 +298,11 @@ describe('ScenarioEventListComponent', () => {
    * Data: EditMsels with no role; or the Owner role; or the Editor role.
    */
   it.each([
-    { label: 'with EditMsels', permissions: [SystemPermission.EditMsels], myRoles: [] },
+    {
+      label: 'with EditMsels',
+      permissions: [SystemPermission.EditMsels],
+      myRoles: [],
+    },
     { label: 'as the MSEL owner', permissions: [], myRoles: [MselRole.Owner] },
     { label: 'as an MSEL Editor', permissions: [], myRoles: [MselRole.Editor] },
   ])('offers event actions $label', async ({ permissions, myRoles }) => {
@@ -215,7 +310,9 @@ describe('ScenarioEventListComponent', () => {
 
     expect(within(table()).getByTitle('Select All/None')).toBeInTheDocument();
     expect(row(1).getByTitle('Select event 1')).toBeInTheDocument();
-    expect(row(1).getByRole('button', { name: 'Hide event 1 on the Exercise View' })).toBeEnabled();
+    expect(
+      row(1).getByRole('button', { name: 'Hide event 1 on the Exercise View' }),
+    ).toBeEnabled();
     await openEventMenu(1);
     for (const name of ['Highlight', 'Copy', 'Delete']) {
       expect(screen.getByRole('menuitem', { name })).toBeInTheDocument();
@@ -230,12 +327,21 @@ describe('ScenarioEventListComponent', () => {
    * Data: every permission but EditMsels (near miss: ManageMsels); MSEL roles Viewer and Evaluator.
    */
   it('lists the events read-only without EditMsels or an editing role', async () => {
-    const { fixture } = await renderEventList({ permissions: ALL_BUT_EDIT_MSELS, myRoles: [MselRole.Viewer, MselRole.Evaluator] });
+    const { fixture } = await renderEventList({
+      permissions: ALL_BUT_EDIT_MSELS,
+      myRoles: [MselRole.Viewer, MselRole.Evaluator],
+    });
 
-    expect(within(table()).queryByTitle('Select All/None')).not.toBeInTheDocument();
-    expect(within(table()).queryByRole('button', { name: 'Action List' })).not.toBeInTheDocument();
+    expect(
+      within(table()).queryByTitle('Select All/None'),
+    ).not.toBeInTheDocument();
+    expect(
+      within(table()).queryByRole('button', { name: 'Action List' }),
+    ).not.toBeInTheDocument();
     expect(row(1).queryByTitle('Select event 1')).not.toBeInTheDocument();
-    expect(row(1).getByRole('button', { name: 'Hide event 1 on the Exercise View' })).toBeDisabled();
+    expect(
+      row(1).getByRole('button', { name: 'Hide event 1 on the Exercise View' }),
+    ).toBeDisabled();
     for (const value of dataValues(fixture)) {
       expect(value.canEdit()).toBe(false);
       expect(value.canApprove()).toBe(false);
@@ -268,18 +374,35 @@ describe('ScenarioEventListComponent', () => {
    * Data: EditMsels with no role; or the Approver role with no system permission.
    */
   it.each([
-    { label: 'with EditMsels', permissions: [SystemPermission.EditMsels], myRoles: [] },
-    { label: 'as an MSEL Approver', permissions: [], myRoles: [MselRole.Approver] },
-  ])('opens the edit dialog as an editor $label', async ({ permissions, myRoles }) => {
-    const { open } = await renderEventList({ permissions, myRoles });
+    {
+      label: 'with EditMsels',
+      permissions: [SystemPermission.EditMsels],
+      myRoles: [],
+    },
+    {
+      label: 'as an MSEL Approver',
+      permissions: [],
+      myRoles: [MselRole.Approver],
+    },
+  ])(
+    'opens the edit dialog as an editor $label',
+    async ({ permissions, myRoles }) => {
+      const { open } = await renderEventList({ permissions, myRoles });
 
-    const user = await openEventMenu(1);
-    await user.click(screen.getByTitle('Edit event 1'));
+      const user = await openEventMenu(1);
+      await user.click(screen.getByTitle('Edit event 1'));
 
-    expect(open).toHaveBeenCalledTimes(1);
-    expect(open.mock.calls[0][0]).toBe(ScenarioEventEditDialogComponent);
-    expect(open.mock.calls[0][1].data).toEqual(expect.objectContaining({ isOwner: true, isApprover: true, isEditor: true }));
-  });
+      expect(open).toHaveBeenCalledTimes(1);
+      expect(open.mock.calls[0][0]).toBe(ScenarioEventEditDialogComponent);
+      expect(open.mock.calls[0][1].data).toEqual(
+        expect.objectContaining({
+          isOwner: true,
+          isApprover: true,
+          isEditor: true,
+        }),
+      );
+    },
+  );
 
   /**
    * Verifies: for a Viewer without EditMsels, Edit opens the event edit dialog with isOwner, isApprover and isEditor all false.
@@ -287,13 +410,22 @@ describe('ScenarioEventListComponent', () => {
    * Data: every permission but EditMsels (near miss: ManageMsels); MSEL roles Viewer and Evaluator.
    */
   it('opens the edit dialog read-only without EditMsels or an editing role', async () => {
-    const { open } = await renderEventList({ permissions: ALL_BUT_EDIT_MSELS, myRoles: [MselRole.Viewer, MselRole.Evaluator] });
+    const { open } = await renderEventList({
+      permissions: ALL_BUT_EDIT_MSELS,
+      myRoles: [MselRole.Viewer, MselRole.Evaluator],
+    });
 
     const user = await openEventMenu(1);
     await user.click(screen.getByTitle('Edit event 1'));
 
     expect(open).toHaveBeenCalledTimes(1);
-    expect(open.mock.calls[0][1].data).toEqual(expect.objectContaining({ isOwner: false, isApprover: false, isEditor: false }));
+    expect(open.mock.calls[0][1].data).toEqual(
+      expect.objectContaining({
+        isOwner: false,
+        isApprover: false,
+        isEditor: false,
+      }),
+    );
   });
 
   /**
@@ -302,13 +434,23 @@ describe('ScenarioEventListComponent', () => {
    * Data: every permission but EditMsels; MSEL role Viewer; event 2 is hidden.
    */
   it('lets a viewer unhide an event', async () => {
-    const { eventApi } = await renderEventList({ permissions: ALL_BUT_EDIT_MSELS, myRoles: [MselRole.Viewer] });
+    const { eventApi } = await renderEventList({
+      permissions: ALL_BUT_EDIT_MSELS,
+      myRoles: [MselRole.Viewer],
+    });
     const user = userEvent.setup();
 
-    await user.click(row(2).getByRole('button', { name: 'Unhide event 2 on the Exercise View' }));
+    await user.click(
+      row(2).getByRole('button', {
+        name: 'Unhide event 2 on the Exercise View',
+      }),
+    );
 
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
-    expect(eventApi.updateScenarioEvent).toHaveBeenCalledWith('se-2', expect.objectContaining({ isHidden: false }));
+    expect(eventApi.updateScenarioEvent).toHaveBeenCalledWith(
+      'se-2',
+      expect.objectContaining({ isHidden: false }),
+    );
   });
 
   /**
@@ -317,14 +459,29 @@ describe('ScenarioEventListComponent', () => {
    * Data: EditMsels; isStarterMsel true.
    */
   it('restricts a starter MSEL', async () => {
-    const { fixture } = await renderEventList({ permissions: [SystemPermission.EditMsels], isStarterMsel: true });
+    const { fixture } = await renderEventList({
+      permissions: [SystemPermission.EditMsels],
+      isStarterMsel: true,
+    });
 
     expect(dataValues(fixture)[0].canEdit()).toBe(false);
-    expect(row(1).queryByRole('button', { name: 'Hide event 1 on the Exercise View' })).not.toBeInTheDocument();
-    expect(row(2).queryByRole('button', { name: 'Unhide event 2 on the Exercise View' })).not.toBeInTheDocument();
+    expect(
+      row(1).queryByRole('button', {
+        name: 'Hide event 1 on the Exercise View',
+      }),
+    ).not.toBeInTheDocument();
+    expect(
+      row(2).queryByRole('button', {
+        name: 'Unhide event 2 on the Exercise View',
+      }),
+    ).not.toBeInTheDocument();
     await openEventMenu(1);
-    expect(screen.getByRole('menuitem', { name: 'Delete' })).toBeInTheDocument();
-    expect(screen.queryByRole('menuitem', { name: 'Copy' })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: 'Delete' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('menuitem', { name: 'Copy' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -333,13 +490,43 @@ describe('ScenarioEventListComponent', () => {
    * Data: EditMsels; event 1.
    */
   it('deletes an event after confirmation', async () => {
-    const { eventApi, confirm } = await renderEventList({ permissions: [SystemPermission.EditMsels] });
+    const { eventApi, confirm } = await renderEventList({
+      permissions: [SystemPermission.EditMsels],
+    });
 
     const user = await openEventMenu(1);
     await user.click(screen.getByRole('menuitem', { name: 'Delete' }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Event' }));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Delete Event',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      }),
+    );
     expect(eventApi.deleteScenarioEvent).toHaveBeenCalledWith('se-1');
+  });
+
+  /**
+   * Verifies: deleting the selected events asks with the standard Delete title and button before deleting them.
+   * Interacts with: batchDeleteScenarioEvents(), CrucibleDialogService.confirm (stub, confirms), ScenarioEventService.batchDeleteScenarioEvents (stub).
+   * Data: EditMsels; event se-1 selected.
+   */
+  it('confirms deleting the selected events', async () => {
+    const { eventApi, confirm, fixture } = await renderEventList({
+      permissions: [SystemPermission.EditMsels],
+    });
+
+    fixture.componentInstance.selectedEventIdList = ['se-1'];
+    fixture.componentInstance.batchDeleteScenarioEvents();
+
+    expect(confirm).toHaveBeenCalledWith({
+      title: 'Delete Selected Events',
+      message: 'Are you sure that you want to delete the selected events?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    });
+    expect(eventApi.batchDeleteScenarioEvents).toHaveBeenCalledWith(['se-1']);
   });
 
   /**
@@ -350,7 +537,10 @@ describe('ScenarioEventListComponent', () => {
   it("passes the MSEL's Gallery source types and statuses to the values and the edit dialog", async () => {
     const { fixture, open } = await renderEventList({
       permissions: [SystemPermission.EditMsels],
-      mselExtra: { gallerySourceTypes: ['News', 'Social'], galleryItemStatuses: ['Green', 'Red'] },
+      mselExtra: {
+        gallerySourceTypes: ['News', 'Social'],
+        galleryItemStatuses: ['Green', 'Red'],
+      },
     });
 
     expect(dataValues(fixture)).toHaveLength(3);
@@ -362,7 +552,10 @@ describe('ScenarioEventListComponent', () => {
     await user.click(screen.getByTitle('Edit event 1'));
 
     expect(open.mock.calls[0][1].data).toEqual(
-      expect.objectContaining({ gallerySourceTypes: ['News', 'Social'], galleryItemStatuses: ['Green', 'Red'] }),
+      expect.objectContaining({
+        gallerySourceTypes: ['News', 'Social'],
+        galleryItemStatuses: ['Green', 'Red'],
+      }),
     );
   });
 });

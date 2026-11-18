@@ -21,7 +21,10 @@ import { MatSelectHarness } from '@angular/material/select/testing';
 import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
-import { ComnSettingsService, CrucibleDialogService } from '@cmusei/crucible-common';
+import {
+  ComnSettingsService,
+  CrucibleDialogService,
+} from '@cmusei/crucible-common';
 import {
   Msel,
   MselItemStatus,
@@ -35,6 +38,7 @@ import {
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { CurrentUserStore } from 'src/app/data/user/user.store';
 import { SignalRService } from 'src/app/services/signalr.service';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
 import { MselListComponent } from './msel-list.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
@@ -66,10 +70,13 @@ const ALL_MSEL_PERMISSIONS = [
   SystemPermission.EditMsels,
   SystemPermission.ManageMsels,
 ];
-const allBut = (missing: SystemPermission) => ALL_MSEL_PERMISSIONS.filter((p) => p !== missing);
+const allBut = (missing: SystemPermission) =>
+  ALL_MSEL_PERMISSIONS.filter((p) => p !== missing);
 
 function role(mselRole: MselRole) {
-  return [{ id: `umr-${mselRole}`, userId: ME, mselId: 'msel-1', role: mselRole }];
+  return [
+    { id: `umr-${mselRole}`, userId: ME, mselId: 'msel-1', role: mselRole },
+  ];
 }
 
 async function renderMselList(
@@ -81,7 +88,9 @@ async function renderMselList(
   const mselApi = {
     getMsels: vi.fn(() => of(structuredClone(msels))),
     getMyMsels: vi.fn(() => of(structuredClone(msels))),
-    copyMsel: vi.fn(() => of(msel({ id: 'msel-copy', name: 'Exercise Alpha - Copy' }))),
+    copyMsel: vi.fn(() =>
+      of(msel({ id: 'msel-copy', name: 'Exercise Alpha - Copy' })),
+    ),
     deleteMsel: vi.fn(() => of<unknown>(null)),
   } satisfies ApiStub<MselService>;
   const userApi = {
@@ -113,7 +122,10 @@ async function renderMselList(
     ],
     declarations: [MselListComponent],
     providers: [
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: MselService, useValue: mselApi },
       { provide: UserService, useValue: userApi },
@@ -122,7 +134,10 @@ async function renderMselList(
       {
         provide: ComnSettingsService,
         useValue: {
-          settings: { AppTopBarImage: '/assets/img/pencil-ruler-white.png', DefaultDataFields: [] },
+          settings: {
+            AppTopBarImage: '/assets/img/pencil-ruler-white.png',
+            DefaultDataFields: [],
+          },
         } satisfies Pick<ComnSettingsService, 'settings'>,
       },
       {
@@ -157,10 +172,13 @@ const getRole = (scope: HTMLElement, role: string, name?: string | RegExp) =>
   within(scope).getByRole(role, { name });
 const queryRole = (scope: HTMLElement, role: string, name?: string | RegExp) =>
   within(scope).queryByRole(role, { name });
-const button = (scope: HTMLElement, name: string | RegExp) => getRole(scope, 'button', name);
+const button = (scope: HTMLElement, name: string | RegExp) =>
+  getRole(scope, 'button', name);
 
 function row(name: string) {
-  const cell = within(table()).getByText(name, { selector: 'a, mat-cell, mat-cell *' });
+  const cell = within(table()).getByText(name, {
+    selector: 'a, mat-cell, mat-cell *',
+  });
   return cell.closest('mat-row') as HTMLElement;
 }
 
@@ -176,16 +194,68 @@ describe('MselListComponent', () => {
      * Data: one MSEL; ViewMsels, or every other MSEL permission (near miss).
      */
     it.each([
-      { label: 'with ViewMsels', permissions: [SystemPermission.ViewMsels], loads: 'getMsels', skips: 'getMyMsels', title: 'All MSELs' },
-      { label: 'without ViewMsels', permissions: allBut(SystemPermission.ViewMsels), loads: 'getMyMsels', skips: 'getMsels', title: 'My MSELs' },
-    ] as const)('loads $title $label', async ({ permissions, loads, skips, title }) => {
-      const { mselApi, permissionApis } = await renderMselList({ permissions: [...permissions] });
+      {
+        label: 'with ViewMsels',
+        permissions: [SystemPermission.ViewMsels],
+        loads: 'getMsels',
+        skips: 'getMyMsels',
+        title: 'All MSELs',
+      },
+      {
+        label: 'without ViewMsels',
+        permissions: allBut(SystemPermission.ViewMsels),
+        loads: 'getMyMsels',
+        skips: 'getMsels',
+        title: 'My MSELs',
+      },
+    ] as const)(
+      'loads $title $label',
+      async ({ permissions, loads, skips, title }) => {
+        const { mselApi, permissionApis } = await renderMselList({
+          permissions: [...permissions],
+        });
 
-      expect(permissionApis.systemPermissions.getMySystemPermissions).toHaveBeenCalledTimes(1);
-      expect(mselApi[loads]).toHaveBeenCalledTimes(1);
-      expect(mselApi[skips]).not.toHaveBeenCalled();
-      expect(within(toolbar()).getByText(title)).toBeInTheDocument();
-    });
+        expect(
+          permissionApis.systemPermissions.getMySystemPermissions,
+        ).toHaveBeenCalledTimes(1);
+        expect(mselApi[loads]).toHaveBeenCalledTimes(1);
+        expect(mselApi[skips]).not.toHaveBeenCalled();
+        expect(within(toolbar()).getByText(title)).toBeInTheDocument();
+      },
+    );
+
+    /**
+     * Verifies: when the hub connection is replaced, the list loads again as the one it shows: every MSEL with
+     * ViewMsels, otherwise the caller's.
+     * Interacts with: HubReconnectService.announceReconnected, MselService.getMsels / getMyMsels (stubs).
+     * Data: ViewMsels, or every other MSEL permission (near miss).
+     */
+    it.each([
+      {
+        label: 'with ViewMsels',
+        permissions: [SystemPermission.ViewMsels],
+        loads: 'getMsels',
+        skips: 'getMyMsels',
+      },
+      {
+        label: 'without ViewMsels',
+        permissions: allBut(SystemPermission.ViewMsels),
+        loads: 'getMyMsels',
+        skips: 'getMsels',
+      },
+    ] as const)(
+      'reloads the list it shows $label when the hub connection is replaced',
+      async ({ permissions, loads, skips }) => {
+        const { mselApi } = await renderMselList({
+          permissions: [...permissions],
+        });
+
+        TestBed.inject(HubReconnectService).announceReconnected();
+
+        expect(mselApi[loads]).toHaveBeenCalledTimes(2);
+        expect(mselApi[skips]).not.toHaveBeenCalled();
+      },
+    );
 
     /**
      * Verifies: with ViewMsels the show-all toggle switches from all MSELs to my MSELs.
@@ -193,14 +263,20 @@ describe('MselListComponent', () => {
      * Data: ViewMsels granted; toggle clicked once.
      */
     it('switches to my MSELs with the toggle under ViewMsels', async () => {
-      const { mselApi } = await renderMselList({ permissions: [SystemPermission.ViewMsels] });
+      const { mselApi } = await renderMselList({
+        permissions: [SystemPermission.ViewMsels],
+      });
       const user = userEvent.setup();
 
-      await user.click(button(toolbar(), 'Show only MSELs I own or have access to'));
+      await user.click(
+        button(toolbar(), 'Show only MSELs I own or have access to'),
+      );
 
       expect(mselApi.getMyMsels).toHaveBeenCalledTimes(1);
       expect(within(toolbar()).getByText('My MSELs')).toBeInTheDocument();
-      expect(button(toolbar(), 'Show all MSELs from all users')).toBeInTheDocument();
+      expect(
+        button(toolbar(), 'Show all MSELs from all users'),
+      ).toBeInTheDocument();
     });
 
     /**
@@ -211,7 +287,9 @@ describe('MselListComponent', () => {
     it('hides the all/mine toggle without ViewMsels', async () => {
       await renderMselList({ permissions: allBut(SystemPermission.ViewMsels) });
 
-      expect(queryRole(toolbar(), 'button', /Show all MSELs|Show only MSELs/)).not.toBeInTheDocument();
+      expect(
+        queryRole(toolbar(), 'button', /Show all MSELs|Show only MSELs/),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -222,19 +300,33 @@ describe('MselListComponent', () => {
      * Data: CreateMsels, or every other MSEL permission (near miss).
      */
     it.each([
-      { label: 'disables', permissions: allBut(SystemPermission.CreateMsels), enabled: false },
-      { label: 'enables', permissions: [SystemPermission.CreateMsels], enabled: true },
-    ])('$label Add and Upload with permissions $permissions', async ({ permissions, enabled }) => {
-      await renderMselList({ permissions });
+      {
+        label: 'disables',
+        permissions: allBut(SystemPermission.CreateMsels),
+        enabled: false,
+      },
+      {
+        label: 'enables',
+        permissions: [SystemPermission.CreateMsels],
+        enabled: true,
+      },
+    ])(
+      '$label Add and Upload with permissions $permissions',
+      async ({ permissions, enabled }) => {
+        await renderMselList({ permissions });
 
-      for (const name of ['Add blank MSEL', 'Upload a new MSEL from a file']) {
-        if (enabled) {
-          expect(button(headerRow(), name)).toBeEnabled();
-        } else {
-          expect(button(headerRow(), name)).toBeDisabled();
+        for (const name of [
+          'Add blank MSEL',
+          'Upload a new MSEL from a file',
+        ]) {
+          if (enabled) {
+            expect(button(headerRow(), name)).toBeEnabled();
+          } else {
+            expect(button(headerRow(), name)).toBeDisabled();
+          }
         }
-      }
-    });
+      },
+    );
 
     /**
      * Verifies: Copy is disabled without CreateMsels.
@@ -242,9 +334,13 @@ describe('MselListComponent', () => {
      * Data: Exercise Alpha; every MSEL permission except CreateMsels (near miss).
      */
     it('disables Copy without CreateMsels', async () => {
-      await renderMselList({ permissions: allBut(SystemPermission.CreateMsels) });
+      await renderMselList({
+        permissions: allBut(SystemPermission.CreateMsels),
+      });
 
-      expect(button(row('Exercise Alpha'), 'Copy Exercise Alpha')).toBeDisabled();
+      expect(
+        button(row('Exercise Alpha'), 'Copy Exercise Alpha'),
+      ).toBeDisabled();
     });
 
     /**
@@ -253,14 +349,20 @@ describe('MselListComponent', () => {
      * Data: Exercise Alpha; copy returns "Exercise Alpha - Copy".
      */
     it('copies an MSEL with CreateMsels', async () => {
-      const { confirm, mselApi } = await renderMselList({ permissions: [SystemPermission.CreateMsels] });
+      const { confirm, mselApi } = await renderMselList({
+        permissions: [SystemPermission.CreateMsels],
+      });
       const user = userEvent.setup();
 
       await user.click(button(row('Exercise Alpha'), 'Copy Exercise Alpha'));
 
-      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Copy MSEL' }));
+      expect(confirm).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Copy MSEL' }),
+      );
       expect(mselApi.copyMsel).toHaveBeenCalledWith('msel-1');
-      expect(await within(table()).findByText('Exercise Alpha - Copy')).toBeInTheDocument();
+      expect(
+        await within(table()).findByText('Exercise Alpha - Copy'),
+      ).toBeInTheDocument();
     });
   });
 
@@ -276,14 +378,31 @@ describe('MselListComponent', () => {
         msels: [
           msel({ id: 'm-other', name: 'Other' }),
           msel({ id: 'm-created', name: 'Created By Me', createdBy: ME }),
-          msel({ id: 'm-owner', name: 'Owner Role', userMselRoles: role(MselRole.Owner) }),
-          msel({ id: 'm-editor', name: 'Editor Role', userMselRoles: role(MselRole.Editor) }),
+          msel({
+            id: 'm-owner',
+            name: 'Owner Role',
+            userMselRoles: role(MselRole.Owner),
+          }),
+          msel({
+            id: 'm-editor',
+            name: 'Editor Role',
+            userMselRoles: role(MselRole.Editor),
+          }),
         ],
       });
 
-      expect(button(row('Other'), 'You do not have permission to delete this MSEL')).toBeDisabled();
-      expect(button(row('Editor Role'), 'You do not have permission to delete this MSEL')).toBeDisabled();
-      expect(button(row('Created By Me'), 'Delete Created By Me')).toBeEnabled();
+      expect(
+        button(row('Other'), 'You do not have permission to delete this MSEL'),
+      ).toBeDisabled();
+      expect(
+        button(
+          row('Editor Role'),
+          'You do not have permission to delete this MSEL',
+        ),
+      ).toBeDisabled();
+      expect(
+        button(row('Created By Me'), 'Delete Created By Me'),
+      ).toBeEnabled();
       expect(button(row('Owner Role'), 'Delete Owner Role')).toBeEnabled();
     });
 
@@ -297,14 +416,22 @@ describe('MselListComponent', () => {
         permissions: [SystemPermission.ManageMsels],
         msels: [
           msel({ id: 'm-1', name: 'Pending One' }),
-          msel({ id: 'm-2', name: 'Live One', status: MselItemStatus.Deployed }),
+          msel({
+            id: 'm-2',
+            name: 'Live One',
+            status: MselItemStatus.Deployed,
+          }),
           msel({ id: 'm-3', name: 'Template One', isTemplate: true }),
         ],
       });
 
       expect(button(row('Pending One'), 'Delete Pending One')).toBeEnabled();
-      expect(button(row('Live One'), 'Cannot delete deployed MSEL')).toBeDisabled();
-      expect(button(row('Template One'), 'Cannot delete template MSELs')).toBeDisabled();
+      expect(
+        button(row('Live One'), 'Cannot delete deployed MSEL'),
+      ).toBeDisabled();
+      expect(
+        button(row('Template One'), 'Cannot delete template MSELs'),
+      ).toBeDisabled();
     });
 
     /**
@@ -320,7 +447,13 @@ describe('MselListComponent', () => {
 
       await user.click(button(row('Mine'), 'Delete Mine'));
 
-      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete MSEL' }));
+      expect(confirm).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Delete MSEL',
+          confirmText: 'Delete',
+          cancelText: 'Cancel',
+        }),
+      );
       expect(mselApi.deleteMsel).toHaveBeenCalledWith('msel-1');
       expect(await screen.findByText('No results found')).toBeInTheDocument();
     });
@@ -336,8 +469,16 @@ describe('MselListComponent', () => {
       await renderMselList({
         permissions: allBut(SystemPermission.ViewMsels),
         msels: [
-          msel({ id: 'm-ed', name: 'As Editor', userMselRoles: role(MselRole.Editor) }),
-          msel({ id: 'm-vw', name: 'As Viewer', userMselRoles: role(MselRole.Viewer) }),
+          msel({
+            id: 'm-ed',
+            name: 'As Editor',
+            userMselRoles: role(MselRole.Editor),
+          }),
+          msel({
+            id: 'm-vw',
+            name: 'As Viewer',
+            userMselRoles: role(MselRole.Viewer),
+          }),
           msel({ id: 'm-no', name: 'No Role' }),
         ],
       });
@@ -369,18 +510,29 @@ describe('MselListComponent', () => {
       { role: MselRole.Approver, edits: true },
       { role: MselRole.Editor, edits: true },
       { role: MselRole.Owner, edits: true },
-    ])('opens the MSEL for a $role, editing $edits', async ({ role: mselRole, edits }) => {
-      const { fixture } = await renderMselList({
-        permissions: [SystemPermission.CreateMsels, SystemPermission.ManageMsels],
-        msels: [msel({ id: 'm-1', name: 'One', userMselRoles: role(mselRole) })],
-      });
-      const component = fixture.componentInstance;
-      const plus = component.mselList.find((m) => m.id === 'm-1');
+    ])(
+      'opens the MSEL for a $role, editing $edits',
+      async ({ role: mselRole, edits }) => {
+        const { fixture } = await renderMselList({
+          permissions: [
+            SystemPermission.CreateMsels,
+            SystemPermission.ManageMsels,
+          ],
+          msels: [
+            msel({ id: 'm-1', name: 'One', userMselRoles: role(mselRole) }),
+          ],
+        });
+        const component = fixture.componentInstance;
+        const plus = component.mselList.find((m) => m.id === 'm-1');
 
-      expect(component.canViewMsel(plus)).toBe(true);
-      expect(component.canEditMsel(plus)).toBe(edits);
-      expect(getRole(row('One'), 'link', 'One')).toHaveAttribute('href', '/build?msel=m-1');
-    });
+        expect(component.canViewMsel(plus)).toBe(true);
+        expect(component.canEditMsel(plus)).toBe(edits);
+        expect(getRole(row('One'), 'link', 'One')).toHaveAttribute(
+          'href',
+          '/build?msel=m-1',
+        );
+      },
+    );
 
     /**
      * Verifies: with ViewMsels every MSEL name links to the editor, even without an MSEL role.
@@ -405,22 +557,43 @@ describe('MselListComponent', () => {
      * Data: a no-role template; CreateMsels, or EditMsels and ManageMsels.
      */
     it.each([
-      { label: 'links', permissions: [SystemPermission.CreateMsels], linked: true },
-      { label: 'does not link', permissions: [SystemPermission.EditMsels, SystemPermission.ManageMsels], linked: false },
-    ])('$label a template with permissions $permissions', async ({ permissions, linked }) => {
-      await renderMselList({
-        permissions,
-        msels: [msel({ id: 'm-tmpl', name: 'Template One', isTemplate: true })],
-      });
+      {
+        label: 'links',
+        permissions: [SystemPermission.CreateMsels],
+        linked: true,
+      },
+      {
+        label: 'does not link',
+        permissions: [SystemPermission.EditMsels, SystemPermission.ManageMsels],
+        linked: false,
+      },
+    ])(
+      '$label a template with permissions $permissions',
+      async ({ permissions, linked }) => {
+        await renderMselList({
+          permissions,
+          msels: [
+            msel({ id: 'm-tmpl', name: 'Template One', isTemplate: true }),
+          ],
+        });
 
-      if (linked) {
-        expect(getRole(row('Template One'), 'link', 'Template One')).toHaveAttribute('href', '/build?msel=m-tmpl');
-        expect(button(row('Template One'), 'Download Template One')).toBeEnabled();
-      } else {
-        expect(queryRole(row('Template One'), 'link')).not.toBeInTheDocument();
-        expect(button(row('Template One'), 'Download Template One')).toBeDisabled();
-      }
-    });
+        if (linked) {
+          expect(
+            getRole(row('Template One'), 'link', 'Template One'),
+          ).toHaveAttribute('href', '/build?msel=m-tmpl');
+          expect(
+            button(row('Template One'), 'Download Template One'),
+          ).toBeEnabled();
+        } else {
+          expect(
+            queryRole(row('Template One'), 'link'),
+          ).not.toBeInTheDocument();
+          expect(
+            button(row('Template One'), 'Download Template One'),
+          ).toBeDisabled();
+        }
+      },
+    );
 
     /**
      * Verifies: opening an MSEL from its link joins its SignalR group.
@@ -429,11 +602,19 @@ describe('MselListComponent', () => {
      */
     it('joins the MSEL group when the MSEL is opened', async () => {
       const { selectMsel } = await renderMselList({
-        msels: [msel({ id: 'm-ed', name: 'As Editor', userMselRoles: role(MselRole.Editor) })],
+        msels: [
+          msel({
+            id: 'm-ed',
+            name: 'As Editor',
+            userMselRoles: role(MselRole.Editor),
+          }),
+        ],
       });
       // The test router has no /build route; stop the navigation it would reject.
       const router = TestBed.inject(Router);
-      const navigateByUrl = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+      const navigateByUrl = vi
+        .spyOn(router, 'navigateByUrl')
+        .mockResolvedValue(true);
       const user = userEvent.setup();
 
       await user.click(getRole(row('As Editor'), 'link', 'As Editor'));
@@ -454,12 +635,21 @@ describe('MselListComponent', () => {
       const { fixture } = await renderMselList({
         msels: [
           msel({ id: 'm-t', name: 'Template Pending', isTemplate: true }),
-          msel({ id: 'm-a', name: 'Approved Exercise', status: MselItemStatus.Approved }),
-          msel({ id: 'm-c', name: 'Finished Exercise', status: MselItemStatus.Complete }),
+          msel({
+            id: 'm-a',
+            name: 'Approved Exercise',
+            status: MselItemStatus.Approved,
+          }),
+          msel({
+            id: 'm-c',
+            name: 'Finished Exercise',
+            status: MselItemStatus.Complete,
+          }),
         ],
       });
       const loader = TestbedHarnessEnvironment.loader(fixture);
-      const [typeSelect, statusSelect] = await loader.getAllHarnesses(MatSelectHarness);
+      const [typeSelect, statusSelect] =
+        await loader.getAllHarnesses(MatSelectHarness);
       const visible = () =>
         within(table())
           .queryAllByRole('row')
@@ -496,23 +686,47 @@ describe('MselListComponent', () => {
     it('lists the most recently created MSEL first', async () => {
       const { fixture } = await renderMselList({
         msels: [
-          msel({ id: 'm-old', name: 'Alpha Oldest', dateCreated: '2025-12-31T23:00:00Z' as unknown as Date }),
-          msel({ id: 'm-new', name: 'Bravo Newest', dateCreated: '2026-01-02T00:00:00Z' as unknown as Date }),
-          msel({ id: 'm-mid', name: 'Charlie Middle', dateCreated: '2026-01-01T00:00:00Z' as unknown as Date }),
+          msel({
+            id: 'm-old',
+            name: 'Alpha Oldest',
+            dateCreated: '2025-12-31T23:00:00Z' as unknown as Date,
+          }),
+          msel({
+            id: 'm-new',
+            name: 'Bravo Newest',
+            dateCreated: '2026-01-02T00:00:00Z' as unknown as Date,
+          }),
+          msel({
+            id: 'm-mid',
+            name: 'Charlie Middle',
+            dateCreated: '2026-01-01T00:00:00Z' as unknown as Date,
+          }),
         ],
       });
       const names = () =>
         within(table())
           .queryAllByRole('row')
           .map((r) => r.textContent)
-          .map((t) => ['Bravo Newest', 'Charlie Middle', 'Alpha Oldest'].find((n) => t.includes(n)))
+          .map((t) =>
+            ['Bravo Newest', 'Charlie Middle', 'Alpha Oldest'].find((n) =>
+              t.includes(n),
+            ),
+          )
           .filter((n) => n);
 
-      expect(names()).toEqual(['Bravo Newest', 'Charlie Middle', 'Alpha Oldest']);
+      expect(names()).toEqual([
+        'Bravo Newest',
+        'Charlie Middle',
+        'Alpha Oldest',
+      ]);
 
       await userEvent.setup().click(within(table()).getByText('Created'));
       fixture.detectChanges();
-      expect(names()).toEqual(['Alpha Oldest', 'Charlie Middle', 'Bravo Newest']);
+      expect(names()).toEqual([
+        'Alpha Oldest',
+        'Charlie Middle',
+        'Bravo Newest',
+      ]);
     });
   });
 });

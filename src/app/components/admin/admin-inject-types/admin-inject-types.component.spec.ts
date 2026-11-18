@@ -47,7 +47,11 @@ class InjectListStub {
   readonly selectedInjectIdList = output<string[]>();
 }
 
-const EMAIL: InjectType = { id: 'it-email', name: 'Email', description: 'An email inject' };
+const EMAIL: InjectType = {
+  id: 'it-email',
+  name: 'Email',
+  description: 'An email inject',
+};
 
 async function renderInjectTypes(overrides: { canEdit?: boolean } = {}) {
   const { canEdit = true } = overrides;
@@ -93,11 +97,16 @@ async function renderInjectTypes(overrides: { canEdit?: boolean } = {}) {
 }
 
 const table = () => screen.getByRole('table');
-const ROW_ACTIONS = ['Edit Email injectType', 'Copy Email', 'Delete Email injectType'];
-const HEADER_ACTIONS = ['Add new inject type', 'Upload Inject Types from JSON', 'Download Inject Types as JSON'];
+const ROW_ACTIONS = ['Edit Email', 'Copy Email', 'Delete Email'];
+const HEADER_ACTIONS = [
+  'Add new inject type',
+  'Upload Inject Types from JSON',
+  'Download Inject Types as JSON',
+];
 
 function injectList(fixture: ComponentFixture<unknown>): InjectListStub {
-  return fixture.debugElement.query(By.directive(InjectListStub)).componentInstance;
+  return fixture.debugElement.query(By.directive(InjectListStub))
+    .componentInstance;
 }
 
 describe('AdminInjectTypesComponent', () => {
@@ -130,7 +139,9 @@ describe('AdminInjectTypesComponent', () => {
       expect(within(table()).queryByTitle(title)).not.toBeInTheDocument();
     }
     for (const name of ROW_ACTIONS) {
-      expect(within(table()).queryByRole('button', { name })).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByRole('button', { name }),
+      ).not.toBeInTheDocument();
     }
   });
 
@@ -139,17 +150,24 @@ describe('AdminInjectTypesComponent', () => {
    * Interacts with: row click, child stubs' inputs.
    * Data: canEdit true and false; inject type Email.
    */
-  it.each([true, false])('passes canEdit %s to the expanded inject list', async (canEdit) => {
-    const { fixture } = await renderInjectTypes({ canEdit });
-    const user = userEvent.setup();
+  it.each([true, false])(
+    'passes canEdit %s to the expanded inject list',
+    async (canEdit) => {
+      const { fixture } = await renderInjectTypes({ canEdit });
+      const user = userEvent.setup();
 
-    await user.click(within(table()).getByText('Email'));
+      await user.click(within(table()).getByText('Email'));
 
-    const list = injectList(fixture);
-    expect(list.canEdit()).toBe(canEdit);
-    expect(list.injectType()).toEqual(EMAIL);
-    expect(fixture.debugElement.query(By.directive(DataFieldListStub)).componentInstance.injectTypeId()).toBe('it-email');
-  });
+      const list = injectList(fixture);
+      expect(list.canEdit()).toBe(canEdit);
+      expect(list.injectType()).toEqual(EMAIL);
+      expect(
+        fixture.debugElement
+          .query(By.directive(DataFieldListStub))
+          .componentInstance.injectTypeId(),
+      ).toBe('it-email');
+    },
+  );
 
   /**
    * Verifies: confirming Delete removes the inject type through the API and from the list.
@@ -157,12 +175,23 @@ describe('AdminInjectTypesComponent', () => {
    * Data: canEdit true; inject type Email.
    */
   it('deletes an inject type after confirmation', async () => {
-    const { injectTypeApi, confirm } = await renderInjectTypes({ canEdit: true });
+    const { injectTypeApi, confirm } = await renderInjectTypes({
+      canEdit: true,
+    });
     const user = userEvent.setup();
 
-    await user.click(within(table()).getByRole('button', { name: 'Delete Email injectType' }));
+    await user.click(
+      within(table()).getByRole('button', { name: 'Delete Email' }),
+    );
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete InjectType' }));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Delete Inject Type',
+        message: 'Are you sure that you want to delete Email?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      }),
+    );
     expect(injectTypeApi.deleteInjectType).toHaveBeenCalledWith('it-email');
     expect(within(table()).queryByText('Email')).not.toBeInTheDocument();
   });

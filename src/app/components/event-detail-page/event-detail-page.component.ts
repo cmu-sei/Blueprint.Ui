@@ -5,10 +5,7 @@
 */
 
 import { TopbarView } from 'src/app/components/shared/top-bar/topbar.models';
-import {
-  ComnSettingsService,
-  Theme
-} from '@cmusei/crucible-common';
+import { ComnSettingsService, Theme } from '@cmusei/crucible-common';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntil } from 'rxjs/operators';
@@ -56,10 +53,16 @@ import { DataValueComponent } from '../data-value/data-value.component';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 
 @Component({
-    selector: 'app-event-detail-page',
-    templateUrl: './event-detail-page.component.html',
-    styleUrls: ['./event-detail-page.component.scss'],
-    imports: [TopbarComponent, MatIconButton, MatIcon, DataValueComponent, AngularEditorModule]
+  selector: 'app-event-detail-page',
+  templateUrl: './event-detail-page.component.html',
+  styleUrls: ['./event-detail-page.component.scss'],
+  imports: [
+    TopbarComponent,
+    MatIconButton,
+    MatIcon,
+    DataValueComponent,
+    AngularEditorModule,
+  ],
 })
 export class EventDetailPageComponent {
   private settingsService = inject(ComnSettingsService);
@@ -141,7 +144,7 @@ export class EventDetailPageComponent {
     // set image
     this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace(
       'white',
-      'blue'
+      'blue',
     );
     this.titleService.setTitle(this.appTitle);
     // Set the display settings from config file
@@ -212,7 +215,7 @@ export class EventDetailPageComponent {
       .subscribe((scenarioEvents) => {
         if (scenarioEvents && scenarioEvents.length > 0) {
           this.scenarioEvent = scenarioEvents.find(
-            (m) => m.id === this.scenarioEventId
+            (m) => m.id === this.scenarioEventId,
           );
         }
       });
@@ -221,7 +224,7 @@ export class EventDetailPageComponent {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((moves) => {
         this.moveList = moves.sort((a, b) =>
-          +a.moveNumber < +b.moveNumber ? -1 : 1
+          +a.moveNumber < +b.moveNumber ? -1 : 1,
         );
       });
   }
@@ -236,12 +239,12 @@ export class EventDetailPageComponent {
     editableMsel.teams = editableMsel.teams
       .slice(0)
       .sort((a, b) =>
-        a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1
+        a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1,
       );
     editableMsel.units = editableMsel.units
       .slice(0)
       .sort((a, b) =>
-        a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1
+        a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1,
       );
 
     return editableMsel;
@@ -250,7 +253,7 @@ export class EventDetailPageComponent {
   getSortedDataFields(dataFields: DataField[]) {
     if (dataFields) {
       this.sortedDataFields = dataFields.sort((a, b) =>
-        +a.displayOrder > +b.displayOrder ? 1 : -1
+        +a.displayOrder > +b.displayOrder ? 1 : -1,
       );
     }
     // create date form controls
@@ -281,7 +284,7 @@ export class EventDetailPageComponent {
     let dataValuePlus = this.dataValues.find(
       (dv) =>
         dv.dataFieldId === dataFieldId &&
-        dv.scenarioEventId === this.scenarioEvent.id
+        dv.scenarioEventId === this.scenarioEvent.id,
     ) as DataValuePlus;
     if (dataValuePlus) {
       dataValuePlus.valueArray = dataValuePlus.value
@@ -296,7 +299,7 @@ export class EventDetailPageComponent {
   getDataValueById() {
     if (this.dataValueId) {
       const dataValue = this.dataValues.find(
-        (dv) => dv.id === this.dataValueId
+        (dv) => dv.id === this.dataValueId,
       );
       return dataValue ? dataValue.value : '';
     }
@@ -310,7 +313,7 @@ export class EventDetailPageComponent {
     const dataValue = this.dataValues.find(
       (dv) =>
         dv.dataFieldId === dataField.id &&
-        dv.scenarioEventId === this.scenarioEvent.id
+        dv.scenarioEventId === this.scenarioEvent.id,
     );
 
     if (dataValue) {
@@ -339,7 +342,8 @@ export class EventDetailPageComponent {
   openInNewTab(scenarioEventId: string, dataFieldId: string) {
     const dataValue = this.dataValues.find(
       (dv) =>
-        dv.dataFieldId === dataFieldId && dv.scenarioEventId === scenarioEventId
+        dv.dataFieldId === dataFieldId &&
+        dv.scenarioEventId === scenarioEventId,
     );
     if (dataValue && dataValue.id) {
       const url =

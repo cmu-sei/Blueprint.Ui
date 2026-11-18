@@ -4,19 +4,31 @@
 // project root for license information.
 */
 
-import { Component, HostBinding, HostListener, OnDestroy, inject } from '@angular/core';
+import {
+  Component,
+  HostBinding,
+  HostListener,
+  OnDestroy,
+  inject,
+} from '@angular/core';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
-import { ComnAuthQuery, ComnAuthService, CrucibleThemeService, Theme, ComnHeaderBarModule } from '@cmusei/crucible-common';
+import {
+  ComnAuthQuery,
+  ComnAuthService,
+  CrucibleThemeService,
+  Theme,
+  ComnHeaderBarModule,
+} from '@cmusei/crucible-common';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 @Component({
-    selector: 'app-root',
-    templateUrl: './app.component.html',
-    styleUrls: ['./app.component.scss'],
-    imports: [ComnHeaderBarModule, RouterOutlet]
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
+  imports: [ComnHeaderBarModule, RouterOutlet],
 })
 export class AppComponent implements OnDestroy {
   private authQuery = inject(ComnAuthQuery);
@@ -108,8 +120,8 @@ export class AppComponent implements OnDestroy {
     iconRegistry.addSvgIcon(
       'crucible-icon-blueprint',
       sanitizer.bypassSecurityTrustResourceUrl(
-        'assets/svg-icons/crucible-icon-blueprint.svg'
-      )
+        'assets/svg-icons/crucible-icon-blueprint.svg',
+      ),
     );
   }
 

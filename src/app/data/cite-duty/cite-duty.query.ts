@@ -3,10 +3,7 @@
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
 import { Order, Query, QueryConfig, QueryEntity } from '@datorama/akita';
-import {
-  CiteDutyState,
-  CiteDutyStore,
-} from './cite-duty.store';
+import { CiteDutyState, CiteDutyStore } from './cite-duty.store';
 import { CiteDuty } from 'src/app/generated/blueprint.api';
 import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
@@ -26,7 +23,7 @@ export class CiteDutyQuery extends QueryEntity<CiteDutyState> {
     const store = inject(CiteDutyStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

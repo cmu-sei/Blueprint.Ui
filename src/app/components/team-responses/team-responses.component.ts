@@ -22,7 +22,13 @@ import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
   selector: 'app-team-responses',
   templateUrl: './team-responses.component.html',
   styleUrls: ['./team-responses.component.scss'],
-  imports: [MatIcon, MatProgressBar, DatePipe, NgTemplateOutlet, TimezoneAbbrPipe],
+  imports: [
+    MatIcon,
+    MatProgressBar,
+    DatePipe,
+    NgTemplateOutlet,
+    TimezoneAbbrPipe,
+  ],
 })
 export class TeamResponsesComponent {
   /** The answers to show, or null when there are none yet. */
@@ -46,21 +52,22 @@ export class TeamResponsesComponent {
 
   readonly explanation = computed(() => {
     const responses = this.responses();
-    return responses && TeamResponsesComponent.EXPLAINED.includes(responses.status)
+    return responses &&
+      TeamResponsesComponent.EXPLAINED.includes(responses.status)
       ? responses.message || 'No CITE answers to show.'
       : '';
   });
 
   readonly unavailable = computed(
-    () => this.responses()?.status === CiteTeamResponsesStatus.Unavailable
+    () => this.responses()?.status === CiteTeamResponsesStatus.Unavailable,
   );
 
   readonly answered = computed(
-    () => this.responses()?.status === CiteTeamResponsesStatus.Answered
+    () => this.responses()?.status === CiteTeamResponsesStatus.Answered,
   );
 
   readonly notAnswered = computed(
-    () => this.responses()?.status === CiteTeamResponsesStatus.NotAnswered
+    () => this.responses()?.status === CiteTeamResponsesStatus.NotAnswered,
   );
 
   /** The official and team-average submissions, with their headings, when present. */
@@ -71,10 +78,16 @@ export class TeamResponsesComponent {
       return others;
     }
     if (responses.officialSubmission) {
-      others.push({ label: 'Official', submission: responses.officialSubmission });
+      others.push({
+        label: 'Official',
+        submission: responses.officialSubmission,
+      });
     }
     if (responses.teamAverageSubmission) {
-      others.push({ label: 'Team average', submission: responses.teamAverageSubmission });
+      others.push({
+        label: 'Team average',
+        submission: responses.teamAverageSubmission,
+      });
     }
     return others;
   });

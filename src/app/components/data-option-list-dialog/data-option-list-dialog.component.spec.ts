@@ -19,11 +19,23 @@ import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
 const OPTIONS: DataOption[] = [
-  { id: 'opt-1', optionName: 'HIGH', optionValue: 'High priority', displayOrder: 1 },
-  { id: 'opt-2', optionName: 'LOW', optionValue: 'Low priority', displayOrder: 2 },
+  {
+    id: 'opt-1',
+    optionName: 'HIGH',
+    optionValue: 'High priority',
+    displayOrder: 1,
+  },
+  {
+    id: 'opt-2',
+    optionName: 'LOW',
+    optionValue: 'Low priority',
+    displayOrder: 2,
+  },
 ];
 
-async function renderOptionList(overrides: { canEdit?: boolean; canImport?: boolean } = {}) {
+async function renderOptionList(
+  overrides: { canEdit?: boolean; canImport?: boolean } = {},
+) {
   const { canEdit = true, canImport } = overrides;
   const data = {
     dataOptions: OPTIONS,
@@ -56,7 +68,8 @@ async function renderOptionList(overrides: { canEdit?: boolean; canImport?: bool
 }
 
 const table = () => screen.getByRole('table');
-const importButton = () => screen.queryByRole('button', { description: 'Import options from file' });
+const importButton = () =>
+  screen.queryByRole('button', { description: 'Import options from file' });
 
 describe('DataOptionListDialogComponent', () => {
   /**
@@ -68,10 +81,14 @@ describe('DataOptionListDialogComponent', () => {
     const { data } = await renderOptionList({ canEdit: true });
     const user = userEvent.setup();
 
-    expect(screen.getByRole('heading', { name: 'Manage Options (2)' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Manage Options (2)' }),
+    ).toBeInTheDocument();
     await user.click(screen.getByTitle('Add new option'));
     await user.click(importButton() as HTMLElement);
-    const high = within(table()).getByText('HIGH').closest('mat-row') as HTMLElement;
+    const high = within(table())
+      .getByText('HIGH')
+      .closest('mat-row') as HTMLElement;
     await user.click(within(high).getByTitle('Edit this option'));
     await user.click(within(high).getByTitle('Delete this option'));
 
@@ -92,8 +109,12 @@ describe('DataOptionListDialogComponent', () => {
     expect(within(table()).getByText('High priority')).toBeInTheDocument();
     expect(screen.queryByTitle('Add new option')).not.toBeInTheDocument();
     expect(importButton()).not.toBeInTheDocument();
-    expect(within(table()).queryByTitle('Edit this option')).not.toBeInTheDocument();
-    expect(within(table()).queryByTitle('Delete this option')).not.toBeInTheDocument();
+    expect(
+      within(table()).queryByTitle('Edit this option'),
+    ).not.toBeInTheDocument();
+    expect(
+      within(table()).queryByTitle('Delete this option'),
+    ).not.toBeInTheDocument();
   });
 
   /**

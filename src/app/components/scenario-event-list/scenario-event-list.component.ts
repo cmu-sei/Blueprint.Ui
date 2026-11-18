@@ -1,10 +1,25 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject, input, viewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
 import { UntypedFormControl, FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { CdkDragDrop, CdkDragStart, CdkDragEnd, CdkDropList, CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
+import {
+  CdkDragDrop,
+  CdkDragStart,
+  CdkDragEnd,
+  CdkDropList,
+  CdkDrag,
+  CdkDragHandle,
+} from '@angular/cdk/drag-drop';
 import { Router } from '@angular/router';
 import { Subject, Subscription, Observable, of, take } from 'rxjs';
 import {
@@ -53,7 +68,7 @@ import {
   ScenarioEventView,
   ScenarioEventViewIndexing,
   DataValuePlus,
-  IntegrationTarget
+  IntegrationTarget,
 } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventCopyDialogComponent } from '../scenario-event-copy-dialog/scenario-event-copy-dialog.component';
 import { ScenarioEventEditDialogComponent } from '../scenario-event-edit-dialog/scenario-event-edit-dialog.component';
@@ -77,16 +92,37 @@ import { DataValueComponent } from '../data-value/data-value.component';
 
 interface StringDictionary {
   [key: string]: string;
-};
+}
 
 @Component({
-    selector: 'app-scenario-event-list',
-    templateUrl: './scenario-event-list.component.html',
-    styleUrls: ['./scenario-event-list.component.scss'],
-    imports: [MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatIcon, MatSort, MatCheckbox, MatMenuTrigger, MatMenu, MatMenuItem, MatSortHeader, CdkDropList, CdkDrag, CdkDragHandle, DurationViewComponent, MatSelect, MatOption, DataValueComponent]
+  selector: 'app-scenario-event-list',
+  templateUrl: './scenario-event-list.component.html',
+  styleUrls: ['./scenario-event-list.component.scss'],
+  imports: [
+    MatFormField,
+    MatInput,
+    FormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatIcon,
+    MatSort,
+    MatCheckbox,
+    MatMenuTrigger,
+    MatMenu,
+    MatMenuItem,
+    MatSortHeader,
+    CdkDropList,
+    CdkDrag,
+    CdkDragHandle,
+    DurationViewComponent,
+    MatSelect,
+    MatOption,
+    DataValueComponent,
+  ],
 })
 export class ScenarioEventListComponent
-  implements OnDestroy, OnInit, ScenarioEventView {
+  implements OnDestroy, OnInit, ScenarioEventView
+{
   private router = inject(Router);
   private permissionDataService = inject(PermissionDataService);
   private settingsService = inject(ComnSettingsService);
@@ -205,7 +241,7 @@ export class ScenarioEventListComponent
       .pipe(take(1))
       .subscribe((msels) => {
         this.mselListForCopy = msels.sort((a, b) =>
-          a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1
+          a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1,
         );
       });
     this.scenarioEventBackgroundColors =
@@ -230,10 +266,10 @@ export class ScenarioEventListComponent
           if (this.allDataFields.length > 0) {
             this.setSortedDataFields();
             this.scenarioEventDataService.updateScenarioEventViewDataFields(
-              this
+              this,
             );
             this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
-              this
+              this,
             );
           }
         }
@@ -248,7 +284,7 @@ export class ScenarioEventListComponent
         this.scenarioEventDataService.updateScenarioEventViewDataFields(this);
         this.scenarioEventDataService.updateScenarioEventViewDataValues(this);
         this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
-          this
+          this,
         );
       });
     // subscribe to data values
@@ -262,7 +298,7 @@ export class ScenarioEventListComponent
         });
         this.scenarioEventDataService.updateScenarioEventViewDataValues(this);
         this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
-          this
+          this,
         );
       });
     // subscribe to scenario events
@@ -272,30 +308,33 @@ export class ScenarioEventListComponent
       .subscribe((scenarioEvents) => {
         this.scenarioEventDataService.refreshScenarioEventViewEvents(
           this,
-          scenarioEvents
+          scenarioEvents,
         );
         if (scenarioEvents && scenarioEvents.length > 0) {
           this.moveAndGroupNumbers =
             this.scenarioEventDataService.getMoveAndGroupNumbers(
               this.mselScenarioEvents,
-              this.moveList
+              this.moveList,
             );
           this.maxScenarioEventStartSeconds = Math.max.apply(
             Math,
             scenarioEvents.map(function (o) {
               return +o.deltaSeconds;
-            })
+            }),
           );
         }
         this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
-          this
+          this,
         );
       });
     // is user a contentdeveloper or system admin?
-    this.permissionDataService.load()
+    this.permissionDataService
+      .load()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
-        this.canDoAnything = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
+        this.canDoAnything = this.permissionDataService.hasPermission(
+          SystemPermission.CreateMsels,
+        );
         this.changeDetectorRef.markForCheck();
       });
     // subscribe to organizations
@@ -304,7 +343,7 @@ export class ScenarioEventListComponent
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((organizations) => {
         this.organizationList = organizations.filter(
-          (org) => !org.isTemplate && org.mselId === this.msel.id
+          (org) => !org.isTemplate && org.mselId === this.msel.id,
         );
       });
     // observe the Cards
@@ -322,12 +361,12 @@ export class ScenarioEventListComponent
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((moves) => {
         this.moveList = moves.sort((a, b) =>
-          +a.moveNumber < +b.moveNumber ? -1 : 1
+          +a.moveNumber < +b.moveNumber ? -1 : 1,
         );
         this.moveAndGroupNumbers =
           this.scenarioEventDataService.getMoveAndGroupNumbers(
             this.mselScenarioEvents,
-            this.moveList
+            this.moveList,
           );
       });
     // observe the Teams
@@ -349,7 +388,7 @@ export class ScenarioEventListComponent
       .pipe(
         debounceTime(250),
         distinctUntilChanged(),
-        mergeMap((search) => of(search).pipe(delay(250)))
+        mergeMap((search) => of(search).pipe(delay(250))),
       )
       .subscribe((event) => {
         this.applyFilter(this.filterString);
@@ -389,8 +428,10 @@ export class ScenarioEventListComponent
   }
 
   canEditMsel(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId(), '').editor;
+    return (
+      this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
+      this.msel.hasRole(this.loggedInUserId(), '').editor
+    );
   }
 
   tabChange(event) {
@@ -407,12 +448,12 @@ export class ScenarioEventListComponent
     editableMsel.teams = editableMsel.teams
       .slice(0)
       .sort((a, b) =>
-        a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1
+        a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1,
       );
     editableMsel.units = editableMsel.units
       .slice(0)
       .sort((a, b) =>
-        a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1
+        a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1,
       );
 
     return editableMsel;
@@ -440,7 +481,7 @@ export class ScenarioEventListComponent
 
   getDataFieldByName(name: string) {
     return this.dataFields.find(
-      (df) => df.name.toLowerCase() === name.toLowerCase()
+      (df) => df.name.toLowerCase() === name.toLowerCase(),
     );
   }
 
@@ -457,7 +498,7 @@ export class ScenarioEventListComponent
       });
     });
     users = users.sort((a, b) =>
-      a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
+      a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1,
     );
     return users;
   }
@@ -468,7 +509,7 @@ export class ScenarioEventListComponent
       newValues.join(', ');
     this.getDataValue(scenarioEvent, dataFieldName).valueArray = newValues;
     this.dataValueDataService.updateDataValue(
-      this.getDataValue(scenarioEvent, dataFieldName)
+      this.getDataValue(scenarioEvent, dataFieldName),
     );
   }
 
@@ -506,7 +547,7 @@ export class ScenarioEventListComponent
 
   selectMoreScenarioEvent(id: string) {
     const expandedIndex = this.expandedMoreScenarioEventIds.findIndex(
-      (seId) => seId === id
+      (seId) => seId === id,
     );
     if (expandedIndex === -1) {
       this.expandedMoreScenarioEventIds.push(id);
@@ -517,7 +558,7 @@ export class ScenarioEventListComponent
 
   newDataValuePlus(
     scenarioEventId: string,
-    dataFieldId: string
+    dataFieldId: string,
   ): DataValuePlus {
     const ndvp = {
       id: uuidv4(),
@@ -532,7 +573,7 @@ export class ScenarioEventListComponent
 
   getDataValue(
     scenarioEvent: ScenarioEvent,
-    dataFieldName: string
+    dataFieldName: string,
   ): DataValuePlus {
     if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
       return this.blankDataValue;
@@ -540,7 +581,7 @@ export class ScenarioEventListComponent
     return this.scenarioEventDataService.getDataValueFromView(
       this,
       scenarioEvent,
-      dataFieldName
+      dataFieldName,
     );
   }
 
@@ -551,7 +592,7 @@ export class ScenarioEventListComponent
     return this.scenarioEventDataService.getDisplayValueFromView(
       this,
       scenarioEvent,
-      dataFieldName
+      dataFieldName,
     );
   }
 
@@ -591,7 +632,7 @@ export class ScenarioEventListComponent
       // sanity check
       const droppedScenarioEvt = event.item.data;
       const droppedScenarioEvtIdx = this.viewIndex.mselScenarioEvtIndex.get(
-        droppedScenarioEvt.id
+        droppedScenarioEvt.id,
       );
       const targetScenarioEvtId =
         this.displayedScenarioEvents[event.currentIndex].id;
@@ -645,9 +686,9 @@ export class ScenarioEventListComponent
     }
   }
 
-  dragStart(event: CdkDragStart) { }
+  dragStart(event: CdkDragStart) {}
 
-  dragEnd(event: CdkDragEnd) { }
+  dragEnd(event: CdkDragEnd) {}
 
   addScenarioEvent() {
     this.isAddingScenarioEvent = true;
@@ -676,7 +717,7 @@ export class ScenarioEventListComponent
     const editScenarioEvent = { ...scenarioEvent };
     editScenarioEvent.dataValues = [];
     const seDataValues = this.dataValues.filter(
-      (dv) => dv.scenarioEventId === scenarioEvent.id
+      (dv) => dv.scenarioEventId === scenarioEvent.id,
     );
     this.mselDataFields.forEach((df) => {
       let dataValue = seDataValues.find((dv) => dv.dataFieldId === df.id);
@@ -687,7 +728,9 @@ export class ScenarioEventListComponent
     });
     if (scenarioEvent.steamfitterTaskId) {
       editScenarioEvent.steamfitterTask = { ...scenarioEvent.steamfitterTask };
-      editScenarioEvent.steamfitterTask.actionParameters = { ...scenarioEvent.steamfitterTask.actionParameters };
+      editScenarioEvent.steamfitterTask.actionParameters = {
+        ...scenarioEvent.steamfitterTask.actionParameters,
+      };
     } else {
       this.makeSteamfitterTask(editScenarioEvent, null);
     }
@@ -777,7 +820,7 @@ export class ScenarioEventListComponent
       userExecutable: true,
       repeatable: false,
       actionParameters: {},
-      scenarioEventId: scenarioEvent.id
+      scenarioEventId: scenarioEvent.id,
     } as SteamfitterTask;
     if (newId) {
       steamfitterTask.id = newId;
@@ -789,13 +832,13 @@ export class ScenarioEventListComponent
   saveDataValue(
     scenarioEvent: ScenarioEvent,
     dataFieldName: string,
-    newValue: string
+    newValue: string,
   ) {
     let dataValue = this.getDataValue(scenarioEvent, dataFieldName);
     if (!dataValue || !dataValue.id) {
       // the dataValue doesn't exist, so create a new one
       const dataFieldId = this.mselDataFields.find(
-        (df) => df.name === dataFieldName
+        (df) => df.name === dataFieldName,
       ).id;
       dataValue = this.newDataValuePlus(scenarioEvent.id, dataFieldId);
       dataValue.value = newValue;
@@ -809,7 +852,7 @@ export class ScenarioEventListComponent
   saveDataValueArray(
     scenarioEvent: ScenarioEvent,
     dataFieldName: string,
-    newValues: string[]
+    newValues: string[],
   ) {
     if (newValues.includes('None')) {
       newValues = new Array();
@@ -818,7 +861,7 @@ export class ScenarioEventListComponent
     if (!dataValue || !dataValue.id) {
       // the dataValue doesn't exist, so create a new one
       const dataFieldId = this.mselDataFields.find(
-        (df) => df.name === dataFieldName
+        (df) => df.name === dataFieldName,
       ).id;
       dataValue = this.newDataValuePlus(scenarioEvent.id, dataFieldId);
       dataValue.value = newValues.join(', ');
@@ -846,7 +889,7 @@ export class ScenarioEventListComponent
 
   getIntegrationTargetArray(scenarioEvent: ScenarioEvent): string[] {
     return scenarioEvent.integrationTarget
-      ? scenarioEvent.integrationTarget.split(', ').filter(s => s.length > 0)
+      ? scenarioEvent.integrationTarget.split(', ').filter((s) => s.length > 0)
       : [];
   }
 
@@ -861,8 +904,14 @@ export class ScenarioEventListComponent
 
   deleteScenarioEvent(scenarioEvent: ScenarioEvent, index: number): void {
     this.dialogService
-      .confirm({ title: 'Delete Event', message: 'Are you sure that you want to delete event ' + index + '?'
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Delete Event',
+        message: 'Are you sure that you want to delete event ' + index + '?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.scenarioEventDataService.delete(scenarioEvent.id);
         }
@@ -871,8 +920,14 @@ export class ScenarioEventListComponent
 
   batchDeleteScenarioEvents() {
     this.dialogService
-      .confirm({ title: 'Delete ALL selected Events!', message: 'Are you sure that you want to delete the selected events?'
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Delete Selected Events',
+        message: 'Are you sure that you want to delete the selected events?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.scenarioEventDataService.batchDelete(this.selectedEventIdList);
           this.selectedEventIdList = [];
@@ -973,7 +1028,7 @@ export class ScenarioEventListComponent
   batchSelectNewColor(color: string) {
     this.selectedEventIdList.forEach((id) => {
       const scenarioEvent = this.displayedScenarioEvents.find(
-        (e) => e.id === id
+        (e) => e.id === id,
       );
       this.selectNewColor(color, scenarioEvent);
     });
@@ -1098,7 +1153,7 @@ export class ScenarioEventListComponent
       if (result.mselId) {
         this.scenarioEventDataService.copyScenarioEventsToMsel(
           result.mselId,
-          this.selectedEventIdList
+          this.selectedEventIdList,
         );
       }
       dialogRef.close();
@@ -1108,7 +1163,9 @@ export class ScenarioEventListComponent
   shouldShowMoveSeparators(): boolean {
     if (!this.sort || !this.sort.active || !this.sort.direction) return true;
     if (this.sort.direction !== 'asc') return false;
-    return this.sort.active === 'moveNumber' || this.sort.active === 'deltaSeconds';
+    return (
+      this.sort.active === 'moveNumber' || this.sort.active === 'deltaSeconds'
+    );
   }
 
   isMoveStartRow(rowIndex: number): boolean {

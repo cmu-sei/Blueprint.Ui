@@ -28,7 +28,13 @@ function teamData(
   } = {},
 ) {
   const {
-    team = { id: 'team-1', name: 'Blue Team', shortName: 'BLUE', email: '', canTeamMemberInvite: false },
+    team = {
+      id: 'team-1',
+      name: 'Blue Team',
+      shortName: 'BLUE',
+      email: '',
+      canTeamMemberInvite: false,
+    },
     useCite = false,
     casterTeamVariables = null,
     casterTeamVariableUsers = {},
@@ -55,20 +61,28 @@ async function renderTeamEdit(data = teamData()) {
     ],
     declarations: [TeamEditDialogComponent],
     // angular-editor injects HttpClient for its image upload.
-    providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, provideHttpClient(), provideHttpClientTesting()],
+    providers: [
+      { provide: MAT_DIALOG_DATA, useValue: data },
+      provideHttpClient(),
+      provideHttpClientTesting(),
+    ],
   });
   // ngModel writes the checkbox state in a microtask; render it once more after it lands.
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
   const results: { saveChanges: boolean; team: Team | null }[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results };
 }
 
 // angular-editor's toolbar makes whole-document role queries slow, so the
 // fields go by label or placeholder and the buttons are looked up in the dialog actions.
-const actions = () => within(document.querySelector('mat-dialog-actions') as HTMLElement);
-const inviteBox = () => screen.getByLabelText('ALL users can invite others to this team');
+const actions = () =>
+  within(document.querySelector('mat-dialog-actions') as HTMLElement);
+const inviteBox = () =>
+  screen.getByLabelText('ALL users can invite others to this team');
 
 describe('TeamEditDialogComponent', () => {
   /**
@@ -95,7 +109,15 @@ describe('TeamEditDialogComponent', () => {
    */
   it('keeps canTeamMemberInvite false when the box stays unticked', async () => {
     const { results } = await renderTeamEdit(
-      teamData({ team: { id: 'team-1', name: 'Blue Team', shortName: 'BLUE', email: '', canTeamMemberInvite: false } }),
+      teamData({
+        team: {
+          id: 'team-1',
+          name: 'Blue Team',
+          shortName: 'BLUE',
+          email: '',
+          canTeamMemberInvite: false,
+        },
+      }),
     );
     const user = userEvent.setup();
 
@@ -115,7 +137,15 @@ describe('TeamEditDialogComponent', () => {
    */
   it('saves canTeamMemberInvite false when a ticked box is unticked', async () => {
     const { results } = await renderTeamEdit(
-      teamData({ team: { id: 'team-1', name: 'Blue Team', shortName: 'BLUE', email: '', canTeamMemberInvite: true } }),
+      teamData({
+        team: {
+          id: 'team-1',
+          name: 'Blue Team',
+          shortName: 'BLUE',
+          email: '',
+          canTeamMemberInvite: true,
+        },
+      }),
     );
     const user = userEvent.setup();
 
@@ -133,8 +163,14 @@ describe('TeamEditDialogComponent', () => {
    * Data: a new team with no name; then a named team with useCite and no team type.
    */
   it.each([
-    { label: 'without a name', data: teamData({ team: { name: '', shortName: 'NEW' } }) },
-    { label: 'without a CITE team type when CITE is used', data: teamData({ useCite: true }) },
+    {
+      label: 'without a name',
+      data: teamData({ team: { name: '', shortName: 'NEW' } }),
+    },
+    {
+      label: 'without a CITE team type when CITE is used',
+      data: teamData({ useCite: true }),
+    },
   ])('disables Save $label', async ({ data }) => {
     await renderTeamEdit(data);
 
@@ -161,7 +197,9 @@ describe('TeamEditDialogComponent', () => {
    * Data: a new team with no name.
    */
   it('saves an incomplete team when handleEditComplete is called', async () => {
-    const { fixture, data, results } = await renderTeamEdit(teamData({ team: { name: '', shortName: 'NEW' } }));
+    const { fixture, data, results } = await renderTeamEdit(
+      teamData({ team: { name: '', shortName: 'NEW' } }),
+    );
 
     fixture.componentInstance.handleEditComplete(true);
 
@@ -171,11 +209,14 @@ describe('TeamEditDialogComponent', () => {
 
   describe('Topology Team', () => {
     const VARIABLES = ['admin', 'blue_cell', 'red_cell'];
-    const topologySelect = (fixture: Parameters<typeof TestbedHarnessEnvironment.loader>[0]) =>
-      TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+    const topologySelect = (
+      fixture: Parameters<typeof TestbedHarnessEnvironment.loader>[0],
+    ) => TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
     const optionTexts = async (select: MatSelectHarness) => {
       await select.open();
-      return Promise.all((await select.getOptions()).map((option) => option.getText()));
+      return Promise.all(
+        (await select.getOptions()).map((option) => option.getText()),
+      );
     };
 
     /**
@@ -196,13 +237,25 @@ describe('TeamEditDialogComponent', () => {
      */
     it('offers the topology teams and who already uses them', async () => {
       const { fixture } = await renderTeamEdit(
-        teamData({ casterTeamVariables: VARIABLES, casterTeamVariableUsers: { blue_cell: ['Blue Cell', 'Cyan Team'] } }),
+        teamData({
+          casterTeamVariables: VARIABLES,
+          casterTeamVariableUsers: { blue_cell: ['Blue Cell', 'Cyan Team'] },
+        }),
       );
       const select = await topologySelect(fixture);
 
-      expect(screen.getByText("The Caster template variable this team's Player team ID is written to")).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          "The Caster template variable this team's Player team ID is written to",
+        ),
+      ).toBeInTheDocument();
       expect(await select.getValueText()).toBe('By team name');
-      expect(await optionTexts(select)).toEqual(['By team name', 'admin', 'blue_cell (used by Blue Cell, Cyan Team)', 'red_cell']);
+      expect(await optionTexts(select)).toEqual([
+        'By team name',
+        'admin',
+        'blue_cell (used by Blue Cell, Cyan Team)',
+        'red_cell',
+      ]);
     });
 
     /**
@@ -211,7 +264,9 @@ describe('TeamEditDialogComponent', () => {
      * Data: Blue Team, unmapped; variables admin, blue_cell and red_cell; red_cell chosen.
      */
     it('saves the chosen topology team', async () => {
-      const { fixture, results } = await renderTeamEdit(teamData({ casterTeamVariables: VARIABLES }));
+      const { fixture, results } = await renderTeamEdit(
+        teamData({ casterTeamVariables: VARIABLES }),
+      );
       const user = userEvent.setup();
 
       await (await topologySelect(fixture)).clickOptions({ text: 'red_cell' });
@@ -227,11 +282,27 @@ describe('TeamEditDialogComponent', () => {
      * Data: Blue Team mapped to old_cell; variables admin, blue_cell and red_cell, or none (null).
      */
     it.each([
-      { label: 'the template no longer declares', casterTeamVariables: VARIABLES, options: ['By team name', 'admin', 'blue_cell', 'red_cell', 'old_cell'] },
-      { label: 'no template is loaded for', casterTeamVariables: null as string[], options: ['By team name', 'old_cell'] },
+      {
+        label: 'the template no longer declares',
+        casterTeamVariables: VARIABLES,
+        options: ['By team name', 'admin', 'blue_cell', 'red_cell', 'old_cell'],
+      },
+      {
+        label: 'no template is loaded for',
+        casterTeamVariables: null as string[],
+        options: ['By team name', 'old_cell'],
+      },
     ])('keeps a mapping $label', async ({ casterTeamVariables, options }) => {
       const { fixture } = await renderTeamEdit(
-        teamData({ team: { id: 'team-1', name: 'Blue Team', shortName: 'BLUE', casterTeamVariable: 'old_cell' }, casterTeamVariables }),
+        teamData({
+          team: {
+            id: 'team-1',
+            name: 'Blue Team',
+            shortName: 'BLUE',
+            casterTeamVariable: 'old_cell',
+          },
+          casterTeamVariables,
+        }),
       );
       const select = await topologySelect(fixture);
 
@@ -246,11 +317,21 @@ describe('TeamEditDialogComponent', () => {
      */
     it('clears the mapping when By team name is chosen', async () => {
       const { fixture, results } = await renderTeamEdit(
-        teamData({ team: { id: 'team-1', name: 'Blue Team', shortName: 'BLUE', casterTeamVariable: 'blue_cell' }, casterTeamVariables: VARIABLES }),
+        teamData({
+          team: {
+            id: 'team-1',
+            name: 'Blue Team',
+            shortName: 'BLUE',
+            casterTeamVariable: 'blue_cell',
+          },
+          casterTeamVariables: VARIABLES,
+        }),
       );
       const user = userEvent.setup();
 
-      await (await topologySelect(fixture)).clickOptions({ text: 'By team name' });
+      await (
+        await topologySelect(fixture)
+      ).clickOptions({ text: 'By team name' });
       await user.click(actions().getByRole('button', { name: 'Save' }));
 
       expect(results).toHaveLength(1);

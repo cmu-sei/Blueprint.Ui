@@ -2,11 +2,36 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ElementRef, inject, input, viewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  ElementRef,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
 import { PageEvent, MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortable } from '@angular/material/sort';
-import { MatTableDataSource, MatTable, MatColumnDef, MatCellDef, MatCell, MatRowDef, MatRow, MatHeaderCellDef, MatHeaderCell, MatHeaderRowDef, MatHeaderRow } from '@angular/material/table';
-import { CardTeam, SystemPermission, Team } from 'src/app/generated/blueprint.api';
+import {
+  MatTableDataSource,
+  MatTable,
+  MatColumnDef,
+  MatCellDef,
+  MatCell,
+  MatRowDef,
+  MatRow,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+} from '@angular/material/table';
+import {
+  CardTeam,
+  SystemPermission,
+  Team,
+} from 'src/app/generated/blueprint.api';
 import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -22,12 +47,32 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatCheckbox } from '@angular/material/checkbox';
 
 @Component({
-    selector: 'app-card-teams',
-    templateUrl: './card-teams.component.html',
-    styleUrls: ['./card-teams.component.scss'],
-    imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatTable, MatSort, MatColumnDef, MatCellDef, MatCell, MatRowDef, MatRow, MatCard, MatProgressSpinner, MatHeaderCellDef, MatHeaderCell, MatCheckbox, MatHeaderRowDef, MatHeaderRow]
+  selector: 'app-card-teams',
+  templateUrl: './card-teams.component.html',
+  styleUrls: ['./card-teams.component.scss'],
+  imports: [
+    MatIcon,
+    MatFormField,
+    MatInput,
+    FormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatTable,
+    MatSort,
+    MatColumnDef,
+    MatCellDef,
+    MatCell,
+    MatRowDef,
+    MatRow,
+    MatCard,
+    MatProgressSpinner,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCheckbox,
+    MatHeaderRowDef,
+    MatHeaderRow,
+  ],
 })
-
 export class CardTeamsComponent implements OnDestroy, OnInit {
   private cardTeamDataService = inject(CardTeamDataService);
   private mselQuery = inject(MselQuery);
@@ -40,10 +85,16 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
   mselTeamList: Team[] = [];
   readonly teamsInput = viewChild<ElementRef<HTMLInputElement>>('teamsInput');
   readonly paginator = viewChild(MatPaginator);
-  readonly sort = viewChild(MatSort); teams: Team[];
+  readonly sort = viewChild(MatSort);
+  teams: Team[];
   cardTeams: CardTeam[];
   mselTeamColumns: string[] = ['name', 'id'];
-  cardTeamColumns: string[] = ['name', 'isShownOnWall', 'canPostArticles', 'id'];
+  cardTeamColumns: string[] = [
+    'name',
+    'isShownOnWall',
+    'canPostArticles',
+    'id',
+  ];
   displayedCardColumns: string[] = ['name', 'team'];
   teamDataSource = new MatTableDataSource<Team>(new Array<Team>());
   cardTeamDataSource = new MatTableDataSource<Team>(new Array<Team>());
@@ -54,17 +105,20 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
 
   constructor() {
     // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel) {
-        Object.assign(this.msel, msel);
-        this.mselTeamList = msel.teams;
-      }
-    });
+    (this.mselQuery.selectActive() as Observable<MselPlus>)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((msel) => {
+        if (msel) {
+          Object.assign(this.msel, msel);
+          this.mselTeamList = msel.teams;
+        }
+      });
   }
 
   ngOnInit() {
     // Load permissions and trigger change detection when loaded
-    this.permissionDataService.load()
+    this.permissionDataService
+      .load()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
@@ -74,22 +128,30 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
     this.pageEvent = new PageEvent();
     this.pageEvent.pageIndex = 0;
     this.pageEvent.pageSize = this.defaultPageSize;
-    this.cardTeamDataService.cardTeams.pipe(takeUntil(this.unsubscribe$)).subscribe(cardTeams => {
-      this.cardTeams = cardTeams ?
-        cardTeams
-          .filter(et => et.cardId === this.cardId())
-          .sort((a, b) => {
-            if (this.getTeamShortName(a.teamId).toLowerCase() < this.getTeamShortName(b.teamId).toLowerCase()) {
-              return -1;
-            } else if (this.getTeamShortName(a.teamId).toLowerCase() > this.getTeamShortName(b.teamId).toLowerCase()) {
-              return 1;
-            } else {
-              return 0;
-            };
-          }) :
-        new Array<CardTeam>();
-      this.setDataSources();
-    });
+    this.cardTeamDataService.cardTeams
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((cardTeams) => {
+        this.cardTeams = cardTeams
+          ? cardTeams
+              .filter((et) => et.cardId === this.cardId())
+              .sort((a, b) => {
+                if (
+                  this.getTeamShortName(a.teamId).toLowerCase() <
+                  this.getTeamShortName(b.teamId).toLowerCase()
+                ) {
+                  return -1;
+                } else if (
+                  this.getTeamShortName(a.teamId).toLowerCase() >
+                  this.getTeamShortName(b.teamId).toLowerCase()
+                ) {
+                  return 1;
+                } else {
+                  return 0;
+                }
+              })
+          : new Array<CardTeam>();
+        this.setDataSources();
+      });
   }
 
   applyFilter(filterValue: string) {
@@ -107,17 +169,18 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
     this.cardTeamDataSource.data = this.cardTeams;
     let mselTeams = new Array<Team>();
     if (this.mselTeamList) {
-      mselTeams = this.mselTeamList.filter(mt => !this.cardTeams.some(ct => ct.teamId === mt.id));
+      mselTeams = this.mselTeamList.filter(
+        (mt) => !this.cardTeams.some((ct) => ct.teamId === mt.id),
+      );
     }
     this.teamDataSource = new MatTableDataSource(mselTeams);
     this.teamDataSource.sort = this.sort();
   }
 
   getTeamShortName(teamId: string) {
-    const team = this.mselTeamList.find(t => t.id === teamId);
+    const team = this.mselTeamList.find((t) => t.id === teamId);
     return team ? team.shortName : teamId;
   }
-
 
   addTeamToCard(team: Team): void {
     this.cardTeamDataService.addTeamToCard(this.cardId(), team);
@@ -150,13 +213,14 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
   }
 
   canEditMsel(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId(), '').editor;
+    return (
+      this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
+      this.msel.hasRole(this.loggedInUserId(), '').editor
+    );
   }
 
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
   }
-
 }

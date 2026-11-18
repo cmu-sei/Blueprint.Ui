@@ -14,7 +14,15 @@ const testUserMsel = extraConfig.testUserMsel;
 
 // pull proxy from settings file
 if (extraConfig.proxySettings.port) {
-  test.use({proxy: {server: 'http:// ' + extraConfig.proxySettings.host + ':' + extraConfig.proxySettings.port}});
+  test.use({
+    proxy: {
+      server:
+        'http:// ' +
+        extraConfig.proxySettings.host +
+        ':' +
+        extraConfig.proxySettings.port,
+    },
+  });
 }
 
 // ===================== Clear Test Data ======================
@@ -30,7 +38,7 @@ test('clear blueprint test data', async ({ page }) => {
 
   // Verify gone
   try {
-    await page.waitForSelector('text=' + testMselTemplate, {timeout: 500});
+    await page.waitForSelector('text=' + testMselTemplate, { timeout: 500 });
   } catch (error) {
     console.log('Specified MSEL has been removed.');
   }
@@ -42,7 +50,7 @@ test('clear blueprint test data', async ({ page }) => {
 
   // Verify gone
   try {
-    await page.waitForSelector('text=' + testPushMsel, {timeout: 500});
+    await page.waitForSelector('text=' + testPushMsel, { timeout: 500 });
   } catch (error) {
     console.log('Specified MSEL has been removed.');
   }
@@ -54,12 +62,11 @@ test('clear blueprint test data', async ({ page }) => {
 
   // Verify gone
   try {
-    await page.waitForSelector('text=' + testUserMsel, {timeout: 500});
+    await page.waitForSelector('text=' + testUserMsel, { timeout: 500 });
   } catch (error) {
     console.log('Specified MSEL has been removed.');
   }
 
   await page.waitForTimeout(5 * 1000);
   console.log(test.info().title + ' complete');
-
 });

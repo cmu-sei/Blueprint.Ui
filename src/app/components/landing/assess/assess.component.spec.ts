@@ -1,14 +1,19 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Component, input, output } from '@angular/core';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { Component, input, output, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { screen } from '@testing-library/angular';
 import { Observable, of, throwError } from 'rxjs';
-import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
+import {
+  ComnAuthService,
+  ComnSettingsService,
+  CrucibleThemeService,
+} from '@cmusei/crucible-common';
+import { FakeImage } from 'src/app/test-utils/fake-image';
 import {
   Msel,
   MselCompetency,
@@ -38,7 +43,12 @@ class TopbarStub {
 }
 
 const ME = 'user-me';
-const msel = (id: string, name: string, roles: MselRole[], extra: Partial<Msel> = {}): Msel => ({
+const msel = (
+  id: string,
+  name: string,
+  roles: MselRole[],
+  extra: Partial<Msel> = {},
+): Msel => ({
   id,
   name,
   status: MselItemStatus.Deployed,
@@ -46,10 +56,16 @@ const msel = (id: string, name: string, roles: MselRole[], extra: Partial<Msel> 
   ...extra,
 });
 const ALPHA = msel('msel-1', 'Exercise Alpha', [MselRole.Owner]);
-const BRAVO = msel('msel-2', 'Exercise Bravo', [MselRole.Viewer, MselRole.Evaluator]);
+const BRAVO = msel('msel-2', 'Exercise Bravo', [
+  MselRole.Viewer,
+  MselRole.Evaluator,
+]);
 const CHARLIE = msel('msel-3', 'Exercise Charlie', [MselRole.Viewer]);
-const DELTA = msel('msel-4', 'Exercise Delta', [MselRole.Owner], { status: MselItemStatus.Approved });
-const competencies = (n: number): MselCompetency[] => Array.from({ length: n }, (_, i) => ({ competencyId: `c-${i}` }));
+const DELTA = msel('msel-4', 'Exercise Delta', [MselRole.Owner], {
+  status: MselItemStatus.Approved,
+});
+const competencies = (n: number): MselCompetency[] =>
+  Array.from({ length: n }, (_, i) => ({ competencyId: `c-${i}` }));
 
 async function renderAssess(
   overrides: {
@@ -58,14 +74,22 @@ async function renderAssess(
     permissionsFail?: boolean;
     permissions?: SystemPermission[];
     competencies?: (mselId: string) => Observable<MselCompetency[]>;
+    background?: string;
   } = {},
 ) {
-  const { msels = [ALPHA, BRAVO, CHARLIE, DELTA], permissions = [] } = overrides;
+  const { msels = [ALPHA, BRAVO, CHARLIE, DELTA], permissions = [] } =
+    overrides;
   const mselApi = {
-    getMyMsels: vi.fn(() => (overrides.mselsFail ? throwError(() => new Error('msels down')) : of(structuredClone(msels)))),
+    getMyMsels: vi.fn(() =>
+      overrides.mselsFail
+        ? throwError(() => new Error('msels down'))
+        : of(structuredClone(msels)),
+    ),
   } satisfies ApiStub<MselService>;
   const competencyApi = {
-    getMselCompetencies: vi.fn(overrides.competencies ?? (() => of(competencies(2)))),
+    getMselCompetencies: vi.fn(
+      overrides.competencies ?? (() => of(competencies(2))),
+    ),
   } satisfies ApiStub<MselCompetencyService>;
   const userApi = {
     getUsers: vi.fn(() => of<User[]>([])),
@@ -77,13 +101,22 @@ async function renderAssess(
   // over the stubbed endpoint, without priming it.
   const permissionApis = permissionApiStubs({ system: permissions });
   if (overrides.permissionsFail) {
-    permissionApis.systemPermissions.getMySystemPermissions.mockImplementation(() => throwError(() => new Error('permissions down')));
+    permissionApis.systemPermissions.getMySystemPermissions.mockImplementation(
+      () => throwError(() => new Error('permissions down')),
+    );
   }
   const rendered = await renderComponent(AssessComponent, {
     imports: [MatButtonModule, MatIconModule, MatProgressSpinnerModule],
     childStubs: [{ replace: TopbarComponent, with: TopbarStub }],
     providers: [
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: CrucibleThemeService,
+        useValue: { isDarkMode: signal(false) },
+      },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: MselService, useValue: mselApi },
       { provide: MselCompetencyService, useValue: competencyApi },
@@ -91,11 +124,19 @@ async function renderAssess(
       { provide: UserService, useValue: userApi },
       {
         provide: ComnSettingsService,
-        useValue: { settings: { AppTopBarImage: '/assets/img/logo-white.png' } } satisfies Pick<ComnSettingsService, 'settings'>,
+        useValue: {
+          settings: {
+            AppTopBarImage: '/assets/img/logo-white.png',
+            AppLandingBackgroundImage: overrides.background,
+          },
+        } satisfies Pick<ComnSettingsService, 'settings'>,
       },
       {
         provide: ComnAuthService,
-        useValue: { user$: of({ profile: { sub: ME, name: 'Me' } }) } as Pick<ComnAuthService, 'user$'>,
+        useValue: { user$: of({ profile: { sub: ME, name: 'Me' } }) } as Pick<
+          ComnAuthService,
+          'user$'
+        >,
       },
     ],
   });
@@ -104,7 +145,9 @@ async function renderAssess(
 }
 
 const assessLinks = () =>
-  screen.queryAllByRole('link', { name: 'Assess' }).map((link) => [link.getAttribute('href'), link.getAttribute('title')]);
+  screen
+    .queryAllByRole('link', { name: 'Assess' })
+    .map((link) => [link.getAttribute('href'), link.getAttribute('title')]);
 
 describe('AssessComponent', () => {
   // jsdom has no object URLs.
@@ -136,10 +179,19 @@ describe('AssessComponent', () => {
    * Data: the default list plus a deployed template (excluded).
    */
   it('lists every running event for a system admin', async () => {
-    const template = msel('msel-5', 'Template Echo', [MselRole.Owner], { isTemplate: true });
-    await renderAssess({ msels: [ALPHA, BRAVO, CHARLIE, DELTA, template], permissions: [SystemPermission.CreateMsels] });
+    const template = msel('msel-5', 'Template Echo', [MselRole.Owner], {
+      isTemplate: true,
+    });
+    await renderAssess({
+      msels: [ALPHA, BRAVO, CHARLIE, DELTA, template],
+      permissions: [SystemPermission.CreateMsels],
+    });
 
-    expect(assessLinks().map(([href]) => href)).toEqual(['/assess?msel=msel-1', '/assess?msel=msel-2', '/assess?msel=msel-3']);
+    expect(assessLinks().map(([href]) => href)).toEqual([
+      '/assess?msel=msel-1',
+      '/assess?msel=msel-2',
+      '/assess?msel=msel-3',
+    ]);
   });
 
   /**
@@ -148,11 +200,15 @@ describe('AssessComponent', () => {
    * Data: Alpha has 0 competencies, Bravo has 1.
    */
   it('still opens an event with no competencies', async () => {
-    await renderAssess({ competencies: (id) => of(competencies(id === 'msel-1' ? 0 : 1)) });
+    await renderAssess({
+      competencies: (id) => of(competencies(id === 'msel-1' ? 0 : 1)),
+    });
 
     expect(screen.getByText('No competencies to assess')).toBeInTheDocument();
     expect(screen.getByText('1 competency')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Assess' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Assess' }),
+    ).not.toBeInTheDocument();
     expect(assessLinks()).toEqual([
       ['/assess?msel=msel-1', 'Assess Exercise Alpha'],
       ['/assess?msel=msel-2', 'Assess Exercise Bravo'],
@@ -165,10 +221,17 @@ describe('AssessComponent', () => {
    * Data: Alpha only; the count request fails.
    */
   it('keeps the card usable when the count fails', async () => {
-    const { container } = await renderAssess({ msels: [ALPHA], competencies: () => throwError(() => new Error('boom')) });
+    const { container } = await renderAssess({
+      msels: [ALPHA],
+      competencies: () => throwError(() => new Error('boom')),
+    });
 
-    expect(assessLinks()).toEqual([['/assess?msel=msel-1', 'Assess Exercise Alpha']]);
-    expect(container.querySelector('.card-competencies')?.textContent.trim()).toBe('');
+    expect(assessLinks()).toEqual([
+      ['/assess?msel=msel-1', 'Assess Exercise Alpha'],
+    ]);
+    expect(
+      container.querySelector('.card-competencies')?.textContent.trim(),
+    ).toBe('');
   });
 
   /**
@@ -206,7 +269,54 @@ describe('AssessComponent', () => {
   it('shows the empty state when there is nothing to assess', async () => {
     const { competencyApi } = await renderAssess({ msels: [CHARLIE, DELTA] });
 
-    expect(screen.getByText('No running events available to assess')).toBeInTheDocument();
+    expect(
+      screen.getByText('No running events available to assess'),
+    ).toBeInTheDocument();
     expect(competencyApi.getMselCompetencies).not.toHaveBeenCalled();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    FakeImage.last = undefined;
+  });
+
+  // crucible-common remembers loaded images, so each test uses its own URL.
+
+  /**
+   * Verifies: the page shows the background image named in settings once it loads.
+   * Interacts with: ComnSettingsService.settings (stub), a stubbed Image, crucibleLandingBackground.
+   * Data: AppLandingBackgroundImage set to a relative asset URL; the image load event fires.
+   */
+  it('shows the landing background once the image loads', async () => {
+    vi.stubGlobal('Image', FakeImage);
+    const { fixture, container } = await renderAssess({
+      background: '/assets/local/assess-loads.jpg',
+    });
+
+    const page = container.querySelector('.join-page') as HTMLElement;
+    expect(FakeImage.last?.src).toBe('/assets/local/assess-loads.jpg');
+    expect(page.classList.contains('crucible-landing-background')).toBe(false);
+
+    FakeImage.last!.onload!();
+    fixture.detectChanges();
+
+    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe(
+      'url("/assets/local/assess-loads.jpg")',
+    );
+    expect(page.classList.contains('crucible-landing-background')).toBe(true);
+  });
+
+  /**
+   * Verifies: without the setting, no image is requested and the normal page background is kept.
+   * Interacts with: ComnSettingsService.settings (stub), a stubbed Image, crucibleLandingBackground.
+   * Data: AppLandingBackgroundImage unset.
+   */
+  it('keeps the normal background without the setting', async () => {
+    vi.stubGlobal('Image', FakeImage);
+    const { container } = await renderAssess();
+
+    expect(FakeImage.last).toBeUndefined();
+    const page = container.querySelector('.join-page') as HTMLElement;
+    expect(page.classList.contains('crucible-landing-background')).toBe(false);
   });
 });

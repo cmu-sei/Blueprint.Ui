@@ -5,10 +5,7 @@
 */
 
 import { Order, Query, QueryConfig, QueryEntity } from '@datorama/akita';
-import {
-  OrganizationState,
-  OrganizationStore,
-} from './organization.store';
+import { OrganizationState, OrganizationStore } from './organization.store';
 import { Organization } from 'src/app/generated/blueprint.api';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -27,7 +24,7 @@ export class OrganizationQuery extends QueryEntity<OrganizationState> {
     const store = inject(OrganizationStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

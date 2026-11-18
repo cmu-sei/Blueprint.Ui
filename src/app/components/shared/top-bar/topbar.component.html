@@ -3,11 +3,19 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<mat-toolbar class="toolbar" role="banner" [style.backgroundColor]="'var(--crucible-topbar-background)'"
-  [style.color]="'var(--crucible-topbar-text)'">
+<mat-toolbar
+  class="toolbar"
+  role="banner"
+  [style.backgroundColor]="'var(--crucible-topbar-background)'"
+  [style.color]="'var(--crucible-topbar-text)'"
+>
   <mat-toolbar-row>
     <span class="margin-auto">
-      <a mat-icon-button style="outline: none; background-color: var(--crucible-topbar-text);" [routerLink]="['/']">
+      <a
+        mat-icon-button
+        style="outline: none; background-color: var(--crucible-topbar-text)"
+        [routerLink]="['/']"
+      >
         <mat-icon svgIcon="crucible-icon-blueprint" />
       </a>
     </span>
@@ -19,56 +27,77 @@ project root for license information or contact permission@sei.cmu.edu for full 
     -->
     <h1 class="view-text">{{ title() }}</h1>
     @if (teams && team && teams.length > 0) {
-    <div class="team-text">Team:</div>
-    <b class="team-text">{{ team.name }}</b>
-    @if (teams.length > 1) {
-    <div>
-      <button mat-button [matMenuTriggerFor]="teamMenu" style="outline: none;">
-        <mat-icon class="icon-color" svgIcon="ic_expand_more" />
-      </button>
-      <mat-menu #teamMenu="matMenu" [overlapTrigger]="false">
-        @for (val of teams; track val) {
-        <button mat-menu-item (click)="setTeamFn(val.id)">
-          {{ val.name }}
-        </button>
-        }
-      </mat-menu>
-    </div>
-    }
+      <div class="team-text">Team:</div>
+      <b class="team-text">{{ team.name }}</b>
+      @if (teams.length > 1) {
+        <div>
+          <button
+            mat-button
+            [matMenuTriggerFor]="teamMenu"
+            style="outline: none"
+          >
+            <mat-icon class="icon-color" svgIcon="ic_expand_more" />
+          </button>
+          <mat-menu #teamMenu="matMenu" [overlapTrigger]="false">
+            @for (val of teams; track val) {
+              <button mat-menu-item (click)="setTeamFn(val.id)">
+                {{ val.name }}
+              </button>
+            }
+          </mat-menu>
+        </div>
+      }
     }
     <app-presence-bar />
     <span class="spacer"></span>
     @if (currentUser$ | async; as currentUser) {
-    <div class="options-text">
-      <!--
+      <div class="options-text">
+        <!--
         The name is hidden on narrow viewports (see the scss), where only the chevron is left, so
         the accessible name is stated here instead of being left to the button's visible text.
         matMenuTriggerFor already contributes the "has popup" part of the announcement.
       -->
-      <button mat-button class="menu-trigger" [matMenuTriggerFor]="menu" style="outline: none;"
-        [attr.aria-label]="currentUser.name">
-        <strong class="user-name">{{ currentUser.name }}</strong>
-        <mat-icon aria-hidden="true" class="menu-trigger" fontIcon="mdi-chevron-down" />
-      </button>
-      <mat-menu #menu="matMenu" [overlapTrigger]="false">
-        @if (topbarView() === TopbarView.BLUEPRINT_ADMIN) {
-        <button [routerLink]="['/']" mat-menu-item>
-          Exit Administration
+        <button
+          mat-button
+          class="menu-trigger"
+          [matMenuTriggerFor]="menu"
+          style="outline: none"
+          [attr.aria-label]="currentUser.name"
+        >
+          <strong class="user-name">{{ currentUser.name }}</strong>
+          <mat-icon
+            aria-hidden="true"
+            class="menu-trigger"
+            fontIcon="mdi-chevron-down"
+          />
         </button>
-        }
-        @if (topbarView() !== TopbarView.BLUEPRINT_ADMIN && canViewAdmin) {
-        <button [routerLink]="['/admin']" [queryParams]="{returnUrl: currentUrl}" mat-menu-item>
-          Administration
-        </button>
-        }
-        <button mat-menu-item (click)="logout()">Logout</button>
-        <mat-slide-toggle class="mat-menu-item" color="primary"
-          [checked]="(theme$ | async) === 'dark-theme' ? true : false" (click)="$event.stopPropagation()"
-          (change)="themeFn($event)">
-          Dark Theme
-        </mat-slide-toggle>
-      </mat-menu>
-    </div>
+        <mat-menu #menu="matMenu" [overlapTrigger]="false">
+          @if (topbarView() === TopbarView.BLUEPRINT_ADMIN) {
+            <button [routerLink]="['/']" mat-menu-item>
+              Exit Administration
+            </button>
+          }
+          @if (topbarView() !== TopbarView.BLUEPRINT_ADMIN && canViewAdmin) {
+            <button
+              [routerLink]="['/admin']"
+              [queryParams]="{ returnUrl: currentUrl }"
+              mat-menu-item
+            >
+              Administration
+            </button>
+          }
+          <button mat-menu-item (click)="logout()">Logout</button>
+          <mat-slide-toggle
+            class="mat-menu-item"
+            color="primary"
+            [checked]="(theme$ | async) === 'dark-theme' ? true : false"
+            (click)="$event.stopPropagation()"
+            (change)="themeFn($event)"
+          >
+            Dark Theme
+          </mat-slide-toggle>
+        </mat-menu>
+      </div>
     }
   </mat-toolbar-row>
 </mat-toolbar>

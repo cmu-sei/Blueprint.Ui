@@ -21,7 +21,10 @@ import {
 import { EventDetailPageComponent } from './event-detail-page.component';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
-import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-load-api-stubs';
+import {
+  mselLoadApiProviders,
+  mselLoadApiStubs,
+} from 'src/app/test-utils/msel-load-api-stubs';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { permissionDataProviders } from 'src/app/test-utils/mock-permission-data.service';
 import { TopbarComponent } from '../shared/top-bar/topbar.component';
@@ -53,35 +56,79 @@ class DataValueStub {
   readonly userOptions = input<unknown[]>(undefined);
 }
 
-const MSEL: Msel = { id: 'msel-1', name: 'Exercise Alpha', teams: [], units: [], userMselRoles: [] };
+const MSEL: Msel = {
+  id: 'msel-1',
+  name: 'Exercise Alpha',
+  teams: [],
+  units: [],
+  userMselRoles: [],
+};
 const FIELDS: DataField[] = [
-  { id: 'df-title', mselId: 'msel-1', name: 'Title', dataType: DataFieldType.String, displayOrder: 1 },
-  { id: 'df-owner', mselId: 'msel-1', name: 'Owner', dataType: DataFieldType.User, displayOrder: 2 },
+  {
+    id: 'df-title',
+    mselId: 'msel-1',
+    name: 'Title',
+    dataType: DataFieldType.String,
+    displayOrder: 1,
+  },
+  {
+    id: 'df-owner',
+    mselId: 'msel-1',
+    name: 'Owner',
+    dataType: DataFieldType.User,
+    displayOrder: 2,
+  },
 ];
 const EVENT: ScenarioEvent = { id: 'se-1', mselId: 'msel-1', deltaSeconds: 0 };
 const VALUES: DataValue[] = [
-  { id: 'dv-1', scenarioEventId: 'se-1', dataFieldId: 'df-title', value: 'Phishing wave' },
-  { id: 'dv-2', scenarioEventId: 'se-1', dataFieldId: 'df-owner', value: 'user-a' },
+  {
+    id: 'dv-1',
+    scenarioEventId: 'se-1',
+    dataFieldId: 'df-title',
+    value: 'Phishing wave',
+  },
+  {
+    id: 'dv-2',
+    scenarioEventId: 'se-1',
+    dataFieldId: 'df-owner',
+    value: 'user-a',
+  },
 ];
 
-async function renderEventDetail(options: { msel?: Msel; providers?: Provider[] } = {}) {
+async function renderEventDetail(
+  options: { msel?: Msel; providers?: Provider[] } = {},
+) {
   const { msel = MSEL, providers = [] } = options;
-  const apis = mselLoadApiStubs({ msel, dataFields: FIELDS, dataValues: VALUES, scenarioEvents: [EVENT] });
-  const { route } = activatedRouteStub({ msel: 'msel-1', scenarioEvent: 'se-1' });
+  const apis = mselLoadApiStubs({
+    msel,
+    dataFields: FIELDS,
+    dataValues: VALUES,
+    scenarioEvents: [EVENT],
+  });
+  const { route } = activatedRouteStub({
+    msel: 'msel-1',
+    scenarioEvent: 'se-1',
+  });
   const rendered = await renderComponent(EventDetailPageComponent, {
     imports: [MatButtonModule, MatIconModule],
     childStubs: [
       { replace: TopbarComponent, with: TopbarStub },
       { replace: DataValueComponent, with: DataValueStub },
     ],
-    providers: [...mselLoadApiProviders(apis), { provide: ActivatedRoute, useValue: route }, ...providers],
+    providers: [
+      ...mselLoadApiProviders(apis),
+      { provide: ActivatedRoute, useValue: route },
+      ...providers,
+    ],
     inputs: { loggedInUserId: 'user-me' },
   });
   return { ...rendered, apis };
 }
 
 function values(fixture: ComponentFixture<unknown>): DataValueStub[] {
-  return fixture.debugElement.queryAll(By.directive(DataValueStub)).map((d) => d.componentInstance);
+  return fixture.debugElement
+    .queryAll(By.directive(DataValueStub))
+    .map((d) => d.componentInstance);
 }
 
 describe('EventDetailPageComponent', () => {
@@ -96,11 +143,15 @@ describe('EventDetailPageComponent', () => {
     expect(apis.msel.getMsel).toHaveBeenCalledWith('msel-1');
     expect(apis.scenarioEvent.getScenarioEvent).toHaveBeenCalledWith('se-1');
     // A text query: jsdom's CSS engine throws computing this page's styles for a role query.
-    expect(screen.getByText('Exercise Alpha Event Details', { selector: 'h2' })).toBeInTheDocument();
-    expect(values(fixture).map((v) => [v.dataField().name, v.value()])).toEqual([
-      ['Title', 'Phishing wave'],
-      ['Owner', 'user-a'],
-    ]);
+    expect(
+      screen.getByText('Exercise Alpha Event Details', { selector: 'h2' }),
+    ).toBeInTheDocument();
+    expect(values(fixture).map((v) => [v.dataField().name, v.value()])).toEqual(
+      [
+        ['Title', 'Phishing wave'],
+        ['Owner', 'user-a'],
+      ],
+    );
   });
 
   /**
@@ -129,15 +180,31 @@ describe('EventDetailPageComponent', () => {
       msel: {
         ...MSEL,
         userMselRoles: [
-          { id: 'umr-1', userId: 'user-me', mselId: 'msel-1', role: MselRole.Editor },
-          { id: 'umr-2', userId: 'user-me', mselId: 'msel-1', role: MselRole.Approver },
+          {
+            id: 'umr-1',
+            userId: 'user-me',
+            mselId: 'msel-1',
+            role: MselRole.Editor,
+          },
+          {
+            id: 'umr-2',
+            userId: 'user-me',
+            mselId: 'msel-1',
+            role: MselRole.Approver,
+          },
         ],
       },
-      providers: permissionDataProviders({ system: [SystemPermission.EditMsels] }),
+      providers: permissionDataProviders({
+        system: [SystemPermission.EditMsels],
+      }),
     });
 
     // The user's system permission is loaded in the app state the page runs in.
-    expect(TestBed.inject(PermissionDataService).hasPermission(SystemPermission.EditMsels)).toBe(true);
+    expect(
+      TestBed.inject(PermissionDataService).hasPermission(
+        SystemPermission.EditMsels,
+      ),
+    ).toBe(true);
     expect(values(fixture)).toHaveLength(2);
     for (const value of values(fixture)) {
       expect(value.canEdit()).toBe(false);
@@ -164,7 +231,11 @@ describe('EventDetailPageComponent', () => {
    */
   it("passes the MSEL's Gallery source types and statuses to the data values", async () => {
     const { fixture } = await renderEventDetail({
-      msel: { ...MSEL, gallerySourceTypes: ['News', 'Social'], galleryItemStatuses: ['Green', 'Red'] },
+      msel: {
+        ...MSEL,
+        gallerySourceTypes: ['News', 'Social'],
+        galleryItemStatuses: ['Green', 'Red'],
+      },
     });
 
     expect(values(fixture)).toHaveLength(2);

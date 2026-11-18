@@ -24,7 +24,10 @@ import { MselStore } from './msel.store';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function msel(overrides: Partial<Msel> = {}): Msel {
   return {
@@ -75,8 +78,14 @@ function setup(queryParams: Record<string, string> = {}) {
   TestBed.configureTestingModule({
     providers: [
       { provide: MselService, useValue: mselApi },
-      { provide: ErrorService, useValue: { handleError } satisfies Pick<ErrorService, 'handleError'> },
-      { provide: Router, useValue: { navigate } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: ErrorService,
+        useValue: { handleError } satisfies Pick<ErrorService, 'handleError'>,
+      },
+      {
+        provide: Router,
+        useValue: { navigate } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -157,7 +166,7 @@ describe('MselDataService', () => {
      * Interacts with: MselService.getMyMsels (stub), real MselQuery.
      * Data: one MSEL, then an API error.
      */
-    it('loadMine stores the caller\'s MSELs and empties the store on failure', () => {
+    it("loadMine stores the caller's MSELs and empties the store on failure", () => {
       const { service, query, mselApi } = setup();
       mselApi.getMyMsels.mockReturnValueOnce(of([msel()]));
       mselApi.getMyMsels.mockReturnValueOnce(
@@ -380,18 +389,31 @@ describe('MselDataService', () => {
      * Data: msel-1 stored without roles; the endpoint fails with "boom".
      */
     it.each([
-      { method: 'addUserMselRole', endpoint: 'addUserMselRole', call: (s: MselDataService) => s.addUserMselRole('user-1', 'msel-1', MselRole.Editor) },
-      { method: 'removeUserMselRole', endpoint: 'removeUserMselRole', call: (s: MselDataService) => s.removeUserMselRole('user-1', 'msel-1', MselRole.Editor) },
-    ] as const)('a failed $method leaves the MSEL unchanged', ({ endpoint, call }) => {
-      const { service, query, mselApi } = setup();
-      service.updateStore(msel());
-      mselApi[endpoint].mockReturnValue(throwError(() => new Error('boom')));
+      {
+        method: 'addUserMselRole',
+        endpoint: 'addUserMselRole',
+        call: (s: MselDataService) =>
+          s.addUserMselRole('user-1', 'msel-1', MselRole.Editor),
+      },
+      {
+        method: 'removeUserMselRole',
+        endpoint: 'removeUserMselRole',
+        call: (s: MselDataService) =>
+          s.removeUserMselRole('user-1', 'msel-1', MselRole.Editor),
+      },
+    ] as const)(
+      'a failed $method leaves the MSEL unchanged',
+      ({ endpoint, call }) => {
+        const { service, query, mselApi } = setup();
+        service.updateStore(msel());
+        mselApi[endpoint].mockReturnValue(throwError(() => new Error('boom')));
 
-      call(service);
+        call(service);
 
-      expect(query.getEntity('msel-1').userMselRoles).toBeUndefined();
-      expect(query.getValue().loading).toBe(false);
-    });
+        expect(query.getEntity('msel-1').userMselRoles).toBeUndefined();
+        expect(query.getValue().loading).toBe(false);
+      },
+    );
   });
 
   describe('integrations', () => {
@@ -401,18 +423,31 @@ describe('MselDataService', () => {
      * Data: the push returns status Pushing, the pull returns status Pulling.
      */
     it.each([
-      { method: 'pushIntegrations', endpoint: 'pushIntegrations', status: MselItemStatus.Pushing, call: (s: MselDataService) => s.pushIntegrations('msel-1') },
-      { method: 'pullIntegrations', endpoint: 'pullIntegrations', status: MselItemStatus.Pulling, call: (s: MselDataService) => s.pullIntegrations('msel-1') },
-    ] as const)('$method stores the returned MSEL', ({ endpoint, status, call }) => {
-      const { service, query, mselApi } = setup();
-      service.updateStore(msel());
-      mselApi[endpoint].mockReturnValue(of(msel({ status })));
+      {
+        method: 'pushIntegrations',
+        endpoint: 'pushIntegrations',
+        status: MselItemStatus.Pushing,
+        call: (s: MselDataService) => s.pushIntegrations('msel-1'),
+      },
+      {
+        method: 'pullIntegrations',
+        endpoint: 'pullIntegrations',
+        status: MselItemStatus.Pulling,
+        call: (s: MselDataService) => s.pullIntegrations('msel-1'),
+      },
+    ] as const)(
+      '$method stores the returned MSEL',
+      ({ endpoint, status, call }) => {
+        const { service, query, mselApi } = setup();
+        service.updateStore(msel());
+        mselApi[endpoint].mockReturnValue(of(msel({ status })));
 
-      call(service);
+        call(service);
 
-      expect(mselApi[endpoint]).toHaveBeenCalledWith('msel-1');
-      expect(query.getEntity('msel-1').status).toBe(status);
-    });
+        expect(mselApi[endpoint]).toHaveBeenCalledWith('msel-1');
+        expect(query.getEntity('msel-1').status).toBe(status);
+      },
+    );
 
     /**
      * Verifies: a failed push, pull or cancel is reported through ErrorService and leaves loading cleared.
@@ -420,9 +455,21 @@ describe('MselDataService', () => {
      * Data: loading cleared first; the endpoint fails with its own error object.
      */
     it.each([
-      { method: 'pushIntegrations', endpoint: 'pushIntegrations', call: (s: MselDataService) => s.pushIntegrations('msel-1') },
-      { method: 'pullIntegrations', endpoint: 'pullIntegrations', call: (s: MselDataService) => s.pullIntegrations('msel-1') },
-      { method: 'cancelIntegrations', endpoint: 'cancelIntegrations', call: (s: MselDataService) => s.cancelIntegrations('msel-1') },
+      {
+        method: 'pushIntegrations',
+        endpoint: 'pushIntegrations',
+        call: (s: MselDataService) => s.pushIntegrations('msel-1'),
+      },
+      {
+        method: 'pullIntegrations',
+        endpoint: 'pullIntegrations',
+        call: (s: MselDataService) => s.pullIntegrations('msel-1'),
+      },
+      {
+        method: 'cancelIntegrations',
+        endpoint: 'cancelIntegrations',
+        call: (s: MselDataService) => s.cancelIntegrations('msel-1'),
+      },
     ] as const)('reports a failed $method', ({ method, endpoint, call }) => {
       const { service, query, store, mselApi, handleError } = setup();
       const failure = new Error(method);
@@ -482,7 +529,11 @@ describe('MselDataService', () => {
       const upload = file();
       mselApi.replaceWithXlsxFile.mockReturnValue(
         of(
-          { type: HttpEventType.UploadProgress, loaded: 50, total: 200 } satisfies HttpUploadProgressEvent,
+          {
+            type: HttpEventType.UploadProgress,
+            loaded: 50,
+            total: 200,
+          } satisfies HttpUploadProgressEvent,
           new HttpResponse({
             status: 200,
             body: msel({ name: 'Replaced' }),
@@ -573,7 +624,11 @@ describe('MselDataService', () => {
       const failure = new Error('bad json');
       mselApi.uploadJsonMsel.mockReturnValueOnce(
         of(
-          { type: HttpEventType.UploadProgress, loaded: 100, total: 100 } satisfies HttpUploadProgressEvent,
+          {
+            type: HttpEventType.UploadProgress,
+            loaded: 100,
+            total: 100,
+          } satisfies HttpUploadProgressEvent,
           new HttpResponse({ status: 200, body: msel({ id: 'msel-json' }) }),
         ),
       );
@@ -638,7 +693,11 @@ describe('MselDataService', () => {
       const { service, route } = setup({ mselmask: 'night' });
       service.updateStore(msel());
       service.updateStore(
-        msel({ id: 'msel-2', name: 'Exercise Bravo', description: 'Night shift' }),
+        msel({
+          id: 'msel-2',
+          name: 'Exercise Bravo',
+          description: 'Night shift',
+        }),
       );
       const emissions = recordEmissions(service.MselList);
 
@@ -674,13 +733,48 @@ describe('MselDataService', () => {
      * Data: MSEL msel-1, team team-1.
      */
     it.each([
-      { method: 'getMyJoinMsels', endpoint: 'getMyJoinMsels', args: [], call: (s: MselDataService) => s.getMyJoinMsels() },
-      { method: 'getMyLaunchMsels', endpoint: 'getMyLaunchMsels', args: [], call: (s: MselDataService) => s.getMyLaunchMsels() },
-      { method: 'getMyBuildMsels', endpoint: 'getMyMsels', args: [], call: (s: MselDataService) => s.getMyBuildMsels() },
-      { method: 'join', endpoint: 'joinMselByInvitation', args: ['msel-1', 'team-1'], call: (s: MselDataService) => s.join('msel-1', 'team-1') },
-      { method: 'launch', endpoint: 'launchMselByInvitation', args: ['msel-1', 'team-1'], call: (s: MselDataService) => s.launch('msel-1', 'team-1') },
-      { method: 'downloadXlsx', endpoint: 'downloadXlsx', args: ['msel-1'], call: (s: MselDataService) => s.downloadXlsx('msel-1') },
-      { method: 'downloadJson', endpoint: 'downloadJsonMsel', args: ['msel-1'], call: (s: MselDataService) => s.downloadJson('msel-1') },
+      {
+        method: 'getMyJoinMsels',
+        endpoint: 'getMyJoinMsels',
+        args: [],
+        call: (s: MselDataService) => s.getMyJoinMsels(),
+      },
+      {
+        method: 'getMyLaunchMsels',
+        endpoint: 'getMyLaunchMsels',
+        args: [],
+        call: (s: MselDataService) => s.getMyLaunchMsels(),
+      },
+      {
+        method: 'getMyBuildMsels',
+        endpoint: 'getMyMsels',
+        args: [],
+        call: (s: MselDataService) => s.getMyBuildMsels(),
+      },
+      {
+        method: 'join',
+        endpoint: 'joinMselByInvitation',
+        args: ['msel-1', 'team-1'],
+        call: (s: MselDataService) => s.join('msel-1', 'team-1'),
+      },
+      {
+        method: 'launch',
+        endpoint: 'launchMselByInvitation',
+        args: ['msel-1', 'team-1'],
+        call: (s: MselDataService) => s.launch('msel-1', 'team-1'),
+      },
+      {
+        method: 'downloadXlsx',
+        endpoint: 'downloadXlsx',
+        args: ['msel-1'],
+        call: (s: MselDataService) => s.downloadXlsx('msel-1'),
+      },
+      {
+        method: 'downloadJson',
+        endpoint: 'downloadJsonMsel',
+        args: ['msel-1'],
+        call: (s: MselDataService) => s.downloadJson('msel-1'),
+      },
     ] as const)('$method calls $endpoint', ({ endpoint, args, call }) => {
       const { service, query, mselApi } = setup();
 
@@ -698,19 +792,26 @@ describe('MselDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteMsel', call: (s: MselDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, mselApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    mselApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteMsel',
+      call: (s: MselDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, mselApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      mselApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

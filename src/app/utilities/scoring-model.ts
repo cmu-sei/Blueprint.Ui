@@ -13,7 +13,11 @@ import {
 } from 'src/app/generated/blueprint.api';
 
 /** The presets a MSEL's own scoring model can start from, named as CITE names the models they make. */
-export const SCORING_MODEL_PRESETS: { preset: ScoringModelPreset; label: string; hint: string }[] = [
+export const SCORING_MODEL_PRESETS: {
+  preset: ScoringModelPreset;
+  label: string;
+  hint: string;
+}[] = [
   {
     preset: ScoringModelPreset.QuestionsByMove,
     label: 'Questions by Move',
@@ -36,7 +40,10 @@ export const SCORING_MODEL_PRESETS: { preset: ScoringModelPreset; label: string;
   },
 ];
 
-export const RIGHT_SIDE_DISPLAYS: { value: CiteRightSideDisplay; label: string }[] = [
+export const RIGHT_SIDE_DISPLAYS: {
+  value: CiteRightSideDisplay;
+  label: string;
+}[] = [
   { value: CiteRightSideDisplay.ScoreSummary, label: 'Score Summary' },
   { value: CiteRightSideDisplay.HtmlBlock, label: 'HTML Block' },
   { value: CiteRightSideDisplay.EmbeddedUrl, label: 'Embedded URL' },
@@ -48,7 +55,9 @@ export const RIGHT_SIDE_DISPLAYS: { value: CiteRightSideDisplay; label: string }
  * Blueprint sends every int as a JSON string, so a model read from the API carries its display orders and move
  * numbers as strings. This gives them back as numbers, ordered as they are displayed, so they can be compared.
  */
-export function normalizeScoringModel(model: MselScoringModel): MselScoringModel {
+export function normalizeScoringModel(
+  model: MselScoringModel,
+): MselScoringModel {
   if (!model) {
     return model;
   }
@@ -62,7 +71,11 @@ export function normalizeScoringModel(model: MselScoringModel): MselScoringModel
         moveNumberLastDisplay: +c.moveNumberLastDisplay,
         scoringWeight: +c.scoringWeight,
         options: [...(c.options || [])]
-          .map((o) => ({ ...o, displayOrder: +o.displayOrder, value: +o.value }))
+          .map((o) => ({
+            ...o,
+            displayOrder: +o.displayOrder,
+            value: +o.value,
+          }))
           .sort((a, b) => a.displayOrder - b.displayOrder),
       }))
       .sort((a, b) => a.displayOrder - b.displayOrder),
@@ -70,13 +83,18 @@ export function normalizeScoringModel(model: MselScoringModel): MselScoringModel
 }
 
 /** The categories a team's scoresheet shows in a move, as CITE's scoresheet chooses them. */
-export function categoriesForMove(model: MselScoringModel, moveNumber: number): MselScoringCategory[] {
+export function categoriesForMove(
+  model: MselScoringModel,
+  moveNumber: number,
+): MselScoringCategory[] {
   const categories = model?.categories || [];
   if (!model?.displayScoringModelByMoveNumber) {
     return categories;
   }
   return categories.filter(
-    (c) => +c.moveNumberFirstDisplay <= +moveNumber && +moveNumber <= +c.moveNumberLastDisplay,
+    (c) =>
+      +c.moveNumberFirstDisplay <= +moveNumber &&
+      +moveNumber <= +c.moveNumberLastDisplay,
   );
 }
 
@@ -86,7 +104,9 @@ export function isQuestionCategory(category: MselScoringCategory): boolean {
 }
 
 /** The categories that would reach CITE with nothing on them to answer or choose. */
-export function categoriesWithoutOptions(model: MselScoringModel): MselScoringCategory[] {
+export function categoriesWithoutOptions(
+  model: MselScoringModel,
+): MselScoringCategory[] {
   return (model?.categories || []).filter((c) => !(c.options || []).length);
 }
 
@@ -115,7 +135,8 @@ export function isScoringModelValid(model: MselScoringModel): boolean {
       (c) =>
         hasNumber(c.moveNumberFirstDisplay) &&
         hasNumber(c.moveNumberLastDisplay) &&
-        (!model.displayScoringModelByMoveNumber || +c.moveNumberFirstDisplay <= +c.moveNumberLastDisplay) &&
+        (!model.displayScoringModelByMoveNumber ||
+          +c.moveNumberFirstDisplay <= +c.moveNumberLastDisplay) &&
         hasNumber(c.scoringWeight) &&
         (c.options || []).every((o) => hasNumber(o.value)),
     )
@@ -141,10 +162,17 @@ export function fillHiddenNumbers(category: MselScoringCategory): void {
 }
 
 /** "Every move", "Move 2" or "Moves 1 to 3", for a category's move range. */
-export function moveRangeLabel(category: MselScoringCategory, moveNumbers: number[]): string {
+export function moveRangeLabel(
+  category: MselScoringCategory,
+  moveNumbers: number[],
+): string {
   const first = +category.moveNumberFirstDisplay;
   const last = +category.moveNumberLastDisplay;
-  if (moveNumbers.length && first <= Math.min(...moveNumbers) && last >= Math.max(...moveNumbers)) {
+  if (
+    moveNumbers.length &&
+    first <= Math.min(...moveNumbers) &&
+    last >= Math.max(...moveNumbers)
+  ) {
     return 'Every move';
   }
   return first === last ? `Move ${first}` : `Moves ${first} to ${last}`;

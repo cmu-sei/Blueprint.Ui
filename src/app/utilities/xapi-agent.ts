@@ -17,7 +17,8 @@ export interface XApiAgent {
  */
 export function agentIdentityKey(agent: XApiAgent | undefined): string {
   if (!agent) return '';
-  if (agent.account?.name) return `account:${agent.account.homePage || ''}|${agent.account.name}`;
+  if (agent.account?.name)
+    return `account:${agent.account.homePage || ''}|${agent.account.name}`;
   if (agent.mbox) return `mbox:${agent.mbox}`;
   if (agent.mbox_sha1sum) return `sha1:${agent.mbox_sha1sum}`;
   if (agent.openid) return `openid:${agent.openid}`;
@@ -28,7 +29,13 @@ export function agentIdentityKey(agent: XApiAgent | undefined): string {
 /** What to call an agent: its name, account name, email address or OpenID; '' when it has none of them. */
 export function agentName(agent: XApiAgent | undefined): string {
   if (!agent) return '';
-  return agent.name || agent.account?.name || agent.mbox?.replace(/^mailto:/i, '') || agent.openid || '';
+  return (
+    agent.name ||
+    agent.account?.name ||
+    agent.mbox?.replace(/^mailto:/i, '') ||
+    agent.openid ||
+    ''
+  );
 }
 
 /**
@@ -37,7 +44,11 @@ export function agentName(agent: XApiAgent | undefined): string {
  * objectType is an Agent; a Group keeps its own name, so it is never anonymous.
  */
 export function isAnonymousActor(actor: XApiAgent | undefined): boolean {
-  return !!actor && (!actor.objectType || actor.objectType === 'Agent') && agentIdentityKey(actor) === '';
+  return (
+    !!actor &&
+    (!actor.objectType || actor.objectType === 'Agent') &&
+    agentIdentityKey(actor) === ''
+  );
 }
 
 /** The same for a statement's object, which is an Agent only when it says so (its objectType defaults to Activity). */

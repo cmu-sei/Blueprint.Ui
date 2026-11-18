@@ -6,11 +6,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { ComnSettingsService, ComnAuthQuery } from '@cmusei/crucible-common';
 import {
-  ComnSettingsService,
-  ComnAuthQuery,
-} from '@cmusei/crucible-common';
-import { Msel, MselRole, UserMselRole, SystemPermission } from 'src/app/generated/blueprint.api';
+  Msel,
+  MselRole,
+  UserMselRole,
+  SystemPermission,
+} from 'src/app/generated/blueprint.api';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataOptionDataService } from 'src/app/data/data-option/data-option-data.service';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
@@ -33,10 +35,16 @@ import { AssessComponent } from '../landing/assess/assess.component';
 import { AsyncPipe } from '@angular/common';
 
 @Component({
-    selector: 'app-assessor-page',
-    templateUrl: './assessor-page.component.html',
-    styleUrls: ['./assessor-page.component.scss'],
-    imports: [TopbarComponent, MatIcon, AssessorViewComponent, AssessComponent, AsyncPipe]
+  selector: 'app-assessor-page',
+  templateUrl: './assessor-page.component.html',
+  styleUrls: ['./assessor-page.component.scss'],
+  imports: [
+    TopbarComponent,
+    MatIcon,
+    AssessorViewComponent,
+    AssessComponent,
+    AsyncPipe,
+  ],
 })
 export class AssessorPageComponent implements OnDestroy, OnInit {
   private activatedRoute = inject(ActivatedRoute);
@@ -135,16 +143,22 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
       });
 
     // Load permissions and check system admin
-    this.permissionDataService.load()
+    this.permissionDataService
+      .load()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
-        this.isSystemAdmin = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
-        this.canEditMsels = this.permissionDataService.hasPermission(SystemPermission.EditMsels);
+        this.isSystemAdmin = this.permissionDataService.hasPermission(
+          SystemPermission.CreateMsels,
+        );
+        this.canEditMsels = this.permissionDataService.hasPermission(
+          SystemPermission.EditMsels,
+        );
         this.updateRolePermissions();
       });
 
     // Watch for user MSEL role changes
-    this.userMselRoleQuery.selectAll()
+    this.userMselRoleQuery
+      .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((roles) => {
         this.updateRolePermissions();
@@ -161,17 +175,28 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
 
     // Find the user's roles for this MSEL. A user can hold several, so all of
     // them count, not only the first.
-    const roles = this.userMselRoleQuery.getAll().filter(r =>
-      r.userId === this.loggedInUserId && r.mselId === this.selectedMselId
-    );
+    const roles = this.userMselRoleQuery
+      .getAll()
+      .filter(
+        (r) =>
+          r.userId === this.loggedInUserId && r.mselId === this.selectedMselId,
+      );
     this.userMselRole = roles[0] || null;
     this.canChooseAssessorFields = this.canChooseFields(roles);
 
     // The same rules as the Assess list, on the same MSEL record: viewing takes one of the viewing
     // roles, and checking a Checkbox field takes one that can assess, which a template never is.
     const msel = this.mselWithRoles(roles);
-    this.canViewAssessorPage = canViewAssessor(msel, this.loggedInUserId, this.isSystemAdmin);
-    this.canEditAssessorPage = canAssess(msel, this.loggedInUserId, this.isSystemAdmin);
+    this.canViewAssessorPage = canViewAssessor(
+      msel,
+      this.loggedInUserId,
+      this.isSystemAdmin,
+    );
+    this.canEditAssessorPage = canAssess(
+      msel,
+      this.loggedInUserId,
+      this.isSystemAdmin,
+    );
   }
 
   // The loaded MSEL carries only the roles the API sent with it; the role store has the rest.
@@ -188,9 +213,11 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
   // The API also wants an Owner or Editor to be in one of the MSEL's units,
   // which this page cannot see; those roles are given to unit members.
   private canChooseFields(roles: UserMselRole[]): boolean {
-    return this.canEditMsels ||
+    return (
+      this.canEditMsels ||
       (!!this.loggedInUserId && this.msel?.createdBy === this.loggedInUserId) ||
-      roles.some(r => r.role === MselRole.Owner || r.role === MselRole.Editor);
+      roles.some((r) => r.role === MselRole.Owner || r.role === MselRole.Editor)
+    );
   }
 
   goToUrl(url): void {

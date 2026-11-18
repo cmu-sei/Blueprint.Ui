@@ -12,15 +12,31 @@ import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
 import { CiteDutyEditDialogComponent } from './cite-duty-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const DUTY = { id: 'cd-1', mselId: 'msel-1', name: 'Incident commander', teamId: 'team-1', isTemplate: false };
+const DUTY = {
+  id: 'cd-1',
+  mselId: 'msel-1',
+  name: 'Incident commander',
+  teamId: 'team-1',
+  isTemplate: false,
+};
 
 function dialogData(overrides: Partial<typeof DUTY> = {}) {
-  return { citeDuty: { ...structuredClone(DUTY), ...overrides }, teamList: [{ id: 'team-1', mselId: 'msel-1', name: 'Blue Team', shortName: 'BLUE' }] };
+  return {
+    citeDuty: { ...structuredClone(DUTY), ...overrides },
+    teamList: [
+      { id: 'team-1', mselId: 'msel-1', name: 'Blue Team', shortName: 'BLUE' },
+    ],
+  };
 }
 
 async function renderCiteDutyEditDialog(data = dialogData()) {
   const rendered = await renderComponent(CiteDutyEditDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, MatFormFieldModule, MatInputModule, MatSelectModule],
+    imports: [
+      ...CRUCIBLE_DIALOG_IMPORTS,
+      MatFormFieldModule,
+      MatInputModule,
+      MatSelectModule,
+    ],
     declarations: [CiteDutyEditDialogComponent],
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
   });
@@ -28,7 +44,9 @@ async function renderCiteDutyEditDialog(data = dialogData()) {
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
   const results: unknown[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results };
 }
 
@@ -41,8 +59,12 @@ describe('CiteDutyEditDialogComponent', () => {
   it('renders with the default test providers', async () => {
     const { fixture } = await renderCiteDutyEditDialog();
 
-    expect(fixture.componentInstance).toBeInstanceOf(CiteDutyEditDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Edit CITE Duty' })).toBeInTheDocument();
+    expect(fixture.componentInstance).toBeInstanceOf(
+      CiteDutyEditDialogComponent,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Edit CITE Duty' }),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -80,7 +102,9 @@ describe('CiteDutyEditDialogComponent', () => {
    * Data: a duty with no name.
    */
   it('saves an incomplete duty when handleEditComplete is called', async () => {
-    const { fixture, data, results } = await renderCiteDutyEditDialog(dialogData({ name: '' }));
+    const { fixture, data, results } = await renderCiteDutyEditDialog(
+      dialogData({ name: '' }),
+    );
 
     fixture.componentInstance.handleEditComplete(true);
 

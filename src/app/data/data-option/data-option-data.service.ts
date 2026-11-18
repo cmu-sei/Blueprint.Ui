@@ -10,10 +10,7 @@ import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
-import {
-  DataOption,
-  DataOptionService,
-} from 'src/app/generated/blueprint.api';
+import { DataOption, DataOptionService } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 
@@ -31,7 +28,7 @@ export class DataOptionDataService {
   readonly filterControl = new UntypedFormControl();
   private _requestedDataOptionId: string;
   private _requestedDataOptionId$ = this.activatedRoute.queryParamMap.pipe(
-    map((params) => params.get('dataOptionId') || '')
+    map((params) => params.get('dataOptionId') || ''),
   );
   private filterTerm: Observable<string>;
   private sortColumn: Observable<string>;
@@ -45,7 +42,7 @@ export class DataOptionDataService {
     const activatedRoute = this.activatedRoute;
 
     this.filterTerm = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('dataOptionmask') || '')
+      map((params) => params.get('dataOptionmask') || ''),
     );
     this.filterControl.valueChanges.subscribe((term) => {
       this.router.navigate([], {
@@ -54,16 +51,16 @@ export class DataOptionDataService {
       });
     });
     this.sortColumn = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('sorton') || 'name')
+      map((params) => params.get('sorton') || 'name'),
     );
     this.sortIsAscending = activatedRoute.queryParamMap.pipe(
-      map((params) => (params.get('sortdir') || 'asc') === 'asc')
+      map((params) => (params.get('sortdir') || 'asc') === 'asc'),
     );
     this.pageSize = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pagesize') || '20', 10))
+      map((params) => parseInt(params.get('pagesize') || '20', 10)),
     );
     this.pageIndex = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pageindex') || '0', 10))
+      map((params) => parseInt(params.get('pageindex') || '0', 10)),
     );
     this.DataOptionList = combineLatest([
       this.dataOptionQuery.selectAll(),
@@ -84,18 +81,16 @@ export class DataOptionDataService {
         ]) =>
           items
             ? (items as DataOption[])
-              .sort((a: DataOption, b: DataOption) =>
-                this.sortDataOptions(a, b, sortColumn, sortIsAscending)
-              )
-              .filter(
-                (dataOption) =>
+                .sort((a: DataOption, b: DataOption) =>
+                  this.sortDataOptions(a, b, sortColumn, sortIsAscending),
+                )
+                .filter((dataOption) =>
                   dataOption.id
                     .toLowerCase()
-                    .includes(filterTerm.toLowerCase()
-                    )
-              )
-            : []
-      )
+                    .includes(filterTerm.toLowerCase()),
+                )
+            : [],
+      ),
     );
   }
 
@@ -107,7 +102,7 @@ export class DataOptionDataService {
         tap(() => {
           this.dataOptionStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (dataOptions) => {
@@ -115,7 +110,7 @@ export class DataOptionDataService {
         },
         (error) => {
           this.dataOptionStore.set([]);
-        }
+        },
       );
   }
 
@@ -127,14 +122,13 @@ export class DataOptionDataService {
         tap(() => {
           this.dataOptionStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (dataOptions) => {
           this.dataOptionStore.upsertMany(dataOptions);
         },
-        (error) => {
-        }
+        (error) => {},
       );
   }
 
@@ -146,7 +140,7 @@ export class DataOptionDataService {
         tap(() => {
           this.dataOptionStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.dataOptionStore.upsert(s.id, { ...s });
@@ -165,7 +159,7 @@ export class DataOptionDataService {
         tap(() => {
           this.dataOptionStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.dataOptionStore.add(s);
@@ -180,7 +174,7 @@ export class DataOptionDataService {
         tap(() => {
           this.dataOptionStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((n) => {
         this.updateStore(n);
@@ -212,7 +206,7 @@ export class DataOptionDataService {
     a: DataOption,
     b: DataOption,
     column: string,
-    isAsc: boolean
+    isAsc: boolean,
   ) {
     switch (column) {
       case 'dateCreated':

@@ -11,10 +11,7 @@ import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
-import {
-  DataField,
-  DataFieldService,
-} from 'src/app/generated/blueprint.api';
+import { DataField, DataFieldService } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
 import { HttpEventType, HttpResponse } from '@angular/common/http';
@@ -33,13 +30,14 @@ export class DataFieldDataService {
   readonly DataFieldList: Observable<DataField[]>;
   readonly filterControl = new UntypedFormControl();
   private _requestedDataFieldId$ = this.activatedRoute.queryParamMap.pipe(
-    map((params) => params.get('dataFieldId') || '')
+    map((params) => params.get('dataFieldId') || ''),
   );
   private filterTerm: Observable<string>;
   private sortColumn: Observable<string>;
   private sortIsAscending: Observable<boolean>;
   private _pageEvent: PageEvent = { length: 0, pageIndex: 0, pageSize: 10 };
-  readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent); private _requestedDataFieldId: string;
+  readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent);
+  private _requestedDataFieldId: string;
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
   public uploadProgress = new Subject<number>();
@@ -48,7 +46,7 @@ export class DataFieldDataService {
     const activatedRoute = this.activatedRoute;
 
     this.filterTerm = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('dataFieldmask') || '')
+      map((params) => params.get('dataFieldmask') || ''),
     );
     this.filterControl.valueChanges.subscribe((term) => {
       this.router.navigate([], {
@@ -57,16 +55,16 @@ export class DataFieldDataService {
       });
     });
     this.sortColumn = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('sorton') || 'name')
+      map((params) => params.get('sorton') || 'name'),
     );
     this.sortIsAscending = activatedRoute.queryParamMap.pipe(
-      map((params) => (params.get('sortdir') || 'asc') === 'asc')
+      map((params) => (params.get('sortdir') || 'asc') === 'asc'),
     );
     this.pageSize = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pagesize') || '20', 10))
+      map((params) => parseInt(params.get('pagesize') || '20', 10)),
     );
     this.pageIndex = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pageindex') || '0', 10))
+      map((params) => parseInt(params.get('pageindex') || '0', 10)),
     );
     this.DataFieldList = combineLatest([
       this.dataFieldQuery.selectAll(),
@@ -87,18 +85,14 @@ export class DataFieldDataService {
         ]) =>
           items
             ? (items as DataField[])
-              .sort((a: DataField, b: DataField) =>
-                this.sortDataFields(a, b, sortColumn, sortIsAscending)
-              )
-              .filter(
-                (dataField) =>
-                  dataField.id
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase()
-                    )
-              )
-            : []
-      )
+                .sort((a: DataField, b: DataField) =>
+                  this.sortDataFields(a, b, sortColumn, sortIsAscending),
+                )
+                .filter((dataField) =>
+                  dataField.id.toLowerCase().includes(filterTerm.toLowerCase()),
+                )
+            : [],
+      ),
     );
   }
 
@@ -110,13 +104,13 @@ export class DataFieldDataService {
         tap(() => {
           this.dataFieldTemplateStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (templates) => {
           this.dataFieldTemplateStore.upsertMany(templates);
         },
-        (error) => { }
+        (error) => {},
       );
   }
 
@@ -128,7 +122,7 @@ export class DataFieldDataService {
         tap(() => {
           this.dataFieldStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (dataFields) => {
@@ -136,7 +130,7 @@ export class DataFieldDataService {
         },
         (error) => {
           this.dataFieldStore.set([]);
-        }
+        },
       );
   }
 
@@ -148,13 +142,11 @@ export class DataFieldDataService {
         tap(() => {
           this.dataFieldStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
-      .subscribe(
-        (dataFields) => {
-          this.dataFieldStore.upsertMany(dataFields);
-        }
-      );
+      .subscribe((dataFields) => {
+        this.dataFieldStore.upsertMany(dataFields);
+      });
   }
 
   unload() {
@@ -170,7 +162,7 @@ export class DataFieldDataService {
           tap(() => {
             this.dataFieldTemplateStore.setLoading(false);
           }),
-          take(1)
+          take(1),
         )
         .subscribe((df) => {
           this.dataFieldTemplateStore.upsert(df.id, df);
@@ -183,7 +175,7 @@ export class DataFieldDataService {
           tap(() => {
             this.dataFieldStore.setLoading(false);
           }),
-          take(1)
+          take(1),
         )
         .subscribe((df) => {
           this.dataFieldStore.upsert(df.id, df);
@@ -200,7 +192,7 @@ export class DataFieldDataService {
           tap(() => {
             this.dataFieldTemplateStore.setLoading(false);
           }),
-          take(1)
+          take(1),
         )
         .subscribe((df) => {
           this.dataFieldTemplateStore.upsert(df.id, df);
@@ -213,7 +205,7 @@ export class DataFieldDataService {
           tap(() => {
             this.dataFieldStore.setLoading(false);
           }),
-          take(1)
+          take(1),
         )
         .subscribe((df) => {
           this.dataFieldStore.upsert(df.id, df);
@@ -242,7 +234,7 @@ export class DataFieldDataService {
         (event: any) => {
           if (event.type === HttpEventType.UploadProgress) {
             const uploadProgress = Math.round(
-              (100 * event.loaded) / event.total
+              (100 * event.loaded) / event.total,
             );
             this.uploadProgress.next(uploadProgress);
           } else if (event instanceof HttpResponse) {
@@ -257,7 +249,7 @@ export class DataFieldDataService {
         (error) => {
           this.dataFieldTemplateStore.setLoading(false);
           this.uploadProgress.next(0);
-        }
+        },
       );
   }
 
@@ -282,7 +274,7 @@ export class DataFieldDataService {
     a: DataField,
     b: DataField,
     column: string,
-    isAsc: boolean
+    isAsc: boolean,
   ) {
     switch (column) {
       case 'dateCreated':

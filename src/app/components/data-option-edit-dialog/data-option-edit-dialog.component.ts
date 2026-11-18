@@ -4,25 +4,39 @@
 
 import { Component, inject, output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
 import { MatFormField, MatLabel, MatInput } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 
 @Component({
-    selector: 'app-data-option-edit-dialog',
-    templateUrl: './data-option-edit-dialog.component.html',
-    styleUrls: ['./data-option-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule]
+  selector: 'app-data-option-edit-dialog',
+  templateUrl: './data-option-edit-dialog.component.html',
+  styleUrls: ['./data-option-edit-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    FormsModule,
+  ],
 })
-
 export class DataOptionEditDialogComponent {
   data = inject(MAT_DIALOG_DATA);
 
   readonly editComplete = output<any>();
 
   errorFree() {
-    return this.data.dataOption && this.data.dataOption.optionName && this.data.dataOption.optionName.length > 0 &&
-      this.data.dataOption.optionValue && this.data.dataOption.optionValue.length > 0;
+    return (
+      this.data.dataOption &&
+      this.data.dataOption.optionName &&
+      this.data.dataOption.optionName.length > 0 &&
+      this.data.dataOption.optionValue &&
+      this.data.dataOption.optionValue.length > 0
+    );
   }
 
   /**
@@ -40,5 +54,4 @@ export class DataOptionEditDialogComponent {
       }
     }
   }
-
 }

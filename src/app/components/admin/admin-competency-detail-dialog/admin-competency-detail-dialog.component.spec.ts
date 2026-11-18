@@ -20,7 +20,12 @@ async function renderDetail() {
       {
         provide: MAT_DIALOG_DATA,
         useValue: {
-          competency: { id: 'c-1', idNumber: 'K0001', shortName: 'Networking', description: 'Knowledge of networks' },
+          competency: {
+            id: 'c-1',
+            idNumber: 'K0001',
+            shortName: 'Networking',
+            description: 'Knowledge of networks',
+          },
           competencyTypeMap: new Map([['c-1', 'Knowledge']]),
         },
       },
@@ -39,9 +44,18 @@ describe('AdminCompetencyDetailDialogComponent', () => {
   it('renders with the default test providers', async () => {
     const { fixture } = await renderDetail();
 
-    expect(fixture.componentInstance).toBeInstanceOf(AdminCompetencyDetailDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Competency Detail' })).toBeInTheDocument();
-    for (const text of ['K0001', 'Networking', 'Knowledge', 'Knowledge of networks']) {
+    expect(fixture.componentInstance).toBeInstanceOf(
+      AdminCompetencyDetailDialogComponent,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Competency Detail' }),
+    ).toBeInTheDocument();
+    for (const text of [
+      'K0001',
+      'Networking',
+      'Knowledge',
+      'Knowledge of networks',
+    ]) {
       expect(screen.getByText(text)).toBeInTheDocument();
     }
   });

@@ -5,276 +5,502 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 <div class="cssLayoutRowStartCenter">
   <div class="sp-icon">
-    <mat-icon class="mdi-24px" fontIcon="mdi-view-column-outline" [style.color]="'var(--mat-sys-primary)'" />
+    <mat-icon
+      class="mdi-24px"
+      fontIcon="mdi-view-column-outline"
+      [style.color]="'var(--mat-sys-primary)'"
+    />
   </div>
-  <mat-form-field style="width: 300px; margin-left: 10px;">
+  <mat-form-field style="width: 300px; margin-left: 10px">
     <input matInput [formControl]="filterControl" placeholder="Search" />
     @if (filterControl.value) {
-    <button mat-icon-button matSuffix (click)="filterControl.setValue(''); $event.stopPropagation()" title="Clear Search">
-      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
-    </button>
+      <button
+        mat-icon-button
+        matSuffix
+        (click)="filterControl.setValue(''); $event.stopPropagation()"
+        title="Clear Search"
+      >
+        <mat-icon
+          style="transform: scale(0.85)"
+          fontIcon="mdi-close-circle-outline"
+        />
+      </button>
     }
   </mat-form-field>
-  <mat-form-field style="width: 260px; margin-left: 10px;">
+  <mat-form-field style="width: 260px; margin-left: 10px">
     <mat-label>Display columns</mat-label>
-    <mat-select multiple
+    <mat-select
+      multiple
       [value]="visibleDisplayColumns"
-      (selectionChange)="onVisibleColumnsChange($event.value)">
+      (selectionChange)="onVisibleColumnsChange($event.value)"
+    >
       @for (opt of availableDisplayOptions(); track opt.key) {
-        <mat-option [value]="opt.key" [title]="opt.title">{{ opt.label }}</mat-option>
+        <mat-option [value]="opt.key" [title]="opt.title">{{
+          opt.label
+        }}</mat-option>
       }
     </mat-select>
   </mat-form-field>
   <div class="button-end">
-    <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
-      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]" />
+    <mat-paginator
+      #paginator
+      [pageIndex]="0"
+      [pageSize]="20"
+      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"
+    />
   </div>
 </div>
 
 @if (!!galleryToDo()) {
-<div class="gallery-warning">** Gallery Parameters not assigned: {{ galleryToDo() }}</div>
+  <div class="gallery-warning">
+    ** Gallery Parameters not assigned: {{ galleryToDo() }}
+  </div>
 }
 
 <div class="frame">
   <div class="table-container">
-    <mat-table #table [dataSource]="dataFieldDataSource" matSort (matSortChange)="sortChanged($event)" cdkDropList
-      [cdkDropListDisabled]="!allowDragAndDrop || !canEdit()" (cdkDropListDropped)="dropHandler($event)">
-        <!-- Drag Handler column -->
-        <ng-container matColumnDef="draghandle">
-          <mat-header-cell *matHeaderCellDef class="column-draghandle" />
-          <mat-cell *matCellDef="let element;" class="column-draghandle">
-            <div class="draghandle-div">
-              @if (allowDragAndDrop && canEdit()) {
-              <mat-icon cdkDragHandle cdkDragRootElement="row" cdkDrag [cdkDragData]="element" cdkDragLockAxis="y"
-                [cdkDragPreviewClass]="userTheme()" class="mdi-18px down-12" fontIcon="mdi-drag-vertical" />
-              }
-            </div>
-          </mat-cell>
-        </ng-container>
-        <ng-container matColumnDef="draghandleSpacer">
-          <mat-header-cell *matHeaderCellDef class="column-draghandle" />
-          <mat-cell *matCellDef="let element;" class="column-draghandle">
-            <div class="draghandle-div"></div>
-          </mat-cell>
-        </ng-container>
-        <!-- action column -->
-        <ng-container matColumnDef="action">
-          <mat-header-cell *matHeaderCellDef class="column-action">
-            @if (showTemplates() && canEdit()) {
+    <mat-table
+      #table
+      [dataSource]="dataFieldDataSource"
+      matSort
+      (matSortChange)="sortChanged($event)"
+      cdkDropList
+      [cdkDropListDisabled]="!allowDragAndDrop || !canEdit()"
+      (cdkDropListDropped)="dropHandler($event)"
+    >
+      <!-- Drag Handler column -->
+      <ng-container matColumnDef="draghandle">
+        <mat-header-cell *matHeaderCellDef class="column-draghandle" />
+        <mat-cell *matCellDef="let element" class="column-draghandle">
+          <div class="draghandle-div">
+            @if (allowDragAndDrop && canEdit()) {
+              <mat-icon
+                cdkDragHandle
+                cdkDragRootElement="row"
+                cdkDrag
+                [cdkDragData]="element"
+                cdkDragLockAxis="y"
+                [cdkDragPreviewClass]="userTheme()"
+                class="mdi-18px down-12"
+                fontIcon="mdi-drag-vertical"
+              />
+            }
+          </div>
+        </mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="draghandleSpacer">
+        <mat-header-cell *matHeaderCellDef class="column-draghandle" />
+        <mat-cell *matCellDef="let element" class="column-draghandle">
+          <div class="draghandle-div"></div>
+        </mat-cell>
+      </ng-container>
+      <!-- action column -->
+      <ng-container matColumnDef="action">
+        <mat-header-cell *matHeaderCellDef class="column-action">
+          @if (showTemplates() && canEdit()) {
             <span>
-              <button mat-icon-button (click)="addOrEditDataField(null, true)" title="Add a template data Field"
-                style="outline: none;">
-                <mat-icon class="mdi-24px center-self little-left" fontIcon="mdi-plus-circle" />
+              <button
+                mat-icon-button
+                (click)="addOrEditDataField(null, true)"
+                title="Add a template data Field"
+                style="outline: none"
+              >
+                <mat-icon
+                  class="mdi-24px center-self little-left"
+                  fontIcon="mdi-plus-circle"
+                />
               </button>
-              <button mat-icon-button title="Upload Data Field templates from JSON" style="outline: none;"
-                (click)="jsonInput.click()">
+              <button
+                mat-icon-button
+                title="Upload Data Field templates from JSON"
+                style="outline: none"
+                (click)="jsonInput.click()"
+              >
                 <mat-icon class="mdi-24px" fontIcon="mdi-upload" />
               </button>
-              <button mat-icon-button title="Download Data Field templates as JSON" style="outline: none;"
-                (click)="openDownloadDialog()">
+              <button
+                mat-icon-button
+                title="Download Data Field templates as JSON"
+                style="outline: none"
+                (click)="openDownloadDialog()"
+              >
                 <mat-icon class="mdi-24px" fontIcon="mdi-download" />
               </button>
             </span>
-            } &nbsp;
-            @if (!showTemplates() && (canEdit())) {
+          }
+          &nbsp;
+          @if (!showTemplates() && canEdit()) {
             <span>
-              <button mat-icon-button [matMenuTriggerFor]="addMenu" style="outline: none;"
-                title="Add data Field">
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle" />
+              <button
+                mat-icon-button
+                [matMenuTriggerFor]="addMenu"
+                style="outline: none"
+                title="Add data Field"
+              >
+                <mat-icon
+                  class="mdi-24px self-center"
+                  fontIcon="mdi-plus-circle"
+                />
               </button>
             </span>
-            } &nbsp;
-            <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
-              <button mat-menu-item (click)="addOrEditDataField(null, false)" title="Add a new data Field">New Data
-                Field</button>
-              @for (template of templateDataSource.data; track template.id) {
-              <button mat-menu-item (click)="addOrEditDataField(template, false)"
-                title="{{ template.name }} - {{ template.description }}">{{ template.name }}</button>
-              }
-            </mat-menu>
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="column-action">
-            <div>{{ !showTemplates() && element.displayOrder > 0 ? element.displayOrder : ' '}}</div>
-            <div class="action-div">
-              @if (element.displayOrder > 0) {
-              <span style="display: inline-flex; white-space: nowrap;">
+          }
+          &nbsp;
+          <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
+            <button
+              mat-menu-item
+              (click)="addOrEditDataField(null, false)"
+              title="Add a new data Field"
+            >
+              New Data Field
+            </button>
+            @for (template of templateDataSource.data; track template.id) {
+              <button
+                mat-menu-item
+                (click)="addOrEditDataField(template, false)"
+                title="{{ template.name }} - {{ template.description }}"
+              >
+                {{ template.name }}
+              </button>
+            }
+          </mat-menu>
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element" class="column-action">
+          <div>
+            {{
+              !showTemplates() && element.displayOrder > 0
+                ? element.displayOrder
+                : ' '
+            }}
+          </div>
+          <div class="action-div">
+            @if (element.displayOrder > 0) {
+              <span style="display: inline-flex; white-space: nowrap">
                 @if (canEdit()) {
-                <button mat-icon-button class="msel-action"
-                  (click)="addOrEditDataField(element, showTemplates()); $event.stopPropagation();"
-                  title="Edit {{ element.name }}">
-                  <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"
-                    title="Edit {{ element.name }}" />
-                </button>
+                  <button
+                    mat-icon-button
+                    class="msel-action"
+                    (click)="
+                      addOrEditDataField(element, showTemplates());
+                      $event.stopPropagation()
+                    "
+                    title="Edit {{ element.name }}"
+                  >
+                    <mat-icon
+                      class="mdi-18px"
+                      fontIcon="mdi-square-edit-outline"
+                      title="Edit {{ element.name }}"
+                    />
+                  </button>
                 }
                 @if (canEdit()) {
-                <button mat-icon-button class="msel-action"
-                  (click)="deleteDataField(element); $event.stopPropagation();" title="Delete {{ element.name }}">
-                  <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"
-                    title="Delete {{ element.name }}" />
-                </button>
+                  <button
+                    mat-icon-button
+                    class="msel-action"
+                    (click)="deleteDataField(element); $event.stopPropagation()"
+                    title="Delete {{ element.name }}"
+                  >
+                    <mat-icon
+                      class="mdi-18px"
+                      fontIcon="mdi-trash-can-outline"
+                      title="Delete {{ element.name }}"
+                    />
+                  </button>
                 }
                 @if (!injectTypeId() && !showTemplates() && canMakeTemplate()) {
-                <button mat-icon-button class="msel-action"
-                  (click)="addOrEditDataField(element, true); $event.stopPropagation();"
-                  title="Make {{ element.name }} a template">
-                  <mat-icon class="mdi-18px" fontIcon="mdi-bank" title="Make {{ element.name }} a template" />
-                </button>
+                  <button
+                    mat-icon-button
+                    class="msel-action"
+                    (click)="
+                      addOrEditDataField(element, true);
+                      $event.stopPropagation()
+                    "
+                    title="Make {{ element.name }} a template"
+                  >
+                    <mat-icon
+                      class="mdi-18px"
+                      fontIcon="mdi-bank"
+                      title="Make {{ element.name }} a template"
+                    />
+                  </button>
                 }
               </span>
-              }
-              @if (element.displayOrder < 0) { <span style="margin-left: 10px; font-size: 12px;">*System Defined*</span>
-                }
-                &nbsp;
-            </div>
-          </mat-cell>
-        </ng-container>
-        <!-- events Column -->
-        <ng-container matColumnDef="events">
-          <mat-header-cell mat-sort-header="onScenarioEventList" title="Display on Scenario Events list"
-            *matHeaderCellDef class="column-display">
-            &nbsp;&nbsp;&nbsp;&nbsp;List
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="column-display">
-            <mat-checkbox [(ngModel)]="element.onScenarioEventList" [disabled]="!canEditRow(element)"
-              (change)="saveChange(element)" (click)="$event.stopPropagation()"
-              title="Display on Scenario Events list" />
-          </mat-cell>
-        </ng-container>
-        <!-- exercise Column -->
-        <ng-container matColumnDef="exercise">
-          <mat-header-cell mat-sort-header="onExerciseView" title="Display on the Exercise View" *matHeaderCellDef
-            class="column-display">
-            &nbsp;&nbsp;&nbsp;&nbsp;View
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="column-display">
-            <mat-checkbox [(ngModel)]="element.onExerciseView" [disabled]="!canEditRow(element)" (change)="saveChange(element)"
-              (click)="$event.stopPropagation();" title="Display on the Exercise View" />
-          </mat-cell>
-        </ng-container>
-        <!-- assessor Column -->
-        <ng-container matColumnDef="assessor">
-          <mat-header-cell mat-sort-header="isAssessorVisible" title="Display on the Assessor View"
-            *matHeaderCellDef class="column-display">
-            &nbsp;&nbsp;&nbsp;&nbsp;Assess
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="column-display">
-            <mat-checkbox [(ngModel)]="element.isAssessorVisible" [disabled]="!canEditRow(element)"
-              (change)="saveChange(element)" (click)="$event.stopPropagation();"
-              title="Display on the Assessor View" />
-          </mat-cell>
-        </ng-container>
-        <!-- information Column -->
-        <ng-container matColumnDef="information">
-          <mat-header-cell mat-sort-header="isInformationField" title="Display for Information Events"
-            *matHeaderCellDef class="column-display">
-            &nbsp;&nbsp;&nbsp;&nbsp;Info
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="column-display">
-            @if (element.displayOrder >= 0) {
-            <mat-checkbox [(ngModel)]="element.isInformationField" [disabled]="!canEditRow(element)"
-              (change)="saveChange(element)" (click)="$event.stopPropagation();"
-              title="Display for Information Events" />
             }
-          </mat-cell>
-        </ng-container>
-        <!-- facilitation Column -->
-        <ng-container matColumnDef="facilitation">
-          <mat-header-cell mat-sort-header="isFacilitationField" title="Display for Facilitation Events"
-            *matHeaderCellDef class="column-display">
-            &nbsp;&nbsp;&nbsp;&nbsp;Facil
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="column-display">
-            @if (element.displayOrder >= 0) {
-            <mat-checkbox [(ngModel)]="element.isFacilitationField" [disabled]="!canEditRow(element)"
-              (change)="saveChange(element)" (click)="$event.stopPropagation();"
-              title="Display for Facilitation Events" />
+            @if (element.displayOrder < 0) {
+              <span style="margin-left: 10px; font-size: 12px"
+                >*System Defined*</span
+              >
             }
-          </mat-cell>
-        </ng-container>
-        <!-- default Column -->
-        <ng-container matColumnDef="default">
-          <mat-header-cell mat-sort-header="isShownOnDefaultTab" title="Display on the default tab of the scenario event edit dialog"
-            *matHeaderCellDef class="column-display">
-            &nbsp;&nbsp;&nbsp;&nbsp;Default
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="column-display">
-            @if (element.displayOrder >= 0) {
-            <mat-checkbox [(ngModel)]="element.isShownOnDefaultTab" [disabled]="!canEditRow(element)"
-              (change)="saveChange(element)" (click)="$event.stopPropagation();"
-              title="Display on the default tab of the scenario event edit dialog" />
-            }
-          </mat-cell>
-        </ng-container>
-        <!-- devs Column -->
-        <ng-container matColumnDef="devs">
-          <mat-header-cell mat-sort-header="isOnlyShownToOwners" title="Hide this field from participants on all views - show only to content developers and MSEL owners"
-            *matHeaderCellDef class="column-display">
-            &nbsp;&nbsp;&nbsp;&nbsp;Devs
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="column-display">
-            @if (element.displayOrder >= 0) {
-            <mat-checkbox [(ngModel)]="element.isOnlyShownToOwners" [disabled]="!canEditRow(element)"
-              (change)="saveChange(element)" (click)="$event.stopPropagation();"
-              title="Hide this field from participants on all views - show only to content developers and MSEL owners" />
-            }
-          </mat-cell>
-        </ng-container>
-        <!-- name Column -->
-        <ng-container matColumnDef="name">
-          <mat-header-cell mat-sort-header="name" *matHeaderCellDef class="column-name">
-            Name
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="column-name">
-            {{ element.name }}
-          </mat-cell>
-        </ng-container>
-        <!-- datatype Column -->
-        <ng-container matColumnDef="datatype">
-          <mat-header-cell mat-sort-header="dataType" *matHeaderCellDef class="six-cell column-min60"> Data Type </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="six-cell column-min60">
-            <div class="summary-text">{{ element.dataType }}</div>
-          </mat-cell>
-        </ng-container>
-        <!-- options Column -->
-        <ng-container matColumnDef="options">
-          <mat-header-cell mat-sort-header *matHeaderCellDef class="six-cell column-min60"> Options </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="six-cell column-min60">
-            <div class="summary-text options-link"
-                 (click)="viewDataOptions(element, $event)"
-                 [class.clickable]="element.dataType === 'Competency' || (element.dataOptions && element.dataOptions.length > 0)"
-                 [title]="element.dataType === 'Competency' || (element.dataOptions && element.dataOptions.length > 0) ? 'Click to manage options' : ''">
-              {{ getDataOptionsString(element) }}
-            </div>
-          </mat-cell>
-        </ng-container>
-        <!-- integration Column -->
-        <ng-container matColumnDef="integration">
-          <mat-header-cell mat-sort-header="galleryArticleParameter" *matHeaderCellDef class="six-cell column-integration"> Integration </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="six-cell column-integration">
-            @if (element.displayOrder > 0) {
-            <mat-select class="integration" [(ngModel)]="element.galleryArticleParameter"
-              (selectionChange)="saveChange(element)" (click)="$event.stopPropagation();" [disabled]="!canEdit()"
-              [compareWith]="compareIntegrationValues">
+            &nbsp;
+          </div>
+        </mat-cell>
+      </ng-container>
+      <!-- events Column -->
+      <ng-container matColumnDef="events">
+        <mat-header-cell
+          mat-sort-header="onScenarioEventList"
+          title="Display on Scenario Events list"
+          *matHeaderCellDef
+          class="column-display"
+        >
+          &nbsp;&nbsp;&nbsp;&nbsp;List
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element" class="column-display">
+          <mat-checkbox
+            [(ngModel)]="element.onScenarioEventList"
+            [disabled]="!canEditRow(element)"
+            (change)="saveChange(element)"
+            (click)="$event.stopPropagation()"
+            title="Display on Scenario Events list"
+          />
+        </mat-cell>
+      </ng-container>
+      <!-- exercise Column -->
+      <ng-container matColumnDef="exercise">
+        <mat-header-cell
+          mat-sort-header="onExerciseView"
+          title="Display on the Exercise View"
+          *matHeaderCellDef
+          class="column-display"
+        >
+          &nbsp;&nbsp;&nbsp;&nbsp;View
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element" class="column-display">
+          <mat-checkbox
+            [(ngModel)]="element.onExerciseView"
+            [disabled]="!canEditRow(element)"
+            (change)="saveChange(element)"
+            (click)="$event.stopPropagation()"
+            title="Display on the Exercise View"
+          />
+        </mat-cell>
+      </ng-container>
+      <!-- assessor Column -->
+      <ng-container matColumnDef="assessor">
+        <mat-header-cell
+          mat-sort-header="isAssessorVisible"
+          title="Display on the Assessor View"
+          *matHeaderCellDef
+          class="column-display"
+        >
+          &nbsp;&nbsp;&nbsp;&nbsp;Assess
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element" class="column-display">
+          <mat-checkbox
+            [(ngModel)]="element.isAssessorVisible"
+            [disabled]="!canEditRow(element)"
+            (change)="saveChange(element)"
+            (click)="$event.stopPropagation()"
+            title="Display on the Assessor View"
+          />
+        </mat-cell>
+      </ng-container>
+      <!-- information Column -->
+      <ng-container matColumnDef="information">
+        <mat-header-cell
+          mat-sort-header="isInformationField"
+          title="Display for Information Events"
+          *matHeaderCellDef
+          class="column-display"
+        >
+          &nbsp;&nbsp;&nbsp;&nbsp;Info
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element" class="column-display">
+          @if (element.displayOrder >= 0) {
+            <mat-checkbox
+              [(ngModel)]="element.isInformationField"
+              [disabled]="!canEditRow(element)"
+              (change)="saveChange(element)"
+              (click)="$event.stopPropagation()"
+              title="Display for Information Events"
+            />
+          }
+        </mat-cell>
+      </ng-container>
+      <!-- facilitation Column -->
+      <ng-container matColumnDef="facilitation">
+        <mat-header-cell
+          mat-sort-header="isFacilitationField"
+          title="Display for Facilitation Events"
+          *matHeaderCellDef
+          class="column-display"
+        >
+          &nbsp;&nbsp;&nbsp;&nbsp;Facil
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element" class="column-display">
+          @if (element.displayOrder >= 0) {
+            <mat-checkbox
+              [(ngModel)]="element.isFacilitationField"
+              [disabled]="!canEditRow(element)"
+              (change)="saveChange(element)"
+              (click)="$event.stopPropagation()"
+              title="Display for Facilitation Events"
+            />
+          }
+        </mat-cell>
+      </ng-container>
+      <!-- default Column -->
+      <ng-container matColumnDef="default">
+        <mat-header-cell
+          mat-sort-header="isShownOnDefaultTab"
+          title="Display on the default tab of the scenario event edit dialog"
+          *matHeaderCellDef
+          class="column-display"
+        >
+          &nbsp;&nbsp;&nbsp;&nbsp;Default
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element" class="column-display">
+          @if (element.displayOrder >= 0) {
+            <mat-checkbox
+              [(ngModel)]="element.isShownOnDefaultTab"
+              [disabled]="!canEditRow(element)"
+              (change)="saveChange(element)"
+              (click)="$event.stopPropagation()"
+              title="Display on the default tab of the scenario event edit dialog"
+            />
+          }
+        </mat-cell>
+      </ng-container>
+      <!-- devs Column -->
+      <ng-container matColumnDef="devs">
+        <mat-header-cell
+          mat-sort-header="isOnlyShownToOwners"
+          title="Hide this field from participants on all views - show only to content developers and MSEL owners"
+          *matHeaderCellDef
+          class="column-display"
+        >
+          &nbsp;&nbsp;&nbsp;&nbsp;Devs
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element" class="column-display">
+          @if (element.displayOrder >= 0) {
+            <mat-checkbox
+              [(ngModel)]="element.isOnlyShownToOwners"
+              [disabled]="!canEditRow(element)"
+              (change)="saveChange(element)"
+              (click)="$event.stopPropagation()"
+              title="Hide this field from participants on all views - show only to content developers and MSEL owners"
+            />
+          }
+        </mat-cell>
+      </ng-container>
+      <!-- name Column -->
+      <ng-container matColumnDef="name">
+        <mat-header-cell
+          mat-sort-header="name"
+          *matHeaderCellDef
+          class="column-name"
+        >
+          Name
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element" class="column-name">
+          {{ element.name }}
+        </mat-cell>
+      </ng-container>
+      <!-- datatype Column -->
+      <ng-container matColumnDef="datatype">
+        <mat-header-cell
+          mat-sort-header="dataType"
+          *matHeaderCellDef
+          class="six-cell column-min60"
+        >
+          Data Type
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element" class="six-cell column-min60">
+          <div class="summary-text">{{ element.dataType }}</div>
+        </mat-cell>
+      </ng-container>
+      <!-- options Column -->
+      <ng-container matColumnDef="options">
+        <mat-header-cell
+          mat-sort-header
+          *matHeaderCellDef
+          class="six-cell column-min60"
+        >
+          Options
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element" class="six-cell column-min60">
+          <div
+            class="summary-text options-link"
+            (click)="viewDataOptions(element, $event)"
+            [class.clickable]="
+              element.dataType === 'Competency' ||
+              (element.dataOptions && element.dataOptions.length > 0)
+            "
+            [title]="
+              element.dataType === 'Competency' ||
+              (element.dataOptions && element.dataOptions.length > 0)
+                ? 'Click to manage options'
+                : ''
+            "
+          >
+            {{ getDataOptionsString(element) }}
+          </div>
+        </mat-cell>
+      </ng-container>
+      <!-- integration Column -->
+      <ng-container matColumnDef="integration">
+        <mat-header-cell
+          mat-sort-header="galleryArticleParameter"
+          *matHeaderCellDef
+          class="six-cell column-integration"
+        >
+          Integration
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element" class="six-cell column-integration">
+          @if (element.displayOrder > 0) {
+            <mat-select
+              class="integration"
+              [(ngModel)]="element.galleryArticleParameter"
+              (selectionChange)="saveChange(element)"
+              (click)="$event.stopPropagation()"
+              [disabled]="!canEdit()"
+              [compareWith]="compareIntegrationValues"
+            >
               <mat-option value="">- - -</mat-option>
-              @for (option of getUnusedGalleryOptions(element.galleryArticleParameter); track option) {
-              <mat-option value="{{ option }}">Gallery {{ option }}</mat-option>
+              @for (
+                option of getUnusedGalleryOptions(
+                  element.galleryArticleParameter
+                );
+                track option
+              ) {
+                <mat-option value="{{ option }}"
+                  >Gallery {{ option }}</mat-option
+                >
               }
             </mat-select>
-            }
-            @if (element.displayOrder < 0) { <span>{{ element.galleryArticleParameter }}</span>
-              }
-          </mat-cell>
-        </ng-container>
-        <!-- row definitions -->
-        <mat-header-row *matHeaderRowDef="displayedColumns" />
-        <mat-row *matRowDef="let row; columns: systemFieldDisplayedColumns when: fieldIsSystemDefined" />
-        <mat-row *matRowDef="let row; columns: displayedColumns; when: !fieldIsSystemDefined" />
+          }
+          @if (element.displayOrder < 0) {
+            <span>{{ element.galleryArticleParameter }}</span>
+          }
+        </mat-cell>
+      </ng-container>
+      <!-- row definitions -->
+      <mat-header-row *matHeaderRowDef="displayedColumns" />
+      <mat-row
+        *matRowDef="
+          let row;
+          columns: systemFieldDisplayedColumns;
+          when: fieldIsSystemDefined
+        "
+      />
+      <mat-row
+        *matRowDef="
+          let row;
+          columns: displayedColumns;
+          when: !fieldIsSystemDefined
+        "
+      />
     </mat-table>
     <!-- No Results Message -->
     @if (dataFieldDataSource?.filteredData.length === 0) {
-    <div class="text no-results">No results found</div>
+      <div class="text no-results">No results found</div>
     }
   </div>
 </div>
 
-<input hidden type="file" #jsonInput accept=".json" (change)="selectFile($event)" />
+<input
+  hidden
+  type="file"
+  #jsonInput
+  accept=".json"
+  (change)="selectFile($event)"
+/>

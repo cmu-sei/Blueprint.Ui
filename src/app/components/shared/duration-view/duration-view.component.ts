@@ -8,9 +8,9 @@ import { Component, input } from '@angular/core';
 import { getTimezoneAbbr } from 'src/app/utilities/timezone-abbr';
 
 @Component({
-    selector: 'app-duration-view',
-    templateUrl: './duration-view.component.html',
-    styleUrls: ['./duration-view.component.scss']
+  selector: 'app-duration-view',
+  templateUrl: './duration-view.component.html',
+  styleUrls: ['./duration-view.component.scss'],
 })
 export class DurationViewComponent {
   readonly startTime = input<Date>(undefined);
@@ -54,11 +54,26 @@ export class DurationViewComponent {
 
   getDate(deltaSeconds: number) {
     const startDate = new Date(this.startTime());
-    const scenarioEventDate = new Date(startDate.getTime() + deltaSeconds * 1000);
+    const scenarioEventDate = new Date(
+      startDate.getTime() + deltaSeconds * 1000,
+    );
 
     // Format as: dd MMM yyyy HH:mm
     const day = String(scenarioEventDate.getDate()).padStart(2, '0');
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     const month = months[scenarioEventDate.getMonth()];
     const year = scenarioEventDate.getFullYear();
     const hours = String(scenarioEventDate.getHours()).padStart(2, '0');
@@ -66,5 +81,4 @@ export class DurationViewComponent {
 
     return `${day} ${month} ${year} ${hours}:${minutes} ${getTimezoneAbbr(scenarioEventDate)}`;
   }
-
 }

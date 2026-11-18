@@ -12,8 +12,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
       @if (!isPulling) {
         <div class="action-buttons">
           @if (!isCancelling) {
-            <button mat-raised-button color="warn" (click)="cancelPush()"
-                    title="Cancel the integration push and remove partial integrations">
+            <button
+              mat-raised-button
+              color="warn"
+              (click)="cancelPush()"
+              title="Cancel the integration push and remove partial integrations"
+            >
               Cancel Push
             </button>
           }
@@ -31,25 +35,41 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <span>{{ statusMessage }}</span>
       </div>
       @if (casterWorkspaceUrl()) {
-        <a mat-stroked-button [href]="casterWorkspaceUrl()" target="_blank"
-           title="See the terraform output of the failed run in Caster">
-          <mat-icon fontIcon="mdi-open-in-new"></mat-icon>
+        <a
+          mat-stroked-button
+          [href]="casterWorkspaceUrl()"
+          target="_blank"
+          title="See the terraform output of the failed run in Caster"
+        >
+          <mat-icon fontIcon="mdi-open-in-new" />
           Open Workspace in Caster
         </a>
       }
       <div class="action-buttons">
         @if (canRetryCaster) {
-          <button mat-raised-button color="primary" (click)="retryCaster()" [disabled]="retrying()"
-                  title="Run the Caster step again, keeping the other integrations">
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="retryCaster()"
+            [disabled]="retrying()"
+            title="Run the Caster step again, keeping the other integrations"
+          >
             Retry Caster
           </button>
         }
-        <button mat-raised-button color="warn" (click)="pullIntegrations()"
-                title="Remove partial integrations from associated applications">
+        <button
+          mat-raised-button
+          color="warn"
+          (click)="pullIntegrations()"
+          title="Remove partial integrations from associated applications"
+        >
           Pull Integrations
         </button>
-        <button mat-raised-button (click)="close()"
-                title="Dismiss this message and return to MSEL info">
+        <button
+          mat-raised-button
+          (click)="close()"
+          title="Dismiss this message and return to MSEL info"
+        >
           Close
         </button>
       </div>

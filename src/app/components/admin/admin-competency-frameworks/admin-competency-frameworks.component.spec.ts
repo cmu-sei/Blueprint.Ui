@@ -41,20 +41,39 @@ const FRAMEWORK: CompetencyFramework = {
   source: 'NIST',
   description: 'Workforce framework',
   defaultProficiencyScaleId: 'scale-1',
-  competencies: [{ id: 'comp-1', competencyFrameworkId: 'fw-1', idNumber: 'K0001', shortName: 'Networking' }],
+  competencies: [
+    {
+      id: 'comp-1',
+      competencyFrameworkId: 'fw-1',
+      idNumber: 'K0001',
+      shortName: 'Networking',
+    },
+  ],
 };
 
 async function renderFrameworks(
-  overrides: { canEdit?: boolean; deleteCheck?: FrameworkDeleteCheck; matDialog?: Pick<MatDialog, 'open'> } = {},
+  overrides: {
+    canEdit?: boolean;
+    deleteCheck?: FrameworkDeleteCheck;
+    matDialog?: Pick<MatDialog, 'open'>;
+  } = {},
 ) {
-  const { canEdit = true, deleteCheck = { canDelete: true, affectedMsels: [] }, matDialog } = overrides;
+  const {
+    canEdit = true,
+    deleteCheck = { canDelete: true, affectedMsels: [] },
+    matDialog,
+  } = overrides;
   const frameworkApi = {
-    checkCanDeleteCompetencyFramework: vi.fn(() => of(structuredClone(deleteCheck))),
+    checkCanDeleteCompetencyFramework: vi.fn(() =>
+      of(structuredClone(deleteCheck)),
+    ),
     getCompetencyFramework: vi.fn(() => of(structuredClone(FRAMEWORK))),
     deleteCompetencyFramework: vi.fn(() => of<unknown>(null)),
   } satisfies ApiStub<CompetencyFrameworkService>;
   const scaleApi = {
-    getProficiencyScales: vi.fn(() => of<ProficiencyScale[]>([{ id: 'scale-1', name: 'Five Point' }])),
+    getProficiencyScales: vi.fn(() =>
+      of<ProficiencyScale[]>([{ id: 'scale-1', name: 'Five Point' }]),
+    ),
   } satisfies ApiStub<ProficiencyScaleService>;
   // The user confirms every dialog.
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
@@ -79,7 +98,9 @@ async function renderFrameworks(
       { provide: CompetencyFrameworkService, useValue: frameworkApi },
       { provide: ProficiencyScaleService, useValue: scaleApi },
       { provide: CrucibleDialogService, useValue: dialog },
-      matDialog ? { provide: MatDialog, useValue: matDialog } : unstubbed(MatDialog),
+      matDialog
+        ? { provide: MatDialog, useValue: matDialog }
+        : unstubbed(MatDialog),
       // The admin container loads the frameworks; the store is seeded instead.
       {
         provide: CompetencyFrameworkStore,
@@ -96,14 +117,19 @@ async function renderFrameworks(
 }
 
 const frameworks = () => screen.getAllByRole('table')[0];
-const deleteButton = () => within(frameworks()).getByRole('button', { description: /Delete framework|In use by/ });
+const deleteButton = () =>
+  within(frameworks()).getByRole('button', {
+    description: /Delete framework|In use by/,
+  });
 
 // Inside the expanded framework, queries go by title: jsdom's CSS engine throws on
 // the component's `border: 1px solid var(...)` rules when a role query computes styles there.
 async function openCompetencies() {
   const user = userEvent.setup();
   await user.click(within(frameworks()).getByText('NICE'));
-  await user.click(screen.getByText(/Competencies/, { selector: 'mat-panel-title' }));
+  await user.click(
+    screen.getByText(/Competencies/, { selector: 'mat-panel-title' }),
+  );
   return within(screen.getByText('K0001').closest('mat-table') as HTMLElement);
 }
 
@@ -116,13 +142,25 @@ describe('AdminCompetencyFrameworksComponent', () => {
   it('offers framework actions with canEdit', async () => {
     const { frameworkApi } = await renderFrameworks({ canEdit: true });
 
-    expect(frameworkApi.checkCanDeleteCompetencyFramework).toHaveBeenCalledWith('fw-1');
-    expect(screen.queryByTitle('Import framework from JSON')).not.toBeInTheDocument();
-    expect(within(frameworks()).getByTitle('Add new competency framework')).toBeInTheDocument();
-    expect(within(frameworks()).getByTitle('Upload Competency Frameworks')).toBeInTheDocument();
+    expect(frameworkApi.checkCanDeleteCompetencyFramework).toHaveBeenCalledWith(
+      'fw-1',
+    );
+    expect(
+      screen.queryByTitle('Import framework from JSON'),
+    ).not.toBeInTheDocument();
+    expect(
+      within(frameworks()).getByTitle('Add new competency framework'),
+    ).toBeInTheDocument();
+    expect(
+      within(frameworks()).getByTitle('Upload Competency Frameworks'),
+    ).toBeInTheDocument();
     expect(within(frameworks()).getByTitle('Edit NICE')).toBeInTheDocument();
-    expect(within(frameworks()).getByTitle('Download Competency Frameworks as JSON')).toBeInTheDocument();
-    expect(within(frameworks()).queryByTitle('Download NICE as JSON')).not.toBeInTheDocument();
+    expect(
+      within(frameworks()).getByTitle('Download Competency Frameworks as JSON'),
+    ).toBeInTheDocument();
+    expect(
+      within(frameworks()).queryByTitle('Download NICE as JSON'),
+    ).not.toBeInTheDocument();
     expect(deleteButton()).toBeEnabled();
     expect(within(frameworks()).getByText('Five Point')).toBeInTheDocument();
   });
@@ -136,11 +174,25 @@ describe('AdminCompetencyFrameworksComponent', () => {
     await renderFrameworks({ canEdit: false });
 
     expect(within(frameworks()).getByText('NICE')).toBeInTheDocument();
-    expect(within(frameworks()).queryByTitle('Add new competency framework')).not.toBeInTheDocument();
-    expect(within(frameworks()).queryByTitle('Upload Competency Frameworks')).not.toBeInTheDocument();
-    expect(within(frameworks()).queryByTitle('Edit NICE')).not.toBeInTheDocument();
-    expect(within(frameworks()).queryByTitle('Download Competency Frameworks as JSON')).not.toBeInTheDocument();
-    expect(within(frameworks()).queryByRole('button', { description: 'Delete framework' })).not.toBeInTheDocument();
+    expect(
+      within(frameworks()).queryByTitle('Add new competency framework'),
+    ).not.toBeInTheDocument();
+    expect(
+      within(frameworks()).queryByTitle('Upload Competency Frameworks'),
+    ).not.toBeInTheDocument();
+    expect(
+      within(frameworks()).queryByTitle('Edit NICE'),
+    ).not.toBeInTheDocument();
+    expect(
+      within(frameworks()).queryByTitle(
+        'Download Competency Frameworks as JSON',
+      ),
+    ).not.toBeInTheDocument();
+    expect(
+      within(frameworks()).queryByRole('button', {
+        description: 'Delete framework',
+      }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -151,11 +203,16 @@ describe('AdminCompetencyFrameworksComponent', () => {
   it('disables Delete for a framework that MSELs use', async () => {
     await renderFrameworks({
       canEdit: true,
-      deleteCheck: { canDelete: false, affectedMsels: [{ id: 'msel-1', name: 'Exercise Alpha' }] },
+      deleteCheck: {
+        canDelete: false,
+        affectedMsels: [{ id: 'msel-1', name: 'Exercise Alpha' }],
+      },
     });
 
     expect(deleteButton()).toBeDisabled();
-    expect(deleteButton()).toHaveAccessibleDescription('In use by 1 MSEL(s): Exercise Alpha');
+    expect(deleteButton()).toHaveAccessibleDescription(
+      'In use by 1 MSEL(s): Exercise Alpha',
+    );
   });
 
   /**
@@ -201,7 +258,13 @@ describe('AdminCompetencyFrameworksComponent', () => {
 
     await user.click(deleteButton());
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Competency Framework' }));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Delete Competency Framework',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      }),
+    );
     expect(frameworkApi.deleteCompetencyFramework).toHaveBeenCalledWith('fw-1');
     expect(within(frameworks()).queryByText('NICE')).not.toBeInTheDocument();
   });
@@ -212,12 +275,22 @@ describe('AdminCompetencyFrameworksComponent', () => {
    * Data: canEdit true.
    */
   it('opens the import dialog from the header Upload button', async () => {
-    const open = vi.fn(() => ({ componentInstance: { importComplete: new Subject() } }));
-    await renderFrameworks({ canEdit: true, matDialog: { open } as unknown as Pick<MatDialog, 'open'> });
+    const open = vi.fn(() => ({
+      componentInstance: { importComplete: new Subject() },
+    }));
+    await renderFrameworks({
+      canEdit: true,
+      matDialog: { open } as unknown as Pick<MatDialog, 'open'>,
+    });
     const user = userEvent.setup();
 
-    await user.click(within(frameworks()).getByTitle('Upload Competency Frameworks'));
+    await user.click(
+      within(frameworks()).getByTitle('Upload Competency Frameworks'),
+    );
 
-    expect(open).toHaveBeenCalledWith(AdminCompetencyFrameworkImportDialogComponent, expect.anything());
+    expect(open).toHaveBeenCalledWith(
+      AdminCompetencyFrameworkImportDialogComponent,
+      expect.anything(),
+    );
   });
 });
