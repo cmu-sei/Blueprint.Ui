@@ -312,10 +312,15 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
       ...(this.mselQuery.getActive() as MselPlus),
       casterDirectoryId: this.casterDirectoryId || null,
     };
+    const mselId = this.msel.id;
     this.busy = true;
     this.mselDataService.updateMsel(update).subscribe({
       next: () => {
         this.busy = false;
+        // the answer for a MSEL the user has since left is not this one's
+        if (this.msel.id !== mselId) {
+          return;
+        }
         this.isChanged = false;
         // the API deleted the copy of the old directory
         if (replacesCopy) {
@@ -436,19 +441,20 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
         if (!confirmed) {
           return;
         }
+        const mselId = this.msel.id;
         this.busy = true;
-        this.mselCasterExportService
-          .deleteMselCasterExport(this.msel.id)
-          .subscribe({
-            next: () => {
-              this.busy = false;
+        this.mselCasterExportService.deleteMselCasterExport(mselId).subscribe({
+          next: () => {
+            this.busy = false;
+            if (this.msel.id === mselId) {
               this.copyKnown(null);
-            },
-            error: (err) => {
-              this.busy = false;
-              this.errorService.handleError(err);
-            },
-          });
+            }
+          },
+          error: (err) => {
+            this.busy = false;
+            this.errorService.handleError(err);
+          },
+        });
       });
   }
 
