@@ -49,6 +49,7 @@ import { DataFieldStore } from 'src/app/data/data-field/data-field.store';
 import { DataValueStore } from 'src/app/data/data-value/data-value.store';
 import { MoveStore } from 'src/app/data/move/move.store';
 import { MselStore } from 'src/app/data/msel/msel.store';
+import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import { ScenarioEventStore } from 'src/app/data/scenario-event/scenario-event.store';
 import { TeamStore } from 'src/app/data/team/team.store';
 import {
@@ -1332,6 +1333,77 @@ describe('AssessorViewComponent', () => {
 
       const facts = section('Cover').querySelector('.cover-facts');
       expect(texts(facts, 'dt')).not.toContain('Assessors');
+      expect(section('Cover')).not.toHaveTextContent('J. Doe');
+    });
+
+    /**
+     * Verifies: when the MSEL starts hiding names while the cover image loads, after the statements were read, the
+     * report drawn from those statements is not printed: the print starts again from the masked statements.
+     * Interacts with: printReport, MselImageDataService.imageUrl (spy, answering when the test says), reloadStatements,
+     * HttpClient GET api/xapi/statements (HttpTestingController), printDocument (spy).
+     * Data: the report exercise; J. Doe's named statements read, then names hidden, then the image answers.
+     */
+    it('does not print names read before they were hidden while the image loaded', async () => {
+      vi.stubEnv('TZ', 'America/New_York');
+      const { fixture } = await renderAssessorView({
+        msel: REPORT_MSEL,
+        moves: REPORT_MOVES,
+        fields: REPORT_FIELDS,
+        events: REPORT_EVENTS,
+        values: REPORT_VALUES,
+        mselCompetencies: REPORT_COMPETENCIES,
+        proficiencyLevels: LEVELS,
+      });
+      const printDocument = vi
+        .spyOn(
+          fixture.componentInstance as unknown as { printDocument(): void },
+          'printDocument',
+        )
+        .mockImplementation(() => undefined);
+      const images: Subject<string | null>[] = [];
+      vi.spyOn(
+        TestBed.inject(MselImageDataService),
+        'imageUrl',
+      ).mockImplementation(() => {
+        const image = new Subject<string | null>();
+        images.push(image);
+        return image;
+      });
+      const http = TestBed.inject(HttpTestingController);
+      const isRead = (req: {
+        url: string;
+        params: { get(name: string): string | null };
+      }) =>
+        req.url === '/api/xapi/statements' &&
+        req.params.get('mselId') === 'msel-1';
+      const masked = STATEMENTS.map((stmt) => ({
+        ...stmt,
+        actor: { objectType: 'Agent' },
+      }));
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      );
+      http.expectOne(isRead).flush({ statements: STATEMENTS });
+      TestBed.inject(MselStore).update('msel-1', {
+        hideNamesOnAssessorView: true,
+      });
+      fixture.detectChanges();
+      // the image answers before the read for the change: the report is drawn from the named statements
+      images[0].next(null);
+      images[0].complete();
+      await vi.waitFor(() => {
+        for (const read of http.match(isRead))
+          read.flush({ statements: masked });
+        for (const image of images.slice(1)) {
+          image.next(null);
+          image.complete();
+        }
+        fixture.detectChanges();
+        expect(printDocument).toHaveBeenCalledTimes(1);
+      });
+      fixture.detectChanges();
+
       expect(section('Cover')).not.toHaveTextContent('J. Doe');
     });
 

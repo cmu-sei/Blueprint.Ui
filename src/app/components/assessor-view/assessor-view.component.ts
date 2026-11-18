@@ -1359,6 +1359,9 @@ export class AssessorViewComponent
     return `${first} + ${others} ${others === 1 ? 'other' : 'others'}`;
   }
 
+  /** Whether the MSEL hid names when the statements on hand were read: the API answered them that way. */
+  private statementsHidingNames = false;
+
   /** Whether the MSEL hides people's names on the Assessor View. */
   private get hidesNames(): boolean {
     return !!this.msel?.hideNamesOnAssessorView;
@@ -1552,6 +1555,7 @@ export class AssessorViewComponent
   private loadAllStatements(onDone?: () => void) {
     if (this.statementsLoading || !this.msel.id) return;
     this.statementsLoading = true;
+    const hidingNames = this.hidesNames;
     this.loadingStatements.add('_all');
 
     const baseUrl = this.apiUrl.endsWith('/') ? this.apiUrl : this.apiUrl + '/';
@@ -1564,6 +1568,7 @@ export class AssessorViewComponent
           if (this.restartStatementsIfStale(onDone)) return;
           const statements = response?.statements || response || [];
           this.allMselStatements = Array.isArray(statements) ? statements : [];
+          this.statementsHidingNames = hidingNames;
           this.allMselStatements.sort((a, b) =>
             (a.timestamp || '').localeCompare(b.timestamp || ''),
           );
@@ -2976,7 +2981,8 @@ export class AssessorViewComponent
           this.report = this.buildAssessmentReport();
           this.printedAt = new Date();
           this.printing = true;
-          const hidingNames = this.hidesNames;
+          // the setting the report's statements were read under, whatever it is now
+          const hidingNames = this.statementsHidingNames;
           // a short wait so Angular draws the report before it is copied
           setTimeout(() => {
             // names hidden or shown meanwhile: the report was drawn the other way, so start again once the
