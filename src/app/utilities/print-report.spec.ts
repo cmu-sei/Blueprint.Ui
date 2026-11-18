@@ -12,9 +12,11 @@ describe('print-report', () => {
    */
   it('writes the MSEL name into the footer as a CSS string', () => {
     expect(printFooterCss('assessment', 'Check "A"\\B\nC')).toBe(
-      '@page assessment { @bottom-left { content: "Check \\"A\\"\\\\B C"; } }'
+      '@page assessment { @bottom-left { content: "Check \\"A\\"\\\\B C"; } }',
     );
-    expect(printFooterCss('assessment', '')).toBe('@page assessment { @bottom-left { content: ""; } }');
+    expect(printFooterCss('assessment', '')).toBe(
+      '@page assessment { @bottom-left { content: ""; } }',
+    );
   });
 
   /**
@@ -33,7 +35,9 @@ describe('print-report', () => {
    * Data: a paragraph with a line break and markup, and no value.
    */
   it('reads HTML as one line of plain text', () => {
-    expect(plainText('<p>Detect\n  <strong>intrusion</strong></p>')).toBe('Detect intrusion');
+    expect(plainText('<p>Detect\n  <strong>intrusion</strong></p>')).toBe(
+      'Detect intrusion',
+    );
     expect(plainText(null)).toBe('');
   });
 });

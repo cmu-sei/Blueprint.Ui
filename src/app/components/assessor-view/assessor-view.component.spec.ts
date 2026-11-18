@@ -206,9 +206,27 @@ const T0001: MselCompetency[] = [
 ];
 
 const LEVELS: ProficiencyLevel[] = [
-  { id: 'level-3', proficiencyScaleId: 'scale-1', name: 'Expert', value: 3, displayOrder: 3 },
-  { id: 'level-1', proficiencyScaleId: 'scale-1', name: 'Novice', value: 1, displayOrder: 1 },
-  { id: 'level-2', proficiencyScaleId: 'scale-1', name: 'Proficient', value: 2, displayOrder: 2 },
+  {
+    id: 'level-3',
+    proficiencyScaleId: 'scale-1',
+    name: 'Expert',
+    value: 3,
+    displayOrder: 3,
+  },
+  {
+    id: 'level-1',
+    proficiencyScaleId: 'scale-1',
+    name: 'Novice',
+    value: 1,
+    displayOrder: 1,
+  },
+  {
+    id: 'level-2',
+    proficiencyScaleId: 'scale-1',
+    name: 'Proficient',
+    value: 2,
+    displayOrder: 2,
+  },
 ];
 
 // The printed report's exercise: two teams (BLUE and RED above), two moves, four injects, three of them with competencies.
@@ -220,25 +238,84 @@ const REPORT_MSEL: Msel = {
   durationSeconds: 5400,
   teams: [RED, BLUE],
 };
-const TRIAGE: Competency = { id: 'comp-t1', competencyFrameworkId: 'fw-1', idNumber: 'T-1', shortName: 'Incident triage' };
-const CONTAIN: Competency = { id: 'comp-k2', competencyFrameworkId: 'fw-1', idNumber: 'K-2', shortName: 'Containment knowledge' };
+const TRIAGE: Competency = {
+  id: 'comp-t1',
+  competencyFrameworkId: 'fw-1',
+  idNumber: 'T-1',
+  shortName: 'Incident triage',
+};
+const CONTAIN: Competency = {
+  id: 'comp-k2',
+  competencyFrameworkId: 'fw-1',
+  idNumber: 'K-2',
+  shortName: 'Containment knowledge',
+};
 const REPORT_COMPETENCIES: MselCompetency[] = [
   { id: 'mc-1', mselId: 'msel-1', competencyId: TRIAGE.id, competency: TRIAGE },
-  { id: 'mc-2', mselId: 'msel-1', competencyId: CONTAIN.id, competency: CONTAIN },
+  {
+    id: 'mc-2',
+    mselId: 'msel-1',
+    competencyId: CONTAIN.id,
+    competency: CONTAIN,
+  },
 ];
 const REPORT_MOVES: Move[] = [
-  { id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0, description: 'Initial Reports' },
-  { id: 'move-2', mselId: 'msel-1', moveNumber: 2, deltaSeconds: 3600, description: 'Escalation' },
+  {
+    id: 'move-1',
+    mselId: 'msel-1',
+    moveNumber: 1,
+    deltaSeconds: 0,
+    description: 'Initial Reports',
+  },
+  {
+    id: 'move-2',
+    mselId: 'msel-1',
+    moveNumber: 2,
+    deltaSeconds: 3600,
+    description: 'Escalation',
+  },
 ];
 const REPORT_FIELDS: DataField[] = [
-  { id: 'df-title', mselId: 'msel-1', name: 'Title', dataType: DataFieldType.String, displayOrder: 1, isAssessorVisible: true },
-  { id: 'df-comps', mselId: 'msel-1', name: 'Competencies', dataType: DataFieldType.Competency, displayOrder: 3, isAssessorVisible: true },
+  {
+    id: 'df-title',
+    mselId: 'msel-1',
+    name: 'Title',
+    dataType: DataFieldType.String,
+    displayOrder: 1,
+    isAssessorVisible: true,
+  },
+  {
+    id: 'df-comps',
+    mselId: 'msel-1',
+    name: 'Competencies',
+    dataType: DataFieldType.Competency,
+    displayOrder: 3,
+    isAssessorVisible: true,
+  },
 ];
-const inject = (id: string, deltaSeconds: number): ScenarioEvent =>
-  ({ id, mselId: 'msel-1', scenarioEventType: EventType.Inject, deltaSeconds, groupOrder: 1 });
-const REPORT_EVENTS = [inject('se-1', 900), inject('se-2', 1800), inject('se-3', 3900), inject('se-4', 4000)];
-const value = (scenarioEventId: string, dataFieldId: string, v: string): DataValue =>
-  ({ id: `dv-${scenarioEventId}-${dataFieldId}`, scenarioEventId, dataFieldId, value: v });
+const inject = (id: string, deltaSeconds: number): ScenarioEvent => ({
+  id,
+  mselId: 'msel-1',
+  scenarioEventType: EventType.Inject,
+  deltaSeconds,
+  groupOrder: 1,
+});
+const REPORT_EVENTS = [
+  inject('se-1', 900),
+  inject('se-2', 1800),
+  inject('se-3', 3900),
+  inject('se-4', 4000),
+];
+const value = (
+  scenarioEventId: string,
+  dataFieldId: string,
+  v: string,
+): DataValue => ({
+  id: `dv-${scenarioEventId}-${dataFieldId}`,
+  scenarioEventId,
+  dataFieldId,
+  value: v,
+});
 const REPORT_VALUES: DataValue[] = [
   value('se-1', 'df-title', 'Unusual logins'),
   value('se-1', 'df-comps', 'T-1'),
@@ -257,21 +334,31 @@ function asserted(
   score: number,
   grouping: string,
   team = BLUE,
-  comment?: string
+  comment?: string,
 ) {
   return {
     id,
     timestamp,
     actor: { name: 'J. Doe' },
-    verb: { id: 'https://w3id.org/xapi/tla/verbs/asserted', display: { 'en-US': 'asserted' } },
+    verb: {
+      id: 'https://w3id.org/xapi/tla/verbs/asserted',
+      display: { 'en-US': 'asserted' },
+    },
     object: {
       id: `https://blueprint.example/api/competencies/${competency.id}`,
       definition: {
         type: 'https://w3id.org/xapi/tla/activity-types/competency',
-        extensions: { 'https://w3id.org/xapi/tla/extensions/competency-identifier': competency.idNumber },
+        extensions: {
+          'https://w3id.org/xapi/tla/extensions/competency-identifier':
+            competency.idNumber,
+        },
       },
     },
-    result: { score: { raw: score }, completion: true, ...(comment ? { response: comment } : {}) },
+    result: {
+      score: { raw: score },
+      completion: true,
+      ...(comment ? { response: comment } : {}),
+    },
     context: {
       platform: 'Blueprint',
       team: { name: team.shortName, account: { name: team.id } },
@@ -280,7 +367,8 @@ function asserted(
     },
   };
 }
-const onEvent = (eventId: string) => `https://blueprint.example/api/scenarioevents/${eventId}`;
+const onEvent = (eventId: string) =>
+  `https://blueprint.example/api/scenarioevents/${eventId}`;
 
 function seeded<S extends { set(entities: unknown[]): void }>(
   Store: new () => S,
@@ -684,10 +772,32 @@ describe('AssessorViewComponent', () => {
 
   describe('printed assessment report', () => {
     const STATEMENTS = [
-      asserted('st-1', '2026-11-03T14:20:00Z', TRIAGE, 2, onEvent('se-1'), BLUE, 'Slow to isolate'),
-      asserted('st-2', '2026-11-03T14:30:00Z', TRIAGE, 3, onEvent('se-1'), BLUE, 'Isolated both hosts'),
+      asserted(
+        'st-1',
+        '2026-11-03T14:20:00Z',
+        TRIAGE,
+        2,
+        onEvent('se-1'),
+        BLUE,
+        'Slow to isolate',
+      ),
+      asserted(
+        'st-2',
+        '2026-11-03T14:30:00Z',
+        TRIAGE,
+        3,
+        onEvent('se-1'),
+        BLUE,
+        'Isolated both hosts',
+      ),
       asserted('st-3', '2026-11-03T15:10:00Z', CONTAIN, 1, onEvent('se-3')),
-      asserted('st-4', '2026-11-03T15:05:00Z', CONTAIN, 2, 'https://blueprint.example/api/msels/msel-1/moves/2'),
+      asserted(
+        'st-4',
+        '2026-11-03T15:05:00Z',
+        CONTAIN,
+        2,
+        'https://blueprint.example/api/msels/msel-1/moves/2',
+      ),
     ];
 
     // Clicks Print Assessment Report, answers the statements request, and waits until the report would be printed.
@@ -695,7 +805,7 @@ describe('AssessorViewComponent', () => {
     async function printReport(
       statements: unknown[] | 'unavailable',
       overrides: Parameters<typeof renderAssessorView>[0] = {},
-      beforePrinting?: () => void
+      beforePrinting?: () => void,
     ) {
       vi.stubEnv('TZ', 'America/New_York');
       const rendered = await renderAssessorView({
@@ -709,16 +819,28 @@ describe('AssessorViewComponent', () => {
         ...overrides,
       });
       const printDocument = vi
-        .spyOn(rendered.fixture.componentInstance as unknown as { printDocument(): void }, 'printDocument')
+        .spyOn(
+          rendered.fixture.componentInstance as unknown as {
+            printDocument(): void;
+          },
+          'printDocument',
+        )
         .mockImplementation(() => undefined);
       beforePrinting?.();
 
-      await userEvent.click(screen.getByRole('button', { name: 'Print Assessment Report' }));
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      );
       const request = TestBed.inject(HttpTestingController).expectOne(
-        (req) => req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1'
+        (req) =>
+          req.url === '/api/xapi/statements' &&
+          req.params.get('mselId') === 'msel-1',
       );
       if (statements === 'unavailable') {
-        request.flush('LRS down', { status: 503, statusText: 'Service Unavailable' });
+        request.flush('LRS down', {
+          status: 503,
+          statusText: 'Service Unavailable',
+        });
       } else {
         request.flush({ statements });
       }
@@ -729,7 +851,9 @@ describe('AssessorViewComponent', () => {
     }
 
     const texts = (root: ParentNode, selector: string) =>
-      Array.from(root.querySelectorAll(selector), (e) => e.textContent.replace(/\s+/g, ' ').trim());
+      Array.from(root.querySelectorAll(selector), (e) =>
+        e.textContent.replace(/\s+/g, ' ').trim(),
+      );
     const section = (name: string) => screen.getByLabelText(name);
 
     /**
@@ -741,7 +865,9 @@ describe('AssessorViewComponent', () => {
     it('draws the report only when printing', async () => {
       let drawnBeforePrinting: boolean | undefined;
       const { printDocument } = await printReport(STATEMENTS, {}, () => {
-        drawnBeforePrinting = !!document.getElementById('assessment-print-area');
+        drawnBeforePrinting = !!document.getElementById(
+          'assessment-print-area',
+        );
       });
 
       expect(drawnBeforePrinting).toBe(false);
@@ -750,7 +876,8 @@ describe('AssessorViewComponent', () => {
       expect(document.getElementById('assessment-print-area')).not.toBeNull();
     });
 
-    const tableRows = (table: Element) => Array.from(table.querySelectorAll('tbody tr'), (row) => texts(row, 'td'));
+    const tableRows = (table: Element) =>
+      Array.from(table.querySelectorAll('tbody tr'), (row) => texts(row, 'td'));
 
     /**
      * Verifies: the cover shows the theme band (no MSEL image), "Assessment Report", the MSEL name and facts, and the
@@ -764,13 +891,35 @@ describe('AssessorViewComponent', () => {
       const cover = section('Cover');
       expect(within(cover).getByTestId('cover-band')).toBeInTheDocument();
       expect(within(cover).getByText('Assessment Report')).toBeInTheDocument();
-      expect(within(cover).getByRole('heading', { level: 1, hidden: true })).toHaveTextContent('Scoring Model Check');
+      expect(
+        within(cover).getByRole('heading', { level: 1, hidden: true }),
+      ).toHaveTextContent('Scoring Model Check');
       const facts = cover.querySelector('.cover-facts');
-      expect(texts(facts, 'dt')).toEqual(['Start', 'Duration', 'Moves', 'Injects', 'Teams', 'Assessors', 'Printed']);
-      expect(texts(facts, 'dd').slice(0, 6)).toEqual(['03 Nov 2026 09:00 EST', '1 hour 30 minutes', '2', '4', '2', 'J. Doe']);
+      expect(texts(facts, 'dt')).toEqual([
+        'Start',
+        'Duration',
+        'Moves',
+        'Injects',
+        'Teams',
+        'Assessors',
+        'Printed',
+      ]);
+      expect(texts(facts, 'dd').slice(0, 6)).toEqual([
+        '03 Nov 2026 09:00 EST',
+        '1 hour 30 minutes',
+        '2',
+        '4',
+        '2',
+        'J. Doe',
+      ]);
       const purpose = within(cover).getByLabelText('Purpose');
-      expect(texts(purpose, '.purpose-description')).toEqual(['Rehearse triage and containment of a ransomware intrusion.']);
-      expect(texts(purpose, '.purpose-moves li')).toEqual(['Move 1: Initial Reports', 'Move 2: Escalation']);
+      expect(texts(purpose, '.purpose-description')).toEqual([
+        'Rehearse triage and containment of a ransomware intrusion.',
+      ]);
+      expect(texts(purpose, '.purpose-moves li')).toEqual([
+        'Move 1: Initial Reports',
+        'Move 2: Escalation',
+      ]);
     });
 
     /**
@@ -785,16 +934,39 @@ describe('AssessorViewComponent', () => {
       await printReport(STATEMENTS);
 
       const results = section('Results');
-      expect(texts(results, 'h2')).toEqual(['Results by competency', 'Results by team']);
-      expect(within(results).getByText('This MSEL has no objectives, so its competencies measure the results.')).toBeInTheDocument();
-      const byCompetency = within(results).getByLabelText('Results by competency');
-      expect(texts(byCompetency, 'thead th')).toEqual(['Competency', 'Injects', 'Assessed', 'Novice', 'Proficient', 'Expert']);
+      expect(texts(results, 'h2')).toEqual([
+        'Results by competency',
+        'Results by team',
+      ]);
+      expect(
+        within(results).getByText(
+          'This MSEL has no objectives, so its competencies measure the results.',
+        ),
+      ).toBeInTheDocument();
+      const byCompetency = within(results).getByLabelText(
+        'Results by competency',
+      );
+      expect(texts(byCompetency, 'thead th')).toEqual([
+        'Competency',
+        'Injects',
+        'Assessed',
+        'Novice',
+        'Proficient',
+        'Expert',
+      ]);
       expect(tableRows(byCompetency)).toEqual([
         ['K-2 Containment knowledge', '2', '1', '1', '1', '0'],
         ['T-1 Incident triage', '2', '1', '0', '0', '1'],
       ]);
       const byTeam = within(results).getByLabelText('Results by team');
-      expect(texts(byTeam, 'thead th')).toEqual(['Team', 'Injects assessed', 'Not assessed', 'Novice', 'Proficient', 'Expert']);
+      expect(texts(byTeam, 'thead th')).toEqual([
+        'Team',
+        'Injects assessed',
+        'Not assessed',
+        'Novice',
+        'Proficient',
+        'Expert',
+      ]);
       expect(tableRows(byTeam)).toEqual([
         ['Blue Team', '2', '1', '1', '1', '1'],
         ['Red Team', '0', '3', '0', '0', '0'],
@@ -812,7 +984,14 @@ describe('AssessorViewComponent', () => {
       await printReport(STATEMENTS, {
         fields: [
           ...REPORT_FIELDS,
-          { id: 'df-obj', mselId: 'msel-1', name: 'Objectives', dataType: DataFieldType.String, displayOrder: 4, isAssessorVisible: false },
+          {
+            id: 'df-obj',
+            mselId: 'msel-1',
+            name: 'Objectives',
+            dataType: DataFieldType.String,
+            displayOrder: 4,
+            isAssessorVisible: false,
+          },
         ],
         values: [
           ...REPORT_VALUES,
@@ -823,9 +1002,19 @@ describe('AssessorViewComponent', () => {
       });
 
       const results = section('Results');
-      expect(texts(results, 'h2')).toEqual(['Results by objective', 'Results by competency', 'Results by team']);
-      expect(within(results).getByText('Objectives are the values of the Objectives data field.')).toBeInTheDocument();
-      expect(tableRows(within(results).getByLabelText('Results by objective'))).toEqual([
+      expect(texts(results, 'h2')).toEqual([
+        'Results by objective',
+        'Results by competency',
+        'Results by team',
+      ]);
+      expect(
+        within(results).getByText(
+          'Objectives are the values of the Objectives data field.',
+        ),
+      ).toBeInTheDocument();
+      expect(
+        tableRows(within(results).getByLabelText('Results by objective')),
+      ).toEqual([
         ['Detect intrusion', '2', '1', '0', '0', '1'],
         ['Contain ransomware', '1', '1', '1', '0', '0'],
       ]);
@@ -841,21 +1030,34 @@ describe('AssessorViewComponent', () => {
     it('prints each team as one table with a not-assessed line', async () => {
       await printReport(STATEMENTS);
 
-      expect(texts(document, '.report-team .team-title')).toEqual(['Blue Team', 'Red Team']);
+      expect(texts(document, '.report-team .team-title')).toEqual([
+        'Blue Team',
+        'Red Team',
+      ]);
       const blue = section('Blue Team');
       expect(texts(blue, 'thead th')).toEqual(['Time', 'Inject', 'Rating']);
-      expect(tableRows(blue.querySelector('table')).map((row) => row.slice(1))).toEqual([
+      expect(
+        tableRows(blue.querySelector('table')).map((row) => row.slice(1)),
+      ).toEqual([
         ['Unusual logins', 'T-1 Expert Isolated both hosts'],
         ['Move 2 (whole move)', 'K-2 Proficient'],
         ['Ransom note', 'K-2 Novice'],
       ]);
       expect(blue.querySelectorAll('.rating-comment')).toHaveLength(1);
-      expect(texts(blue, '.not-assessed')).toEqual(['Not assessed: Locked accounts']);
+      expect(texts(blue, '.not-assessed')).toEqual([
+        'Not assessed: Locked accounts',
+      ]);
 
       const red = section('Red Team');
-      expect(within(red).getByText('No assessments recorded for this team.')).toBeInTheDocument();
-      expect(texts(red, '.not-assessed')).toEqual(['Not assessed: Unusual logins, Locked accounts, Ransom note']);
-      expect(document.querySelector('#assessment-print-area')?.textContent).not.toMatch(/Confidence/);
+      expect(
+        within(red).getByText('No assessments recorded for this team.'),
+      ).toBeInTheDocument();
+      expect(texts(red, '.not-assessed')).toEqual([
+        'Not assessed: Unusual logins, Locked accounts, Ransom note',
+      ]);
+      expect(
+        document.querySelector('#assessment-print-area')?.textContent,
+      ).not.toMatch(/Confidence/);
     });
 
     /**
@@ -864,16 +1066,39 @@ describe('AssessorViewComponent', () => {
      * Interacts with: buildAssessmentReport (isAssessableFor), TeamCompetencyService (stub).
      * Data: Red is assigned K-2 only; Blue is assigned T-1 and K-2 and is rated on every inject with competencies.
      */
-    it('narrows the not-assessed injects to the team\'s competencies', async () => {
-      await printReport([...STATEMENTS, asserted('st-5', '2026-11-03T14:45:00Z', TRIAGE, 2, onEvent('se-2'))], {
-        teamCompetencies: [
-          { id: 'tc-1', teamId: RED.id, competencyId: CONTAIN.id, competency: CONTAIN },
-          { id: 'tc-2', teamId: BLUE.id, competencyId: TRIAGE.id, competency: TRIAGE },
-          { id: 'tc-3', teamId: BLUE.id, competencyId: CONTAIN.id, competency: CONTAIN },
+    it("narrows the not-assessed injects to the team's competencies", async () => {
+      await printReport(
+        [
+          ...STATEMENTS,
+          asserted('st-5', '2026-11-03T14:45:00Z', TRIAGE, 2, onEvent('se-2')),
         ],
-      });
+        {
+          teamCompetencies: [
+            {
+              id: 'tc-1',
+              teamId: RED.id,
+              competencyId: CONTAIN.id,
+              competency: CONTAIN,
+            },
+            {
+              id: 'tc-2',
+              teamId: BLUE.id,
+              competencyId: TRIAGE.id,
+              competency: TRIAGE,
+            },
+            {
+              id: 'tc-3',
+              teamId: BLUE.id,
+              competencyId: CONTAIN.id,
+              competency: CONTAIN,
+            },
+          ],
+        },
+      );
 
-      expect(texts(section('Red Team'), '.not-assessed')).toEqual(['Not assessed: Locked accounts, Ransom note']);
+      expect(texts(section('Red Team'), '.not-assessed')).toEqual([
+        'Not assessed: Locked accounts, Ransom note',
+      ]);
       expect(section('Blue Team').querySelector('.not-assessed')).toBeNull();
     });
 
@@ -884,11 +1109,18 @@ describe('AssessorViewComponent', () => {
      * Data: the report exercise without teams or MSEL competencies; no statements.
      */
     it('prints no team pages for a MSEL with no teams', async () => {
-      await printReport([], { msel: { ...REPORT_MSEL, teams: [] }, mselCompetencies: [] });
+      await printReport([], {
+        msel: { ...REPORT_MSEL, teams: [] },
+        mselCompetencies: [],
+      });
 
       const results = section('Results');
-      expect(within(results).getByText('This MSEL has no teams.')).toBeInTheDocument();
-      expect(within(results).getByText('No injects exercise a competency.')).toBeInTheDocument();
+      expect(
+        within(results).getByText('This MSEL has no teams.'),
+      ).toBeInTheDocument();
+      expect(
+        within(results).getByText('No injects exercise a competency.'),
+      ).toBeInTheDocument();
       expect(document.querySelectorAll('.report-team')).toHaveLength(0);
     });
 
@@ -901,9 +1133,19 @@ describe('AssessorViewComponent', () => {
     it('says so when the statements could not be read', async () => {
       await printReport('unavailable');
 
-      expect(within(section('Cover')).getByText(/^The xAPI statements could not be read/)).toBeInTheDocument();
-      expect(within(section('Blue Team')).getByText('No assessments recorded for this team.')).toBeInTheDocument();
-      expect(texts(section('Blue Team'), '.not-assessed')).toEqual(['Not assessed: Unusual logins, Locked accounts, Ransom note']);
+      expect(
+        within(section('Cover')).getByText(
+          /^The xAPI statements could not be read/,
+        ),
+      ).toBeInTheDocument();
+      expect(
+        within(section('Blue Team')).getByText(
+          'No assessments recorded for this team.',
+        ),
+      ).toBeInTheDocument();
+      expect(texts(section('Blue Team'), '.not-assessed')).toEqual([
+        'Not assessed: Unusual logins, Locked accounts, Ransom note',
+      ]);
     });
 
     /**
@@ -914,12 +1156,27 @@ describe('AssessorViewComponent', () => {
      */
     it('prints a rating for no MSEL team on its own page', async () => {
       const other = { ...BLUE, id: 'team-gone', shortName: 'GONE' };
-      await printReport([asserted('st-9', '2026-11-03T14:20:00Z', TRIAGE, 1, onEvent('se-1'), other)]);
-
-      expect(texts(document, '.report-team .team-title')).toEqual(['Blue Team', 'Red Team', 'No team']);
-      expect(tableRows(section('No team').querySelector('table')).map((row) => row.slice(1))).toEqual([
-        ['Unusual logins', 'T-1 Novice'],
+      await printReport([
+        asserted(
+          'st-9',
+          '2026-11-03T14:20:00Z',
+          TRIAGE,
+          1,
+          onEvent('se-1'),
+          other,
+        ),
       ]);
+
+      expect(texts(document, '.report-team .team-title')).toEqual([
+        'Blue Team',
+        'Red Team',
+        'No team',
+      ]);
+      expect(
+        tableRows(section('No team').querySelector('table')).map((row) =>
+          row.slice(1),
+        ),
+      ).toEqual([['Unusual logins', 'T-1 Novice']]);
       expect(section('No team').querySelector('.not-assessed')).toBeNull();
     });
 
@@ -943,25 +1200,47 @@ describe('AssessorViewComponent', () => {
         proficiencyLevels: LEVELS,
       });
       const printDocument = vi
-        .spyOn(fixture.componentInstance as unknown as { printDocument(): void }, 'printDocument')
+        .spyOn(
+          fixture.componentInstance as unknown as { printDocument(): void },
+          'printDocument',
+        )
         .mockImplementation(() => undefined);
       const http = TestBed.inject(HttpTestingController);
-      const isRead = (req: { url: string; params: { get(name: string): string | null } }) =>
-        req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1';
+      const isRead = (req: {
+        url: string;
+        params: { get(name: string): string | null };
+      }) =>
+        req.url === '/api/xapi/statements' &&
+        req.params.get('mselId') === 'msel-1';
 
-      await userEvent.click(screen.getByRole('button', { name: 'Print Assessment Report' }));
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      );
       const first = http.expectOne(isRead);
-      TestBed.inject(MselStore).update('msel-1', { hideNamesOnAssessorView: true });
+      TestBed.inject(MselStore).update('msel-1', {
+        hideNamesOnAssessorView: true,
+      });
       fixture.detectChanges();
       first.flush({ statements: STATEMENTS });
-      http.expectOne(isRead).flush({ statements: STATEMENTS.map((stmt) => ({ ...stmt, actor: { objectType: 'Agent' } })) });
+      http
+        .expectOne(isRead)
+        .flush({
+          statements: STATEMENTS.map((stmt) => ({
+            ...stmt,
+            actor: { objectType: 'Agent' },
+          })),
+        });
       fixture.detectChanges();
       await vi.waitFor(() => expect(printDocument).toHaveBeenCalledTimes(1));
       fixture.detectChanges();
 
       const facts = section('Cover').querySelector('.cover-facts');
       expect(texts(facts, 'dt')).not.toContain('Assessors');
-      expect(tableRows(section('Blue Team').querySelector('table')).map((row) => row.slice(1))).toEqual([
+      expect(
+        tableRows(section('Blue Team').querySelector('table')).map((row) =>
+          row.slice(1),
+        ),
+      ).toEqual([
         ['Unusual logins', 'T-1 Expert Isolated both hosts'],
         ['Move 2 (whole move)', 'K-2 Proficient'],
         ['Ransom note', 'K-2 Novice'],
