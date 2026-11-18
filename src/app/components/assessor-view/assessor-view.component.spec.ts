@@ -1128,6 +1128,24 @@ describe('AssessorViewComponent', () => {
     });
 
     /**
+     * Verifies: with names hidden from the start and the statements unreadable, the report prints once, from the one
+     * failed read, rather than starting again for a names setting it did not read under.
+     * Interacts with: loadAllStatements error path, statementsHidingNames, printReport.
+     * Data: the MSEL hiding names; GET api/xapi/statements answers 503.
+     */
+    it('prints once when the statements cannot be read while names are hidden', async () => {
+      const { printDocument } = await printReport('unavailable', {
+        msel: { ...REPORT_MSEL, hideNamesOnAssessorView: true },
+      });
+      await new Promise((r) => setTimeout(r, 400));
+
+      expect(printDocument).toHaveBeenCalledTimes(1);
+      TestBed.inject(HttpTestingController).expectNone(
+        (req) => req.url === '/api/xapi/statements',
+      );
+    });
+
+    /**
      * Verifies: when the statements can't be read the report still prints, says why it shows no assessments, and
      * names every inject with competencies as not assessed.
      * Interacts with: loadAllStatements error path, buildAssessmentReport.

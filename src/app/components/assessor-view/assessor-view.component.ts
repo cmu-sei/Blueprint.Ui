@@ -1584,6 +1584,7 @@ export class AssessorViewComponent
         error: () => {
           if (this.restartStatementsIfStale(onDone)) return;
           this.allMselStatements = [];
+          this.statementsHidingNames = hidingNames;
           this.statementsLoaded = true;
           this.statementsFailed = true;
           this.statementsLoading = false;
