@@ -133,6 +133,16 @@
   flex: 1 1 160px;
 }
 
+// a list of ids wraps between ids, never inside one
+mat-cell.col-weaknesses,
+mat-cell.col-see-also {
+  flex-wrap: wrap;
+
+  a {
+    white-space: nowrap;
+  }
+}
+
 .col-see-also {
   flex: 0 0 130px;
 }
