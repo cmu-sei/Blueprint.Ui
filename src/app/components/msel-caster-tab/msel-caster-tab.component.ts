@@ -313,8 +313,9 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
       next: () => {
         this.busy = false;
         this.isChanged = false;
+        // the API deleted the copy of the old directory
         if (replacesCopy) {
-          this.copy = null;
+          this.copyKnown(null);
         }
       },
       // the choice stays up to be retried
@@ -360,7 +361,7 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
         if (this.msel.id !== mselId) {
           return;
         }
-        this.copy = copy;
+        this.copyKnown(copy);
         if (copy.warnings?.length) {
           this.showMessage(
             'Copy Stored With Warnings',
@@ -437,7 +438,7 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
           .subscribe({
             next: () => {
               this.busy = false;
-              this.copy = null;
+              this.copyKnown(null);
             },
             error: (err) => {
               this.busy = false;
@@ -445,6 +446,13 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
             },
           });
       });
+  }
+
+  // a store, delete, import or relink that succeeded says whether there is a copy, whatever the first read did
+  private copyKnown(copy: MselCasterExport | null) {
+    this.copy = copy;
+    this.copyLoaded = true;
+    this.copyError = false;
   }
 
   private copyTaken(): string {

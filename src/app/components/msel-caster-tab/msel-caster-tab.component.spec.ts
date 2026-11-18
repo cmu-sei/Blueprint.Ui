@@ -272,6 +272,32 @@ describe('MselCasterTabComponent', () => {
       expect.objectContaining({ title: 'Link Another Directory' }),
     );
     expect(mselApi.updateMsel).toHaveBeenCalledTimes(1);
+    // the API deleted whatever copy there was
+    expect(screen.getByText('No copy is stored.')).toBeInTheDocument();
+    expect(
+      screen.queryByText('The stored copy could not be loaded.'),
+    ).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a copy stored while the first read is still pending settles the tab, so Save Changes no longer waits for that read.
+   * Interacts with: Store a Copy Now, MselCasterExportService.captureMselCasterExport (stub), copyKnown.
+   * Data: MSEL role Owner; a pending MSEL linked to dir-1 whose copy request never answers.
+   */
+  it('settles the copy once Store a Copy Now succeeds during a pending read', async () => {
+    const { fixture } = await renderTab({
+      mselExtra: { casterDirectoryId: 'dir-1' },
+      copyAnswer: () => NEVER,
+    });
+
+    await userEvent.setup().click(button('Store a Copy Now'));
+    fixture.detectChanges();
+    const [select] = await directorySelects(fixture);
+    await select.clickOptions({ text: 'Range / Extended' });
+    fixture.detectChanges();
+
+    expect(screen.getByText('Range Project')).toBeInTheDocument();
+    expect(button('Save Changes')).toBeEnabled();
   });
 
   /**

@@ -453,8 +453,10 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   }
 
   // variables more than one team would write, counting Player's own Admin team; the API refuses those
+  // The API refuses them for every Caster MSEL it pushes, whatever its template declares, so they are shown
+  // whether the topology is a linked directory or a copy, even one with no team variables
   getDuplicateTeamVariableWarnings(): string[] {
-    if (!this.hasTopology()) {
+    if (!this.msel.useCaster) {
       return [];
     }
     const writers = this.mselTeams.map((t) => this.toTeamVariableWriter(t));

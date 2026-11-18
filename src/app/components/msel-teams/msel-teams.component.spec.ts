@@ -395,7 +395,7 @@ describe('MselTeamsComponent', () => {
     });
 
     /**
-     * Verifies: without Caster no team variables are requested; with Caster but neither a directory nor a copy, the copy's variables are asked for and come back empty. Either way there is no Topology Team column or topology warning.
+     * Verifies: without Caster no team variables are requested and nothing is warned of; with Caster but neither a directory nor a copy, the copy's variables are asked for and come back empty. Either way there is no Topology Team column, and only Caster warns of teams that would write the same variable, which the API refuses for any Caster push.
      * Interacts with: loadCasterTeamVariables, setDisplayedColumns, MselCasterExportService.getMselCasterTeamVariables (stub, empty).
      * Data: ManageMsels; Caster off with directory dir-1; Caster on with no directory and no copy; two teams mapped to the same variable.
      */
@@ -404,26 +404,36 @@ describe('MselTeamsComponent', () => {
         label: 'without Caster',
         mselExtra: { ...CASTER, useCaster: false },
         asksTheCopy: false,
+        duplicates: [],
       },
       {
         label: 'without a Caster directory or a copy of one',
         mselExtra: { ...CASTER, casterDirectoryId: null },
         asksTheCopy: true,
+        duplicates: [
+          '"Blue Team" and "Cyan Team" all become "blue_cell", so Push will be refused. Rename one or map it to a different topology team.',
+        ],
       },
-    ])('has no topology teams $label', async ({ mselExtra, asksTheCopy }) => {
-      const { casterApi, copyApi } = await renderMselTeams({
-        permissions: [SystemPermission.ManageMsels],
-        mselExtra,
-        teams: [team('Blue Team', 'blue_cell'), team('Cyan Team', 'blue_cell')],
-      });
+    ])(
+      'has no topology teams $label',
+      async ({ mselExtra, asksTheCopy, duplicates }) => {
+        const { casterApi, copyApi } = await renderMselTeams({
+          permissions: [SystemPermission.ManageMsels],
+          mselExtra,
+          teams: [
+            team('Blue Team', 'blue_cell'),
+            team('Cyan Team', 'blue_cell'),
+          ],
+        });
 
-      expect(casterApi.getCasterTeamVariables).not.toHaveBeenCalled();
-      expect(copyApi.getMselCasterTeamVariables.mock.calls.length > 0).toBe(
-        asksTheCopy,
-      );
-      expect(headers()).not.toContain('Topology Team');
-      expect(warnings()).toEqual([]);
-    });
+        expect(casterApi.getCasterTeamVariables).not.toHaveBeenCalled();
+        expect(copyApi.getMselCasterTeamVariables.mock.calls.length > 0).toBe(
+          asksTheCopy,
+        );
+        expect(headers()).not.toContain('Topology Team');
+        expect(warnings()).toEqual(duplicates);
+      },
+    );
 
     /**
      * Verifies: a MSEL with no directory but a copy of one shows the copy's topology teams, and warns when two teams would write the same variable, as for a linked directory.
@@ -443,6 +453,24 @@ describe('MselTeamsComponent', () => {
       expect(headers()).toContain('Topology Team');
       expect(cellOf('Blue Team', 'Topology Team')).toBe('blue_cell');
       expect(warnings().some((w) => w.includes('all become "blue_cell"'))).toBe(
+        true,
+      );
+    });
+
+    /**
+     * Verifies: a copy with no team variables still warns when two teams would write the same variable, since the API refuses that push whatever the template declares.
+     * Interacts with: MselCasterExportService.getMselCasterTeamVariables (stub, empty), getDuplicateTeamVariableWarnings.
+     * Data: ManageMsels; Caster on with no directory; the copy declares no team variables; Blue Team and Blue_Team, both unmapped.
+     */
+    it('warns of colliding team names when the copy declares no team variables', async () => {
+      await renderMselTeams({
+        permissions: [SystemPermission.ManageMsels],
+        mselExtra: { ...CASTER, casterDirectoryId: null },
+        teams: [team('Blue Team'), team('Blue_Team')],
+      });
+
+      expect(headers()).not.toContain('Topology Team');
+      expect(warnings().some((w) => w.includes('all become "blue_team"'))).toBe(
         true,
       );
     });
