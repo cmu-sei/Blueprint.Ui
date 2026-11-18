@@ -20,7 +20,10 @@ import { XApiService } from 'src/app/services/xapi/xapi.service';
 import { MselComponent } from './msel.component';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
-import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-load-api-stubs';
+import {
+  mselLoadApiProviders,
+  mselLoadApiStubs,
+} from 'src/app/test-utils/msel-load-api-stubs';
 import { MselInfoComponent } from '../msel-info/msel-info.component';
 import { MselContributorsComponent } from '../msel-contributors/msel-contributors.component';
 import { MselTeamsComponent } from '../msel-teams/msel-teams.component';
@@ -128,7 +131,6 @@ class MselPlaybookStub {
   readonly canEditMsel = input<boolean>(undefined);
 }
 
-
 const MSEL: Msel = {
   id: 'msel-1',
   name: 'Exercise Alpha',
@@ -140,11 +142,26 @@ const MSEL: Msel = {
 };
 
 async function renderMsel(
-  overrides: { canEditMsel?: boolean; canAccessAdminSection?: boolean; canEditCheckboxes?: boolean; msel?: Msel; mselUnits?: MselUnit[] } = {},
+  overrides: {
+    canEditMsel?: boolean;
+    canAccessAdminSection?: boolean;
+    canEditCheckboxes?: boolean;
+    msel?: Msel;
+    mselUnits?: MselUnit[];
+  } = {},
 ) {
-  const { canEditMsel = false, canAccessAdminSection = false, canEditCheckboxes = false, msel = MSEL, mselUnits = [] } = overrides;
+  const {
+    canEditMsel = false,
+    canAccessAdminSection = false,
+    canEditCheckboxes = false,
+    msel = MSEL,
+    mselUnits = [],
+  } = overrides;
   const apis = mselLoadApiStubs({ msel, mselUnits });
-  const xApi = { viewedMsel: vi.fn(() => of(null)) } satisfies Pick<XApiService, 'viewedMsel'>;
+  const xApi = { viewedMsel: vi.fn(() => of(null)) } satisfies Pick<
+    XApiService,
+    'viewedMsel'
+  >;
   const { route, setQueryParams } = activatedRouteStub({ msel: 'msel-1' });
   const rendered = await renderComponent(MselComponent, {
     imports: [MatButtonModule, MatIconModule, MatListModule, MatSidenavModule],
@@ -155,7 +172,10 @@ async function renderMsel(
       { replace: DataFieldListComponent, with: DataFieldListStub },
       { replace: OrganizationListComponent, with: OrganizationListStub },
       { replace: MoveListComponent, with: MoveListStub },
-      { replace: PlayerApplicationListComponent, with: PlayerApplicationListStub },
+      {
+        replace: PlayerApplicationListComponent,
+        with: PlayerApplicationListStub,
+      },
       { replace: CardListComponent, with: CardListStub },
       { replace: CiteActionListComponent, with: CiteActionListStub },
       { replace: CiteDutyListComponent, with: CiteDutyListStub },
@@ -172,30 +192,67 @@ async function renderMsel(
       { provide: XApiService, useValue: xApi },
       { provide: ActivatedRoute, useValue: route },
     ],
-    inputs: { canEditMsel, canAccessAdminSection, canEditCheckboxes, loggedInUserId: 'user-me', userTheme$: of(Theme.LIGHT) },
+    inputs: {
+      canEditMsel,
+      canAccessAdminSection,
+      canEditCheckboxes,
+      loggedInUserId: 'user-me',
+      userTheme$: of(Theme.LIGHT),
+    },
   });
   return { ...rendered, apis, xApi, setQueryParams };
 }
 
-const nav = () => within(document.querySelector('mat-drawer mat-list') as HTMLElement);
+const nav = () =>
+  within(document.querySelector('mat-drawer mat-list') as HTMLElement);
 async function openTab(name: string) {
   const user = userEvent.setup();
   await user.click(nav().getByText(name));
   return user;
 }
-function child<T>(fixture: ComponentFixture<unknown>, stub: new (...args: never[]) => T): T | undefined {
+function child<T>(
+  fixture: ComponentFixture<unknown>,
+  stub: new (...args: never[]) => T,
+): T | undefined {
   return fixture.debugElement.query(By.directive(stub))?.componentInstance;
 }
 
 // The tabs that pass canEditMsel down, with the input each child receives it as.
 const EDIT_TABS = [
-  { tab: 'Organizations', read: (f: ComponentFixture<unknown>) => child(f, OrganizationListStub)?.canEdit() },
-  { tab: 'Moves', read: (f: ComponentFixture<unknown>) => child(f, MoveListStub)?.canEditMsel() },
-  { tab: 'Gallery Cards', read: (f: ComponentFixture<unknown>) => child(f, CardListStub)?.canEdit() },
-  { tab: 'Actions', read: (f: ComponentFixture<unknown>) => child(f, CiteActionListStub)?.canEdit() },
-  { tab: 'Duties', read: (f: ComponentFixture<unknown>) => child(f, CiteDutyListStub)?.canEdit() },
-  { tab: 'Invitations', read: (f: ComponentFixture<unknown>) => child(f, InvitationListStub)?.canEditMsel() },
-  { tab: 'MSEL Playbook', read: (f: ComponentFixture<unknown>) => child(f, MselPlaybookStub)?.canEditMsel() },
+  {
+    tab: 'Organizations',
+    read: (f: ComponentFixture<unknown>) =>
+      child(f, OrganizationListStub)?.canEdit(),
+  },
+  {
+    tab: 'Moves',
+    read: (f: ComponentFixture<unknown>) =>
+      child(f, MoveListStub)?.canEditMsel(),
+  },
+  {
+    tab: 'Gallery Cards',
+    read: (f: ComponentFixture<unknown>) => child(f, CardListStub)?.canEdit(),
+  },
+  {
+    tab: 'Actions',
+    read: (f: ComponentFixture<unknown>) =>
+      child(f, CiteActionListStub)?.canEdit(),
+  },
+  {
+    tab: 'Duties',
+    read: (f: ComponentFixture<unknown>) =>
+      child(f, CiteDutyListStub)?.canEdit(),
+  },
+  {
+    tab: 'Invitations',
+    read: (f: ComponentFixture<unknown>) =>
+      child(f, InvitationListStub)?.canEditMsel(),
+  },
+  {
+    tab: 'MSEL Playbook',
+    read: (f: ComponentFixture<unknown>) =>
+      child(f, MselPlaybookStub)?.canEditMsel(),
+  },
 ];
 
 describe('MselComponent', () => {
@@ -213,7 +270,13 @@ describe('MselComponent', () => {
 
     expect(xApi.viewedMsel).toHaveBeenCalledWith('msel-1');
     expect(apis.msel.getMsel).toHaveBeenCalledWith('msel-1');
-    for (const endpoint of [apis.move.getMovesByMsel, apis.dataField.getDataFieldsByMsel, apis.scenarioEvent.getScenarioEventsByMsel, apis.invitation.getInvitations, apis.mselUnit.getMselUnits]) {
+    for (const endpoint of [
+      apis.move.getMovesByMsel,
+      apis.dataField.getDataFieldsByMsel,
+      apis.scenarioEvent.getScenarioEventsByMsel,
+      apis.invitation.getInvitations,
+      apis.mselUnit.getMselUnits,
+    ]) {
       expect(endpoint).toHaveBeenCalledWith('msel-1');
     }
     expect(child(fixture, MselInfoStub)?.loggedInUserId()).toBe('user-me');
@@ -240,7 +303,11 @@ describe('MselComponent', () => {
    * Data: one contributor unit; then the same row updated; then a second unit added.
    */
   it('reloads the MSEL users only when its contributors change', async () => {
-    const contributor: MselUnit = { id: 'mu-1', mselId: 'msel-1', unitId: 'unit-1' };
+    const contributor: MselUnit = {
+      id: 'mu-1',
+      mselId: 'msel-1',
+      unitId: 'unit-1',
+    };
     const { fixture, apis } = await renderMsel({ mselUnits: [contributor] });
     const mselUnitStore = fixture.debugElement.injector.get(MselUnitStore);
 
@@ -249,7 +316,11 @@ describe('MselComponent', () => {
     mselUnitStore.upsert('mu-1', { ...contributor, mselId: 'msel-1' });
     expect(apis.user.getMselUsers).toHaveBeenCalledTimes(1);
 
-    mselUnitStore.upsert('mu-2', { id: 'mu-2', mselId: 'msel-1', unitId: 'unit-2' });
+    mselUnitStore.upsert('mu-2', {
+      id: 'mu-2',
+      mselId: 'msel-1',
+      unitId: 'unit-2',
+    });
     expect(apis.user.getMselUsers).toHaveBeenCalledTimes(2);
     expect(apis.user.getMselUsers).toHaveBeenLastCalledWith('msel-1');
   });
@@ -261,12 +332,22 @@ describe('MselComponent', () => {
    * Data: msel=msel-1 with one contributor unit.
    */
   it('reloads the MSEL when the hub connection is replaced', async () => {
-    const { fixture, apis, xApi } = await renderMsel({ mselUnits: [{ id: 'mu-1', mselId: 'msel-1', unitId: 'unit-1' }] });
+    const { fixture, apis, xApi } = await renderMsel({
+      mselUnits: [{ id: 'mu-1', mselId: 'msel-1', unitId: 'unit-1' }],
+    });
 
-    fixture.debugElement.injector.get(HubReconnectService).announceReconnected();
+    fixture.debugElement.injector
+      .get(HubReconnectService)
+      .announceReconnected();
 
     expect(apis.msel.getMsel).toHaveBeenCalledTimes(2);
-    for (const endpoint of [apis.move.getMovesByMsel, apis.scenarioEvent.getScenarioEventsByMsel, apis.dataValue.getDataValuesByMsel, apis.mselUnit.getMselUnits, apis.user.getMselUsers]) {
+    for (const endpoint of [
+      apis.move.getMovesByMsel,
+      apis.scenarioEvent.getScenarioEventsByMsel,
+      apis.dataValue.getDataValuesByMsel,
+      apis.mselUnit.getMselUnits,
+      apis.user.getMselUsers,
+    ]) {
       expect(endpoint).toHaveBeenCalledTimes(2);
       expect(endpoint).toHaveBeenLastCalledWith('msel-1');
     }
@@ -280,10 +361,18 @@ describe('MselComponent', () => {
    * Data: an MSEL with Player, Gallery and CITE all off.
    */
   it('hides the tabs of integrations the MSEL does not use', async () => {
-    await renderMsel({ msel: { ...MSEL, usePlayer: false, useGallery: false, useCite: false } });
+    await renderMsel({
+      msel: { ...MSEL, usePlayer: false, useGallery: false, useCite: false },
+    });
 
     expect(nav().getByText('Moves')).toBeInTheDocument();
-    for (const tab of ['Player Apps', 'Gallery Cards', 'Scoring Model', 'Actions', 'Duties']) {
+    for (const tab of [
+      'Player Apps',
+      'Gallery Cards',
+      'Scoring Model',
+      'Actions',
+      'Duties',
+    ]) {
       expect(nav().queryByText(tab)).not.toBeInTheDocument();
     }
   });
@@ -296,11 +385,20 @@ describe('MselComponent', () => {
   it('offers the CITE tabs and opens the Scoring Model tab', async () => {
     const { fixture } = await renderMsel();
 
-    const tabs = Array.from(document.querySelectorAll('mat-drawer mat-list mat-list-item')).map((item) => item.textContent.trim());
-    expect(tabs.slice(tabs.indexOf('Scoring Model'), tabs.indexOf('Scoring Model') + 3)).toEqual(['Scoring Model', 'Actions', 'Duties']);
+    const tabs = Array.from(
+      document.querySelectorAll('mat-drawer mat-list mat-list-item'),
+    ).map((item) => item.textContent.trim());
+    expect(
+      tabs.slice(
+        tabs.indexOf('Scoring Model'),
+        tabs.indexOf('Scoring Model') + 3,
+      ),
+    ).toEqual(['Scoring Model', 'Actions', 'Duties']);
     await openTab('Scoring Model');
 
-    expect(child(fixture, MselScoringModelTabStub)?.loggedInUserId()).toBe('user-me');
+    expect(child(fixture, MselScoringModelTabStub)?.loggedInUserId()).toBe(
+      'user-me',
+    );
   });
 
   /**
@@ -311,7 +409,11 @@ describe('MselComponent', () => {
   it.each([
     { saved: 'CITE Actions', msel: MSEL, opens: 'Info' },
     { saved: 'CITE Duties', msel: MSEL, opens: 'Info' },
-    { saved: 'Gallery Cards', msel: { ...MSEL, useGallery: false }, opens: 'Info' },
+    {
+      saved: 'Gallery Cards',
+      msel: { ...MSEL, useGallery: false },
+      opens: 'Info',
+    },
     { saved: 'Actions', msel: MSEL, opens: 'Actions' },
   ])('reopens a saved $saved tab as $opens', async ({ saved, msel, opens }) => {
     localStorage.setItem('uiState', JSON.stringify({ selectedMselTab: saved }));
@@ -319,8 +421,14 @@ describe('MselComponent', () => {
     const { fixture } = await renderMsel({ msel });
 
     expect(fixture.componentInstance.selectedTab).toBe(opens);
-    expect(opens === 'Info' ? child(fixture, MselInfoStub) : child(fixture, CiteActionListStub)).toBeDefined();
-    expect(JSON.parse(localStorage.getItem('uiState')).selectedMselTab).toBe(opens);
+    expect(
+      opens === 'Info'
+        ? child(fixture, MselInfoStub)
+        : child(fixture, CiteActionListStub),
+    ).toBeDefined();
+    expect(JSON.parse(localStorage.getItem('uiState')).selectedMselTab).toBe(
+      opens,
+    );
   });
 
   /**
@@ -336,7 +444,9 @@ describe('MselComponent', () => {
 
     expect(child(fixture, MselScoringModelTabStub)).toBeDefined();
     expect(child(fixture, MselInfoStub)).toBeUndefined();
-    expect(JSON.parse(localStorage.getItem('uiState')).selectedMselTab).toBe('Scoring Model');
+    expect(JSON.parse(localStorage.getItem('uiState')).selectedMselTab).toBe(
+      'Scoring Model',
+    );
   });
 
   /**
@@ -344,7 +454,11 @@ describe('MselComponent', () => {
    * Interacts with: the side navigation, child stubs' inputs.
    * Data: canEditMsel true and false; one row per tab.
    */
-  it.each(EDIT_TABS.flatMap((t) => [true, false].map((canEditMsel) => ({ ...t, canEditMsel }))))(
+  it.each(
+    EDIT_TABS.flatMap((t) =>
+      [true, false].map((canEditMsel) => ({ ...t, canEditMsel })),
+    ),
+  )(
     '$tab gets canEditMsel $canEditMsel',
     async ({ tab, read, canEditMsel }) => {
       const { fixture } = await renderMsel({ canEditMsel });
@@ -360,13 +474,18 @@ describe('MselComponent', () => {
    * Interacts with: the side navigation, AssessorViewStub input.
    * Data: canEditCheckboxes true and false.
    */
-  it.each([true, false])('passes canEditCheckboxes %s to the Assessor View', async (canEditCheckboxes) => {
-    const { fixture } = await renderMsel({ canEditCheckboxes });
+  it.each([true, false])(
+    'passes canEditCheckboxes %s to the Assessor View',
+    async (canEditCheckboxes) => {
+      const { fixture } = await renderMsel({ canEditCheckboxes });
 
-    await openTab('Assessor View');
+      await openTab('Assessor View');
 
-    expect(child(fixture, AssessorViewStub)?.canEditCheckboxes()).toBe(canEditCheckboxes);
-  });
+      expect(child(fixture, AssessorViewStub)?.canEditCheckboxes()).toBe(
+        canEditCheckboxes,
+      );
+    },
+  );
 
   /**
    * Verifies: with canAccessAdminSection the navigation offers Administration, which opens /admin with the return URL.
@@ -375,12 +494,16 @@ describe('MselComponent', () => {
    */
   it('offers Administration with canAccessAdminSection', async () => {
     await renderMsel({ canAccessAdminSection: true });
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const navigate = vi
+      .spyOn(TestBed.inject(Router), 'navigate')
+      .mockResolvedValue(true);
     const user = userEvent.setup();
 
     await user.click(screen.getByRole('button', { name: 'Administration' }));
 
-    expect(navigate).toHaveBeenCalledWith(['/admin'], { queryParams: { returnUrl: '/' } });
+    expect(navigate).toHaveBeenCalledWith(['/admin'], {
+      queryParams: { returnUrl: '/' },
+    });
   });
 
   /**
@@ -391,6 +514,8 @@ describe('MselComponent', () => {
   it('hides Administration without canAccessAdminSection', async () => {
     await renderMsel({ canAccessAdminSection: false, canEditMsel: true });
 
-    expect(screen.queryByRole('button', { name: 'Administration' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Administration' }),
+    ).not.toBeInTheDocument();
   });
 });

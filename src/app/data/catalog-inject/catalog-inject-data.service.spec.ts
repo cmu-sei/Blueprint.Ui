@@ -5,7 +5,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, firstValueFrom, of, throwError } from 'rxjs';
-import { CatalogInject, CatalogInjectService } from 'src/app/generated/blueprint.api';
+import {
+  CatalogInject,
+  CatalogInjectService,
+} from 'src/app/generated/blueprint.api';
 import { CatalogDataService } from '../catalog/catalog-data.service';
 import { CatalogInjectStore } from './catalog-inject.store';
 import { CatalogInjectDataService } from './catalog-inject-data.service';
@@ -14,7 +17,10 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function link(overrides: Partial<CatalogInject> = {}): CatalogInject {
   return {
@@ -42,7 +48,10 @@ function setup(queryParams: Record<string, string> = {}) {
       { provide: CatalogInjectService, useValue: catalogInjectApi },
       // Injected but never used by CatalogInjectDataService.
       unstubbed(CatalogDataService),
-      { provide: Router, useValue: { navigate: vi.fn() } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate: vi.fn() } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -70,7 +79,9 @@ describe('CatalogInjectDataService', () => {
     catalogInjectApi.getCatalogInjects.mockReturnValueOnce(
       of([link(), link({ id: 'ci-2', injectId: 'inj-2' })]),
     );
-    catalogInjectApi.getCatalogInjects.mockReturnValueOnce(throwError(() => new Error('boom')));
+    catalogInjectApi.getCatalogInjects.mockReturnValueOnce(
+      throwError(() => new Error('boom')),
+    );
 
     service.loadByCatalog('cat-1');
     expect(catalogInjectApi.getCatalogInjects).toHaveBeenCalledWith('cat-1');
@@ -88,17 +99,32 @@ describe('CatalogInjectDataService', () => {
    */
   it('loadById, add and addMultiple store the links', () => {
     const { service, query, catalogInjectApi } = setup();
-    catalogInjectApi.getCatalogInject.mockReturnValue(of(link({ id: 'ci-2', injectId: 'inj-2' })));
-    catalogInjectApi.createCatalogInject.mockReturnValue(of(link({ id: 'ci-3', injectId: 'inj-3' })));
+    catalogInjectApi.getCatalogInject.mockReturnValue(
+      of(link({ id: 'ci-2', injectId: 'inj-2' })),
+    );
+    catalogInjectApi.createCatalogInject.mockReturnValue(
+      of(link({ id: 'ci-3', injectId: 'inj-3' })),
+    );
     catalogInjectApi.createMultipleCatalogInjects.mockReturnValue(
-      of([link({ id: 'ci-4', injectId: 'inj-4' }), link({ id: 'ci-5', injectId: 'inj-5' })]),
+      of([
+        link({ id: 'ci-4', injectId: 'inj-4' }),
+        link({ id: 'ci-5', injectId: 'inj-5' }),
+      ]),
     );
 
     service.loadById('ci-2');
     service.add(link({ id: undefined, injectId: 'inj-3' }));
-    service.addMultiple([link({ injectId: 'inj-4' }), link({ injectId: 'inj-5' })]);
+    service.addMultiple([
+      link({ injectId: 'inj-4' }),
+      link({ injectId: 'inj-5' }),
+    ]);
 
-    expect(injectIds(query.getAll())).toEqual(['inj-2', 'inj-3', 'inj-4', 'inj-5']);
+    expect(injectIds(query.getAll())).toEqual([
+      'inj-2',
+      'inj-3',
+      'inj-4',
+      'inj-5',
+    ]);
     expect(query.getValue().loading).toBe(false);
   });
 
@@ -108,20 +134,33 @@ describe('CatalogInjectDataService', () => {
    * Data: three links; the API answers the delete with no body (null), as its NoContent result does.
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteCatalogInject', args: ['ci-2'], call: (s: CatalogInjectDataService) => s.delete('ci-2') },
-    { method: 'deleteByIds', endpoint: 'deleteCatalogInjectByIds', args: ['cat-1', 'inj-2'], call: (s: CatalogInjectDataService) => s.deleteByIds('cat-1', 'inj-2') },
-  ] as const)('$method answered with no body empties the store', ({ endpoint, args, call }) => {
-    const { service, query, catalogInjectApi } = setup();
-    service.updateStore(link());
-    service.updateStore(link({ id: 'ci-2', injectId: 'inj-2' }));
-    service.updateStore(link({ id: 'ci-3', injectId: 'inj-3' }));
-    catalogInjectApi[endpoint].mockReturnValue(of(null));
+    {
+      method: 'delete',
+      endpoint: 'deleteCatalogInject',
+      args: ['ci-2'],
+      call: (s: CatalogInjectDataService) => s.delete('ci-2'),
+    },
+    {
+      method: 'deleteByIds',
+      endpoint: 'deleteCatalogInjectByIds',
+      args: ['cat-1', 'inj-2'],
+      call: (s: CatalogInjectDataService) => s.deleteByIds('cat-1', 'inj-2'),
+    },
+  ] as const)(
+    '$method answered with no body empties the store',
+    ({ endpoint, args, call }) => {
+      const { service, query, catalogInjectApi } = setup();
+      service.updateStore(link());
+      service.updateStore(link({ id: 'ci-2', injectId: 'inj-2' }));
+      service.updateStore(link({ id: 'ci-3', injectId: 'inj-3' }));
+      catalogInjectApi[endpoint].mockReturnValue(of(null));
 
-    call(service);
+      call(service);
 
-    expect(catalogInjectApi[endpoint]).toHaveBeenCalledWith(...args);
-    expect(query.getAll()).toEqual([]);
-  });
+      expect(catalogInjectApi[endpoint]).toHaveBeenCalledWith(...args);
+      expect(query.getAll()).toEqual([]);
+    },
+  );
 
   /**
    * Verifies: a delete whose response carries the id removes only that link.
@@ -154,9 +193,9 @@ describe('CatalogInjectDataService', () => {
     service.updateStore({ id: 'ci-2', displayOrder: 9 });
     service.deleteFromStore('ci-1');
 
-    expect(emissions.at(-1).map((ci) => `${ci.injectId}#${ci.displayOrder}`)).toEqual([
-      'inj-2#9',
-    ]);
+    expect(
+      emissions.at(-1).map((ci) => `${ci.injectId}#${ci.displayOrder}`),
+    ).toEqual(['inj-2#9']);
     const active$ = query.selectActive() as Observable<CatalogInject>;
     expect((await firstValueFrom(active$)).id).toBe('ci-2');
 
@@ -174,7 +213,9 @@ describe('CatalogInjectDataService', () => {
     service.updateStore(link());
     service.updateStore(link({ id: 'ci-2', injectId: 'inj-2' }));
 
-    expect(injectIds(recordEmissions(service.CatalogInjectList).at(-1))).toEqual(['inj-2']);
+    expect(
+      injectIds(recordEmissions(service.CatalogInjectList).at(-1)),
+    ).toEqual(['inj-2']);
   });
 
   /**
@@ -183,24 +224,42 @@ describe('CatalogInjectDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'loadById', endpoint: 'getCatalogInject', escapes: true, call: (s: CatalogInjectDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createCatalogInject', escapes: true, call: (s: CatalogInjectDataService) => s.add({ id: 'x-1' }) },
-    { method: 'addMultiple', endpoint: 'createMultipleCatalogInjects', escapes: true, call: (s: CatalogInjectDataService) => s.addMultiple([{ id: 'x-1' }]) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, catalogInjectApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(CatalogInjectStore).setLoading(false);
-    catalogInjectApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'loadById',
+      endpoint: 'getCatalogInject',
+      escapes: true,
+      call: (s: CatalogInjectDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createCatalogInject',
+      escapes: true,
+      call: (s: CatalogInjectDataService) => s.add({ id: 'x-1' }),
+    },
+    {
+      method: 'addMultiple',
+      endpoint: 'createMultipleCatalogInjects',
+      escapes: true,
+      call: (s: CatalogInjectDataService) => s.addMultiple([{ id: 'x-1' }]),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, catalogInjectApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(CatalogInjectStore).setLoading(false);
+      catalogInjectApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(CatalogInjectQuery).getValue().loading).toBe(true);
-    // With no error callback the error escapes to ErrorService, the ErrorHandler
-    // app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(CatalogInjectQuery).getValue().loading).toBe(true);
+      // With no error callback the error escapes to ErrorService, the ErrorHandler
+      // app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete, deleteByIds escapes to the app's global ErrorHandler.
@@ -208,20 +267,31 @@ describe('CatalogInjectDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteCatalogInject', call: (s: CatalogInjectDataService) => s.delete('x-1') },
-    { method: 'deleteByIds', endpoint: 'deleteCatalogInjectByIds', call: (s: CatalogInjectDataService) => s.deleteByIds('cat-1', 'inj-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, catalogInjectApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    catalogInjectApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteCatalogInject',
+      call: (s: CatalogInjectDataService) => s.delete('x-1'),
+    },
+    {
+      method: 'deleteByIds',
+      endpoint: 'deleteCatalogInjectByIds',
+      call: (s: CatalogInjectDataService) => s.deleteByIds('cat-1', 'inj-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, catalogInjectApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      catalogInjectApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

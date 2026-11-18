@@ -10,7 +10,10 @@ import { TeamUserQuery } from './team-user.query';
 import { TeamUserStore } from './team-user.store';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function teamUser(overrides: Partial<TeamUser> = {}): TeamUser {
   return {
@@ -59,14 +62,22 @@ describe('TeamUserDataService', () => {
     teamUserApi.getMselTeamUsers.mockReturnValueOnce(
       of([teamUser(), teamUser({ id: 'tu-2', userId: 'user-2' })]),
     );
-    teamUserApi.getTeamTeamUsers.mockReturnValueOnce(of([teamUser({ id: 'tu-3', userId: 'user-3' })]));
-    teamUserApi.getMselTeamUsers.mockReturnValueOnce(throwError(() => new Error('boom')));
-    teamUserApi.getTeamTeamUsers.mockReturnValueOnce(throwError(() => new Error('boom')));
+    teamUserApi.getTeamTeamUsers.mockReturnValueOnce(
+      of([teamUser({ id: 'tu-3', userId: 'user-3' })]),
+    );
+    teamUserApi.getMselTeamUsers.mockReturnValueOnce(
+      throwError(() => new Error('boom')),
+    );
+    teamUserApi.getTeamTeamUsers.mockReturnValueOnce(
+      throwError(() => new Error('boom')),
+    );
 
     service.loadByMsel('msel-1');
     expect(teamUserApi.getMselTeamUsers).toHaveBeenCalledWith('msel-1');
     expect(userIds(query.getAll())).toEqual(['user-1', 'user-2']);
-    expect(query.getEntity('tu-1').dateCreated).toEqual(new Date('2026-01-01T00:00:00Z'));
+    expect(query.getEntity('tu-1').dateCreated).toEqual(
+      new Date('2026-01-01T00:00:00Z'),
+    );
 
     service.loadByTeam('team-red');
     expect(teamUserApi.getTeamTeamUsers).toHaveBeenCalledWith('team-red');
@@ -87,8 +98,12 @@ describe('TeamUserDataService', () => {
    */
   it('loadById and add store the team user', () => {
     const { service, query, teamUserApi } = setup();
-    teamUserApi.getTeamUser.mockReturnValue(of(teamUser({ id: 'tu-2', userId: 'user-2' })));
-    teamUserApi.createTeamUser.mockReturnValue(of(teamUser({ id: 'tu-3', userId: 'user-3' })));
+    teamUserApi.getTeamUser.mockReturnValue(
+      of(teamUser({ id: 'tu-2', userId: 'user-2' })),
+    );
+    teamUserApi.createTeamUser.mockReturnValue(
+      of(teamUser({ id: 'tu-3', userId: 'user-3' })),
+    );
 
     service.loadById('tu-2');
     service.add(teamUser({ id: undefined, userId: 'user-3' }));
@@ -132,7 +147,13 @@ describe('TeamUserDataService', () => {
     store.setActive('tu-2');
     service.unload();
 
-    expect(emissions.map(userIds)).toEqual([[], ['user-1'], [], ['user-2'], []]);
+    expect(emissions.map(userIds)).toEqual([
+      [],
+      ['user-1'],
+      [],
+      ['user-2'],
+      [],
+    ]);
     expect(query.getActiveId()).toBeNull();
   });
 
@@ -142,23 +163,36 @@ describe('TeamUserDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'loadById', endpoint: 'getTeamUser', escapes: true, call: (s: TeamUserDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createTeamUser', escapes: true, call: (s: TeamUserDataService) => s.add({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, teamUserApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(TeamUserStore).setLoading(false);
-    teamUserApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'loadById',
+      endpoint: 'getTeamUser',
+      escapes: true,
+      call: (s: TeamUserDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createTeamUser',
+      escapes: true,
+      call: (s: TeamUserDataService) => s.add({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, teamUserApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(TeamUserStore).setLoading(false);
+      teamUserApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(TeamUserQuery).getValue().loading).toBe(true);
-    // With no error callback the error escapes to ErrorService, the ErrorHandler
-    // app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(TeamUserQuery).getValue().loading).toBe(true);
+      // With no error callback the error escapes to ErrorService, the ErrorHandler
+      // app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete escapes to the app's global ErrorHandler.
@@ -166,19 +200,26 @@ describe('TeamUserDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteTeamUser', call: (s: TeamUserDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, teamUserApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    teamUserApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteTeamUser',
+      call: (s: TeamUserDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, teamUserApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      teamUserApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

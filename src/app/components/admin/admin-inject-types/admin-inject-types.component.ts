@@ -1,16 +1,45 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, OnDestroy, AfterViewInit, inject, input, viewChild } from '@angular/core';
-import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
-import { animate, state, style, transition, trigger } from '@angular/animations';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  AfterViewInit,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
+import {
+  UntypedFormControl,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import {
+  MatTableDataSource,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
+import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
   InjectType,
   MselItemStatus,
-  Team
+  Team,
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -29,23 +58,58 @@ import { MatIcon } from '@angular/material/icon';
 
 import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
-import { MatExpansionPanel, MatExpansionPanelHeader } from '@angular/material/expansion';
+import {
+  MatExpansionPanel,
+  MatExpansionPanelHeader,
+} from '@angular/material/expansion';
 import { DataFieldListComponent } from '../../data-field-list/data-field-list.component';
 import { InjectListComponent } from '../../inject-list/inject-list.component';
 import { MatRipple } from '@angular/material/core';
 
 @Component({
-    selector: 'app-admin-inject-types',
-    templateUrl: './admin-inject-types.component.html',
-    styleUrls: ['./admin-inject-types.component.scss'],
-    animations: [
-        trigger('detailExpand', [
-            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-            state('expanded', style({ height: '*', visibility: 'visible' })),
-            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-        ]),
-    ],
-    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatSortHeader, MatExpansionPanel, MatExpansionPanelHeader, DataFieldListComponent, InjectListComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatRipple]
+  selector: 'app-admin-inject-types',
+  templateUrl: './admin-inject-types.component.html',
+  styleUrls: ['./admin-inject-types.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state(
+        'collapsed',
+        style({ height: '0px', minHeight: '0', visibility: 'hidden' }),
+      ),
+      state('expanded', style({ height: '*', visibility: 'visible' })),
+      transition(
+        'expanded <=> collapsed',
+        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+      ),
+    ]),
+  ],
+  imports: [
+    MatIcon,
+    MatFormField,
+    MatInput,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatPaginator,
+    MatTable,
+    MatSort,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCellDef,
+    MatCell,
+    MatSortHeader,
+    MatExpansionPanel,
+    MatExpansionPanelHeader,
+    DataFieldListComponent,
+    InjectListComponent,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+    MatRipple,
+  ],
 })
 export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
   private mselQuery = inject(MselQuery);
@@ -71,19 +135,25 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
   sortedInjectTypes: InjectType[] = [];
   templateInjectTypes: InjectType[] = [];
   editingId = '';
-  injectTypeDataSource = new MatTableDataSource<InjectType>(new Array<InjectType>());
+  injectTypeDataSource = new MatTableDataSource<InjectType>(
+    new Array<InjectType>(),
+  );
   displayedColumns: string[] = ['action', 'name', 'description'];
   teamList: Team[] = [];
   private unsubscribe$ = new Subject();
-  isExpansionDetailRow = (i: number, row: Object) => (row as InjectType).id === this.expandedElementId;
+  isExpansionDetailRow = (i: number, row: Object) =>
+    (row as InjectType).id === this.expandedElementId;
   expandedElementId = '';
 
   constructor() {
     // subscribe to injectTypes
-    this.injectTypeQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(injectTypes => {
-      this.adminInjectTypes = injectTypes;
-      this.sortChanged(this.sort);
-    });
+    this.injectTypeQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((injectTypes) => {
+        this.adminInjectTypes = injectTypes;
+        this.sortChanged(this.sort);
+      });
     // subscribe to filter control changes
     this.filterControl.valueChanges
       .pipe(takeUntil(this.unsubscribe$))
@@ -95,7 +165,9 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
 
   getSortedInjectTypes(injectTypes: InjectType[]) {
     if (injectTypes) {
-      injectTypes.sort((a, b) => this.sortInjectTypes(a, b, this.sort.active, this.sort.direction));
+      injectTypes.sort((a, b) =>
+        this.sortInjectTypes(a, b, this.sort.active, this.sort.direction),
+      );
     }
     return injectTypes;
   }
@@ -104,8 +176,7 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
     if (!injectType) {
       const dateTime = new Date();
       dateTime.setMinutes(dateTime.getMinutes() + 30);
-      injectType = {
-      };
+      injectType = {};
     }
     const dialogRef = this.dialog.open(AdminInjectTypeEditDialogComponent, {
       minWidth: '400px',
@@ -113,7 +184,7 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
       width: 'auto',
       data: {
         injectType: injectType,
-        teamList: this.teamList
+        teamList: this.teamList,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -167,7 +238,7 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
       },
       (err) => {
         window.alert('Error downloading file');
-      }
+      },
     );
   }
 
@@ -182,8 +253,15 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
 
   deleteInjectType(injectType: InjectType): void {
     this.dialogService
-      .confirm({ title: 'Delete Inject Type', message: 'Are you sure that you want to delete ' + injectType.name + '?', confirmText: 'Delete', cancelText: 'Cancel'
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Delete Inject Type',
+        message:
+          'Are you sure that you want to delete ' + injectType.name + '?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.injectTypeDataService.delete(injectType.id);
           this.editingId = '';
@@ -198,7 +276,11 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
       id: newId,
       name: 'Copy of ' + injectType.name,
       dataFields: injectType.dataFields
-        ? injectType.dataFields.map(df => ({ ...df, id: uuidv4(), injectTypeId: newId }))
+        ? injectType.dataFields.map((df) => ({
+            ...df,
+            id: uuidv4(),
+            injectTypeId: newId,
+          }))
         : [],
     };
     this.injectTypeDataService.add(copy);
@@ -206,7 +288,9 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.injectTypeDataSource.data = this.getSortedInjectTypes(this.getFilteredInjectTypes(this.msel.id, this.adminInjectTypes));
+    this.injectTypeDataSource.data = this.getSortedInjectTypes(
+      this.getFilteredInjectTypes(this.msel.id, this.adminInjectTypes),
+    );
   }
 
   ngAfterViewInit() {
@@ -218,15 +302,24 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
     this.unsubscribe$.complete();
   }
 
-  getFilteredInjectTypes(mselId: string, injectTypes: InjectType[]): InjectType[] {
+  getFilteredInjectTypes(
+    mselId: string,
+    injectTypes: InjectType[],
+  ): InjectType[] {
     let filteredInjectTypes: InjectType[] = [];
     if (injectTypes) {
-      injectTypes.forEach(se => {
+      injectTypes.forEach((se) => {
         filteredInjectTypes.push({ ...se });
       });
-      if (filteredInjectTypes && filteredInjectTypes.length > 0 && this.filterString) {
+      if (
+        filteredInjectTypes &&
+        filteredInjectTypes.length > 0 &&
+        this.filterString
+      ) {
         const filterString = this.filterString?.toLowerCase();
-        filteredInjectTypes = filteredInjectTypes.filter(injectType => injectType.name?.toLowerCase().includes(filterString));
+        filteredInjectTypes = filteredInjectTypes.filter((injectType) =>
+          injectType.name?.toLowerCase().includes(filterString),
+        );
       }
     }
     return filteredInjectTypes;
@@ -236,15 +329,24 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
     a: InjectType,
     b: InjectType,
     column: string,
-    direction: string
+    direction: string,
   ) {
     const isAsc = direction !== 'desc';
     switch (column) {
       case 'name':
-        return (((a.name ?? '').toLowerCase() < (b.name ?? '').toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
+        return (
+          ((a.name ?? '').toLowerCase() < (b.name ?? '').toLowerCase()
+            ? -1
+            : 1) * (isAsc ? 1 : -1)
+        );
         break;
       case 'description':
-        return (((a.description ?? '').toLowerCase() < (b.description ?? '').toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
+        return (
+          ((a.description ?? '').toLowerCase() <
+          (b.description ?? '').toLowerCase()
+            ? -1
+            : 1) * (isAsc ? 1 : -1)
+        );
         break;
       default:
         return 0;
@@ -253,9 +355,16 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
 
   getInjectTypeLink(teamId: string) {
     if (this.msel.isTemplate && this.msel.status === MselItemStatus.Approved) {
-      return document.baseURI + '/launch/?msel=' + this.msel.id + '&team=' + teamId;
-    } else if (!this.msel.isTemplate && this.msel.status === MselItemStatus.Deployed) {
-      return document.baseURI + '/join/?msel=' + this.msel.id + '&team=' + teamId;
+      return (
+        document.baseURI + '/launch/?msel=' + this.msel.id + '&team=' + teamId
+      );
+    } else if (
+      !this.msel.isTemplate &&
+      this.msel.status === MselItemStatus.Deployed
+    ) {
+      return (
+        document.baseURI + '/join/?msel=' + this.msel.id + '&team=' + teamId
+      );
     } else {
       return '';
     }
@@ -271,10 +380,10 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
   }
 
   getRowClass(id: string) {
-    const rowClass = this.expandedElementId === id
-      ? 'element-row element-row-expanded'
-      : 'element-row element-row-not-expanded';
+    const rowClass =
+      this.expandedElementId === id
+        ? 'element-row element-row-expanded'
+        : 'element-row element-row-not-expanded';
     return rowClass;
   }
-
 }

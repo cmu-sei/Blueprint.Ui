@@ -11,8 +11,21 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { Observable, Subject, of, throwError } from 'rxjs';
-import { ComnAuthService, ComnSettingsService, CrucibleThemeService } from '@cmusei/crucible-common';
-import { Msel, MselItemStatus, MselRole, MselService, SystemPermission, SystemPermissionsService, User, UserService } from 'src/app/generated/blueprint.api';
+import {
+  ComnAuthService,
+  ComnSettingsService,
+  CrucibleThemeService,
+} from '@cmusei/crucible-common';
+import {
+  Msel,
+  MselItemStatus,
+  MselRole,
+  MselService,
+  SystemPermission,
+  SystemPermissionsService,
+  User,
+  UserService,
+} from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { CAPABILITY_CARDS, DashboardComponent } from './dashboard.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
@@ -30,7 +43,9 @@ class TopbarStub {
 }
 
 const ALPHA: Msel = { id: 'msel-1', name: 'Exercise Alpha' };
-const ALL_BUT_CREATE_MSELS = Object.values(SystemPermission).filter((p) => p !== SystemPermission.CreateMsels);
+const ALL_BUT_CREATE_MSELS = Object.values(SystemPermission).filter(
+  (p) => p !== SystemPermission.CreateMsels,
+);
 
 async function renderDashboard(
   overrides: {
@@ -43,11 +58,20 @@ async function renderDashboard(
     background?: string;
   } = {},
 ) {
-  const { permissions = [], permissionsFail = false, join = [], launch = [], build = [], background } = overrides;
+  const {
+    permissions = [],
+    permissionsFail = false,
+    join = [],
+    launch = [],
+    build = [],
+    background,
+  } = overrides;
   const mselApi = {
     getMyJoinMsels: vi.fn(() => of(structuredClone(join))),
     getMyLaunchMsels: vi.fn(() => of(structuredClone(launch))),
-    getMyMsels: vi.fn(overrides.buildMsels ?? (() => of(structuredClone(build)))),
+    getMyMsels: vi.fn(
+      overrides.buildMsels ?? (() => of(structuredClone(build))),
+    ),
   } satisfies ApiStub<MselService>;
   const userApi = {
     getUsers: vi.fn(() => of<User[]>([])),
@@ -56,28 +80,39 @@ async function renderDashboard(
   // service is provided over the stubbed endpoint, without priming it.
   const permissionApis = permissionApiStubs({ system: permissions });
   if (permissionsFail) {
-    permissionApis.systemPermissions.getMySystemPermissions.mockImplementation(() => throwError(() => new Error('permissions down')));
+    permissionApis.systemPermissions.getMySystemPermissions.mockImplementation(
+      () => throwError(() => new Error('permissions down')),
+    );
   }
   const rendered = await renderComponent(DashboardComponent, {
     imports: [MatCardModule, MatIconModule, MatProgressSpinnerModule],
-    childStubs: [
-      { replace: TopbarComponent, with: TopbarStub },
-    ],
+    childStubs: [{ replace: TopbarComponent, with: TopbarStub }],
     providers: [
-      { provide: CrucibleThemeService, useValue: { isDarkMode: signal(false) } },
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: CrucibleThemeService,
+        useValue: { isDarkMode: signal(false) },
+      },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: MselService, useValue: mselApi },
       { provide: UserService, useValue: userApi },
       {
         provide: ComnSettingsService,
         useValue: {
-          settings: { AppTopBarImage: '/assets/img/logo-white.png', AppLandingBackgroundImage: background },
+          settings: {
+            AppTopBarImage: '/assets/img/logo-white.png',
+            AppLandingBackgroundImage: background,
+          },
         } satisfies Pick<ComnSettingsService, 'settings'>,
       },
       {
         provide: ComnAuthService,
-        useValue: { user$: of({ profile: { sub: 'user-me', name: 'Me' } }) } as Pick<ComnAuthService, 'user$'>,
+        useValue: {
+          user$: of({ profile: { sub: 'user-me', name: 'Me' } }),
+        } as Pick<ComnAuthService, 'user$'>,
       },
     ],
   });
@@ -85,7 +120,8 @@ async function renderDashboard(
   return { ...rendered, mselApi };
 }
 
-const card = (title: string) => screen.queryByRole('button', { name: new RegExp(`^${title}`) });
+const card = (title: string) =>
+  screen.queryByRole('button', { name: new RegExp(`^${title}`) });
 
 describe('DashboardComponent', () => {
   /**
@@ -94,11 +130,19 @@ describe('DashboardComponent', () => {
    * Data: the MSEL request fails.
    */
   it('says so when the events fail to load', async () => {
-    const { fixture } = await renderDashboard({ buildMsels: () => throwError(() => new Error('msels down')) });
+    const { fixture } = await renderDashboard({
+      buildMsels: () => throwError(() => new Error('msels down')),
+    });
 
     expect(fixture.componentInstance.isStarted).toBe(true);
-    expect(screen.getByText('Your events could not be loaded. Reload the page to try again.')).toBeInTheDocument();
-    expect(screen.queryByText(/No accessible resources found/)).not.toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Your events could not be loaded. Reload the page to try again.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/No accessible resources found/),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -107,8 +151,12 @@ describe('DashboardComponent', () => {
    * Data: the MSEL request never answers.
    */
   it('leaves slow requests to finish rather than reloading', async () => {
-    const { fixture } = await renderDashboard({ buildMsels: () => new Subject<Msel[]>() });
-    const reload = vi.spyOn(fixture.componentInstance, 'reloadPage').mockImplementation(() => undefined);
+    const { fixture } = await renderDashboard({
+      buildMsels: () => new Subject<Msel[]>(),
+    });
+    const reload = vi
+      .spyOn(fixture.componentInstance, 'reloadPage')
+      .mockImplementation(() => undefined);
 
     fixture.componentInstance.reloadIfNotStarted();
 
@@ -122,7 +170,10 @@ describe('DashboardComponent', () => {
    * Data: one MSEL to manage; the permissions request fails.
    */
   it('starts even when the permissions fail to load', async () => {
-    const { fixture } = await renderDashboard({ build: [ALPHA], permissionsFail: true });
+    const { fixture } = await renderDashboard({
+      build: [ALPHA],
+      permissionsFail: true,
+    });
 
     expect(fixture.componentInstance.isStarted).toBe(true);
     expect(card('BUILD')).toBeInTheDocument();
@@ -134,7 +185,11 @@ describe('DashboardComponent', () => {
    * Data: one MSEL of each kind; no system permission.
    */
   it('offers join, launch and build cards for the user MSELs', async () => {
-    const { mselApi } = await renderDashboard({ join: [ALPHA], launch: [ALPHA], build: [ALPHA] });
+    const { mselApi } = await renderDashboard({
+      join: [ALPHA],
+      launch: [ALPHA],
+      build: [ALPHA],
+    });
 
     expect(mselApi.getMyMsels).toHaveBeenCalledTimes(1);
     expect(card('JOIN')).toBeInTheDocument();
@@ -149,7 +204,9 @@ describe('DashboardComponent', () => {
    */
   it('offers BUILD with CreateMsels', async () => {
     await renderDashboard({ permissions: [SystemPermission.CreateMsels] });
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const navigate = vi
+      .spyOn(TestBed.inject(Router), 'navigate')
+      .mockResolvedValue(true);
     const user = userEvent.setup();
 
     await user.click(card('BUILD') as HTMLElement);
@@ -166,14 +223,22 @@ describe('DashboardComponent', () => {
    */
   it('greys out BUILD without CreateMsels or an MSEL', async () => {
     await renderDashboard({ permissions: ALL_BUT_CREATE_MSELS });
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const navigate = vi
+      .spyOn(TestBed.inject(Router), 'navigate')
+      .mockResolvedValue(true);
     const user = userEvent.setup();
     const build = card('BUILD') as HTMLElement;
 
     expect(build).toHaveClass('disabled-card');
     expect(build).toHaveAttribute('aria-disabled', 'true');
-    expect(within(build).getByText('You have no events to build, and no permission to create one')).toBeInTheDocument();
-    expect(within(build).getByRole('button', { name: /Manage Events/ })).toBeDisabled();
+    expect(
+      within(build).getByText(
+        'You have no events to build, and no permission to create one',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(build).getByRole('button', { name: /Manage Events/ }),
+    ).toBeDisabled();
     await user.click(build);
     expect(navigate).not.toHaveBeenCalled();
     expect(screen.getByText('NO ACCESS')).toBeInTheDocument();
@@ -193,7 +258,9 @@ describe('DashboardComponent', () => {
     }
     const assess = card('ASSESS') as HTMLElement;
     expect(assess).toHaveClass('disabled-card');
-    expect(within(assess).getByText('You are not an assessor on any event')).toBeInTheDocument();
+    expect(
+      within(assess).getByText('You are not an assessor on any event'),
+    ).toBeInTheDocument();
   });
 
   // crucible-common remembers loaded images, so each test uses its own URL.
@@ -209,14 +276,21 @@ describe('DashboardComponent', () => {
    */
   it('shows the landing background once the image loads', async () => {
     vi.stubGlobal('Image', FakeImage);
-    const { fixture, container } = await renderDashboard({ background: '/assets/local/dashboard-shows-the-landing-background-once-the-image-loads.jpg' });
+    const { fixture, container } = await renderDashboard({
+      background:
+        '/assets/local/dashboard-shows-the-landing-background-once-the-image-loads.jpg',
+    });
 
-    expect(FakeImage.last?.src).toBe('/assets/local/dashboard-shows-the-landing-background-once-the-image-loads.jpg');
+    expect(FakeImage.last?.src).toBe(
+      '/assets/local/dashboard-shows-the-landing-background-once-the-image-loads.jpg',
+    );
     FakeImage.last!.onload!();
     fixture.detectChanges();
 
     const page = container.querySelector('.command-center') as HTMLElement;
-    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe('url("/assets/local/dashboard-shows-the-landing-background-once-the-image-loads.jpg")');
+    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe(
+      'url("/assets/local/dashboard-shows-the-landing-background-once-the-image-loads.jpg")',
+    );
     expect(page.classList.contains('crucible-landing-background')).toBe(true);
   });
 
@@ -227,13 +301,18 @@ describe('DashboardComponent', () => {
    */
   it('keeps the normal background when the image fails to load', async () => {
     vi.stubGlobal('Image', FakeImage);
-    const { fixture, container } = await renderDashboard({ background: '/assets/local/dashboard-keeps-the-normal-background-when-the-image-fails-to-load.jpg' });
+    const { fixture, container } = await renderDashboard({
+      background:
+        '/assets/local/dashboard-keeps-the-normal-background-when-the-image-fails-to-load.jpg',
+    });
 
     FakeImage.last!.onerror?.();
     fixture.detectChanges();
 
     const page = container.querySelector('.command-center') as HTMLElement;
-    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe('');
+    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe(
+      '',
+    );
     expect(page.classList.contains('crucible-landing-background')).toBe(false);
   });
 
@@ -248,7 +327,9 @@ describe('DashboardComponent', () => {
 
     expect(FakeImage.last).toBeUndefined();
     const page = container.querySelector('.command-center') as HTMLElement;
-    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe('');
+    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe(
+      '',
+    );
     expect(page.classList.contains('crucible-landing-background')).toBe(false);
   });
   /**
@@ -257,14 +338,27 @@ describe('DashboardComponent', () => {
    * Data: Bravo deployed with Viewer + Evaluator rows; Charlie deployed with Viewer only (near miss on role).
    */
   it('counts the events the user can assess', async () => {
-    const roles = (id: string, r: MselRole[]) => r.map((role) => ({ userId: 'user-me', mselId: id, role }));
+    const roles = (id: string, r: MselRole[]) =>
+      r.map((role) => ({ userId: 'user-me', mselId: id, role }));
     await renderDashboard({
       build: [
-        { id: 'msel-2', name: 'Exercise Bravo', status: MselItemStatus.Deployed, userMselRoles: roles('msel-2', [MselRole.Viewer, MselRole.Evaluator]) },
-        { id: 'msel-3', name: 'Exercise Charlie', status: MselItemStatus.Deployed, userMselRoles: roles('msel-3', [MselRole.Viewer]) },
+        {
+          id: 'msel-2',
+          name: 'Exercise Bravo',
+          status: MselItemStatus.Deployed,
+          userMselRoles: roles('msel-2', [MselRole.Viewer, MselRole.Evaluator]),
+        },
+        {
+          id: 'msel-3',
+          name: 'Exercise Charlie',
+          status: MselItemStatus.Deployed,
+          userMselRoles: roles('msel-3', [MselRole.Viewer]),
+        },
       ],
     });
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const navigate = vi
+      .spyOn(TestBed.inject(Router), 'navigate')
+      .mockResolvedValue(true);
     const assess = card('ASSESS') as HTMLElement;
 
     expect(assess.querySelector('.metric-value')?.textContent).toBe('1');
@@ -280,15 +374,29 @@ describe('DashboardComponent', () => {
   it('shows a card for each capability, by feature', async () => {
     const { container } = await renderDashboard();
 
-    const titles = [...container.querySelectorAll('.value-card .value-title')].map((t) => t.textContent?.trim());
+    const titles = [
+      ...container.querySelectorAll('.value-card .value-title'),
+    ].map((t) => t.textContent?.trim());
     expect(titles).toEqual([
       'Competency-Based Assessment',
       'Collaborative Planning',
       'Hands-On and Tabletop Exercises',
     ]);
-    expect(card('Competency-Based Assessment')).toHaveTextContent('See how each team performs against the work roles and skills the exercise is meant to build');
-    const allText = CAPABILITY_CARDS.map((c) => [c.summary, c.data.title, c.data.description, ...c.data.features, ...c.data.benefits].join(' ')).join(' ');
-    expect(allText).not.toMatch(/\b(Player|Gallery|CITE|Steamfitter|Caster|TopoMojo|Gameboard)\b/);
+    expect(card('Competency-Based Assessment')).toHaveTextContent(
+      'See how each team performs against the work roles and skills the exercise is meant to build',
+    );
+    const allText = CAPABILITY_CARDS.map((c) =>
+      [
+        c.summary,
+        c.data.title,
+        c.data.description,
+        ...c.data.features,
+        ...c.data.benefits,
+      ].join(' '),
+    ).join(' ');
+    expect(allText).not.toMatch(
+      /\b(Player|Gallery|CITE|Steamfitter|Caster|TopoMojo|Gameboard)\b/,
+    );
   });
 
   /**
@@ -304,18 +412,32 @@ describe('DashboardComponent', () => {
 
     const dialog = within(await screen.findByRole('dialog'));
     expect(dialog.getByText('Competency-Based Assessment')).toBeInTheDocument();
-    expect(dialog.getByText(/^Choose the work roles an exercise trains/)).toBeInTheDocument();
-    expect(dialog.getByText('Use NICE, DCWF, or your own frameworks')).toBeInTheDocument();
-    expect(dialog.getByText('Rate every team on what they did')).toBeInTheDocument();
+    expect(
+      dialog.getByText(/^Choose the work roles an exercise trains/),
+    ).toBeInTheDocument();
+    expect(
+      dialog.getByText('Use NICE, DCWF, or your own frameworks'),
+    ).toBeInTheDocument();
+    expect(
+      dialog.getByText('Rate every team on what they did'),
+    ).toBeInTheDocument();
     expect(dialog.queryByText(/^Deliver news/)).not.toBeInTheDocument();
 
     await user.click(dialog.getByRole('button', { name: 'Close' }));
-    await vi.waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await vi.waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
 
     (card('Hands-On and Tabletop Exercises') as HTMLElement).focus();
     await user.keyboard('{Enter}');
     const delivery = within(await screen.findByRole('dialog'));
-    expect(delivery.getByText('Deliver news, intelligence, and orders move by move')).toBeInTheDocument();
-    expect(delivery.getByText('Run the same exercise again for new teams, from one plan')).toBeInTheDocument();
+    expect(
+      delivery.getByText('Deliver news, intelligence, and orders move by move'),
+    ).toBeInTheDocument();
+    expect(
+      delivery.getByText(
+        'Run the same exercise again for new teams, from one plan',
+      ),
+    ).toBeInTheDocument();
   });
 });

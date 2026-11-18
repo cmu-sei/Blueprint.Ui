@@ -13,15 +13,34 @@ import { CiteAction } from 'src/app/generated/blueprint.api';
 import { CiteActionEditDialogComponent } from './cite-action-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const ACTION = { id: 'ca-1', mselId: 'msel-1', description: 'Isolate the host', moveNumber: 1, actionNumber: 1, teamId: 'team-1', isTemplate: false } as CiteAction;
+const ACTION = {
+  id: 'ca-1',
+  mselId: 'msel-1',
+  description: 'Isolate the host',
+  moveNumber: 1,
+  actionNumber: 1,
+  teamId: 'team-1',
+  isTemplate: false,
+} as CiteAction;
 
 function dialogData(overrides: Partial<typeof ACTION> = {}) {
-  return { citeAction: { ...structuredClone(ACTION), ...overrides }, teamList: [{ id: 'team-1', mselId: 'msel-1', name: 'Blue Team', shortName: 'BLUE' }], moveList: [{ id: 'move-1', mselId: 'msel-1', moveNumber: 1 }] };
+  return {
+    citeAction: { ...structuredClone(ACTION), ...overrides },
+    teamList: [
+      { id: 'team-1', mselId: 'msel-1', name: 'Blue Team', shortName: 'BLUE' },
+    ],
+    moveList: [{ id: 'move-1', mselId: 'msel-1', moveNumber: 1 }],
+  };
 }
 
 async function renderCiteActionEditDialog(data = dialogData()) {
   const rendered = await renderComponent(CiteActionEditDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, MatFormFieldModule, MatInputModule, MatSelectModule],
+    imports: [
+      ...CRUCIBLE_DIALOG_IMPORTS,
+      MatFormFieldModule,
+      MatInputModule,
+      MatSelectModule,
+    ],
     declarations: [CiteActionEditDialogComponent],
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
   });
@@ -29,7 +48,9 @@ async function renderCiteActionEditDialog(data = dialogData()) {
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
   const results: unknown[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results };
 }
 
@@ -42,8 +63,12 @@ describe('CiteActionEditDialogComponent', () => {
   it('renders with the default test providers', async () => {
     const { fixture } = await renderCiteActionEditDialog();
 
-    expect(fixture.componentInstance).toBeInstanceOf(CiteActionEditDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Edit CITE Action' })).toBeInTheDocument();
+    expect(fixture.componentInstance).toBeInstanceOf(
+      CiteActionEditDialogComponent,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Edit CITE Action' }),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -81,11 +106,15 @@ describe('CiteActionEditDialogComponent', () => {
    * Data: an action with no description.
    */
   it('saves an incomplete action when handleEditComplete is called', async () => {
-    const { fixture, data, results } = await renderCiteActionEditDialog(dialogData({ description: '' }));
+    const { fixture, data, results } = await renderCiteActionEditDialog(
+      dialogData({ description: '' }),
+    );
 
     fixture.componentInstance.handleEditComplete(true);
 
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
-    expect(results).toEqual([{ saveChanges: true, citeAction: data.citeAction }]);
+    expect(results).toEqual([
+      { saveChanges: true, citeAction: data.citeAction },
+    ]);
   });
 });

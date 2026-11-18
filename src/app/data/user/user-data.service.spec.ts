@@ -3,7 +3,13 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { BehaviorSubject, Observable, firstValueFrom, of, throwError } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  firstValueFrom,
+  of,
+  throwError,
+} from 'rxjs';
 import { ComnAuthService, Theme } from '@cmusei/crucible-common';
 import { User, UserService } from 'src/app/generated/blueprint.api';
 import { UserDataService } from './user-data.service';
@@ -69,7 +75,9 @@ describe('UserDataService', () => {
     userApi.getUsers.mockReturnValue(
       of([user({ id: 'user-2', name: 'Zed' }), user()]),
     );
-    userApi.getMselUsers.mockReturnValue(of([user({ id: 'user-3', name: 'Bob' })]));
+    userApi.getMselUsers.mockReturnValue(
+      of([user({ id: 'user-3', name: 'Bob' })]),
+    );
 
     const load$ = service.load();
     expect(query.getAll()).toEqual([]);
@@ -111,7 +119,9 @@ describe('UserDataService', () => {
     await firstValueFrom(service.loadById('user-2'));
 
     expect(names(query.getAll())).toEqual(['Alice Analyst', 'Bob']);
-    expect((await firstValueFrom(query.selectByUserId('user-2'))).name).toBe('Bob');
+    expect((await firstValueFrom(query.selectByUserId('user-2'))).name).toBe(
+      'Bob',
+    );
   });
 
   /**
@@ -160,7 +170,9 @@ describe('UserDataService', () => {
     const { service, query, userApi } = setup();
     service.updateStore(user());
     const unhandled = captureUnhandledRxErrors();
-    userApi.updateUser.mockReturnValue(throwError(() => new Error('forbidden')));
+    userApi.updateUser.mockReturnValue(
+      throwError(() => new Error('forbidden')),
+    );
 
     service.update(user({ name: 'Alice Admin' }));
     await flush();
@@ -178,18 +190,37 @@ describe('UserDataService', () => {
    * Data: loading cleared first; each endpoint errors with "unavailable".
    */
   it.each([
-    { method: 'load', endpoint: 'getUsers', call: (s: UserDataService): Observable<unknown> => s.load() },
-    { method: 'loadById', endpoint: 'getUser', call: (s: UserDataService): Observable<unknown> => s.loadById('user-1') },
-    { method: 'loadByMsel', endpoint: 'getMselUsers', call: (s: UserDataService): Observable<unknown> => s.loadByMsel('msel-1') },
-  ] as const)('$method leaves loading on after a failed request', async ({ endpoint, call }) => {
-    const { service, query, userApi } = setup();
-    TestBed.inject(UserStore).setLoading(false);
-    userApi[endpoint].mockReturnValue(throwError(() => new Error('unavailable')));
+    {
+      method: 'load',
+      endpoint: 'getUsers',
+      call: (s: UserDataService): Observable<unknown> => s.load(),
+    },
+    {
+      method: 'loadById',
+      endpoint: 'getUser',
+      call: (s: UserDataService): Observable<unknown> => s.loadById('user-1'),
+    },
+    {
+      method: 'loadByMsel',
+      endpoint: 'getMselUsers',
+      call: (s: UserDataService): Observable<unknown> => s.loadByMsel('msel-1'),
+    },
+  ] as const)(
+    '$method leaves loading on after a failed request',
+    async ({ endpoint, call }) => {
+      const { service, query, userApi } = setup();
+      TestBed.inject(UserStore).setLoading(false);
+      userApi[endpoint].mockReturnValue(
+        throwError(() => new Error('unavailable')),
+      );
 
-    await expect(firstValueFrom(call(service))).rejects.toThrow('unavailable');
+      await expect(firstValueFrom(call(service))).rejects.toThrow(
+        'unavailable',
+      );
 
-    expect(query.getValue().loading).toBe(true);
-  });
+      expect(query.getValue().loading).toBe(true);
+    },
+  );
 
   /**
    * Verifies: delete removes the user and its UI state once subscribed; deleteFromStore does the same for SignalR.

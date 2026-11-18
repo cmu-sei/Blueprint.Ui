@@ -14,7 +14,15 @@ const testUserMsel = extraConfig.testUserMsel;
 
 // pull proxy from settings file
 if (extraConfig.proxySettings.port) {
-  test.use({proxy: {server: 'http:// ' + extraConfig.proxySettings.host + ':' + extraConfig.proxySettings.port}});
+  test.use({
+    proxy: {
+      server:
+        'http:// ' +
+        extraConfig.proxySettings.host +
+        ':' +
+        extraConfig.proxySettings.port,
+    },
+  });
 }
 
 // ===================== Load Test Data ======================
@@ -27,7 +35,7 @@ test('load blueprint test data', async ({ page }) => {
   let [fileChooser] = await Promise.all([
     page.waitForEvent('filechooser'),
     await page.getByRole('button', { name: 'Upload', exact: true }).click(),
-    await page.getByRole('menuitem', { name: 'Upload json file' }).click()
+    await page.getByRole('menuitem', { name: 'Upload json file' }).click(),
   ]);
   await fileChooser.setFiles(extraConfig.dataPath + testMselTemplate + '.json');
   await page.waitForTimeout(1 * 1000);
@@ -35,7 +43,7 @@ test('load blueprint test data', async ({ page }) => {
   [fileChooser] = await Promise.all([
     page.waitForEvent('filechooser'),
     await page.getByRole('button', { name: 'Upload', exact: true }).click(),
-    await page.getByRole('menuitem', { name: 'Upload json file' }).click()
+    await page.getByRole('menuitem', { name: 'Upload json file' }).click(),
   ]);
   await fileChooser.setFiles(extraConfig.dataPath + testPushMsel + '.json');
   await page.waitForTimeout(1 * 1000);
@@ -43,7 +51,7 @@ test('load blueprint test data', async ({ page }) => {
   [fileChooser] = await Promise.all([
     page.waitForEvent('filechooser'),
     await page.getByRole('button', { name: 'Upload', exact: true }).click(),
-    await page.getByRole('menuitem', { name: 'Upload json file' }).click()
+    await page.getByRole('menuitem', { name: 'Upload json file' }).click(),
   ]);
   await fileChooser.setFiles(extraConfig.dataPath + testUserMsel + '.json');
   await page.waitForTimeout(1 * 1000);

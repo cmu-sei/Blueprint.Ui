@@ -1,9 +1,32 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, OnDestroy, AfterViewInit, inject, input, viewChild } from '@angular/core';
-import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  AfterViewInit,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
+import {
+  UntypedFormControl,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import {
+  MatTableDataSource,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 import {
   animate,
   state,
@@ -29,24 +52,60 @@ import { MatIcon } from '@angular/material/icon';
 import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
 import { MatCheckbox } from '@angular/material/checkbox';
-import { MatExpansionPanel, MatExpansionPanelHeader } from '@angular/material/expansion';
+import {
+  MatExpansionPanel,
+  MatExpansionPanelHeader,
+} from '@angular/material/expansion';
 import { InjectListComponent } from '../../inject-list/inject-list.component';
 import { CatalogUnitsComponent } from '../../catalog-units/catalog-units.component';
 import { MatRipple } from '@angular/material/core';
 import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
-    selector: 'app-admin-catalog-list',
-    templateUrl: './admin-catalog-list.component.html',
-    styleUrls: ['./admin-catalog-list.component.scss'],
-    animations: [
-        trigger('detailExpand', [
-            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-            state('expanded', style({ height: '*', visibility: 'visible' })),
-            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-        ]),
-    ],
-    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatCheckbox, MatSortHeader, MatExpansionPanel, MatExpansionPanelHeader, InjectListComponent, CatalogUnitsComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatRipple]
+  selector: 'app-admin-catalog-list',
+  templateUrl: './admin-catalog-list.component.html',
+  styleUrls: ['./admin-catalog-list.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state(
+        'collapsed',
+        style({ height: '0px', minHeight: '0', visibility: 'hidden' }),
+      ),
+      state('expanded', style({ height: '*', visibility: 'visible' })),
+      transition(
+        'expanded <=> collapsed',
+        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+      ),
+    ]),
+  ],
+  imports: [
+    MatIcon,
+    MatFormField,
+    MatInput,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatPaginator,
+    MatTable,
+    MatSort,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCellDef,
+    MatCell,
+    MatCheckbox,
+    MatSortHeader,
+    MatExpansionPanel,
+    MatExpansionPanelHeader,
+    InjectListComponent,
+    CatalogUnitsComponent,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+    MatRipple,
+  ],
 })
 export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
   private catalogDataService = inject(CatalogDataService);
@@ -101,7 +160,7 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((injectTypes) => {
         this.injectTypeList = injectTypes.sort((a, b) =>
-          a.name?.toLowerCase() > b.name?.toLowerCase() ? 1 : -1
+          a.name?.toLowerCase() > b.name?.toLowerCase() ? 1 : -1,
         );
       });
     // subscribe to filter control changes
@@ -120,7 +179,7 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
   getSortedCatalogs(catalogs: Catalog[]) {
     if (catalogs) {
       catalogs.sort((a, b) =>
-        this.sortCatalogs(a, b, this.sort.active, this.sort.direction)
+        this.sortCatalogs(a, b, this.sort.active, this.sort.direction),
       );
     }
     return catalogs;
@@ -160,8 +219,14 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
 
   deleteCatalog(catalog: Catalog): void {
     this.dialogService
-      .confirm({ title: 'Delete Catalog', message: 'Are you sure that you want to delete ' + catalog.name + '?', confirmText: 'Delete', cancelText: 'Cancel'
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Delete Catalog',
+        message: 'Are you sure that you want to delete ' + catalog.name + '?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.catalogDataService.delete(catalog.id);
           this.editingId = '';
@@ -171,8 +236,12 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
 
   copyCatalog(catalog: Catalog): void {
     this.dialogService
-      .confirm({ title: 'Copy Catalog', message: 'Are you sure that you want to copy ' + catalog.name + '?'
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Copy Catalog',
+        message: 'Are you sure that you want to copy ' + catalog.name + '?',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.catalogDataService.copy(catalog.id);
         }
@@ -182,7 +251,7 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
   sortChanged(sort: Sort) {
     this.sort = sort;
     this.catalogDataSource.data = this.getSortedCatalogs(
-      this.getFilteredCatalogs(this.catalogList)
+      this.getFilteredCatalogs(this.catalogList),
     );
   }
 
@@ -208,7 +277,7 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
       ) {
         const filterString = this.filterString?.toLowerCase();
         filteredCatalogs = filteredCatalogs.filter((catalog) =>
-          catalog.name?.toLowerCase().includes(filterString)
+          catalog.name?.toLowerCase().includes(filterString),
         );
       }
     }
@@ -219,20 +288,23 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
     a: Catalog,
     b: Catalog,
     column: string,
-    direction: string
+    direction: string,
   ) {
     const isAsc = direction !== 'desc';
     switch (column) {
       case 'name':
         return (
-          ((a.name ?? '').toLowerCase() < (b.name ?? '').toLowerCase() ? -1 : 1) *
-          (isAsc ? 1 : -1)
+          ((a.name ?? '').toLowerCase() < (b.name ?? '').toLowerCase()
+            ? -1
+            : 1) * (isAsc ? 1 : -1)
         );
         break;
       case 'description':
         return (
-          ((a.description ?? '').toLowerCase() < (b.description ?? '').toLowerCase() ? -1 : 1) *
-          (isAsc ? 1 : -1)
+          ((a.description ?? '').toLowerCase() <
+          (b.description ?? '').toLowerCase()
+            ? -1
+            : 1) * (isAsc ? 1 : -1)
         );
         break;
       default:
@@ -297,7 +369,7 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
       },
       (err) => {
         window.alert('Error downloading file');
-      }
+      },
     );
   }
 }

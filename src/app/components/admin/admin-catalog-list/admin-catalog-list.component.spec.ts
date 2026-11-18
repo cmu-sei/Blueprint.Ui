@@ -54,7 +54,9 @@ const CATALOG: Catalog = {
   isPublic: false,
 };
 
-async function renderCatalogList(overrides: { canEdit?: boolean; catalogs?: Catalog[] } = {}) {
+async function renderCatalogList(
+  overrides: { canEdit?: boolean; catalogs?: Catalog[] } = {},
+) {
   const { canEdit = true, catalogs = [CATALOG] } = overrides;
   const catalogApi = {
     getCatalogs: vi.fn(() => of(structuredClone(catalogs))),
@@ -85,7 +87,10 @@ async function renderCatalogList(overrides: { canEdit?: boolean; catalogs?: Cata
     providers: [
       { provide: CatalogService, useValue: catalogApi },
       { provide: CrucibleDialogService, useValue: dialog },
-      { provide: MatDialog, useValue: { open } satisfies Pick<MatDialog, 'open'> },
+      {
+        provide: MatDialog,
+        useValue: { open } satisfies Pick<MatDialog, 'open'>,
+      },
     ],
     inputs: { canEdit, loggedInUserId: 'user-1' },
   });
@@ -124,14 +129,18 @@ describe('AdminCatalogListComponent', () => {
     const { fixture } = await renderCatalogList({ canEdit: true });
 
     expect(within(table()).getByTitle('Add new Catalog')).toBeInTheDocument();
-    expect(within(table()).getByTitle('Upload a new catalog from a file')).toBeInTheDocument();
+    expect(
+      within(table()).getByTitle('Upload a new catalog from a file'),
+    ).toBeInTheDocument();
     for (const title of [
       'Edit Ransomware Catalog catalog',
       'Copy Ransomware Catalog',
       'Download Ransomware Catalog',
       'Delete Ransomware Catalog catalog',
     ]) {
-      expect(within(table()).getByRole('button', { name: title })).toBeEnabled();
+      expect(
+        within(table()).getByRole('button', { name: title }),
+      ).toBeEnabled();
     }
     expect(within(table()).getByRole('checkbox')).toBeEnabled();
     expect(child(fixture, InjectListStub).canEdit()).toBe(true);
@@ -146,15 +155,21 @@ describe('AdminCatalogListComponent', () => {
   it('hides add and upload and disables row actions without canEdit', async () => {
     const { fixture } = await renderCatalogList({ canEdit: false });
 
-    expect(within(table()).queryByTitle('Add new Catalog')).not.toBeInTheDocument();
-    expect(within(table()).queryByTitle('Upload a new catalog from a file')).not.toBeInTheDocument();
+    expect(
+      within(table()).queryByTitle('Add new Catalog'),
+    ).not.toBeInTheDocument();
+    expect(
+      within(table()).queryByTitle('Upload a new catalog from a file'),
+    ).not.toBeInTheDocument();
     for (const title of [
       'Edit Ransomware Catalog catalog',
       'Copy Ransomware Catalog',
       'Download Ransomware Catalog',
       'Delete Ransomware Catalog catalog',
     ]) {
-      expect(within(table()).getByRole('button', { name: title })).toBeDisabled();
+      expect(
+        within(table()).getByRole('button', { name: title }),
+      ).toBeDisabled();
     }
     expect(within(table()).getByRole('checkbox')).toBeDisabled();
     expect(child(fixture, InjectListStub).canEdit()).toBe(false);
@@ -167,11 +182,20 @@ describe('AdminCatalogListComponent', () => {
    * Data: canEdit true; two catalogs; no row clicked.
    */
   it('renders the inject and unit lists of every catalog at once', async () => {
-    const second: Catalog = { ...CATALOG, id: 'cat-2', name: 'Phishing Catalog', description: 'Phishing injects' };
-    const { fixture } = await renderCatalogList({ catalogs: [CATALOG, second] });
+    const second: Catalog = {
+      ...CATALOG,
+      id: 'cat-2',
+      name: 'Phishing Catalog',
+      description: 'Phishing injects',
+    };
+    const { fixture } = await renderCatalogList({
+      catalogs: [CATALOG, second],
+    });
 
     const catalogsOf = <T extends { catalog: () => Catalog }>(stub: Type<T>) =>
-      fixture.debugElement.queryAll(By.directive(stub)).map((d) => (d.componentInstance as T).catalog().id);
+      fixture.debugElement
+        .queryAll(By.directive(stub))
+        .map((d) => (d.componentInstance as T).catalog().id);
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
     expect(catalogsOf(InjectListStub).sort()).toEqual(['cat-1', 'cat-2']);
     expect(catalogsOf(CatalogUnitsStub).sort()).toEqual(['cat-1', 'cat-2']);
@@ -186,11 +210,23 @@ describe('AdminCatalogListComponent', () => {
     const { catalogApi, confirm } = await renderCatalogList({ canEdit: true });
     const user = userEvent.setup();
 
-    await user.click(within(table()).getByRole('button', { name: 'Delete Ransomware Catalog catalog' }));
+    await user.click(
+      within(table()).getByRole('button', {
+        name: 'Delete Ransomware Catalog catalog',
+      }),
+    );
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Catalog', confirmText: 'Delete', cancelText: 'Cancel' }));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Delete Catalog',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      }),
+    );
     expect(catalogApi.deleteCatalog).toHaveBeenCalledWith('cat-1');
-    expect(within(table()).queryByText('Ransomware Catalog')).not.toBeInTheDocument();
+    expect(
+      within(table()).queryByText('Ransomware Catalog'),
+    ).not.toBeInTheDocument();
   });
 
   /**

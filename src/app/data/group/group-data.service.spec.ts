@@ -4,7 +4,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom, of } from 'rxjs';
-import { Group, GroupMembership, GroupService } from 'src/app/generated/blueprint.api';
+import {
+  Group,
+  GroupMembership,
+  GroupService,
+} from 'src/app/generated/blueprint.api';
 import { GroupDataService } from './group-data.service';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
@@ -45,7 +49,9 @@ describe('GroupDataService', () => {
     const emitted = recordEmissions(groups.groups$);
     groupApi.getGroups.mockReturnValue(of([{ id: 'g-1', name: 'Analysts' }]));
     groupApi.createGroup.mockReturnValue(of({ id: 'g-2', name: 'Planners' }));
-    groupApi.updateGroup.mockReturnValue(of({ id: 'g-2', name: 'Exercise Planners' }));
+    groupApi.updateGroup.mockReturnValue(
+      of({ id: 'g-2', name: 'Exercise Planners' }),
+    );
     groupApi.deleteGroup.mockReturnValue(of(null));
 
     await firstValueFrom(groups.load());
@@ -55,7 +61,10 @@ describe('GroupDataService', () => {
     expect(names(emitted.at(-1))).toEqual(['Analysts', 'Planners']);
 
     await firstValueFrom(groups.edit({ id: 'g-2', name: 'Exercise Planners' }));
-    expect(groupApi.updateGroup).toHaveBeenCalledWith('g-2', { id: 'g-2', name: 'Exercise Planners' });
+    expect(groupApi.updateGroup).toHaveBeenCalledWith('g-2', {
+      id: 'g-2',
+      name: 'Exercise Planners',
+    });
     expect(names(emitted.at(-1))).toEqual(['Analysts', 'Exercise Planners']);
 
     await firstValueFrom(groups.delete('g-1'));

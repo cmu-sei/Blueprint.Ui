@@ -28,7 +28,7 @@ export class PlayerApplicationQuery extends QueryEntity<PlayerApplicationState> 
     const store = inject(PlayerApplicationStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

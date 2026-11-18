@@ -14,30 +14,53 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { OrganizationEditDialogComponent } from './organization-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const ORGANIZATION = { id: 'org-1', mselId: 'msel-1', name: 'City Police', shortName: 'CPD', summary: 'Local police', email: 'police@example.com', description: '' };
+const ORGANIZATION = {
+  id: 'org-1',
+  mselId: 'msel-1',
+  name: 'City Police',
+  shortName: 'CPD',
+  summary: 'Local police',
+  email: 'police@example.com',
+  description: '',
+};
 
 function dialogData(overrides: Partial<typeof ORGANIZATION> = {}) {
-  return { organization: { ...structuredClone(ORGANIZATION), ...overrides }, title: 'Edit Organization' };
+  return {
+    organization: { ...structuredClone(ORGANIZATION), ...overrides },
+    title: 'Edit Organization',
+  };
 }
 
 async function renderOrganizationEditDialog(data = dialogData()) {
   const rendered = await renderComponent(OrganizationEditDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, AngularEditorModule, MatFormFieldModule, MatInputModule],
+    imports: [
+      ...CRUCIBLE_DIALOG_IMPORTS,
+      AngularEditorModule,
+      MatFormFieldModule,
+      MatInputModule,
+    ],
     declarations: [OrganizationEditDialogComponent],
     // angular-editor injects HttpClient for its image upload.
-    providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, provideHttpClient(), provideHttpClientTesting()],
+    providers: [
+      { provide: MAT_DIALOG_DATA, useValue: data },
+      provideHttpClient(),
+      provideHttpClientTesting(),
+    ],
   });
   // ngModel writes the values into the inputs in a microtask.
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
   const results: unknown[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results };
 }
 
 // angular-editor's toolbar makes whole-document role queries slow, so the
 // buttons are looked up in the dialog actions.
-const actions = () => within(document.querySelector('mat-dialog-actions') as HTMLElement);
+const actions = () =>
+  within(document.querySelector('mat-dialog-actions') as HTMLElement);
 
 describe('OrganizationEditDialogComponent', () => {
   /**
@@ -48,8 +71,12 @@ describe('OrganizationEditDialogComponent', () => {
   it('renders with the default test providers', async () => {
     const { fixture } = await renderOrganizationEditDialog();
 
-    expect(fixture.componentInstance).toBeInstanceOf(OrganizationEditDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Edit Organization' })).toBeInTheDocument();
+    expect(fixture.componentInstance).toBeInstanceOf(
+      OrganizationEditDialogComponent,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Edit Organization' }),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -87,11 +114,15 @@ describe('OrganizationEditDialogComponent', () => {
    * Data: an organization with no email.
    */
   it('saves an incomplete organization when handleEditComplete is called', async () => {
-    const { fixture, data, results } = await renderOrganizationEditDialog(dialogData({ email: '' }));
+    const { fixture, data, results } = await renderOrganizationEditDialog(
+      dialogData({ email: '' }),
+    );
 
     fixture.componentInstance.handleEditComplete(true);
 
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
-    expect(results).toEqual([{ saveChanges: true, organization: data.organization }]);
+    expect(results).toEqual([
+      { saveChanges: true, organization: data.organization },
+    ]);
   });
 });

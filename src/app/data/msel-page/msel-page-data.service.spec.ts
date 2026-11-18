@@ -12,7 +12,10 @@ import { MselPageQuery } from './msel-page.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function page(overrides: Partial<MselPage> = {}): MselPage {
   return {
@@ -39,7 +42,10 @@ function setup(queryParams: Record<string, string> = {}) {
   TestBed.configureTestingModule({
     providers: [
       { provide: MselPageService, useValue: pageApi },
-      { provide: Router, useValue: { navigate } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -65,8 +71,12 @@ describe('MselPageDataService', () => {
    */
   it('loadByMsel replaces the pages, or empties them on failure', () => {
     const { service, query, pageApi } = setup();
-    pageApi.getMselPages.mockReturnValueOnce(of([page(), page({ id: 'page-2', name: 'Annex' })]));
-    pageApi.getMselPages.mockReturnValueOnce(throwError(() => new Error('boom')));
+    pageApi.getMselPages.mockReturnValueOnce(
+      of([page(), page({ id: 'page-2', name: 'Annex' })]),
+    );
+    pageApi.getMselPages.mockReturnValueOnce(
+      throwError(() => new Error('boom')),
+    );
 
     service.loadByMsel('msel-1');
     expect(pageApi.getMselPages).toHaveBeenCalledWith('msel-1');
@@ -84,9 +94,15 @@ describe('MselPageDataService', () => {
    */
   it('single-page calls keep the store in step with the API', () => {
     const { service, query, pageApi } = setup();
-    pageApi.getMselPage.mockReturnValue(of(page({ id: 'page-2', name: 'Annex' })));
-    pageApi.createMselPage.mockReturnValue(of(page({ id: 'page-3', name: 'Contacts' })));
-    pageApi.updateMselPage.mockReturnValue(of(page({ id: 'page-2', name: 'Annex A' })));
+    pageApi.getMselPage.mockReturnValue(
+      of(page({ id: 'page-2', name: 'Annex' })),
+    );
+    pageApi.createMselPage.mockReturnValue(
+      of(page({ id: 'page-3', name: 'Contacts' })),
+    );
+    pageApi.updateMselPage.mockReturnValue(
+      of(page({ id: 'page-2', name: 'Annex A' })),
+    );
     pageApi.deleteMselPage.mockReturnValue(of(null));
 
     service.loadById('page-2');
@@ -114,7 +130,9 @@ describe('MselPageDataService', () => {
     const { service, query, navigate } = setup({ mselPagemask: 'page-2' });
     service.updateStore(page());
     service.updateStore(page({ id: 'page-2', name: 'Annex' }));
-    expect(names(recordEmissions(service.MselPageList).at(-1))).toEqual(['Annex']);
+    expect(names(recordEmissions(service.MselPageList).at(-1))).toEqual([
+      'Annex',
+    ]);
 
     service.setActive('page-2');
     service.updateStore({ id: 'page-2', includeInPlaybook: true });
@@ -139,24 +157,42 @@ describe('MselPageDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'loadById', endpoint: 'getMselPage', escapes: true, call: (s: MselPageDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createMselPage', escapes: true, call: (s: MselPageDataService) => s.add({ id: 'x-1' }) },
-    { method: 'update', endpoint: 'updateMselPage', escapes: true, call: (s: MselPageDataService) => s.update({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, pageApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(MselPageStore).setLoading(false);
-    pageApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'loadById',
+      endpoint: 'getMselPage',
+      escapes: true,
+      call: (s: MselPageDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createMselPage',
+      escapes: true,
+      call: (s: MselPageDataService) => s.add({ id: 'x-1' }),
+    },
+    {
+      method: 'update',
+      endpoint: 'updateMselPage',
+      escapes: true,
+      call: (s: MselPageDataService) => s.update({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, pageApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(MselPageStore).setLoading(false);
+      pageApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(MselPageQuery).getValue().loading).toBe(true);
-    // With no error callback the error escapes to ErrorService, the ErrorHandler
-    // app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(MselPageQuery).getValue().loading).toBe(true);
+      // With no error callback the error escapes to ErrorService, the ErrorHandler
+      // app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete escapes to the app's global ErrorHandler.
@@ -164,19 +200,26 @@ describe('MselPageDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteMselPage', call: (s: MselPageDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, pageApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    pageApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteMselPage',
+      call: (s: MselPageDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, pageApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      pageApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

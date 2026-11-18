@@ -12,11 +12,17 @@ import {
   ScenarioEvent,
 } from 'src/app/generated/blueprint.api';
 import { Sort } from '@angular/material/sort';
-import { DataValuePlus, IntegrationTarget } from 'src/app/data/scenario-event/scenario-event-data.service';
+import {
+  DataValuePlus,
+  IntegrationTarget,
+} from 'src/app/data/scenario-event/scenario-event-data.service';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EDITOR_CONFIG, VIEW_CONFIG } from 'src/app/utilities/editor-config';
 import { hasInvalidDataValue } from 'src/app/utilities/ip-address';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
 import { MatFormField, MatLabel, MatInput } from '@angular/material/input';
 import { MatSelect } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
@@ -27,10 +33,24 @@ import { DurationEditComponent } from '../shared/duration-edit/duration-edit.com
 import { DataValueComponent } from '../data-value/data-value.component';
 
 @Component({
-    selector: 'app-scenario-event-edit-dialog',
-    templateUrl: './scenario-event-edit-dialog.component.html',
-    styleUrls: ['./scenario-event-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatSelect, FormsModule, MatOption, MatTabGroup, MatTab, SteamfitterTaskComponent, DurationEditComponent, DataValueComponent, MatInput]
+  selector: 'app-scenario-event-edit-dialog',
+  templateUrl: './scenario-event-edit-dialog.component.html',
+  styleUrls: ['./scenario-event-edit-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatFormField,
+    MatLabel,
+    MatSelect,
+    FormsModule,
+    MatOption,
+    MatTabGroup,
+    MatTab,
+    SteamfitterTaskComponent,
+    DurationEditComponent,
+    DataValueComponent,
+    MatInput,
+  ],
 })
 export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   data = inject(MAT_DIALOG_DATA);
@@ -94,7 +114,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
       return this.blankDataValue;
     }
     const dataValue = this.data.scenarioEvent.dataValues.find(
-      (dv) => dv.dataFieldId === dataFieldId
+      (dv) => dv.dataFieldId === dataFieldId,
     );
     return dataValue ? (dataValue as DataValuePlus) : this.blankDataValue;
   }
@@ -103,7 +123,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     const dataFieldId = this.getDataFieldIdByName(dataFieldName);
     if (dataFieldId) {
       const dataValue = this.data.scenarioEvent.dataValues.find(
-        (dv) => dv.dataFieldId === dataFieldId
+        (dv) => dv.dataFieldId === dataFieldId,
       );
       dataValue.value = value;
     }
@@ -119,7 +139,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
 
   getDataFieldByName(name: string) {
     return this.data.dataFields.find(
-      (df) => df.name.toLowerCase() === name.toLowerCase()
+      (df) => df.name.toLowerCase() === name.toLowerCase(),
     );
   }
 
@@ -172,12 +192,12 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     switch (filter) {
       case 'default':
         filteredList = this.getScenarioTypeDataFields().filter(
-          (x) => x.isShownOnDefaultTab
+          (x) => x.isShownOnDefaultTab,
         );
         break;
       case 'gallery':
         filteredList = (this.data.dataFields as DataField[]).filter(
-          (x) => !!x.galleryArticleParameter
+          (x) => !!x.galleryArticleParameter,
         );
         break;
       default:
@@ -185,7 +205,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
         break;
     }
     filteredList = filteredList.sort((a, b) =>
-      +a.displayOrder < +b.displayOrder ? -1 : 1
+      +a.displayOrder < +b.displayOrder ? -1 : 1,
     );
     return filteredList;
   }
@@ -214,13 +234,20 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
         this.getScenarioTypeDataFields().length === 0) ||
       // only the values on screen that can be changed, since Save must not wait on one that can't be fixed
       (this.canEditDataValues() &&
-        hasInvalidDataValue(this.sortedDataFields, this.data.scenarioEvent.dataValues))
+        hasInvalidDataValue(
+          this.sortedDataFields,
+          this.data.scenarioEvent.dataValues,
+        ))
     );
   }
 
   canEditDataValues(): boolean {
-    return this.data.isEditor &&
-      (!this.data.isEditingRestricted || this.data.scenarioEvent.scenarioEventType === this.eventType.Information);
+    return (
+      this.data.isEditor &&
+      (!this.data.isEditingRestricted ||
+        this.data.scenarioEvent.scenarioEventType ===
+          this.eventType.Information)
+    );
   }
 
   showDefaultTab(): boolean {
@@ -232,7 +259,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
 
   getIntegrationTargetArray(): string[] {
     const val = this.data.scenarioEvent.integrationTarget;
-    return val ? val.split(', ').filter(s => s.length > 0) : [];
+    return val ? val.split(', ').filter((s) => s.length > 0) : [];
   }
 
   onIntegrationTargetChange(newValues: string[]) {

@@ -5,10 +5,7 @@
 */
 
 import { Order, Query, QueryConfig, QueryEntity } from '@datorama/akita';
-import {
-  MselState,
-  MselStore,
-} from './msel.store';
+import { MselState, MselStore } from './msel.store';
 import { Msel } from 'src/app/generated/blueprint.api';
 import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
@@ -28,7 +25,7 @@ export class MselQuery extends QueryEntity<MselState> {
     const store = inject(MselStore);
 
     super(store);
-  
+
     this.store = store;
   }
 
@@ -37,11 +34,12 @@ export class MselQuery extends QueryEntity<MselState> {
   }
 
   getById(id: string): Msel {
-    return this.getAll().find(m => m.id === id);
+    return this.getAll().find((m) => m.id === id);
   }
 
   getByScenarioEventId(scenarioEventId: string): Msel {
-    return this.getAll().find(m => m.scenarioEvents.find(se => se.id === scenarioEventId));
+    return this.getAll().find((m) =>
+      m.scenarioEvents.find((se) => se.id === scenarioEventId),
+    );
   }
-
 }

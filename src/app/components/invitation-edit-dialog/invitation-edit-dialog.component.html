@@ -4,94 +4,143 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the
 project root for license information.
 -->
 <crucible-dialog
-  [dialogTitle]="(data.invitation.id ? 'Edit' : 'Create') + ' an Invitation to this MSEL'"
+  [dialogTitle]="
+    (data.invitation.id ? 'Edit' : 'Create') + ' an Invitation to this MSEL'
+  "
   [submitDisabled]="!errorFree()"
   [guardUnsavedWork]="true"
   (cancel)="handleEditComplete(false)"
   (submit)="handleEditComplete(true)"
 >
   @if (!!data && data.invitation !== undefined && data.invitation !== null) {
-  <div crucibleDialogContent>
-    <div class="add-margin">
-      <div>
-        @if (!data.invitation.id) {
-        <mat-form-field class="full-width">
-          <mat-label>Team</mat-label>
-          <mat-select placeholder="Team" [(ngModel)]="data.invitation.teamId">
-            @for (team of data.teamList; track team) {
-            <mat-option [value]="team.id" title="{{ team.shortName }} - {{ team.name }}">
-              {{ team.shortName }} - {{ team.name }}
-            </mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-        }
-        @if (data.invitation.id) {
-        <span>Team <br />{{ getTeamName(data.invitation.teamId) }}<br />&nbsp;</span>
-        }
+    <div crucibleDialogContent>
+      <div class="add-margin">
+        <div>
+          @if (!data.invitation.id) {
+            <mat-form-field class="full-width">
+              <mat-label>Team</mat-label>
+              <mat-select
+                placeholder="Team"
+                [(ngModel)]="data.invitation.teamId"
+              >
+                @for (team of data.teamList; track team) {
+                  <mat-option
+                    [value]="team.id"
+                    title="{{ team.shortName }} - {{ team.name }}"
+                  >
+                    {{ team.shortName }} - {{ team.name }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
+          @if (data.invitation.id) {
+            <span
+              >Team <br />{{ getTeamName(data.invitation.teamId)
+              }}<br />&nbsp;</span
+            >
+          }
+        </div>
+      </div>
+      @if (data.useCite) {
+        <div class="add-margin">
+          <div>
+            <mat-form-field class="full-width">
+              <mat-label>CITE Team Role</mat-label>
+              <mat-select [(ngModel)]="data.invitation.citeTeamRole">
+                @for (role of data.citeTeamRoles; track role) {
+                  <mat-option [value]="role">{{ role }}</mat-option>
+                }
+              </mat-select>
+              <mat-hint
+                >What people who join through this invitation can do in CITE.
+                Member can view the team but not answer.</mat-hint
+              >
+            </mat-form-field>
+          </div>
+        </div>
+      }
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <mat-label>User emails end with ...</mat-label>
+            <input
+              type="text"
+              title="If entered, the users' email addresses must end with this value.  The entered value can be a complete email address or a partial email address that is longer than 3 characters and contains an '@'. (i.e. @provider.com)"
+              matInput
+              [(ngModel)]="data.invitation.emailDomain"
+            />
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="add-margin">
+        <div class="single-detail center-self">
+          <mat-form-field class="datetime-field">
+            <mat-label>Expiration Date/Time</mat-label>
+            <input
+              matInput
+              [ngxMatDatetimePicker]="picker"
+              [(ngModel)]="data.invitation.expirationDateTime"
+              style="display: none"
+            />
+            <!-- <datetime-picker> -->
+            <span (click)="picker.open()">
+              {{
+                data.invitation.expirationDateTime | date: 'dd MMM yyyy HH:mm'
+              }}
+              {{ data.invitation.expirationDateTime | timezoneAbbr }}
+            </span>
+            <mat-datepicker-toggle
+              matSuffix
+              title="Choose Date/Time"
+              [for]="picker"
+            />
+            <ngx-mat-datetime-picker
+              #picker
+              [showSpinners]="true"
+              [showSeconds]="false"
+              [stepHour]="1"
+              [stepMinute]="5"
+              [stepSecond]="1"
+              [touchUi]="false"
+              [enableMeridian]="true"
+              [disableMinute]="false"
+              [hideTime]="false"
+              [color]="'warn'"
+            >
+              <ngx-mat-datepicker-actions>
+                <button mat-stroked-button ngxMatDatepickerApply>Save</button>
+                <button mat-stroked-button ngxMatDatepickerCancel>
+                  Cancel
+                </button>
+              </ngx-mat-datepicker-actions>
+            </ngx-mat-datetime-picker>
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <mat-label
+              >Maximum number of users allowed to use this invitation</mat-label
+            >
+            <input
+              type="text"
+              matInput
+              [(ngModel)]="data.invitation.maxUsersAllowed"
+            />
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="add-margin">
+        <div>
+          <mat-checkbox
+            [disabled]="true"
+            [(ngModel)]="data.invitation.isTeamLeader"
+            >Can invite others to this team</mat-checkbox
+          >
+        </div>
       </div>
     </div>
-    @if (data.useCite) {
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <mat-label>CITE Team Role</mat-label>
-          <mat-select [(ngModel)]="data.invitation.citeTeamRole">
-            @for (role of data.citeTeamRoles; track role) {
-            <mat-option [value]="role">{{ role }}</mat-option>
-            }
-          </mat-select>
-          <mat-hint>What people who join through this invitation can do in CITE. Member can view the team but not answer.</mat-hint>
-        </mat-form-field>
-      </div>
-    </div>
-    }
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <mat-label>User emails end with ...</mat-label>
-          <input type="text"
-            title="If entered, the users' email addresses must end with this value.  The entered value can be a complete email address or a partial email address that is longer than 3 characters and contains an '@'. (i.e. @provider.com)"
-            matInput [(ngModel)]="data.invitation.emailDomain">
-        </mat-form-field>
-      </div>
-    </div>
-    <div class="add-margin">
-      <div class="single-detail center-self">
-        <mat-form-field class="datetime-field">
-          <mat-label>Expiration Date/Time</mat-label>
-          <input matInput [ngxMatDatetimePicker]="picker" [(ngModel)]="data.invitation.expirationDateTime"
-            style="display: none;">
-          <!-- <datetime-picker> -->
-          <span (click)="picker.open()">
-            {{ data.invitation.expirationDateTime | date: 'dd MMM yyyy HH:mm' }} {{ data.invitation.expirationDateTime | timezoneAbbr }}
-          </span>
-          <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" />
-          <ngx-mat-datetime-picker #picker [showSpinners]=true [showSeconds]=false [stepHour]=1 [stepMinute]=5
-            [stepSecond]=1 [touchUi]=false [enableMeridian]=true [disableMinute]=false [hideTime]=false
-            [color]="'warn'">
-            <ngx-mat-datepicker-actions>
-              <button mat-stroked-button ngxMatDatepickerApply>Save</button>
-              <button mat-stroked-button ngxMatDatepickerCancel>Cancel</button>
-            </ngx-mat-datepicker-actions>
-          </ngx-mat-datetime-picker>
-        </mat-form-field>
-      </div>
-    </div>
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <mat-label>Maximum number of users allowed to use this invitation</mat-label>
-          <input type="text" matInput [(ngModel)]="data.invitation.maxUsersAllowed">
-        </mat-form-field>
-      </div>
-    </div>
-    <div class="add-margin">
-      <div>
-        <mat-checkbox [disabled]="true" [(ngModel)]="data.invitation.isTeamLeader">Can invite others to this
-          team</mat-checkbox>
-      </div>
-    </div>
-  </div>
   }
 </crucible-dialog>

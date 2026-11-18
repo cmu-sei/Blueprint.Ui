@@ -7,24 +7,29 @@ project root for license information.
 @if (!dataValueId) {
   <div class="container app-event-detail-page background text">
     @if (!hideTopbar) {
-      <app-topbar [title]="topbarText"
+      <app-topbar
+        [title]="topbarText"
         [topbarView]="TopbarView.BLUEPRINT_HOME"
         [imageFilePath]="topbarImage"
         (urlNavigate)="topBarNavigate($event)"
-       />
+      />
     }
     <div id="printable-area">
       <div class="header-div">
-        <h2>{{msel.name}} Event Details </h2>
+        <h2>{{ msel.name }} Event Details</h2>
         <div class="right-buttons no-print">
           <button
             aria-label="Print Submission Review"
             mat-icon-button
-            style="outline: none;"
+            style="outline: none"
             title="Print Submission Review"
             (click)="printpage()"
-            >
-            <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-printer" />
+          >
+            <mat-icon
+              aria-hidden="false"
+              class="mdi-24px"
+              fontIcon="mdi-printer"
+            />
           </button>
         </div>
       </div>
@@ -33,22 +38,29 @@ project root for license information.
           <table id="eventDetails">
             <tbody>
               @for (df of sortedDataFields; track df.id) {
-                @if (getScenarioEventValue(df) && scenarioEvent.id === scenarioEventId) {
+                @if (
+                  getScenarioEventValue(df) &&
+                  scenarioEvent.id === scenarioEventId
+                ) {
                   <tr>
-                    <td style="font-weight:bold">
+                    <td style="font-weight: bold">
                       {{ df.name }}
                       @if (df.dataType === dataType.Html) {
                         <button
                           mat-icon-button
                           (click)="openInNewTab(scenarioEvent.id, df.id)"
                           title="View in new tab"
-                          >
-                          <mat-icon class="mdi-18px self-center" fontIcon="mdi-open-in-new" />
+                        >
+                          <mat-icon
+                            class="mdi-18px self-center"
+                            fontIcon="mdi-open-in-new"
+                          />
                         </button>
                       }
                     </td>
                     <td>
-                      <app-data-value [(value)]="getDataValue(df.id).value"
+                      <app-data-value
+                        [(value)]="getDataValue(df.id).value"
                         [dataField]="df"
                         [canEdit]="false"
                         [canApprove]="false"
@@ -62,7 +74,7 @@ project root for license information.
                         [gallerySourceTypeOptions]="msel.gallerySourceTypes"
                         [galleryItemStatusOptions]="msel.galleryItemStatuses"
                         [userOptions]="userList"
-                       />
+                      />
                     </td>
                   </tr>
                 }
@@ -78,9 +90,10 @@ project root for license information.
 <!-- Single data value view -->
 @if (dataValueId) {
   <div class="page">
-    <angular-editor [placeholder]="'Enter value ...'"
+    <angular-editor
+      [placeholder]="'Enter value ...'"
       [innerHtml]="getDataValueById()"
       [config]="viewConfig"
-     />
+    />
   </div>
 }

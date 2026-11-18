@@ -36,7 +36,11 @@ function setup() {
     ]),
   });
   const service = TestBed.inject(CardTeamDataService);
-  return { service, cardTeamApi, emissions: recordEmissions(service.cardTeams) };
+  return {
+    service,
+    cardTeamApi,
+    emissions: recordEmissions(service.cardTeams),
+  };
 }
 
 const ids = (list: CardTeam[]) => list.map((ct) => ct.id);

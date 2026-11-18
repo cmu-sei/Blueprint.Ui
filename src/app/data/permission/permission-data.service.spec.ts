@@ -4,7 +4,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom, of, throwError } from 'rxjs';
-import { SystemPermission, SystemPermissionsService } from 'src/app/generated/blueprint.api';
+import {
+  SystemPermission,
+  SystemPermissionsService,
+} from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from './permission-data.service';
 import { permissionDataProviders } from 'src/app/test-utils/mock-permission-data.service';
 import { ApiStub } from 'src/app/test-utils/api-stub';
@@ -14,14 +17,18 @@ const ALL_PERMISSIONS = Object.values(SystemPermission);
 const SECTION_VIEW_PERMISSIONS = ALL_PERMISSIONS.filter(
   (p) => p.startsWith('View') && p !== SystemPermission.ViewMsels,
 );
-const NON_VIEW_PERMISSIONS = ALL_PERMISSIONS.filter((p) => !p.startsWith('View'));
+const NON_VIEW_PERMISSIONS = ALL_PERMISSIONS.filter(
+  (p) => !p.startsWith('View'),
+);
 
 function setup(granted: SystemPermission[]) {
   const permissionsApi = {
     getMySystemPermissions: vi.fn(() => of(granted)),
   } satisfies ApiStub<SystemPermissionsService>;
   TestBed.configureTestingModule({
-    providers: [{ provide: SystemPermissionsService, useValue: permissionsApi }],
+    providers: [
+      { provide: SystemPermissionsService, useValue: permissionsApi },
+    ],
   });
   return { service: TestBed.inject(PermissionDataService), permissionsApi };
 }
@@ -49,7 +56,7 @@ describe('PermissionDataService', () => {
    * Interacts with: SystemPermissionsService.getMySystemPermissions (stub).
    * Data: CreateMsels and ViewUsers.
    */
-  it('load caches the caller\'s permissions', async () => {
+  it("load caches the caller's permissions", async () => {
     const { service, permissionsApi } = setup([
       SystemPermission.CreateMsels,
       SystemPermission.ViewUsers,
@@ -58,7 +65,10 @@ describe('PermissionDataService', () => {
     const loaded = await firstValueFrom(service.load());
 
     expect(permissionsApi.getMySystemPermissions).toHaveBeenCalledTimes(1);
-    expect(loaded).toEqual([SystemPermission.CreateMsels, SystemPermission.ViewUsers]);
+    expect(loaded).toEqual([
+      SystemPermission.CreateMsels,
+      SystemPermission.ViewUsers,
+    ]);
     expect(service.permissions).toEqual(loaded);
   });
 
@@ -108,7 +118,9 @@ describe('PermissionDataService', () => {
    */
   it('load tries again after a failed fetch', async () => {
     const { service, permissionsApi } = setup([SystemPermission.ViewUsers]);
-    permissionsApi.getMySystemPermissions.mockReturnValueOnce(throwError(() => new Error('offline')));
+    permissionsApi.getMySystemPermissions.mockReturnValueOnce(
+      throwError(() => new Error('offline')),
+    );
 
     await expect(firstValueFrom(service.load())).rejects.toThrow('offline');
     const loaded = await firstValueFrom(service.load());
@@ -123,26 +135,32 @@ describe('PermissionDataService', () => {
    * Interacts with: PermissionDataService.hasPermission.
    * Data: each SystemPermission granted on its own.
    */
-  it.each(ALL_PERMISSIONS)('hasPermission grants only %s when only it is held', async (granted) => {
-    const { service } = setup([granted]);
-    await firstValueFrom(service.load());
+  it.each(ALL_PERMISSIONS)(
+    'hasPermission grants only %s when only it is held',
+    async (granted) => {
+      const { service } = setup([granted]);
+      await firstValueFrom(service.load());
 
-    for (const permission of ALL_PERMISSIONS) {
-      expect(service.hasPermission(permission)).toBe(permission === granted);
-    }
-  });
+      for (const permission of ALL_PERMISSIONS) {
+        expect(service.hasPermission(permission)).toBe(permission === granted);
+      }
+    },
+  );
 
   /**
    * Verifies: any single View* permission that opens an admin section opens the administration area.
    * Interacts with: PermissionDataService.canViewAdministration.
    * Data: each View* permission except ViewMsels on its own.
    */
-  it.each(SECTION_VIEW_PERMISSIONS)('canViewAdministration is true with only %s', async (granted) => {
-    const { service } = setup([granted]);
-    await firstValueFrom(service.load());
+  it.each(SECTION_VIEW_PERMISSIONS)(
+    'canViewAdministration is true with only %s',
+    async (granted) => {
+      const { service } = setup([granted]);
+      await firstValueFrom(service.load());
 
-    expect(service.canViewAdministration()).toBe(true);
-  });
+      expect(service.canViewAdministration()).toBe(true);
+    },
+  );
 
   /**
    * Verifies: ViewMsels alone opens the administration area, although no admin section is gated on it (current behavior).
@@ -175,7 +193,9 @@ describe('PermissionDataService', () => {
    */
   it('permissionDataProviders primes the real service with the grants', () => {
     TestBed.configureTestingModule({
-      providers: permissionDataProviders({ system: [SystemPermission.ViewUsers] }),
+      providers: permissionDataProviders({
+        system: [SystemPermission.ViewUsers],
+      }),
     });
 
     const service = TestBed.inject(PermissionDataService);

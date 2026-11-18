@@ -4,13 +4,19 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information.
 -->
 <crucible-dialog
-  [dialogTitle]="(data.competencyFramework.id ? 'Edit' : 'Create') + ' Competency Framework'"
+  [dialogTitle]="
+    (data.competencyFramework.id ? 'Edit' : 'Create') + ' Competency Framework'
+  "
   [submitDisabled]="!errorFree()"
   [guardUnsavedWork]="true"
   (cancel)="handleEditComplete(false)"
   (submit)="handleEditComplete(true)"
 >
-  @if (!!data && data.competencyFramework !== undefined && data.competencyFramework !== null) {
+  @if (
+    !!data &&
+    data.competencyFramework !== undefined &&
+    data.competencyFramework !== null
+  ) {
     <div crucibleDialogContent>
       <div class="add-margin">
         <div>
@@ -21,7 +27,8 @@ project root for license information.
               title="The Name of the Competency Framework"
               matInput
               placeholder="Name (required)"
-              [(ngModel)]="data.competencyFramework.name">
+              [(ngModel)]="data.competencyFramework.name"
+            />
           </mat-form-field>
         </div>
       </div>
@@ -34,7 +41,8 @@ project root for license information.
               title="The Version of the Competency Framework"
               matInput
               placeholder="Version"
-              [(ngModel)]="data.competencyFramework.version">
+              [(ngModel)]="data.competencyFramework.version"
+            />
           </mat-form-field>
         </div>
       </div>
@@ -47,7 +55,8 @@ project root for license information.
               title="The Source of the Competency Framework (e.g. NICE, DCWF)"
               matInput
               placeholder="Source (e.g. NICE, DCWF)"
-              [(ngModel)]="data.competencyFramework.source">
+              [(ngModel)]="data.competencyFramework.source"
+            />
           </mat-form-field>
         </div>
       </div>
@@ -60,7 +69,8 @@ project root for license information.
               rows="4"
               title="The Description of the Competency Framework"
               placeholder="Description"
-              [(ngModel)]="data.competencyFramework.description">
+              [(ngModel)]="data.competencyFramework.description"
+            >
             </textarea>
           </mat-form-field>
         </div>
@@ -69,10 +79,12 @@ project root for license information.
         <div>
           <mat-form-field class="full-width">
             <mat-label>Proficiency Scale</mat-label>
-            <mat-select [(ngModel)]="data.competencyFramework.defaultProficiencyScaleId">
+            <mat-select
+              [(ngModel)]="data.competencyFramework.defaultProficiencyScaleId"
+            >
               <mat-option [value]="null">None</mat-option>
               @for (scale of proficiencyScales; track scale.id) {
-              <mat-option [value]="scale.id">{{ scale.name }}</mat-option>
+                <mat-option [value]="scale.id">{{ scale.name }}</mat-option>
               }
             </mat-select>
           </mat-form-field>

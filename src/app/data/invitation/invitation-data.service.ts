@@ -7,10 +7,7 @@ import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
-import {
-  Invitation,
-  InvitationService,
-} from 'src/app/generated/blueprint.api';
+import { Invitation, InvitationService } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 
@@ -26,7 +23,7 @@ export class InvitationDataService {
 
   private _requestedInvitationId: string;
   private _requestedInvitationId$ = this.activatedRoute.queryParamMap.pipe(
-    map((params) => params.get('invitationId') || '')
+    map((params) => params.get('invitationId') || ''),
   );
   readonly InvitationList: Observable<Invitation[]>;
   readonly filterControl = new UntypedFormControl();
@@ -42,7 +39,7 @@ export class InvitationDataService {
     const activatedRoute = this.activatedRoute;
 
     this.filterTerm = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('invitationmask') || '')
+      map((params) => params.get('invitationmask') || ''),
     );
     this.filterControl.valueChanges.subscribe((term) => {
       this.router.navigate([], {
@@ -51,16 +48,16 @@ export class InvitationDataService {
       });
     });
     this.sortColumn = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('sorton') || 'name')
+      map((params) => params.get('sorton') || 'name'),
     );
     this.sortIsAscending = activatedRoute.queryParamMap.pipe(
-      map((params) => (params.get('sortdir') || 'asc') === 'asc')
+      map((params) => (params.get('sortdir') || 'asc') === 'asc'),
     );
     this.pageSize = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pagesize') || '20', 10))
+      map((params) => parseInt(params.get('pagesize') || '20', 10)),
     );
     this.pageIndex = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pageindex') || '0', 10))
+      map((params) => parseInt(params.get('pageindex') || '0', 10)),
     );
     this.InvitationList = combineLatest([
       this.invitationQuery.selectAll(),
@@ -80,14 +77,11 @@ export class InvitationDataService {
           pageIndex,
         ]) =>
           items
-            ? (items as Invitation[])
-              .filter(
-                (invitation) =>
-                  invitation.id
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase()))
-            : []
-      )
+            ? (items as Invitation[]).filter((invitation) =>
+                invitation.id.toLowerCase().includes(filterTerm.toLowerCase()),
+              )
+            : [],
+      ),
     );
   }
 
@@ -99,18 +93,18 @@ export class InvitationDataService {
         tap(() => {
           this.invitationStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (invitations) => {
-          invitations.forEach(a => {
+          invitations.forEach((a) => {
             this.setAsDates(a);
           });
           this.invitationStore.set(invitations);
         },
         (error) => {
           this.invitationStore.set([]);
-        }
+        },
       );
   }
 
@@ -122,7 +116,7 @@ export class InvitationDataService {
         tap(() => {
           this.invitationStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.setAsDates(s);
@@ -142,7 +136,7 @@ export class InvitationDataService {
         tap(() => {
           this.invitationStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.setAsDates(s);
@@ -158,7 +152,7 @@ export class InvitationDataService {
         tap(() => {
           this.invitationStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((n) => {
         this.setAsDates(n);
@@ -195,5 +189,4 @@ export class InvitationDataService {
     // set to a date object.
     invitation.expirationDateTime = new Date(invitation.expirationDateTime);
   }
-
 }

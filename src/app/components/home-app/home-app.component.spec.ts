@@ -12,7 +12,12 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { Observable, of } from 'rxjs';
-import { ComnAuthService, ComnSettingsService, CrucibleThemeService, Theme } from '@cmusei/crucible-common';
+import {
+  ComnAuthService,
+  ComnSettingsService,
+  CrucibleThemeService,
+  Theme,
+} from '@cmusei/crucible-common';
 import {
   HealthCheckService,
   HealthReport,
@@ -30,7 +35,10 @@ import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.serv
 import { TopbarComponent } from '../shared/top-bar/topbar.component';
 import { MselListComponent } from '../msel-list/msel-list.component';
 import { MselComponent } from '../msel/msel.component';
-import { captureUnhandledRejections, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRejections,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 import { FakeImage } from 'src/app/test-utils/fake-image';
 
 @Component({ selector: 'app-topbar', template: '' })
@@ -55,12 +63,28 @@ class MselStub {
   readonly deleteThisMsel = output<string>();
 }
 
-const MSEL_PERMISSIONS = [SystemPermission.CreateMsels, SystemPermission.ViewMsels, SystemPermission.EditMsels, SystemPermission.ManageMsels];
+const MSEL_PERMISSIONS = [
+  SystemPermission.CreateMsels,
+  SystemPermission.ViewMsels,
+  SystemPermission.EditMsels,
+  SystemPermission.ManageMsels,
+];
 
 async function renderHome(
-  overrides: { permissions?: SystemPermission[]; mselId?: string; health?: HealthReport; logout?: ComnAuthService['logout']; background?: string; dark?: boolean } = {},
+  overrides: {
+    permissions?: SystemPermission[];
+    mselId?: string;
+    health?: HealthReport;
+    logout?: ComnAuthService['logout'];
+    background?: string;
+    dark?: boolean;
+  } = {},
 ) {
-  const { permissions = [], mselId, health = { status: HealthStatus.Healthy } } = overrides;
+  const {
+    permissions = [],
+    mselId,
+    health = { status: HealthStatus.Healthy },
+  } = overrides;
   const healthApi = {
     getReadiness: vi.fn(() => of(structuredClone(health))),
   } satisfies ApiStub<HealthCheckService>;
@@ -70,7 +94,10 @@ async function renderHome(
     leave: vi.fn(),
     clearPresence: vi.fn(),
     selectMsel: vi.fn(),
-  } satisfies Pick<SignalRService, 'startConnection' | 'join' | 'leave' | 'clearPresence' | 'selectMsel'>;
+  } satisfies Pick<
+    SignalRService,
+    'startConnection' | 'join' | 'leave' | 'clearPresence' | 'selectMsel'
+  >;
   // HomeAppComponent loads the permissions itself in ngOnInit, so the real
   // service is provided over the stubbed endpoint, without priming it.
   const permissionApis = permissionApiStubs({ system: permissions });
@@ -83,8 +110,14 @@ async function renderHome(
       { replace: MselComponent, with: MselStub },
     ],
     providers: [
-      { provide: CrucibleThemeService, useValue: { isDarkMode: signal(overrides.dark ?? false) } },
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: CrucibleThemeService,
+        useValue: { isDarkMode: signal(overrides.dark ?? false) },
+      },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: HealthCheckService, useValue: healthApi },
       { provide: SignalRService, useValue: signalR },
@@ -92,7 +125,12 @@ async function renderHome(
       {
         provide: ComnSettingsService,
         useValue: {
-          settings: { AppTitle: '', AppTopBarText: '', AppTopBarImage: '', AppLandingBackgroundImage: overrides.background },
+          settings: {
+            AppTitle: '',
+            AppTopBarText: '',
+            AppTopBarImage: '',
+            AppLandingBackgroundImage: overrides.background,
+          },
         } satisfies Pick<ComnSettingsService, 'settings'>,
       },
       {
@@ -109,7 +147,10 @@ async function renderHome(
   return { ...rendered, signalR, healthApi };
 }
 
-function child<T>(fixture: ComponentFixture<unknown>, stub: new (...args: never[]) => T): T | undefined {
+function child<T>(
+  fixture: ComponentFixture<unknown>,
+  stub: new (...args: never[]) => T,
+): T | undefined {
   return fixture.debugElement.query(By.directive(stub))?.componentInstance;
 }
 
@@ -126,7 +167,9 @@ describe('HomeAppComponent', () => {
   it('leaves a rejected logout unhandled', async () => {
     const failure = new Error('signout metadata request failed');
     const rejections = captureUnhandledRejections();
-    const { fixture } = await renderHome({ logout: () => Promise.reject(failure) });
+    const { fixture } = await renderHome({
+      logout: () => Promise.reject(failure),
+    });
 
     fixture.componentInstance.logout();
     await flush();
@@ -140,14 +183,20 @@ describe('HomeAppComponent', () => {
    * Data: no msel query parameter; ViewUnits.
    */
   it('offers Administration with a non-MSEL permission', async () => {
-    const { fixture } = await renderHome({ permissions: [SystemPermission.ViewUnits] });
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const { fixture } = await renderHome({
+      permissions: [SystemPermission.ViewUnits],
+    });
+    const navigate = vi
+      .spyOn(TestBed.inject(Router), 'navigate')
+      .mockResolvedValue(true);
     const user = userEvent.setup();
 
     expect(child(fixture, MselListStub)?.canAccessAdminSection()).toBe(true);
     await user.click(screen.getByRole('button', { name: 'Administration' }));
 
-    expect(navigate).toHaveBeenCalledWith(['/admin'], { queryParams: { returnUrl: '/' } });
+    expect(navigate).toHaveBeenCalledWith(['/admin'], {
+      queryParams: { returnUrl: '/' },
+    });
   });
 
   /**
@@ -155,14 +204,18 @@ describe('HomeAppComponent', () => {
    * Interacts with: real PermissionDataService over SystemPermissionsService, MselListStub input.
    * Data: exactly one system permission not ending in Msels, with no broader grant.
    */
-  it.each(Object.values(SystemPermission).filter((permission) => !permission.endsWith('Msels')))(
-    'offers Administration with exactly %s', async (permission) => {
-      const { fixture } = await renderHome({ permissions: [permission] });
+  it.each(
+    Object.values(SystemPermission).filter(
+      (permission) => !permission.endsWith('Msels'),
+    ),
+  )('offers Administration with exactly %s', async (permission) => {
+    const { fixture } = await renderHome({ permissions: [permission] });
 
-      expect(screen.getByRole('button', { name: 'Administration' })).toBeInTheDocument();
-      expect(child(fixture, MselListStub)?.canAccessAdminSection()).toBe(true);
-    },
-  );
+    expect(
+      screen.getByRole('button', { name: 'Administration' }),
+    ).toBeInTheDocument();
+    expect(child(fixture, MselListStub)?.canAccessAdminSection()).toBe(true);
+  });
 
   /**
    * Verifies: with only MSEL permissions there is no Administration button and the list is told so.
@@ -172,7 +225,9 @@ describe('HomeAppComponent', () => {
   it('hides Administration with only MSEL permissions', async () => {
     const { fixture } = await renderHome({ permissions: MSEL_PERMISSIONS });
 
-    expect(screen.queryByRole('button', { name: 'Administration' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Administration' }),
+    ).not.toBeInTheDocument();
     expect(child(fixture, MselListStub)?.canAccessAdminSection()).toBe(false);
     expect(child(fixture, MselStub)).toBeUndefined();
   });
@@ -183,20 +238,46 @@ describe('HomeAppComponent', () => {
    * Data: msel=msel-1; one row per permission set (the MSEL-only rows are the near misses for canAccessAdminSection).
    */
   it.each([
-    { permissions: [SystemPermission.EditMsels], canEditMsel: true, canEditCheckboxes: false, admin: false },
-    { permissions: [SystemPermission.CreateMsels], canEditMsel: false, canEditCheckboxes: true, admin: false },
-    { permissions: [SystemPermission.ViewMsels, SystemPermission.ManageMsels], canEditMsel: false, canEditCheckboxes: false, admin: false },
-    { permissions: [SystemPermission.ViewMsels, SystemPermission.ViewUnits], canEditMsel: false, canEditCheckboxes: false, admin: true },
-  ])('passes canEditMsel $canEditMsel, canEditCheckboxes $canEditCheckboxes and canAccessAdminSection $admin for $permissions', async ({ permissions, canEditMsel, canEditCheckboxes, admin }) => {
-    const { fixture, signalR } = await renderHome({ permissions, mselId: 'msel-1' });
+    {
+      permissions: [SystemPermission.EditMsels],
+      canEditMsel: true,
+      canEditCheckboxes: false,
+      admin: false,
+    },
+    {
+      permissions: [SystemPermission.CreateMsels],
+      canEditMsel: false,
+      canEditCheckboxes: true,
+      admin: false,
+    },
+    {
+      permissions: [SystemPermission.ViewMsels, SystemPermission.ManageMsels],
+      canEditMsel: false,
+      canEditCheckboxes: false,
+      admin: false,
+    },
+    {
+      permissions: [SystemPermission.ViewMsels, SystemPermission.ViewUnits],
+      canEditMsel: false,
+      canEditCheckboxes: false,
+      admin: true,
+    },
+  ])(
+    'passes canEditMsel $canEditMsel, canEditCheckboxes $canEditCheckboxes and canAccessAdminSection $admin for $permissions',
+    async ({ permissions, canEditMsel, canEditCheckboxes, admin }) => {
+      const { fixture, signalR } = await renderHome({
+        permissions,
+        mselId: 'msel-1',
+      });
 
-    const msel = child(fixture, MselStub);
-    expect(msel?.canEditMsel()).toBe(canEditMsel);
-    expect(msel?.canEditCheckboxes()).toBe(canEditCheckboxes);
-    expect(msel?.canAccessAdminSection()).toBe(admin);
-    expect(child(fixture, MselListStub)).toBeUndefined();
-    expect(signalR.join).toHaveBeenCalled();
-  });
+      const msel = child(fixture, MselStub);
+      expect(msel?.canEditMsel()).toBe(canEditMsel);
+      expect(msel?.canEditCheckboxes()).toBe(canEditCheckboxes);
+      expect(msel?.canAccessAdminSection()).toBe(admin);
+      expect(child(fixture, MselListStub)).toBeUndefined();
+      expect(signalR.join).toHaveBeenCalled();
+    },
+  );
 
   /**
    * Verifies: when the API reports it is not healthy, the page shows only the bare status as the message (current behavior).
@@ -207,8 +288,12 @@ describe('HomeAppComponent', () => {
     await renderHome({ health: { status: HealthStatus.Unhealthy } });
 
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
-    expect(screen.getByRole('heading', { name: 'Unhealthy' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Please refresh this page.' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Unhealthy' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Please refresh this page.' }),
+    ).toBeInTheDocument();
   });
 
   // crucible-common remembers loaded images, so each test uses its own URL.
@@ -224,14 +309,23 @@ describe('HomeAppComponent', () => {
    */
   it('shows the landing background once the image loads', async () => {
     vi.stubGlobal('Image', FakeImage);
-    const { fixture, container } = await renderHome({ background: '/assets/local/home-shows-the-landing-background-once-the-image-loads.jpg' });
+    const { fixture, container } = await renderHome({
+      background:
+        '/assets/local/home-shows-the-landing-background-once-the-image-loads.jpg',
+    });
 
-    expect(FakeImage.last?.src).toBe('/assets/local/home-shows-the-landing-background-once-the-image-loads.jpg');
+    expect(FakeImage.last?.src).toBe(
+      '/assets/local/home-shows-the-landing-background-once-the-image-loads.jpg',
+    );
     FakeImage.last!.onload!();
     fixture.detectChanges();
 
-    const page = container.querySelector('.app-content-container') as HTMLElement;
-    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe('url("/assets/local/home-shows-the-landing-background-once-the-image-loads.jpg")');
+    const page = container.querySelector(
+      '.app-content-container',
+    ) as HTMLElement;
+    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe(
+      'url("/assets/local/home-shows-the-landing-background-once-the-image-loads.jpg")',
+    );
     expect(page.classList.contains('crucible-landing-background')).toBe(true);
   });
 
@@ -242,12 +336,17 @@ describe('HomeAppComponent', () => {
    */
   it('tints the landing background in dark mode', async () => {
     vi.stubGlobal('Image', FakeImage);
-    const { fixture, container } = await renderHome({ background: '/assets/local/home-dark.jpg', dark: true });
+    const { fixture, container } = await renderHome({
+      background: '/assets/local/home-dark.jpg',
+      dark: true,
+    });
 
     FakeImage.last!.onload!();
     fixture.detectChanges();
 
-    const page = container.querySelector('.app-content-container') as HTMLElement;
+    const page = container.querySelector(
+      '.app-content-container',
+    ) as HTMLElement;
     expect(page.style.backgroundImage).toContain('linear-gradient');
     expect(page.style.backgroundImage).toContain('home-dark.jpg');
   });
@@ -259,13 +358,20 @@ describe('HomeAppComponent', () => {
    */
   it('keeps the normal background when the image fails to load', async () => {
     vi.stubGlobal('Image', FakeImage);
-    const { fixture, container } = await renderHome({ background: '/assets/local/home-keeps-the-normal-background-when-the-image-fails-to-load.jpg' });
+    const { fixture, container } = await renderHome({
+      background:
+        '/assets/local/home-keeps-the-normal-background-when-the-image-fails-to-load.jpg',
+    });
 
     FakeImage.last!.onerror?.();
     fixture.detectChanges();
 
-    const page = container.querySelector('.app-content-container') as HTMLElement;
-    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe('');
+    const page = container.querySelector(
+      '.app-content-container',
+    ) as HTMLElement;
+    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe(
+      '',
+    );
     expect(page.classList.contains('crucible-landing-background')).toBe(false);
   });
 
@@ -279,8 +385,12 @@ describe('HomeAppComponent', () => {
     const { container } = await renderHome();
 
     expect(FakeImage.last).toBeUndefined();
-    const page = container.querySelector('.app-content-container') as HTMLElement;
-    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe('');
+    const page = container.querySelector(
+      '.app-content-container',
+    ) as HTMLElement;
+    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe(
+      '',
+    );
     expect(page.classList.contains('crucible-landing-background')).toBe(false);
   });
 
@@ -291,12 +401,18 @@ describe('HomeAppComponent', () => {
    */
   it('hides the landing background on an open MSEL', async () => {
     vi.stubGlobal('Image', FakeImage);
-    const { fixture, container } = await renderHome({ background: '/assets/local/home-hides-the-landing-background-on-an-open-msel.jpg', mselId: 'msel-1' });
+    const { fixture, container } = await renderHome({
+      background:
+        '/assets/local/home-hides-the-landing-background-on-an-open-msel.jpg',
+      mselId: 'msel-1',
+    });
 
     FakeImage.last!.onload!();
     fixture.detectChanges();
 
-    const page = container.querySelector('.app-content-container') as HTMLElement;
+    const page = container.querySelector(
+      '.app-content-container',
+    ) as HTMLElement;
     expect(page.classList.contains('crucible-landing-background')).toBe(false);
   });
 });

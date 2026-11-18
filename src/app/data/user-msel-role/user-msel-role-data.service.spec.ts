@@ -5,14 +5,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, firstValueFrom, of, throwError } from 'rxjs';
-import { MselRole, UserMselRole, UserMselRoleService } from 'src/app/generated/blueprint.api';
+import {
+  MselRole,
+  UserMselRole,
+  UserMselRoleService,
+} from 'src/app/generated/blueprint.api';
 import { UserMselRoleStore } from './user-msel-role.store';
 import { UserMselRoleDataService } from './user-msel-role-data.service';
 import { UserMselRoleQuery } from './user-msel-role.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function umr(overrides: Partial<UserMselRole> = {}): UserMselRole {
   return {
@@ -37,7 +44,10 @@ function setup() {
   TestBed.configureTestingModule({
     providers: [
       { provide: UserMselRoleService, useValue: umrApi },
-      { provide: Router, useValue: { navigate: vi.fn() } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate: vi.fn() } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: activatedRouteStub().route },
     ],
   });
@@ -48,7 +58,8 @@ function setup() {
   };
 }
 
-const roles = (list: UserMselRole[]) => list.map((r) => `${r.userId}:${r.role}`);
+const roles = (list: UserMselRole[]) =>
+  list.map((r) => `${r.userId}:${r.role}`);
 
 describe('UserMselRoleDataService', () => {
   beforeEach(() => {
@@ -63,13 +74,20 @@ describe('UserMselRoleDataService', () => {
   it('loadByMsel replaces the roles, or empties them on failure', () => {
     const { service, query, umrApi } = setup();
     umrApi.getUserMselRolesByMsel.mockReturnValueOnce(
-      of([umr(), umr({ id: 'umr-2', userId: 'user-2', role: MselRole.Viewer })]),
+      of([
+        umr(),
+        umr({ id: 'umr-2', userId: 'user-2', role: MselRole.Viewer }),
+      ]),
     );
-    umrApi.getUserMselRolesByMsel.mockReturnValueOnce(throwError(() => new Error('boom')));
+    umrApi.getUserMselRolesByMsel.mockReturnValueOnce(
+      throwError(() => new Error('boom')),
+    );
 
     service.loadByMsel('msel-1');
     expect(roles(query.getAll())).toEqual(['user-1:Editor', 'user-2:Viewer']);
-    expect(query.getEntity('umr-1').dateCreated).toEqual(new Date('2026-01-01T00:00:00Z'));
+    expect(query.getEntity('umr-1').dateCreated).toEqual(
+      new Date('2026-01-01T00:00:00Z'),
+    );
 
     service.loadByMsel('msel-1');
     expect(query.getAll()).toEqual([]);
@@ -83,13 +101,20 @@ describe('UserMselRoleDataService', () => {
    */
   it('single-role calls keep the store in step with the API', () => {
     const { service, query, umrApi } = setup();
-    umrApi.getUserMselRole.mockReturnValue(of(umr({ id: 'umr-2', role: MselRole.Approver })));
-    umrApi.createUserMselRole.mockReturnValue(of(umr({ id: 'umr-3', role: MselRole.Evaluator })));
+    umrApi.getUserMselRole.mockReturnValue(
+      of(umr({ id: 'umr-2', role: MselRole.Approver })),
+    );
+    umrApi.createUserMselRole.mockReturnValue(
+      of(umr({ id: 'umr-3', role: MselRole.Evaluator })),
+    );
     umrApi.deleteUserMselRole.mockReturnValue(of(null));
 
     service.loadById('umr-2');
     service.add(umr({ id: undefined, role: MselRole.Evaluator }));
-    expect(roles(query.getAll())).toEqual(['user-1:Approver', 'user-1:Evaluator']);
+    expect(roles(query.getAll())).toEqual([
+      'user-1:Approver',
+      'user-1:Evaluator',
+    ]);
     expect(query.getEntity('umr-3').dateModified).toBeInstanceOf(Date);
 
     service.delete('umr-2');
@@ -110,17 +135,25 @@ describe('UserMselRoleDataService', () => {
     umrApi.setUserMselIntegrationRoles.mockReturnValue(
       of([
         umr({ citeEvaluationRole: 'Observer', galleryExhibitRole: 'Viewer' }),
-        umr({ id: 'umr-2', role: MselRole.Viewer, citeEvaluationRole: 'Observer' }),
+        umr({
+          id: 'umr-2',
+          role: MselRole.Viewer,
+          citeEvaluationRole: 'Observer',
+        }),
       ]),
     );
 
     service.setIntegrationRoles('msel-1', 'user-1', 'Observer', 'Viewer', null);
 
-    expect(umrApi.setUserMselIntegrationRoles).toHaveBeenCalledWith('msel-1', 'user-1', {
-      citeEvaluationRole: 'Observer',
-      galleryExhibitRole: 'Viewer',
-      steamfitterScenarioRole: null,
-    });
+    expect(umrApi.setUserMselIntegrationRoles).toHaveBeenCalledWith(
+      'msel-1',
+      'user-1',
+      {
+        citeEvaluationRole: 'Observer',
+        galleryExhibitRole: 'Viewer',
+        steamfitterScenarioRole: null,
+      },
+    );
     expect(query.getEntity('umr-1').galleryExhibitRole).toBe('Viewer');
     expect(query.getEntity('umr-2').dateCreated).toBeInstanceOf(Date);
   });
@@ -135,12 +168,16 @@ describe('UserMselRoleDataService', () => {
     const emissions = recordEmissions(query.selectAll());
 
     service.updateStore(umr());
-    service.updateStore(umr({ id: 'umr-2', userId: 'user-2', role: MselRole.Viewer }));
+    service.updateStore(
+      umr({ id: 'umr-2', userId: 'user-2', role: MselRole.Viewer }),
+    );
     service.setActive('umr-2');
     service.updateStore({ id: 'umr-2', role: MselRole.Editor });
     service.deleteFromStore('umr-1');
 
-    expect(emissions.at(-1).map((r) => `${r.userId}:${r.role}`)).toEqual(['user-2:Editor']);
+    expect(emissions.at(-1).map((r) => `${r.userId}:${r.role}`)).toEqual([
+      'user-2:Editor',
+    ]);
     const active$ = query.selectActive() as Observable<UserMselRole>;
     expect((await firstValueFrom(active$)).id).toBe('umr-2');
   });
@@ -151,23 +188,36 @@ describe('UserMselRoleDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'loadById', endpoint: 'getUserMselRole', escapes: true, call: (s: UserMselRoleDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createUserMselRole', escapes: true, call: (s: UserMselRoleDataService) => s.add({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, umrApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(UserMselRoleStore).setLoading(false);
-    umrApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'loadById',
+      endpoint: 'getUserMselRole',
+      escapes: true,
+      call: (s: UserMselRoleDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createUserMselRole',
+      escapes: true,
+      call: (s: UserMselRoleDataService) => s.add({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, umrApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(UserMselRoleStore).setLoading(false);
+      umrApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(UserMselRoleQuery).getValue().loading).toBe(true);
-    // With no error callback the error escapes to ErrorService, the ErrorHandler
-    // app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(UserMselRoleQuery).getValue().loading).toBe(true);
+      // With no error callback the error escapes to ErrorService, the ErrorHandler
+      // app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete, setIntegrationRoles escapes to the app's global ErrorHandler.
@@ -175,20 +225,32 @@ describe('UserMselRoleDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteUserMselRole', call: (s: UserMselRoleDataService) => s.delete('x-1') },
-    { method: 'setIntegrationRoles', endpoint: 'setUserMselIntegrationRoles', call: (s: UserMselRoleDataService) => s.setIntegrationRoles('msel-1', 'user-1', null, null, null) },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, umrApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    umrApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteUserMselRole',
+      call: (s: UserMselRoleDataService) => s.delete('x-1'),
+    },
+    {
+      method: 'setIntegrationRoles',
+      endpoint: 'setUserMselIntegrationRoles',
+      call: (s: UserMselRoleDataService) =>
+        s.setIntegrationRoles('msel-1', 'user-1', null, null, null),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, umrApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      umrApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

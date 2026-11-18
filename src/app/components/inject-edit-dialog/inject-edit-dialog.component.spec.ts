@@ -11,7 +11,11 @@ import { MatSelectModule } from '@angular/material/select';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
-import { DataField, DataFieldType, Injectm } from 'src/app/generated/blueprint.api';
+import {
+  DataField,
+  DataFieldType,
+  Injectm,
+} from 'src/app/generated/blueprint.api';
 import { InjectEditDialogComponent } from './inject-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { DataValueComponent } from '../data-value/data-value.component';
@@ -35,11 +39,34 @@ class DataValueStub {
   readonly userOptions = input<unknown[]>(undefined);
 }
 
-const SUBJECT: DataField = { id: 'df-subject', name: 'Subject', dataType: DataFieldType.String };
-const WHEN: DataField = { id: 'df-when', name: 'When', dataType: DataFieldType.DateTime };
+const SUBJECT: DataField = {
+  id: 'df-subject',
+  name: 'Subject',
+  dataType: DataFieldType.String,
+};
+const WHEN: DataField = {
+  id: 'df-when',
+  name: 'When',
+  dataType: DataFieldType.DateTime,
+};
 
-function injectData(overrides: { isEditMode?: boolean; inject?: Injectm; dataFieldList?: DataField[] } = {}) {
-  const { isEditMode = true, inject = { id: 'inj-1', name: 'Phish', description: 'Phishing email', dataValues: [{ id: 'dv-1', dataFieldId: 'df-subject', value: 'Urgent' }] }, dataFieldList = [SUBJECT] } = overrides;
+function injectData(
+  overrides: {
+    isEditMode?: boolean;
+    inject?: Injectm;
+    dataFieldList?: DataField[];
+  } = {},
+) {
+  const {
+    isEditMode = true,
+    inject = {
+      id: 'inj-1',
+      name: 'Phish',
+      description: 'Phishing email',
+      dataValues: [{ id: 'dv-1', dataFieldId: 'df-subject', value: 'Urgent' }],
+    },
+    dataFieldList = [SUBJECT],
+  } = overrides;
   return {
     inject,
     dataFieldList,
@@ -47,20 +74,28 @@ function injectData(overrides: { isEditMode?: boolean; inject?: Injectm; dataFie
     isNewInject: false,
     unitList: [],
     userList: [],
-    injectList: [inject, { id: 'inj-2', name: 'Ransom note', description: 'Ransom' }],
+    injectList: [
+      inject,
+      { id: 'inj-2', name: 'Ransom note', description: 'Ransom' },
+    ],
   };
 }
 
 async function renderInjectEdit(data = injectData()) {
   const rendered = await renderComponent(InjectEditDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, MatFormFieldModule, MatInputModule, MatSelectModule],
-    childStubs: [
-      { replace: DataValueComponent, with: DataValueStub },
+    imports: [
+      ...CRUCIBLE_DIALOG_IMPORTS,
+      MatFormFieldModule,
+      MatInputModule,
+      MatSelectModule,
     ],
+    childStubs: [{ replace: DataValueComponent, with: DataValueStub }],
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
   });
   const results: unknown[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results };
 }
 
@@ -71,9 +106,12 @@ describe('InjectEditDialogComponent', () => {
    * Data: isEditMode true; data field Subject with value Urgent.
    */
   it('lets data values be edited in edit mode', async () => {
-    const { fixture } = await renderInjectEdit(injectData({ isEditMode: true }));
+    const { fixture } = await renderInjectEdit(
+      injectData({ isEditMode: true }),
+    );
 
-    const value = fixture.debugElement.query(By.directive(DataValueStub)).componentInstance as DataValueStub;
+    const value = fixture.debugElement.query(By.directive(DataValueStub))
+      .componentInstance as DataValueStub;
     expect(value.dataField()).toEqual(SUBJECT);
     expect(value.value()).toBe('Urgent');
     expect(value.canEdit()).toBe(true);
@@ -87,9 +125,12 @@ describe('InjectEditDialogComponent', () => {
    * Data: isEditMode false.
    */
   it('shows data values read-only outside edit mode', async () => {
-    const { fixture } = await renderInjectEdit(injectData({ isEditMode: false }));
+    const { fixture } = await renderInjectEdit(
+      injectData({ isEditMode: false }),
+    );
 
-    const value = fixture.debugElement.query(By.directive(DataValueStub)).componentInstance as DataValueStub;
+    const value = fixture.debugElement.query(By.directive(DataValueStub))
+      .componentInstance as DataValueStub;
     expect(value.canEdit()).toBe(false);
     expect(value.showValueOnly()).toBe(true);
     expect(value.canApprove()).toBe(false);
@@ -122,7 +163,11 @@ describe('InjectEditDialogComponent', () => {
    * Data: an inject with no description.
    */
   it('disables Save without a description', async () => {
-    await renderInjectEdit(injectData({ inject: { id: 'inj-1', name: 'Phish', description: '', dataValues: [] } }));
+    await renderInjectEdit(
+      injectData({
+        inject: { id: 'inj-1', name: 'Phish', description: '', dataValues: [] },
+      }),
+    );
 
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
   });
@@ -135,12 +180,24 @@ describe('InjectEditDialogComponent', () => {
   it.each([
     { isEditMode: true, disabled: true },
     { isEditMode: false, disabled: false },
-  ])('sets Save disabled $disabled for a value that is not a date with isEditMode $isEditMode', async ({ isEditMode, disabled }) => {
-    const inject = { id: 'inj-1', name: 'Phish', description: 'Phishing email', dataValues: [{ id: 'dv-1', dataFieldId: 'df-when', value: 'Team 2' }] };
-    await renderInjectEdit(injectData({ isEditMode, inject, dataFieldList: [WHEN] }));
+  ])(
+    'sets Save disabled $disabled for a value that is not a date with isEditMode $isEditMode',
+    async ({ isEditMode, disabled }) => {
+      const inject = {
+        id: 'inj-1',
+        name: 'Phish',
+        description: 'Phishing email',
+        dataValues: [{ id: 'dv-1', dataFieldId: 'df-when', value: 'Team 2' }],
+      };
+      await renderInjectEdit(
+        injectData({ isEditMode, inject, dataFieldList: [WHEN] }),
+      );
 
-    expect(screen.getByRole('button', { name: 'Save' }).hasAttribute('disabled')).toBe(disabled);
-  });
+      expect(
+        screen.getByRole('button', { name: 'Save' }).hasAttribute('disabled'),
+      ).toBe(disabled);
+    },
+  );
 
   /**
    * Verifies: choosing another inject as the prerequisite sets requiresInjectId to the edited inject's own id (current behavior).
@@ -164,12 +221,15 @@ describe('InjectEditDialogComponent', () => {
    * Data: an inject with no description.
    */
   it('saves an incomplete inject when handleEditComplete is called', async () => {
-    const { fixture, data, results } = await renderInjectEdit(injectData({ inject: { id: 'inj-1', name: 'Phish', description: '', dataValues: [] } }));
+    const { fixture, data, results } = await renderInjectEdit(
+      injectData({
+        inject: { id: 'inj-1', name: 'Phish', description: '', dataValues: [] },
+      }),
+    );
 
     fixture.componentInstance.handleEditComplete(true);
 
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
     expect(results).toEqual([{ saveChanges: true, inject: data.inject }]);
   });
-
 });

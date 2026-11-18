@@ -14,7 +14,6 @@ import { SystemMessageService } from '../system-message/system-message.service';
 export class ErrorService implements ErrorHandler {
   private injector = inject(Injector);
 
-
   handleError(err: any) {
     const messageService = this.injector.get(SystemMessageService);
     // Http failure response for (unknown url): 0 Unknown Error
@@ -25,7 +24,7 @@ export class ErrorService implements ErrorHandler {
       ) {
         messageService.displayMessage(
           'API Error',
-          'The API could not be reached.'
+          'The API could not be reached.',
         );
         console.log('API Error', 'The API could not be reached.');
       } else if (err.error && err.error.title) {
@@ -47,7 +46,10 @@ export class ErrorService implements ErrorHandler {
           }
         }
 
-        messageService.displayMessage(err.statusText || 'Error', detailedMessage);
+        messageService.displayMessage(
+          err.statusText || 'Error',
+          detailedMessage,
+        );
         console.error(err.statusText + ' ==> ' + detailedMessage, err);
       } else if (err.error && typeof err.error === 'string') {
         // Handle case where error is a plain string (from CITE API improvements)
@@ -63,22 +65,32 @@ export class ErrorService implements ErrorHandler {
       } else if (err.rejection && err.rejection.message === 'Network Error') {
         messageService.displayMessage(
           'Identity Server Error',
-          'The Identity Server could not be reached for user authentication.'
+          'The Identity Server could not be reached for user authentication.',
         );
         console.log(
           'Identity Server Error',
-          'The Identity Server could not be reached for user authentication.'
+          'The Identity Server could not be reached for user authentication.',
         );
       } else if (err.rejection && err.rejection.message === 'Failed to fetch') {
-        console.log('SignalR error reaching the Gallery API:  ' + err.rejection.message);
+        console.log(
+          'SignalR error reaching the Gallery API:  ' + err.rejection.message,
+        );
       } else {
-        const rejectionMessage = err.rejection ? err.rejection.message : err.message;
+        const rejectionMessage = err.rejection
+          ? err.rejection.message
+          : err.message;
         messageService.displayMessage('Error', rejectionMessage);
         console.error(rejectionMessage, err);
       }
     } else {
-      messageService.displayMessage(err.name || 'Error', err.message || 'An unexpected error occurred');
-      console.error((err.name || 'Error') + ' ==> ' + (err.message || 'Unknown error'), err);
+      messageService.displayMessage(
+        err.name || 'Error',
+        err.message || 'An unexpected error occurred',
+      );
+      console.error(
+        (err.name || 'Error') + ' ==> ' + (err.message || 'Unknown error'),
+        err,
+      );
     }
   }
 }

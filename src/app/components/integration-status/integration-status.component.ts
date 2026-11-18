@@ -11,10 +11,10 @@ import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 
 @Component({
-    selector: 'app-integration-status',
-    templateUrl: './integration-status.component.html',
-    styleUrls: ['./integration-status.component.scss'],
-    imports: [MatProgressBar, MatButton, MatIcon]
+  selector: 'app-integration-status',
+  templateUrl: './integration-status.component.html',
+  styleUrls: ['./integration-status.component.scss'],
+  imports: [MatProgressBar, MatButton, MatIcon],
 })
 export class IntegrationStatusComponent {
   private mselDataService = inject(MselDataService);
@@ -33,7 +33,11 @@ export class IntegrationStatusComponent {
   }
 
   get isCancelling(): boolean {
-    return this.cancelClicked || this.msel()?.integrationStatus?.startsWith('Cancelling') || false;
+    return (
+      this.cancelClicked ||
+      this.msel()?.integrationStatus?.startsWith('Cancelling') ||
+      false
+    );
   }
 
   get isPulling(): boolean {
@@ -42,8 +46,11 @@ export class IntegrationStatusComponent {
 
   // only a push that failed at its last step, Caster, can redo that step alone
   get canRetryCaster(): boolean {
-    return this.isError && this.msel()?.status === MselItemStatus.Pushing &&
-      this.msel().integrationStatus.startsWith('ERROR: Caster - ');
+    return (
+      this.isError &&
+      this.msel()?.status === MselItemStatus.Pushing &&
+      this.msel().integrationStatus.startsWith('ERROR: Caster - ')
+    );
   }
 
   get statusMessage(): string {
@@ -69,8 +76,13 @@ export class IntegrationStatusComponent {
 
   pullIntegrations() {
     this.dialogService
-      .confirm({ title: 'Remove Integrations', message: 'Are you sure that you want to remove partial integrations from the associated applications?'
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Remove Integrations',
+        message:
+          'Are you sure that you want to remove partial integrations from the associated applications?',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.mselDataService.pullIntegrations(this.msel().id);
           this.closed.emit();

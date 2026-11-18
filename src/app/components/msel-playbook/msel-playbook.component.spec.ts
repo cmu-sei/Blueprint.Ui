@@ -51,18 +51,55 @@ class DurationViewStub {
   readonly showRealTime = input<boolean>(undefined);
 }
 
-const MSEL: Msel = { id: 'msel-1', name: 'Exercise Alpha', createdBy: 'someone-else', teams: [], units: [], userMselRoles: [] };
+const MSEL: Msel = {
+  id: 'msel-1',
+  name: 'Exercise Alpha',
+  createdBy: 'someone-else',
+  teams: [],
+  units: [],
+  userMselRoles: [],
+};
 const FIELDS: DataField[] = [
-  { id: 'df-title', mselId: 'msel-1', name: 'Title', dataType: DataFieldType.String, displayOrder: 1 },
-  { id: 'df-detail', mselId: 'msel-1', name: 'Detail', dataType: DataFieldType.String, displayOrder: 2 },
+  {
+    id: 'df-title',
+    mselId: 'msel-1',
+    name: 'Title',
+    dataType: DataFieldType.String,
+    displayOrder: 1,
+  },
+  {
+    id: 'df-detail',
+    mselId: 'msel-1',
+    name: 'Detail',
+    dataType: DataFieldType.String,
+    displayOrder: 2,
+  },
 ];
-const EVENT: ScenarioEvent = { id: 'se-1', mselId: 'msel-1', deltaSeconds: 600, groupOrder: 1 };
+const EVENT: ScenarioEvent = {
+  id: 'se-1',
+  mselId: 'msel-1',
+  deltaSeconds: 600,
+  groupOrder: 1,
+};
 const VALUES: DataValue[] = [
-  { id: 'dv-1', scenarioEventId: 'se-1', dataFieldId: 'df-title', value: 'Phishing wave' },
-  { id: 'dv-2', scenarioEventId: 'se-1', dataFieldId: 'df-detail', value: 'Users receive a phish' },
+  {
+    id: 'dv-1',
+    scenarioEventId: 'se-1',
+    dataFieldId: 'df-title',
+    value: 'Phishing wave',
+  },
+  {
+    id: 'dv-2',
+    scenarioEventId: 'se-1',
+    dataFieldId: 'df-detail',
+    value: 'Users receive a phish',
+  },
 ];
 
-function seeded<S extends { set(entities: unknown[]): void }>(Store: new () => S, entities: unknown[]) {
+function seeded<S extends { set(entities: unknown[]): void }>(
+  Store: new () => S,
+  entities: unknown[],
+) {
   return {
     provide: Store,
     useFactory: () => {
@@ -87,7 +124,9 @@ interface PlaybookData {
 
 async function renderPlaybook(canEditMsel: boolean, data: PlaybookData = {}) {
   const imageApi = {
-    getMselImage: data.getMselImage ?? vi.fn(() => of(new Blob(['image'], { type: 'image/png' }))),
+    getMselImage:
+      data.getMselImage ??
+      vi.fn(() => of(new Blob(['image'], { type: 'image/png' }))),
   } satisfies ApiStub<MselImageService>;
   const rendered = await renderComponent(MselPlaybookComponent, {
     imports: [MatButtonModule, MatIconModule, MatPaginatorModule],
@@ -109,16 +148,42 @@ async function renderPlaybook(canEditMsel: boolean, data: PlaybookData = {}) {
       seeded(MoveStore, data.moves ?? []),
       seeded(MselPageStore, data.pages ?? []),
       { provide: MselImageService, useValue: imageApi },
-      { provide: MselCompetencyService, useValue: { getMselCompetencies: vi.fn(() => of(data.mselCompetencies ?? [])) } },
-      { provide: TeamCompetencyService, useValue: { getMselTeamCompetencies: vi.fn(() => of(data.teamCompetencies ?? [])) } },
-      { provide: CompetencyFrameworkService, useValue: { getCompetencyFrameworks: vi.fn(() => of(data.frameworks ?? [{ id: 'fw-1', name: 'DCWF 5.1' }, { id: 'fw-2', name: 'NICE 2.0' }])) } },
+      {
+        provide: MselCompetencyService,
+        useValue: {
+          getMselCompetencies: vi.fn(() => of(data.mselCompetencies ?? [])),
+        },
+      },
+      {
+        provide: TeamCompetencyService,
+        useValue: {
+          getMselTeamCompetencies: vi.fn(() => of(data.teamCompetencies ?? [])),
+        },
+      },
+      {
+        provide: CompetencyFrameworkService,
+        useValue: {
+          getCompetencyFrameworks: vi.fn(() =>
+            of(
+              data.frameworks ?? [
+                { id: 'fw-1', name: 'DCWF 5.1' },
+                { id: 'fw-2', name: 'NICE 2.0' },
+              ],
+            ),
+          ),
+        },
+      },
     ],
     inputs: { canEditMsel, loggedInUserId: 'user-1' },
   });
   // The cover, MSEL pages and move titles show when the page size covers
   // every event, as "Print All Events" sets it.
   const playbook = rendered.fixture.componentInstance;
-  playbook.changePage({ pageIndex: 0, pageSize: playbook.sortedScenarioEvents.length, length: playbook.sortedScenarioEvents.length });
+  playbook.changePage({
+    pageIndex: 0,
+    pageSize: playbook.sortedScenarioEvents.length,
+    length: playbook.sortedScenarioEvents.length,
+  });
   rendered.fixture.detectChanges();
   return { ...rendered, imageApi };
 }
@@ -133,7 +198,13 @@ const MOVES: Move[] = [
     situationTime: new Date('2026-03-02T14:00:00Z'),
     situationDescription: '<p>Analysts see odd logins.</p>',
   },
-  { id: 'move-2', mselId: 'msel-1', moveNumber: 2, description: 'Containment', deltaSeconds: 3600 },
+  {
+    id: 'move-2',
+    mselId: 'msel-1',
+    moveNumber: 2,
+    description: 'Containment',
+    deltaSeconds: 3600,
+  },
 ];
 const MOVE_EVENTS: ScenarioEvent[] = [
   { id: 'se-1', mselId: 'msel-1', deltaSeconds: 600, groupOrder: 1 },
@@ -141,12 +212,35 @@ const MOVE_EVENTS: ScenarioEvent[] = [
 ];
 const MOVE_VALUES: DataValue[] = [
   ...VALUES,
-  { id: 'dv-3', scenarioEventId: 'se-2', dataFieldId: 'df-title', value: 'Isolate hosts' },
+  {
+    id: 'dv-3',
+    scenarioEventId: 'se-2',
+    dataFieldId: 'df-title',
+    value: 'Isolate hosts',
+  },
 ];
 const PAGES: MselPage[] = [
-  { id: 'page-1', mselId: 'msel-1', name: 'Rules of Engagement', content: '<p>No production systems.</p>', includeInPlaybook: true },
-  { id: 'page-2', mselId: 'msel-1', name: 'Network Map', content: '<p>Three subnets.</p>', includeInPlaybook: true },
-  { id: 'page-3', mselId: 'msel-1', name: 'Planner Notes', content: '<p>Not for print.</p>', includeInPlaybook: false },
+  {
+    id: 'page-1',
+    mselId: 'msel-1',
+    name: 'Rules of Engagement',
+    content: '<p>No production systems.</p>',
+    includeInPlaybook: true,
+  },
+  {
+    id: 'page-2',
+    mselId: 'msel-1',
+    name: 'Network Map',
+    content: '<p>Three subnets.</p>',
+    includeInPlaybook: true,
+  },
+  {
+    id: 'page-3',
+    mselId: 'msel-1',
+    name: 'Planner Notes',
+    content: '<p>Not for print.</p>',
+    includeInPlaybook: false,
+  },
 ];
 
 // The cover, MSEL pages and move title blocks are print-only. Role queries
@@ -169,9 +263,13 @@ describe('MselPlaybookComponent', () => {
   it('shows the events with their data values', async () => {
     await renderPlaybook(true);
 
-    expect(screen.getByRole('heading', { name: 'MSEL Playbook' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'MSEL Playbook' }),
+    ).toBeInTheDocument();
     const event = within(screen.getByRole('table'));
-    expect(event.getByRole('columnheader', { name: 'Phishing wave' })).toBeInTheDocument();
+    expect(
+      event.getByRole('columnheader', { name: 'Phishing wave' }),
+    ).toBeInTheDocument();
     expect(event.getByText('Users receive a phish')).toBeInTheDocument();
   });
 
@@ -180,14 +278,21 @@ describe('MselPlaybookComponent', () => {
    * Interacts with: MselPlaybookComponent template (canEditMsel is an input the template does not read).
    * Data: canEditMsel true and false.
    */
-  it.each([true, false])('renders no editing controls with canEditMsel %s', async (canEditMsel) => {
-    await renderPlaybook(canEditMsel);
+  it.each([true, false])(
+    'renders no editing controls with canEditMsel %s',
+    async (canEditMsel) => {
+      await renderPlaybook(canEditMsel);
 
-    expect(screen.queryAllByRole('textbox')).toEqual([]);
-    expect(screen.queryAllByRole('checkbox')).toEqual([]);
-    expect(screen.getByRole('button', { name: 'Print Current Page' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Print All Events' })).toBeInTheDocument();
-  });
+      expect(screen.queryAllByRole('textbox')).toEqual([]);
+      expect(screen.queryAllByRole('checkbox')).toEqual([]);
+      expect(
+        screen.getByRole('button', { name: 'Print Current Page' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Print All Events' }),
+      ).toBeInTheDocument();
+    },
+  );
 
   /**
    * Verifies: the print cover shows the MSEL image when the API returns one, in place of the theme-color band.
@@ -195,12 +300,20 @@ describe('MselPlaybookComponent', () => {
    * Data: Exercise Alpha with ImageDateModified set.
    */
   it('shows the MSEL image on the cover', async () => {
-    const getMselImage = vi.fn(() => of(new Blob(['image'], { type: 'image/png' })));
-    await renderPlaybook(true, { msel: { imageDateModified: new Date('2026-10-23T12:00:00Z') }, getMselImage });
+    const getMselImage = vi.fn(() =>
+      of(new Blob(['image'], { type: 'image/png' })),
+    );
+    await renderPlaybook(true, {
+      msel: { imageDateModified: new Date('2026-10-23T12:00:00Z') },
+      getMselImage,
+    });
 
     const cover = within(screen.getByLabelText('Cover'));
     expect(getMselImage.mock.calls).toEqual([['msel-1']]);
-    expect(cover.getByAltText('MSEL image')).toHaveAttribute('src', 'blob:cover');
+    expect(cover.getByAltText('MSEL image')).toHaveAttribute(
+      'src',
+      'blob:cover',
+    );
     expect(cover.queryByTestId('cover-band')).toBeNull();
   });
 
@@ -211,14 +324,23 @@ describe('MselPlaybookComponent', () => {
    */
   it.each([
     ['has no image', {}],
-    ['image is gone', { msel: { imageDateModified: new Date('2026-10-23T12:00:00Z') }, getMselImage: vi.fn(() => throwError(() => ({ status: 404 }))) }],
-  ] as [string, PlaybookData][])('shows the theme band on the cover when the MSEL %s', async (_case, data) => {
-    await renderPlaybook(true, data);
+    [
+      'image is gone',
+      {
+        msel: { imageDateModified: new Date('2026-10-23T12:00:00Z') },
+        getMselImage: vi.fn(() => throwError(() => ({ status: 404 }))),
+      },
+    ],
+  ] as [string, PlaybookData][])(
+    'shows the theme band on the cover when the MSEL %s',
+    async (_case, data) => {
+      await renderPlaybook(true, data);
 
-    const cover = within(screen.getByLabelText('Cover'));
-    expect(cover.getByTestId('cover-band')).toBeInTheDocument();
-    expect(cover.queryByRole('img', hidden)).toBeNull();
-  });
+      const cover = within(screen.getByLabelText('Cover'));
+      expect(cover.getByTestId('cover-band')).toBeInTheDocument();
+      expect(cover.queryByRole('img', hidden)).toBeNull();
+    },
+  );
 
   /**
    * Verifies: the cover shows the MSEL name and description, the facts (start, duration, counts, teams, subject, educational level, keywords) and a contents list of the playbook pages then the moves.
@@ -246,11 +368,16 @@ describe('MselPlaybookComponent', () => {
     });
 
     const cover = within(screen.getByLabelText('Cover'));
-    expect(cover.getByRole('heading', { level: 1, ...hidden })).toHaveTextContent('Exercise Alpha');
+    expect(
+      cover.getByRole('heading', { level: 1, ...hidden }),
+    ).toHaveTextContent('Exercise Alpha');
     expect(cover.getByText('A ransomware tabletop.')).toBeInTheDocument();
 
     const facts = cover.getByLabelText('MSEL facts');
-    const terms = Array.from(facts.querySelectorAll('dt')).map((dt) => [dt.textContent.trim(), dt.nextElementSibling.textContent.trim()]);
+    const terms = Array.from(facts.querySelectorAll('dt')).map((dt) => [
+      dt.textContent.trim(),
+      dt.nextElementSibling.textContent.trim(),
+    ]);
     expect(terms).toEqual([
       ['Start', expect.stringMatching(/^\d{2} Mar 2026 \d{2}:\d{2} \S+$/)],
       ['Duration', '1 day 2 hours'],
@@ -264,7 +391,11 @@ describe('MselPlaybookComponent', () => {
 
     const contents = within(cover.getByLabelText('Contents'));
     // Pages come in MselPageQuery's order (by name), then the moves.
-    expect(contents.getAllByRole('listitem', hidden).map((li) => li.textContent.trim())).toEqual([
+    expect(
+      contents
+        .getAllByRole('listitem', hidden)
+        .map((li) => li.textContent.trim()),
+    ).toEqual([
       'Network Map',
       'Rules of Engagement',
       'Move 1: Initial access',
@@ -281,7 +412,11 @@ describe('MselPlaybookComponent', () => {
     await renderPlaybook(true);
 
     const facts = screen.getByLabelText('MSEL facts');
-    expect(Array.from(facts.querySelectorAll('dt')).map((dt) => dt.textContent.trim())).toEqual(['Moves', 'Scenario Events']);
+    expect(
+      Array.from(facts.querySelectorAll('dt')).map((dt) =>
+        dt.textContent.trim(),
+      ),
+    ).toEqual(['Moves', 'Scenario Events']);
   });
 
   /**
@@ -290,24 +425,49 @@ describe('MselPlaybookComponent', () => {
    * Data: move 1 with a situation time and briefing and event "Phishing wave"; move 2 with neither and event "Isolate hosts".
    */
   it('starts each move with its title block', async () => {
-    const { container } = await renderPlaybook(true, { moves: MOVES, events: MOVE_EVENTS, values: MOVE_VALUES });
+    const { container } = await renderPlaybook(true, {
+      moves: MOVES,
+      events: MOVE_EVENTS,
+      values: MOVE_VALUES,
+    });
 
     const move1 = screen.getByLabelText('Move 1');
     expect(within(move1).getByText('Move 1')).toHaveClass('move-number');
-    expect(within(move1).getByRole('heading', hidden)).toHaveTextContent('Initial access');
-    expect(within(move1).getByText('Situation Date/Time:').parentElement.textContent).toMatch(/02 Mar 2026 \d{2}:\d{2} \S+/);
-    expect(within(move1).getByText('Analysts see odd logins.').closest('.move-briefing')).not.toBeNull();
+    expect(within(move1).getByRole('heading', hidden)).toHaveTextContent(
+      'Initial access',
+    );
+    expect(
+      within(move1).getByText('Situation Date/Time:').parentElement.textContent,
+    ).toMatch(/02 Mar 2026 \d{2}:\d{2} \S+/);
+    expect(
+      within(move1)
+        .getByText('Analysts see odd logins.')
+        .closest('.move-briefing'),
+    ).not.toBeNull();
 
     const move2 = screen.getByLabelText('Move 2');
-    expect(within(move2).getByRole('heading', hidden)).toHaveTextContent('Containment');
+    expect(within(move2).getByRole('heading', hidden)).toHaveTextContent(
+      'Containment',
+    );
     expect(within(move2).queryByText('Situation Date/Time:')).toBeNull();
     expect(move2.querySelector('.move-briefing')).toBeNull();
 
     // Print order: move 1's title, its event, move 2's title, its event.
-    const order = Array.from(container.querySelectorAll('.move-title, #eventDetails thead th:last-child')).map((el) =>
-      el.classList.contains('move-title') ? el.getAttribute('aria-label') : el.textContent.trim()
+    const order = Array.from(
+      container.querySelectorAll(
+        '.move-title, #eventDetails thead th:last-child',
+      ),
+    ).map((el) =>
+      el.classList.contains('move-title')
+        ? el.getAttribute('aria-label')
+        : el.textContent.trim(),
     );
-    expect(order).toEqual(['Move 1', 'Phishing wave', 'Move 2', 'Isolate hosts']);
+    expect(order).toEqual([
+      'Move 1',
+      'Phishing wave',
+      'Move 2',
+      'Isolate hosts',
+    ]);
   });
 
   /**
@@ -319,7 +479,9 @@ describe('MselPlaybookComponent', () => {
     await renderPlaybook(true, { pages: PAGES });
 
     const roe = within(screen.getByLabelText('Rules of Engagement'));
-    expect(roe.getByRole('heading', hidden)).toHaveTextContent('Rules of Engagement');
+    expect(roe.getByRole('heading', hidden)).toHaveTextContent(
+      'Rules of Engagement',
+    );
     expect(roe.getByText('No production systems.')).toBeInTheDocument();
     const map = within(screen.getByLabelText('Network Map'));
     expect(map.getByText('Three subnets.')).toBeInTheDocument();
@@ -335,20 +497,48 @@ describe('MselPlaybookComponent', () => {
    */
   it('prints a page title once when the content already has it', async () => {
     const profiles: MselPage = {
-      id: 'page-4', mselId: 'msel-1', name: 'Team Profiles', includeInPlaybook: true,
-      content: '<table><tbody><tr><td><section><h2>Team  profiles</h2><p>The participant teams.</p></section></td></tr></tbody></table>',
+      id: 'page-4',
+      mselId: 'msel-1',
+      name: 'Team Profiles',
+      includeInPlaybook: true,
+      content:
+        '<table><tbody><tr><td><section><h2>Team  profiles</h2><p>The participant teams.</p></section></td></tr></tbody></table>',
     };
     await renderPlaybook(true, { pages: [PAGES[0], profiles] });
 
-    expect(within(screen.getByLabelText('Team Profiles')).getAllByRole('heading', hidden)).toHaveLength(1);
-    expect(within(screen.getByLabelText('Rules of Engagement')).getByRole('heading', hidden)).toHaveTextContent('Rules of Engagement');
-    expect(opensWithHeading('<p>Intro</p><h3>Other</h3>', 'Team Profiles')).toBe(false);
+    expect(
+      within(screen.getByLabelText('Team Profiles')).getAllByRole(
+        'heading',
+        hidden,
+      ),
+    ).toHaveLength(1);
+    expect(
+      within(screen.getByLabelText('Rules of Engagement')).getByRole(
+        'heading',
+        hidden,
+      ),
+    ).toHaveTextContent('Rules of Engagement');
+    expect(
+      opensWithHeading('<p>Intro</p><h3>Other</h3>', 'Team Profiles'),
+    ).toBe(false);
     expect(opensWithHeading('<p>No heading.</p>', 'Team Profiles')).toBe(false);
     // the heading has to come first: an intro or an image before it keeps the page's own title
-    expect(opensWithHeading('<p>Intro.</p><h3>Team Profiles</h3>', 'Team Profiles')).toBe(false);
-    expect(opensWithHeading('<p><img src="x.png"></p><h2>Team Profiles</h2>', 'Team Profiles')).toBe(false);
+    expect(
+      opensWithHeading('<p>Intro.</p><h3>Team Profiles</h3>', 'Team Profiles'),
+    ).toBe(false);
+    expect(
+      opensWithHeading(
+        '<p><img src="x.png"></p><h2>Team Profiles</h2>',
+        'Team Profiles',
+      ),
+    ).toBe(false);
     // empty paragraphs and wrappers before it don't count
-    expect(opensWithHeading('<p><br></p>\n<div><h2>Team Profiles</h2><p>Text.</p></div>', 'Team Profiles')).toBe(true);
+    expect(
+      opensWithHeading(
+        '<p><br></p>\n<div><h2>Team Profiles</h2><p>Text.</p></div>',
+        'Team Profiles',
+      ),
+    ).toBe(true);
   });
 
   /**
@@ -358,7 +548,8 @@ describe('MselPlaybookComponent', () => {
    * Data: a Detail with an audio player of a data URI and a closed transcript.
    */
   it('keeps audio playable on screen and prints a note instead', async () => {
-    const audio = '<p>Listen.</p><audio controls src="data:audio/mpeg;base64,AAAA"></audio><details><summary>Transcript</summary><p>Hello.</p></details>';
+    const audio =
+      '<p>Listen.</p><audio controls src="data:audio/mpeg;base64,AAAA"></audio><details><summary>Transcript</summary><p>Hello.</p></details>';
     const values: DataValue[] = [VALUES[0], { ...VALUES[1], value: audio }];
     const { fixture, container } = await renderPlaybook(true, { values });
 
@@ -368,7 +559,9 @@ describe('MselPlaybookComponent', () => {
     fixture.detectChanges();
 
     expect(container.querySelector('audio')).toBeNull();
-    expect(screen.getByText('Audio clip: plays in Gallery.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Audio clip: plays in Gallery.'),
+    ).toBeInTheDocument();
     expect(container.querySelector('details')?.hasAttribute('open')).toBe(true);
   });
 
@@ -378,8 +571,12 @@ describe('MselPlaybookComponent', () => {
    */
   it('takes only audio and video out of a printed value', () => {
     expect(withoutMedia('<p>No media.</p>')).toBe('<p>No media.</p>');
-    expect(withoutMedia('<video controls><source src="data:video/mp4;base64,AAAA"></video>')).toBe(
-      '<p class="playbook-media-note"><em>Video clip: plays in Gallery.</em></p>'
+    expect(
+      withoutMedia(
+        '<video controls><source src="data:video/mp4;base64,AAAA"></video>',
+      ),
+    ).toBe(
+      '<p class="playbook-media-note"><em>Video clip: plays in Gallery.</em></p>',
     );
   });
 
@@ -390,23 +587,70 @@ describe('MselPlaybookComponent', () => {
    * Data: two DCWF competencies out of order and one NICE one; team BLUE with one; a competency with no name.
    */
   it('lists the MSEL and team competencies after the cover', async () => {
-    const t10: Competency = { id: 'c-10', competencyFrameworkId: 'fw-1', idNumber: 'T-10', shortName: 'Analyze logs' };
-    const t2: Competency = { id: 'c-2', competencyFrameworkId: 'fw-1', idNumber: 'T-2', shortName: 'Triage alerts' };
+    const t10: Competency = {
+      id: 'c-10',
+      competencyFrameworkId: 'fw-1',
+      idNumber: 'T-10',
+      shortName: 'Analyze logs',
+    };
+    const t2: Competency = {
+      id: 'c-2',
+      competencyFrameworkId: 'fw-1',
+      idNumber: 'T-2',
+      shortName: 'Triage alerts',
+    };
     // a task's wording is long; the print keeps all of it
     const long = 'Knowledge of networking. '.repeat(10).trim();
-    const nice: Competency = { id: 'c-n', competencyFrameworkId: 'fw-2', idNumber: 'K0001', description: long };
+    const nice: Competency = {
+      id: 'c-n',
+      competencyFrameworkId: 'fw-2',
+      idNumber: 'K0001',
+      description: long,
+    };
     await renderPlaybook(true, {
-      msel: { teams: [{ id: 'team-blue', name: 'Blue Team', shortName: 'BLUE' }] },
-      mselCompetencies: [t10, t2, nice].map((competency) => ({ id: competency.id, mselId: 'msel-1', competencyId: competency.id, competency })),
-      teamCompetencies: [{ id: 'tc-1', teamId: 'team-blue', competencyId: 'c-2', competency: t2 }],
+      msel: {
+        teams: [{ id: 'team-blue', name: 'Blue Team', shortName: 'BLUE' }],
+      },
+      mselCompetencies: [t10, t2, nice].map((competency) => ({
+        id: competency.id,
+        mselId: 'msel-1',
+        competencyId: competency.id,
+        competency,
+      })),
+      teamCompetencies: [
+        {
+          id: 'tc-1',
+          teamId: 'team-blue',
+          competencyId: 'c-2',
+          competency: t2,
+        },
+      ],
     });
 
     const section = within(screen.getByLabelText('Competencies'));
-    expect(section.getAllByRole('heading', hidden).map((h) => h.textContent)).toEqual(['Competencies', 'DCWF 5.1', 'NICE 2.0', 'Team competencies', 'Blue Team']);
-    expect(section.getAllByRole('listitem', hidden).map((li) => li.textContent)).toEqual([
-      'T-2 Triage alerts', 'T-10 Analyze logs', `K0001 ${long}`, 'T-2 Triage alerts',
+    expect(
+      section.getAllByRole('heading', hidden).map((h) => h.textContent),
+    ).toEqual([
+      'Competencies',
+      'DCWF 5.1',
+      'NICE 2.0',
+      'Team competencies',
+      'Blue Team',
     ]);
-    expect(within(screen.getByLabelText('Contents')).getAllByRole('listitem', hidden)[0]).toHaveTextContent('Competencies');
+    expect(
+      section.getAllByRole('listitem', hidden).map((li) => li.textContent),
+    ).toEqual([
+      'T-2 Triage alerts',
+      'T-10 Analyze logs',
+      `K0001 ${long}`,
+      'T-2 Triage alerts',
+    ]);
+    expect(
+      within(screen.getByLabelText('Contents')).getAllByRole(
+        'listitem',
+        hidden,
+      )[0],
+    ).toHaveTextContent('Competencies');
   });
 
   it('prints no Competencies section for a MSEL without any', async () => {
@@ -422,8 +666,18 @@ describe('MselPlaybookComponent', () => {
    * Data: NICE 1.0 and NICE 2.0 (one name), two teams named Blue Team (BLUE1, BLUE2).
    */
   it('keeps same-named frameworks and teams apart', async () => {
-    const v1: Competency = { id: 'c-1', competencyFrameworkId: 'fw-1', idNumber: 'K0001', shortName: 'Networking' };
-    const v2: Competency = { id: 'c-2', competencyFrameworkId: 'fw-2', idNumber: 'K0001', shortName: 'Networks' };
+    const v1: Competency = {
+      id: 'c-1',
+      competencyFrameworkId: 'fw-1',
+      idNumber: 'K0001',
+      shortName: 'Networking',
+    };
+    const v2: Competency = {
+      id: 'c-2',
+      competencyFrameworkId: 'fw-2',
+      idNumber: 'K0001',
+      shortName: 'Networks',
+    };
     await renderPlaybook(true, {
       msel: {
         teams: [
@@ -435,7 +689,12 @@ describe('MselPlaybookComponent', () => {
         { id: 'fw-2', name: 'NICE', version: '2.0' },
         { id: 'fw-1', name: 'NICE', version: '1.0' },
       ],
-      mselCompetencies: [v1, v2].map((competency) => ({ id: competency.id, mselId: 'msel-1', competencyId: competency.id, competency })),
+      mselCompetencies: [v1, v2].map((competency) => ({
+        id: competency.id,
+        mselId: 'msel-1',
+        competencyId: competency.id,
+        competency,
+      })),
       teamCompetencies: [
         { id: 'tc-1', teamId: 'team-1', competencyId: 'c-1', competency: v1 },
         { id: 'tc-2', teamId: 'team-2', competencyId: 'c-2', competency: v2 },
@@ -443,11 +702,23 @@ describe('MselPlaybookComponent', () => {
     });
 
     const section = within(screen.getByLabelText('Competencies'));
-    expect(section.getAllByRole('heading', hidden).map((h) => h.textContent)).toEqual([
-      'Competencies', 'NICE (1.0)', 'NICE (2.0)', 'Team competencies', 'Blue Team (BLUE1)', 'Blue Team (BLUE2)',
+    expect(
+      section.getAllByRole('heading', hidden).map((h) => h.textContent),
+    ).toEqual([
+      'Competencies',
+      'NICE (1.0)',
+      'NICE (2.0)',
+      'Team competencies',
+      'Blue Team (BLUE1)',
+      'Blue Team (BLUE2)',
     ]);
-    expect(section.getAllByRole('listitem', hidden).map((li) => li.textContent)).toEqual([
-      'K0001 Networking', 'K0001 Networks', 'K0001 Networking', 'K0001 Networks',
+    expect(
+      section.getAllByRole('listitem', hidden).map((li) => li.textContent),
+    ).toEqual([
+      'K0001 Networking',
+      'K0001 Networks',
+      'K0001 Networking',
+      'K0001 Networks',
     ]);
   });
 
@@ -457,17 +728,31 @@ describe('MselPlaybookComponent', () => {
    * Interacts with: frameworkCompetencyGroups.
    */
   it('lists competencies of an unknown framework apart', () => {
-    const known: Competency = { id: 'c-1', competencyFrameworkId: 'fw-1', idNumber: 'A1' };
-    const unknown: Competency = { id: 'c-2', competencyFrameworkId: 'fw-gone', idNumber: 'B1' };
+    const known: Competency = {
+      id: 'c-1',
+      competencyFrameworkId: 'fw-1',
+      idNumber: 'A1',
+    };
+    const unknown: Competency = {
+      id: 'c-2',
+      competencyFrameworkId: 'fw-gone',
+      idNumber: 'B1',
+    };
     const groups = frameworkCompetencyGroups(
       [known, unknown].map((competency) => ({ id: competency.id, competency })),
       [{ id: 'fw-1', name: 'Competencies' }],
     );
-    expect(groups.map((g) => [g.key, g.name, g.competencies.map((c) => c.id)])).toEqual([
+    expect(
+      groups.map((g) => [g.key, g.name, g.competencies.map((c) => c.id)]),
+    ).toEqual([
       ['fw-1', 'Competencies', ['c-1']],
       ['', 'Other competencies', ['c-2']],
     ]);
-    expect(frameworkCompetencyGroups([{ id: 'c-2', competency: unknown }], []).map((g) => g.name)).toEqual(['Competencies']);
+    expect(
+      frameworkCompetencyGroups([{ id: 'c-2', competency: unknown }], []).map(
+        (g) => g.name,
+      ),
+    ).toEqual(['Competencies']);
   });
 
   /**
@@ -477,19 +762,46 @@ describe('MselPlaybookComponent', () => {
    * Data: Exercise Alpha with no teams at first, then Blue Team; one team competency for Blue Team.
    */
   it('shows team competencies for teams added after load', async () => {
-    const t2: Competency = { id: 'c-2', competencyFrameworkId: 'fw-1', idNumber: 'T-2', shortName: 'Triage alerts' };
+    const t2: Competency = {
+      id: 'c-2',
+      competencyFrameworkId: 'fw-1',
+      idNumber: 'T-2',
+      shortName: 'Triage alerts',
+    };
     const { fixture } = await renderPlaybook(true, {
-      mselCompetencies: [{ id: 'mc-1', mselId: 'msel-1', competencyId: 'c-2', competency: t2 }],
-      teamCompetencies: [{ id: 'tc-1', teamId: 'team-blue', competencyId: 'c-2', competency: t2 }],
+      mselCompetencies: [
+        { id: 'mc-1', mselId: 'msel-1', competencyId: 'c-2', competency: t2 },
+      ],
+      teamCompetencies: [
+        {
+          id: 'tc-1',
+          teamId: 'team-blue',
+          competencyId: 'c-2',
+          competency: t2,
+        },
+      ],
     });
-    expect(within(screen.getByLabelText('Competencies')).queryByText('Team competencies')).toBeNull();
+    expect(
+      within(screen.getByLabelText('Competencies')).queryByText(
+        'Team competencies',
+      ),
+    ).toBeNull();
 
-    TestBed.inject(MselStore).update('msel-1', { teams: [{ id: 'team-blue', name: 'Blue Team', shortName: 'BLUE' }] });
+    TestBed.inject(MselStore).update('msel-1', {
+      teams: [{ id: 'team-blue', name: 'Blue Team', shortName: 'BLUE' }],
+    });
     fixture.detectChanges();
 
     const section = within(screen.getByLabelText('Competencies'));
-    expect(section.getAllByRole('heading', hidden).map((h) => h.textContent)).toEqual(['Competencies', 'DCWF 5.1', 'Team competencies', 'Blue Team']);
-    const facts = Array.from(screen.getByLabelText('MSEL facts').querySelectorAll('dt')).map((dt) => [dt.textContent.trim(), dt.nextElementSibling.textContent.trim()]);
+    expect(
+      section.getAllByRole('heading', hidden).map((h) => h.textContent),
+    ).toEqual(['Competencies', 'DCWF 5.1', 'Team competencies', 'Blue Team']);
+    const facts = Array.from(
+      screen.getByLabelText('MSEL facts').querySelectorAll('dt'),
+    ).map((dt) => [
+      dt.textContent.trim(),
+      dt.nextElementSibling.textContent.trim(),
+    ]);
     expect(facts).toContainEqual(['Teams', 'Blue Team']);
   });
 
@@ -500,23 +812,57 @@ describe('MselPlaybookComponent', () => {
    * Data: moves 1 and 2 with one event each, and move 3 with none.
    */
   it('prints a page for a move with no events', async () => {
-    const move3: Move = { id: 'move-3', mselId: 'msel-1', moveNumber: 3, description: 'Recovery', deltaSeconds: 7200 };
-    const { container } = await renderPlaybook(true, { moves: [...MOVES, move3], events: MOVE_EVENTS, values: MOVE_VALUES });
+    const move3: Move = {
+      id: 'move-3',
+      mselId: 'msel-1',
+      moveNumber: 3,
+      description: 'Recovery',
+      deltaSeconds: 7200,
+    };
+    const { container } = await renderPlaybook(true, {
+      moves: [...MOVES, move3],
+      events: MOVE_EVENTS,
+      values: MOVE_VALUES,
+    });
 
     const contents = within(screen.getByLabelText('Contents'));
-    expect(contents.getAllByRole('listitem', hidden).map((li) => li.textContent.trim())).toEqual([
+    expect(
+      contents
+        .getAllByRole('listitem', hidden)
+        .map((li) => li.textContent.trim()),
+    ).toEqual([
       'Move 1: Initial access',
       'Move 2: Containment',
       'Move 3: Recovery',
     ]);
-    const facts = Array.from(screen.getByLabelText('MSEL facts').querySelectorAll('dt')).map((dt) => [dt.textContent.trim(), dt.nextElementSibling.textContent.trim()]);
+    const facts = Array.from(
+      screen.getByLabelText('MSEL facts').querySelectorAll('dt'),
+    ).map((dt) => [
+      dt.textContent.trim(),
+      dt.nextElementSibling.textContent.trim(),
+    ]);
     expect(facts).toContainEqual(['Moves', '3']);
 
-    expect(within(screen.getByLabelText('Move 3')).getByRole('heading', hidden)).toHaveTextContent('Recovery');
-    const order = Array.from(container.querySelectorAll('.move-title, #eventDetails thead th:last-child, .move-no-events')).map((el) =>
-      el.classList.contains('move-title') ? el.getAttribute('aria-label') : el.textContent.trim()
+    expect(
+      within(screen.getByLabelText('Move 3')).getByRole('heading', hidden),
+    ).toHaveTextContent('Recovery');
+    const order = Array.from(
+      container.querySelectorAll(
+        '.move-title, #eventDetails thead th:last-child, .move-no-events',
+      ),
+    ).map((el) =>
+      el.classList.contains('move-title')
+        ? el.getAttribute('aria-label')
+        : el.textContent.trim(),
     );
-    expect(order).toEqual(['Move 1', 'Phishing wave', 'Move 2', 'Isolate hosts', 'Move 3', 'No events for this move']);
+    expect(order).toEqual([
+      'Move 1',
+      'Phishing wave',
+      'Move 2',
+      'Isolate hosts',
+      'Move 3',
+      'No events for this move',
+    ]);
   });
 
   /**
@@ -526,18 +872,41 @@ describe('MselPlaybookComponent', () => {
    */
   it('labels events outside any move', async () => {
     await renderPlaybook(true);
-    expect(screen.getByLabelText('Scenario Events')).toHaveTextContent('Scenario Events');
+    expect(screen.getByLabelText('Scenario Events')).toHaveTextContent(
+      'Scenario Events',
+    );
     expect(screen.queryByLabelText('Move -1')).toBeNull();
   });
 
   it('labels events before the first move', async () => {
-    const lateMove: Move = { id: 'move-1', mselId: 'msel-1', moveNumber: 1, description: 'Late start', deltaSeconds: 3600 };
-    const { container } = await renderPlaybook(true, { moves: [lateMove], events: MOVE_EVENTS, values: MOVE_VALUES });
+    const lateMove: Move = {
+      id: 'move-1',
+      mselId: 'msel-1',
+      moveNumber: 1,
+      description: 'Late start',
+      deltaSeconds: 3600,
+    };
+    const { container } = await renderPlaybook(true, {
+      moves: [lateMove],
+      events: MOVE_EVENTS,
+      values: MOVE_VALUES,
+    });
 
-    const order = Array.from(container.querySelectorAll('.move-title, #eventDetails thead th:last-child')).map((el) =>
-      el.classList.contains('move-title') ? el.getAttribute('aria-label') : el.textContent.trim()
+    const order = Array.from(
+      container.querySelectorAll(
+        '.move-title, #eventDetails thead th:last-child',
+      ),
+    ).map((el) =>
+      el.classList.contains('move-title')
+        ? el.getAttribute('aria-label')
+        : el.textContent.trim(),
     );
-    expect(order).toEqual(['Before Move 1', 'Phishing wave', 'Move 1', 'Isolate hosts']);
+    expect(order).toEqual([
+      'Before Move 1',
+      'Phishing wave',
+      'Move 1',
+      'Isolate hosts',
+    ]);
   });
 
   /**
@@ -546,7 +915,11 @@ describe('MselPlaybookComponent', () => {
    * Data: two moves with one event each, the playbook paged one event at a time and on page 2.
    */
   it('prints every event from a later page', async () => {
-    const { fixture } = await renderPlaybook(true, { moves: MOVES, events: MOVE_EVENTS, values: MOVE_VALUES });
+    const { fixture } = await renderPlaybook(true, {
+      moves: MOVES,
+      events: MOVE_EVENTS,
+      values: MOVE_VALUES,
+    });
     const playbook = fixture.componentInstance;
     playbook.changePage({ pageIndex: 1, pageSize: 1, length: 2 });
     fixture.detectChanges();
@@ -555,7 +928,11 @@ describe('MselPlaybookComponent', () => {
     try {
       playbook.printAllEvents();
       fixture.detectChanges();
-      expect(playbook.getPrintMoves().map((m) => [m.label, m.events.map((e) => e.id)])).toEqual([
+      expect(
+        playbook
+          .getPrintMoves()
+          .map((m) => [m.label, m.events.map((e) => e.id)]),
+      ).toEqual([
         ['Move 1', ['se-1']],
         ['Move 2', ['se-2']],
       ]);
@@ -576,7 +953,9 @@ describe('MselPlaybookComponent', () => {
     const loaded = document.createElement('img');
     const failed = document.createElement('img');
     let finishLoad: () => void;
-    loaded.decode = vi.fn(() => new Promise<void>((resolve) => (finishLoad = resolve)));
+    loaded.decode = vi.fn(
+      () => new Promise<void>((resolve) => (finishLoad = resolve)),
+    );
     failed.decode = vi.fn(() => Promise.reject(new Error('broken')));
     root.append(loaded, failed);
 
@@ -600,8 +979,12 @@ describe('MselPlaybookComponent', () => {
    * Data: a name with quotes, a backslash and a line break.
    */
   it('writes the MSEL name into the print footer', () => {
-    expect(playbookFooterCss('Exercise Alpha')).toBe('@page playbook { @bottom-left { content: "Exercise Alpha"; } }');
-    expect(playbookFooterCss('Op "Red"\\X\nTwo')).toBe('@page playbook { @bottom-left { content: "Op \\"Red\\"\\\\X Two"; } }');
+    expect(playbookFooterCss('Exercise Alpha')).toBe(
+      '@page playbook { @bottom-left { content: "Exercise Alpha"; } }',
+    );
+    expect(playbookFooterCss('Op "Red"\\X\nTwo')).toBe(
+      '@page playbook { @bottom-left { content: "Op \\"Red\\"\\\\X Two"; } }',
+    );
   });
 
   /**

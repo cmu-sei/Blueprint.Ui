@@ -14,8 +14,18 @@ import { MatInputModule } from '@angular/material/input';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { NEVER, of } from 'rxjs';
-import { ComnAuthService, CrucibleDialogService } from '@cmusei/crucible-common';
-import { Msel, MselItemStatus, MselRole, MselService, SystemPermission, SystemPermissionsService } from 'src/app/generated/blueprint.api';
+import {
+  ComnAuthService,
+  CrucibleDialogService,
+} from '@cmusei/crucible-common';
+import {
+  Msel,
+  MselItemStatus,
+  MselRole,
+  MselService,
+  SystemPermission,
+  SystemPermissionsService,
+} from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { ManageComponent } from './manage.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
@@ -23,11 +33,17 @@ import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
-import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-load-api-stubs';
+import {
+  mselLoadApiProviders,
+  mselLoadApiStubs,
+} from 'src/app/test-utils/msel-load-api-stubs';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 import { InvitationListComponent } from '../../invitation-list/invitation-list.component';
-import { captureUnhandledRejections, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRejections,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 @Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
@@ -44,7 +60,9 @@ class InvitationListStub {
 }
 
 const ME = 'user-me';
-const ALL_BUT_EDIT_MSELS = Object.values(SystemPermission).filter((p) => p !== SystemPermission.EditMsels);
+const ALL_BUT_EDIT_MSELS = Object.values(SystemPermission).filter(
+  (p) => p !== SystemPermission.EditMsels,
+);
 
 function msel(overrides: Partial<Msel> = {}): Msel {
   return {
@@ -60,12 +78,21 @@ function msel(overrides: Partial<Msel> = {}): Msel {
   };
 }
 
-async function renderManage(overrides: { permissions?: SystemPermission[]; activeMsel?: Msel; logout?: ComnAuthService['logout'] } = {}) {
+async function renderManage(
+  overrides: {
+    permissions?: SystemPermission[];
+    activeMsel?: Msel;
+    logout?: ComnAuthService['logout'];
+  } = {},
+) {
   const { permissions = [], activeMsel = msel() } = overrides;
   const apis = mselLoadApiStubs({ msel: activeMsel });
   // Archiving answers with the archived MSEL, which sends the window to the
   // logout page; jsdom cannot navigate, so the request stays pending.
-  const mselApi = { ...apis.msel, archive: vi.fn(() => NEVER) } satisfies ApiStub<MselService>;
+  const mselApi = {
+    ...apis.msel,
+    archive: vi.fn(() => NEVER),
+  } satisfies ApiStub<MselService>;
   // The user confirms every dialog.
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
   const dialog = { confirm } satisfies Pick<CrucibleDialogService, 'confirm'>;
@@ -74,7 +101,12 @@ async function renderManage(overrides: { permissions?: SystemPermission[]; activ
   const permissionApis = permissionApiStubs({ system: permissions });
   const { route } = activatedRouteStub({ msel: 'msel-1' });
   const rendered = await renderComponent(ManageComponent, {
-    imports: [MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule],
+    imports: [
+      MatButtonModule,
+      MatCardModule,
+      MatFormFieldModule,
+      MatInputModule,
+    ],
     childStubs: [
       { replace: TopbarComponent, with: TopbarStub },
       { replace: InvitationListComponent, with: InvitationListStub },
@@ -82,7 +114,10 @@ async function renderManage(overrides: { permissions?: SystemPermission[]; activ
     providers: [
       ...mselLoadApiProviders(apis),
       { provide: MselService, useValue: mselApi },
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: ActivatedRoute, useValue: route },
       { provide: CrucibleDialogService, useValue: dialog },
@@ -90,7 +125,9 @@ async function renderManage(overrides: { permissions?: SystemPermission[]; activ
       {
         provide: ComnAuthService,
         useValue: {
-          user$: of({ profile: { sub: ME, name: 'Me' } }) as ComnAuthService['user$'],
+          user$: of({
+            profile: { sub: ME, name: 'Me' },
+          }) as ComnAuthService['user$'],
           logout: overrides.logout ?? vi.fn(() => Promise.resolve()),
         } satisfies Pick<ComnAuthService, 'user$' | 'logout'>,
       },
@@ -100,8 +137,11 @@ async function renderManage(overrides: { permissions?: SystemPermission[]; activ
   return { ...rendered, apis, mselArchive: mselApi.archive, confirm };
 }
 
-function invitations(fixture: ComponentFixture<unknown>): InvitationListStub | undefined {
-  return fixture.debugElement.query(By.directive(InvitationListStub))?.componentInstance;
+function invitations(
+  fixture: ComponentFixture<unknown>,
+): InvitationListStub | undefined {
+  return fixture.debugElement.query(By.directive(InvitationListStub))
+    ?.componentInstance;
 }
 
 describe('ManageComponent', () => {
@@ -113,7 +153,9 @@ describe('ManageComponent', () => {
   it('leaves a rejected logout unhandled', async () => {
     const failure = new Error('signout metadata request failed');
     const rejections = captureUnhandledRejections();
-    const { fixture } = await renderManage({ logout: () => Promise.reject(failure) });
+    const { fixture } = await renderManage({
+      logout: () => Promise.reject(failure),
+    });
 
     fixture.componentInstance.logout();
     await flush();
@@ -127,18 +169,35 @@ describe('ManageComponent', () => {
    * Data: msel=msel-1, deployed; EditMsels with no role, or no permission as the Owner.
    */
   it.each([
-    { label: 'with EditMsels', permissions: [SystemPermission.EditMsels], activeMsel: msel() },
-    { label: 'as the owner', permissions: [], activeMsel: msel({ userMselRoles: [{ id: 'umr-1', userId: ME, mselId: 'msel-1', role: MselRole.Owner }] }) },
-  ])('manages the deployed MSEL $label', async ({ permissions, activeMsel }) => {
-    const { fixture, apis } = await renderManage({ permissions, activeMsel });
+    {
+      label: 'with EditMsels',
+      permissions: [SystemPermission.EditMsels],
+      activeMsel: msel(),
+    },
+    {
+      label: 'as the owner',
+      permissions: [],
+      activeMsel: msel({
+        userMselRoles: [
+          { id: 'umr-1', userId: ME, mselId: 'msel-1', role: MselRole.Owner },
+        ],
+      }),
+    },
+  ])(
+    'manages the deployed MSEL $label',
+    async ({ permissions, activeMsel }) => {
+      const { fixture, apis } = await renderManage({ permissions, activeMsel });
 
-    expect(apis.msel.getMsel).toHaveBeenCalledWith('msel-1');
-    expect(apis.invitation.getInvitations).toHaveBeenCalledWith('msel-1');
-    expect(screen.getByText('Exercise Alpha')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('End Date / Time')).toBeInTheDocument();
-    expect(screen.getByTitle('End Event')).toBeInTheDocument();
-    expect(invitations(fixture)?.hideSearch()).toBe(true);
-  });
+      expect(apis.msel.getMsel).toHaveBeenCalledWith('msel-1');
+      expect(apis.invitation.getInvitations).toHaveBeenCalledWith('msel-1');
+      expect(screen.getByText('Exercise Alpha')).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('End Date / Time'),
+      ).toBeInTheDocument();
+      expect(screen.getByTitle('End Event')).toBeInTheDocument();
+      expect(invitations(fixture)?.hideSearch()).toBe(true);
+    },
+  );
 
   /**
    * Verifies: without EditMsels and not the owner the page shows only that there is nothing to manage.
@@ -148,10 +207,22 @@ describe('ManageComponent', () => {
   it('shows nothing to manage without EditMsels or ownership', async () => {
     const { fixture } = await renderManage({
       permissions: ALL_BUT_EDIT_MSELS,
-      activeMsel: msel({ userMselRoles: [{ id: 'umr-1', userId: ME, mselId: 'msel-1', role: MselRole.Editor }, { id: 'umr-2', userId: ME, mselId: 'msel-1', role: MselRole.Approver }] }),
+      activeMsel: msel({
+        userMselRoles: [
+          { id: 'umr-1', userId: ME, mselId: 'msel-1', role: MselRole.Editor },
+          {
+            id: 'umr-2',
+            userId: ME,
+            mselId: 'msel-1',
+            role: MselRole.Approver,
+          },
+        ],
+      }),
     });
 
-    expect(screen.getByRole('heading', { name: 'You have nothing to manage.' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'You have nothing to manage.' }),
+    ).toBeInTheDocument();
     expect(screen.queryByTitle('End Event')).not.toBeInTheDocument();
     expect(invitations(fixture)).toBeUndefined();
   });
@@ -162,7 +233,9 @@ describe('ManageComponent', () => {
    * Data: EditMsels; no MSEL role.
    */
   it('leaves the invitation list without canEditMsel', async () => {
-    const { fixture } = await renderManage({ permissions: [SystemPermission.EditMsels] });
+    const { fixture } = await renderManage({
+      permissions: [SystemPermission.EditMsels],
+    });
 
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
     expect(invitations(fixture)?.canEditMsel()).toBeUndefined();
@@ -174,14 +247,20 @@ describe('ManageComponent', () => {
    * Data: EditMsels; no MSEL role; deployed MSEL.
    */
   it('offers End Event to an EditMsels user who is not the owner', async () => {
-    const { confirm, mselArchive } = await renderManage({ permissions: [SystemPermission.EditMsels] });
+    const { confirm, mselArchive } = await renderManage({
+      permissions: [SystemPermission.EditMsels],
+    });
     const user = userEvent.setup();
 
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
-    expect(screen.getByRole('button', { name: 'End Event' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'End Event' }),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'End Event' }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'End the Event' }));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'End the Event' }),
+    );
     expect(mselArchive).toHaveBeenCalledWith('msel-1');
   });
 });

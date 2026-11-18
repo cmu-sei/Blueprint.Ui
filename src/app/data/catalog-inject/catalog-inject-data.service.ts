@@ -28,7 +28,7 @@ export class CatalogInjectDataService {
 
   private _requestedCatalogInjectId: string;
   private _requestedCatalogInjectId$ = this.activatedRoute.queryParamMap.pipe(
-    map((params) => params.get('catalogInjectId') || '')
+    map((params) => params.get('catalogInjectId') || ''),
   );
   readonly CatalogInjectList: Observable<CatalogInject[]>;
   readonly filterControl = new UntypedFormControl();
@@ -44,7 +44,7 @@ export class CatalogInjectDataService {
     const activatedRoute = this.activatedRoute;
 
     this.filterTerm = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('catalogInjectmask') || '')
+      map((params) => params.get('catalogInjectmask') || ''),
     );
     this.filterControl.valueChanges.subscribe((term) => {
       this.router.navigate([], {
@@ -53,16 +53,16 @@ export class CatalogInjectDataService {
       });
     });
     this.sortColumn = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('sorton') || 'name')
+      map((params) => params.get('sorton') || 'name'),
     );
     this.sortIsAscending = activatedRoute.queryParamMap.pipe(
-      map((params) => (params.get('sortdir') || 'asc') === 'asc')
+      map((params) => (params.get('sortdir') || 'asc') === 'asc'),
     );
     this.pageSize = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pagesize') || '20', 10))
+      map((params) => parseInt(params.get('pagesize') || '20', 10)),
     );
     this.pageIndex = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pageindex') || '0', 10))
+      map((params) => parseInt(params.get('pageindex') || '0', 10)),
     );
     this.CatalogInjectList = combineLatest([
       this.catalogInjectQuery.selectAll(),
@@ -83,12 +83,12 @@ export class CatalogInjectDataService {
         ]) =>
           items
             ? (items as CatalogInject[]).filter((catalogInject) =>
-              catalogInject.id
-                .toLowerCase()
-                .includes(filterTerm.toLowerCase())
-            )
-            : []
-      )
+                catalogInject.id
+                  .toLowerCase()
+                  .includes(filterTerm.toLowerCase()),
+              )
+            : [],
+      ),
     );
   }
 
@@ -100,7 +100,7 @@ export class CatalogInjectDataService {
         tap(() => {
           this.catalogInjectStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (catalogInjects) => {
@@ -108,7 +108,7 @@ export class CatalogInjectDataService {
         },
         (error) => {
           this.catalogInjectStore.set([]);
-        }
+        },
       );
   }
 
@@ -120,7 +120,7 @@ export class CatalogInjectDataService {
         tap(() => {
           this.catalogInjectStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.catalogInjectStore.upsert(s.id, { ...s });
@@ -139,7 +139,7 @@ export class CatalogInjectDataService {
         tap(() => {
           this.catalogInjectStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.catalogInjectStore.add(s);
@@ -154,7 +154,7 @@ export class CatalogInjectDataService {
         tap(() => {
           this.catalogInjectStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.catalogInjectStore.upsertMany(s);

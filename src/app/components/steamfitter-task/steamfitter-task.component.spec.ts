@@ -9,7 +9,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { screen } from '@testing-library/angular';
 import { AngularEditorModule } from '@kolkov/angular-editor';
-import { ScenarioEvent, SteamfitterIntegrationType } from 'src/app/generated/blueprint.api';
+import {
+  ScenarioEvent,
+  SteamfitterIntegrationType,
+} from 'src/app/generated/blueprint.api';
 import { SteamfitterTaskComponent } from './steamfitter-task.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
@@ -21,15 +24,27 @@ function scenarioEvent(taskType: SteamfitterIntegrationType): ScenarioEvent {
       name: 'Send phish',
       description: 'Phishing email',
       taskType,
-      actionParameters: { EmailFrom: 'red@example.com', EmailTo: 'blue@example.com', situationDescription: '<p>Situation</p>' },
+      actionParameters: {
+        EmailFrom: 'red@example.com',
+        EmailTo: 'blue@example.com',
+        situationDescription: '<p>Situation</p>',
+      },
     },
   };
 }
 
-async function renderTask(overrides: { canEdit?: boolean; taskType?: SteamfitterIntegrationType } = {}) {
-  const { canEdit = true, taskType = SteamfitterIntegrationType.Email } = overrides;
+async function renderTask(
+  overrides: { canEdit?: boolean; taskType?: SteamfitterIntegrationType } = {},
+) {
+  const { canEdit = true, taskType = SteamfitterIntegrationType.Email } =
+    overrides;
   const rendered = await renderComponent(SteamfitterTaskComponent, {
-    imports: [AngularEditorModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+    imports: [
+      AngularEditorModule,
+      MatFormFieldModule,
+      MatInputModule,
+      MatSelectModule,
+    ],
     declarations: [SteamfitterTaskComponent],
     // angular-editor injects HttpClient for its image upload.
     providers: [provideHttpClient(), provideHttpClientTesting()],
@@ -41,7 +56,17 @@ async function renderTask(overrides: { canEdit?: boolean; taskType?: Steamfitter
   return rendered;
 }
 
-const EMAIL_FIELDS = ['Name', 'Description', 'From', 'To', 'cc', 'Subject', 'Message', 'Account', 'Mime Type'];
+const EMAIL_FIELDS = [
+  'Name',
+  'Description',
+  'From',
+  'To',
+  'cc',
+  'Subject',
+  'Message',
+  'Account',
+  'Mime Type',
+];
 
 describe('SteamfitterTaskComponent', () => {
   /**
@@ -56,7 +81,10 @@ describe('SteamfitterTaskComponent', () => {
       expect(screen.getByPlaceholderText(placeholder)).toBeEnabled();
     }
     expect(screen.getByPlaceholderText('From')).toHaveValue('red@example.com');
-    expect(screen.getByRole('combobox')).toHaveAttribute('aria-disabled', 'false');
+    expect(screen.getByRole('combobox')).toHaveAttribute(
+      'aria-disabled',
+      'false',
+    );
   });
 
   /**
@@ -70,7 +98,10 @@ describe('SteamfitterTaskComponent', () => {
     for (const placeholder of EMAIL_FIELDS) {
       expect(screen.getByPlaceholderText(placeholder)).toBeDisabled();
     }
-    expect(screen.getByRole('combobox')).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('combobox')).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
   });
 
   /**
@@ -81,11 +112,23 @@ describe('SteamfitterTaskComponent', () => {
   it.each([
     { canEdit: true, editable: 'true' },
     { canEdit: false, editable: 'false' },
-  ])('makes the situation description editable: $editable with canEdit $canEdit', async ({ canEdit, editable }) => {
-    const { container } = await renderTask({ canEdit, taskType: SteamfitterIntegrationType.SituationUpdate });
+  ])(
+    'makes the situation description editable: $editable with canEdit $canEdit',
+    async ({ canEdit, editable }) => {
+      const { container } = await renderTask({
+        canEdit,
+        taskType: SteamfitterIntegrationType.SituationUpdate,
+      });
 
-    const editor = container.querySelector('.angular-editor-textarea') as HTMLElement;
-    expect(editor).toHaveAttribute('contenteditable', editable);
-    expect(screen.getByPlaceholderText('Situation Date / Time').hasAttribute('disabled')).toBe(!canEdit);
-  });
+      const editor = container.querySelector(
+        '.angular-editor-textarea',
+      ) as HTMLElement;
+      expect(editor).toHaveAttribute('contenteditable', editable);
+      expect(
+        screen
+          .getByPlaceholderText('Situation Date / Time')
+          .hasAttribute('disabled'),
+      ).toBe(!canEdit);
+    },
+  );
 });

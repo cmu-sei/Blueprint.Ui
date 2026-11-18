@@ -17,7 +17,9 @@ import { AdminGroupsMemberListComponent } from './admin-groups-member-list.compo
 import { renderComponent } from 'src/app/test-utils/render-component';
 
 const USERS: User[] = [{ id: 'user-a', name: 'Alice' }];
-const MEMBERSHIPS: GroupMembership[] = [{ id: 'gm-1', groupId: 'group-1', userId: 'user-a' }];
+const MEMBERSHIPS: GroupMembership[] = [
+  { id: 'gm-1', groupId: 'group-1', userId: 'user-a' },
+];
 
 async function renderMemberList(overrides: { canEdit?: boolean } = {}) {
   const { canEdit = true } = overrides;
@@ -36,7 +38,9 @@ async function renderMemberList(overrides: { canEdit?: boolean } = {}) {
     inputs: { canEdit, users: USERS, memberships: MEMBERSHIPS },
   });
   const deleted: string[] = [];
-  rendered.fixture.componentInstance.deleteMembership.subscribe((id) => deleted.push(id));
+  rendered.fixture.componentInstance.deleteMembership.subscribe((id) =>
+    deleted.push(id),
+  );
   return { ...rendered, deleted };
 }
 
@@ -53,7 +57,9 @@ describe('AdminGroupsMemberListComponent', () => {
     const user = userEvent.setup();
 
     expect(within(table()).getByText('Alice')).toBeInTheDocument();
-    await user.click(within(table()).getByRole('button', { name: 'Remove Alice' }));
+    await user.click(
+      within(table()).getByRole('button', { name: 'Remove Alice' }),
+    );
 
     expect(deleted).toEqual(['gm-1']);
   });
@@ -67,6 +73,8 @@ describe('AdminGroupsMemberListComponent', () => {
     await renderMemberList({ canEdit: false });
 
     expect(within(table()).getByText('Alice')).toBeInTheDocument();
-    expect(within(table()).queryByRole('button', { name: 'Remove Alice' })).not.toBeInTheDocument();
+    expect(
+      within(table()).queryByRole('button', { name: 'Remove Alice' }),
+    ).not.toBeInTheDocument();
   });
 });

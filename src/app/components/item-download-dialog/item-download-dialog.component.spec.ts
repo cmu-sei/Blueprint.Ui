@@ -11,13 +11,21 @@ import { ItemDownloadDialogComponent } from './item-download-dialog.component';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-async function renderItemDownload(items = [{ id: 'it-1', label: 'Email' }, { id: 'it-2', label: 'Phone' }]) {
+async function renderItemDownload(
+  items = [
+    { id: 'it-1', label: 'Email' },
+    { id: 'it-2', label: 'Phone' },
+  ],
+) {
   const ref = dialogRefStub<ItemDownloadDialogComponent, string[]>();
   const rendered = await renderComponent(ItemDownloadDialogComponent, {
     imports: [...CRUCIBLE_DIALOG_IMPORTS, MatCheckboxModule],
     declarations: [ItemDownloadDialogComponent],
     providers: [
-      { provide: MAT_DIALOG_DATA, useValue: { title: 'Select Inject Types to download', items } },
+      {
+        provide: MAT_DIALOG_DATA,
+        useValue: { title: 'Select Inject Types to download', items },
+      },
       { provide: MatDialogRef, useValue: ref.dialogRef },
     ],
   });
@@ -33,9 +41,15 @@ describe('ItemDownloadDialogComponent', () => {
   it('renders with the default test providers', async () => {
     const { fixture } = await renderItemDownload();
 
-    expect(fixture.componentInstance).toBeInstanceOf(ItemDownloadDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Select Inject Types to download' })).toBeInTheDocument();
-    expect(screen.getByRole('checkbox', { name: 'Select all (2/2)' })).toBeChecked();
+    expect(fixture.componentInstance).toBeInstanceOf(
+      ItemDownloadDialogComponent,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Select Inject Types to download' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('checkbox', { name: 'Select all (2/2)' }),
+    ).toBeChecked();
   });
 
   /**
@@ -62,7 +76,9 @@ describe('ItemDownloadDialogComponent', () => {
     await renderItemDownload();
     const user = userEvent.setup();
 
-    await user.click(screen.getByRole('checkbox', { name: 'Select all (2/2)' }));
+    await user.click(
+      screen.getByRole('checkbox', { name: 'Select all (2/2)' }),
+    );
 
     expect(screen.getByRole('button', { name: 'Download' })).toBeDisabled();
   });

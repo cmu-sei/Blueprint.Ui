@@ -42,16 +42,38 @@ const ME = 'user-me';
 const ALL = Object.values(SystemPermission);
 const allBut = (missing: SystemPermission) => ALL.filter((p) => p !== missing);
 
-const TEMPLATE: DataField = { id: 'df-t', name: 'Template Field', dataType: DataFieldType.String, displayOrder: 1, isTemplate: true, dataOptions: [] };
+const TEMPLATE: DataField = {
+  id: 'df-t',
+  name: 'Template Field',
+  dataType: DataFieldType.String,
+  displayOrder: 1,
+  isTemplate: true,
+  dataOptions: [],
+};
 const MSEL_FIELD: DataField = {
   id: 'df-1',
   mselId: 'msel-1',
   name: 'Priority',
   dataType: DataFieldType.String,
   displayOrder: 1,
-  dataOptions: [{ id: 'do-1', dataFieldId: 'df-1', optionName: 'High', optionValue: 'High', displayOrder: 1 }],
+  dataOptions: [
+    {
+      id: 'do-1',
+      dataFieldId: 'df-1',
+      optionName: 'High',
+      optionValue: 'High',
+      displayOrder: 1,
+    },
+  ],
 };
-const TYPE_FIELD: DataField = { id: 'df-2', injectTypeId: 'it-email', name: 'Subject', dataType: DataFieldType.String, displayOrder: 1, dataOptions: [] };
+const TYPE_FIELD: DataField = {
+  id: 'df-2',
+  injectTypeId: 'it-email',
+  name: 'Subject',
+  dataType: DataFieldType.String,
+  displayOrder: 1,
+  dataOptions: [],
+};
 
 const COMPETENCY_FIELD: DataField = {
   id: 'df-3',
@@ -59,7 +81,15 @@ const COMPETENCY_FIELD: DataField = {
   name: 'Skill',
   dataType: DataFieldType.Competency,
   displayOrder: 2,
-  dataOptions: [{ id: 'do-3', dataFieldId: 'df-3', optionName: 'K0001', optionValue: 'K0001', displayOrder: 1 }],
+  dataOptions: [
+    {
+      id: 'do-3',
+      dataFieldId: 'df-3',
+      optionName: 'K0001',
+      optionValue: 'K0001',
+      displayOrder: 1,
+    },
+  ],
 };
 
 function msel(roles: MselRole[] = [], createdBy = 'someone-else'): Msel {
@@ -67,7 +97,12 @@ function msel(roles: MselRole[] = [], createdBy = 'someone-else'): Msel {
     id: 'msel-1',
     name: 'Exercise Alpha',
     createdBy,
-    userMselRoles: roles.map((role, i) => ({ id: `umr-${i}`, userId: ME, mselId: 'msel-1', role })),
+    userMselRoles: roles.map((role, i) => ({
+      id: `umr-${i}`,
+      userId: ME,
+      mselId: 'msel-1',
+      role,
+    })),
   };
 }
 
@@ -81,7 +116,14 @@ async function renderDataFields(
     fields?: DataField[];
   } = {},
 ) {
-  const { permissions = [], showTemplates = false, injectTypeId, roles = [], createdBy, fields = [MSEL_FIELD] } = overrides;
+  const {
+    permissions = [],
+    showTemplates = false,
+    injectTypeId,
+    roles = [],
+    createdBy,
+    fields = [MSEL_FIELD],
+  } = overrides;
   // The templates answer after the component has initialized, as HTTP does:
   // the component picks them up only once its showTemplates input is set.
   const templates$ = new Subject<DataField[]>();
@@ -95,7 +137,9 @@ async function renderDataFields(
   const permissionApis = permissionApiStubs({ system: permissions });
   // A dialog opened here closes without saving, as Escape or a click outside does.
   const dialog = {
-    open: vi.fn((_component: unknown, _config?: { data?: unknown }) => ({ afterClosed: () => of(undefined) })),
+    open: vi.fn((_component: unknown, _config?: { data?: unknown }) => ({
+      afterClosed: () => of(undefined),
+    })),
   };
   const rendered = await renderComponent(DataFieldListComponent, {
     imports: [
@@ -113,7 +157,10 @@ async function renderDataFields(
     ],
     declarations: [DataFieldListComponent],
     providers: [
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: DataFieldService, useValue: dataFieldApi },
       unstubbed(CrucibleDialogService),
@@ -150,16 +197,29 @@ async function renderDataFields(
 const table = () => screen.getByRole('table');
 // Each action button and the icon inside it share a title; the button is the one that is clicked.
 // A title query over the table is much faster than a role query with a name.
-const queryButton = (name: string) => within(table()).queryAllByTitle(name).find((el) => el.tagName === 'BUTTON') ?? null;
+const queryButton = (name: string) =>
+  within(table())
+    .queryAllByTitle(name)
+    .find((el) => el.tagName === 'BUTTON') ?? null;
 const optionsCell = (name: string) =>
-  within(within(table()).getByText(name).closest('mat-row') as HTMLElement).getByTitle('Click to manage options');
+  within(
+    within(table()).getByText(name).closest('mat-row') as HTMLElement,
+  ).getByTitle('Click to manage options');
 // A system row's name also appears as its data type, so its row is found by name among the System Defined rows.
 const systemRowEventsListBox = (name: string) =>
   (Array.from(table().querySelectorAll('mat-row')) as HTMLElement[])
-    .find((row) => row.textContent?.includes('*System Defined*') && within(row).queryAllByText(name).length > 0)
-    ?.querySelector('[title="Display on Scenario Events list"] input') as HTMLInputElement;
+    .find(
+      (row) =>
+        row.textContent?.includes('*System Defined*') &&
+        within(row).queryAllByText(name).length > 0,
+    )
+    ?.querySelector(
+      '[title="Display on Scenario Events list"] input',
+    ) as HTMLInputElement;
 const eventsListBox = (name: string) =>
-  within(within(table()).getByText(name).closest('mat-row') as HTMLElement).getByTitle('Display on Scenario Events list').querySelector('input') as HTMLInputElement;
+  within(within(table()).getByText(name).closest('mat-row') as HTMLElement)
+    .getByTitle('Display on Scenario Events list')
+    .querySelector('input') as HTMLInputElement;
 
 describe('DataFieldListComponent', () => {
   beforeEach(() => {
@@ -178,9 +238,17 @@ describe('DataFieldListComponent', () => {
         permissions: [SystemPermission.ManageDataFields],
       });
 
-      expect(permissionApis.systemPermissions.getMySystemPermissions).toHaveBeenCalledTimes(1);
+      expect(
+        permissionApis.systemPermissions.getMySystemPermissions,
+      ).toHaveBeenCalledTimes(1);
       expect(dataFieldApi.getDataFieldTemplates).toHaveBeenCalledTimes(1);
-      for (const title of ['Add a template data Field', 'Upload Data Field templates from JSON', 'Download Data Field templates as JSON', 'Edit Template Field', 'Delete Template Field']) {
+      for (const title of [
+        'Add a template data Field',
+        'Upload Data Field templates from JSON',
+        'Download Data Field templates as JSON',
+        'Edit Template Field',
+        'Delete Template Field',
+      ]) {
         expect(queryButton(title)).toBeInTheDocument();
       }
     });
@@ -191,10 +259,18 @@ describe('DataFieldListComponent', () => {
      * Data: showTemplates true; every permission but ManageDataFields (near miss).
      */
     it('hides template actions without ManageDataFields', async () => {
-      await renderDataFields({ showTemplates: true, permissions: allBut(SystemPermission.ManageDataFields) });
+      await renderDataFields({
+        showTemplates: true,
+        permissions: allBut(SystemPermission.ManageDataFields),
+      });
 
       expect(within(table()).getByText('Template Field')).toBeInTheDocument();
-      for (const title of ['Add a template data Field', 'Upload Data Field templates from JSON', 'Edit Template Field', 'Delete Template Field']) {
+      for (const title of [
+        'Add a template data Field',
+        'Upload Data Field templates from JSON',
+        'Edit Template Field',
+        'Delete Template Field',
+      ]) {
         expect(queryButton(title)).not.toBeInTheDocument();
       }
     });
@@ -208,19 +284,46 @@ describe('DataFieldListComponent', () => {
      * Data: EditMsels with no MSEL role; the Editor or Owner role with no system permission; or createdBy the user with no role.
      */
     it.each([
-      { label: 'with EditMsels', permissions: [SystemPermission.EditMsels], roles: [], createdBy: undefined },
-      { label: 'as an MSEL Editor', permissions: [], roles: [MselRole.Editor], createdBy: undefined },
-      { label: 'as an MSEL Owner', permissions: [], roles: [MselRole.Owner], createdBy: undefined },
-      { label: 'as the MSEL creator', permissions: [], roles: [], createdBy: ME },
-    ])('offers data field actions $label', async ({ permissions, roles, createdBy }) => {
-      await renderDataFields({ permissions, roles, createdBy });
+      {
+        label: 'with EditMsels',
+        permissions: [SystemPermission.EditMsels],
+        roles: [],
+        createdBy: undefined,
+      },
+      {
+        label: 'as an MSEL Editor',
+        permissions: [],
+        roles: [MselRole.Editor],
+        createdBy: undefined,
+      },
+      {
+        label: 'as an MSEL Owner',
+        permissions: [],
+        roles: [MselRole.Owner],
+        createdBy: undefined,
+      },
+      {
+        label: 'as the MSEL creator',
+        permissions: [],
+        roles: [],
+        createdBy: ME,
+      },
+    ])(
+      'offers data field actions $label',
+      async ({ permissions, roles, createdBy }) => {
+        await renderDataFields({ permissions, roles, createdBy });
 
-      for (const title of ['Add data Field', 'Edit Priority', 'Delete Priority']) {
-        expect(queryButton(title)).toBeInTheDocument();
-      }
-      expect(eventsListBox('Priority')).toBeEnabled();
-      expect(table().querySelector('.mdi-drag-vertical')).not.toBeNull();
-    });
+        for (const title of [
+          'Add data Field',
+          'Edit Priority',
+          'Delete Priority',
+        ]) {
+          expect(queryButton(title)).toBeInTheDocument();
+        }
+        expect(eventsListBox('Priority')).toBeEnabled();
+        expect(table().querySelector('.mdi-drag-vertical')).not.toBeNull();
+      },
+    );
 
     /**
      * Verifies: Make a template is offered only with ManageDataFields as well, because a template is a field of no MSEL,
@@ -231,11 +334,14 @@ describe('DataFieldListComponent', () => {
     it.each([
       { permissions: [SystemPermission.ManageDataFields], offered: true },
       { permissions: [], offered: false },
-    ])('offers Make a template to an Editor only with ManageDataFields: $offered', async ({ permissions, offered }) => {
-      await renderDataFields({ permissions, roles: [MselRole.Editor] });
+    ])(
+      'offers Make a template to an Editor only with ManageDataFields: $offered',
+      async ({ permissions, offered }) => {
+        await renderDataFields({ permissions, roles: [MselRole.Editor] });
 
-      expect(queryButton('Make Priority a template') !== null).toBe(offered);
-    });
+        expect(queryButton('Make Priority a template') !== null).toBe(offered);
+      },
+    );
 
     /**
      * Verifies: the system rows are MSEL settings, saved by updating the MSEL, so they follow its rule (EditMsels or Owner):
@@ -246,12 +352,17 @@ describe('DataFieldListComponent', () => {
     it.each([
       { role: MselRole.Editor, systemRowEditable: false },
       { role: MselRole.Owner, systemRowEditable: true },
-    ])('lets $role change the system rows: $systemRowEditable', async ({ role, systemRowEditable }) => {
-      await renderDataFields({ roles: [role] });
+    ])(
+      'lets $role change the system rows: $systemRowEditable',
+      async ({ role, systemRowEditable }) => {
+        await renderDataFields({ roles: [role] });
 
-      expect(eventsListBox('Priority')).toBeEnabled();
-      expect(systemRowEventsListBox('Move').disabled).toBe(!systemRowEditable);
-    });
+        expect(eventsListBox('Priority')).toBeEnabled();
+        expect(systemRowEventsListBox('Move').disabled).toBe(
+          !systemRowEditable,
+        );
+      },
+    );
 
     /**
      * Verifies: closing the competency dialog without saving sends no update, for an editor who only looked
@@ -259,14 +370,20 @@ describe('DataFieldListComponent', () => {
      * Interacts with: MatDialog.open (stub, closes with nothing), DataFieldService.updateDataField (stub).
      * Data: a Competency field with one option; the Editor role, or the Approver role.
      */
-    it.each([MselRole.Editor, MselRole.Approver])('saves nothing when the competency dialog closes unsaved, as %s', async (role) => {
-      const { dataFieldApi } = await renderDataFields({ roles: [role], fields: [MSEL_FIELD, COMPETENCY_FIELD] });
-      const user = userEvent.setup();
+    it.each([MselRole.Editor, MselRole.Approver])(
+      'saves nothing when the competency dialog closes unsaved, as %s',
+      async (role) => {
+        const { dataFieldApi } = await renderDataFields({
+          roles: [role],
+          fields: [MSEL_FIELD, COMPETENCY_FIELD],
+        });
+        const user = userEvent.setup();
 
-      await user.click(optionsCell('Skill'));
+        await user.click(optionsCell('Skill'));
 
-      expect(dataFieldApi.updateDataField).not.toHaveBeenCalled();
-    });
+        expect(dataFieldApi.updateDataField).not.toHaveBeenCalled();
+      },
+    );
 
     /**
      * Verifies: without EditMsels, the Editor role or ownership the list is read-only, even with ManageDataFields; an Approver
@@ -275,18 +392,32 @@ describe('DataFieldListComponent', () => {
      * Data: every permission but EditMsels (near miss: ManageDataFields, ManageMsels); MSEL roles Viewer and Evaluator, or Approver.
      */
     it.each([
-      { label: 'a Viewer and Evaluator', roles: [MselRole.Viewer, MselRole.Evaluator] },
+      {
+        label: 'a Viewer and Evaluator',
+        roles: [MselRole.Viewer, MselRole.Evaluator],
+      },
       { label: 'an Approver', roles: [MselRole.Approver] },
-    ])('lists data fields read-only for $label without EditMsels', async ({ roles }) => {
-      await renderDataFields({ permissions: allBut(SystemPermission.EditMsels), roles });
+    ])(
+      'lists data fields read-only for $label without EditMsels',
+      async ({ roles }) => {
+        await renderDataFields({
+          permissions: allBut(SystemPermission.EditMsels),
+          roles,
+        });
 
-      expect(within(table()).getByText('Priority')).toBeInTheDocument();
-      for (const title of ['Add data Field', 'Edit Priority', 'Delete Priority', 'Make Priority a template']) {
-        expect(queryButton(title)).not.toBeInTheDocument();
-      }
-      expect(eventsListBox('Priority')).toBeDisabled();
-      expect(table().querySelector('.mdi-drag-vertical')).toBeNull();
-    });
+        expect(within(table()).getByText('Priority')).toBeInTheDocument();
+        for (const title of [
+          'Add data Field',
+          'Edit Priority',
+          'Delete Priority',
+          'Make Priority a template',
+        ]) {
+          expect(queryButton(title)).not.toBeInTheDocument();
+        }
+        expect(eventsListBox('Priority')).toBeDisabled();
+        expect(table().querySelector('.mdi-drag-vertical')).toBeNull();
+      },
+    );
 
     /**
      * Verifies: with EditMsels, as an MSEL Editor, or as the MSEL owner, the option list dialog opens with canEdit true for a String field.
@@ -294,18 +425,27 @@ describe('DataFieldListComponent', () => {
      * Data: Priority (String) with one option; EditMsels with no role, the Editor role, or the Owner role with no system permission.
      */
     it.each([
-      { label: 'with EditMsels', permissions: [SystemPermission.EditMsels], roles: [] },
+      {
+        label: 'with EditMsels',
+        permissions: [SystemPermission.EditMsels],
+        roles: [],
+      },
       { label: 'as an MSEL Editor', permissions: [], roles: [MselRole.Editor] },
       { label: 'as the MSEL owner', permissions: [], roles: [MselRole.Owner] },
-    ])('lets the option list edit options $label', async ({ permissions, roles }) => {
-      const { dialog } = await renderDataFields({ permissions, roles });
-      const user = userEvent.setup();
+    ])(
+      'lets the option list edit options $label',
+      async ({ permissions, roles }) => {
+        const { dialog } = await renderDataFields({ permissions, roles });
+        const user = userEvent.setup();
 
-      await user.click(optionsCell('Priority'));
+        await user.click(optionsCell('Priority'));
 
-      expect(dialog.open).toHaveBeenCalledTimes(1);
-      expect(dialog.open.mock.calls[0][1]?.data).toEqual(expect.objectContaining({ canEdit: true }));
-    });
+        expect(dialog.open).toHaveBeenCalledTimes(1);
+        expect(dialog.open.mock.calls[0][1]?.data).toEqual(
+          expect.objectContaining({ canEdit: true }),
+        );
+      },
+    );
 
     /**
      * Verifies: without EditMsels, an Editor role or ownership, the option list dialog opens with canEdit false.
@@ -313,17 +453,28 @@ describe('DataFieldListComponent', () => {
      * Data: every permission but EditMsels (near miss: ManageDataFields, ManageMsels); MSEL roles Viewer and Evaluator, or Approver.
      */
     it.each([
-      { label: 'a Viewer and Evaluator', roles: [MselRole.Viewer, MselRole.Evaluator] },
+      {
+        label: 'a Viewer and Evaluator',
+        roles: [MselRole.Viewer, MselRole.Evaluator],
+      },
       { label: 'an Approver', roles: [MselRole.Approver] },
-    ])('opens the option list read-only for $label without EditMsels', async ({ roles }) => {
-      const { dialog } = await renderDataFields({ permissions: allBut(SystemPermission.EditMsels), roles });
-      const user = userEvent.setup();
+    ])(
+      'opens the option list read-only for $label without EditMsels',
+      async ({ roles }) => {
+        const { dialog } = await renderDataFields({
+          permissions: allBut(SystemPermission.EditMsels),
+          roles,
+        });
+        const user = userEvent.setup();
 
-      await user.click(optionsCell('Priority'));
+        await user.click(optionsCell('Priority'));
 
-      expect(dialog.open).toHaveBeenCalledTimes(1);
-      expect(dialog.open.mock.calls[0][1]?.data).toEqual(expect.objectContaining({ canEdit: false }));
-    });
+        expect(dialog.open).toHaveBeenCalledTimes(1);
+        expect(dialog.open.mock.calls[0][1]?.data).toEqual(
+          expect.objectContaining({ canEdit: false }),
+        );
+      },
+    );
   });
 
   describe('inject type data fields (admin)', () => {
@@ -336,14 +487,22 @@ describe('DataFieldListComponent', () => {
     it.each([
       { permission: SystemPermission.ManageDataFields, editable: true },
       { permission: SystemPermission.EditMsels, editable: false },
-    ])('gates inject type data fields on ManageDataFields: $permission edits $editable', async ({ permission, editable }) => {
-      const { dataFieldApi } = await renderDataFields({ injectTypeId: 'it-email', permissions: [permission] });
+    ])(
+      'gates inject type data fields on ManageDataFields: $permission edits $editable',
+      async ({ permission, editable }) => {
+        const { dataFieldApi } = await renderDataFields({
+          injectTypeId: 'it-email',
+          permissions: [permission],
+        });
 
-      expect(dataFieldApi.getDataFieldsByInjectType).toHaveBeenCalledWith('it-email');
-      expect(within(table()).getByText('Subject')).toBeInTheDocument();
-      expect(queryButton('Edit Subject') !== null).toBe(editable);
-      expect(queryButton('Make Subject a template')).toBeNull();
-    });
+        expect(dataFieldApi.getDataFieldsByInjectType).toHaveBeenCalledWith(
+          'it-email',
+        );
+        expect(within(table()).getByText('Subject')).toBeInTheDocument();
+        expect(queryButton('Edit Subject') !== null).toBe(editable);
+        expect(queryButton('Make Subject a template')).toBeNull();
+      },
+    );
   });
 
   /**
@@ -353,14 +512,22 @@ describe('DataFieldListComponent', () => {
    * Data: the it-email inject type.
    */
   it('reloads its fields when the hub connection is replaced', async () => {
-    const { dataFieldApi } = await renderDataFields({ injectTypeId: 'it-email' });
+    const { dataFieldApi } = await renderDataFields({
+      injectTypeId: 'it-email',
+    });
     const templates = dataFieldApi.getDataFieldTemplates.mock.calls.length;
     const typeFields = dataFieldApi.getDataFieldsByInjectType.mock.calls.length;
 
     TestBed.inject(HubReconnectService).announceReconnected();
 
-    expect(dataFieldApi.getDataFieldTemplates).toHaveBeenCalledTimes(templates + 1);
-    expect(dataFieldApi.getDataFieldsByInjectType).toHaveBeenCalledTimes(typeFields + 1);
-    expect(dataFieldApi.getDataFieldsByInjectType).toHaveBeenLastCalledWith('it-email');
+    expect(dataFieldApi.getDataFieldTemplates).toHaveBeenCalledTimes(
+      templates + 1,
+    );
+    expect(dataFieldApi.getDataFieldsByInjectType).toHaveBeenCalledTimes(
+      typeFields + 1,
+    );
+    expect(dataFieldApi.getDataFieldsByInjectType).toHaveBeenLastCalledWith(
+      'it-email',
+    );
   });
 });

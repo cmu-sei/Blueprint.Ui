@@ -4,7 +4,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { Observable, firstValueFrom, of, throwError } from 'rxjs';
-import { Group, GroupMembership, GroupService } from 'src/app/generated/blueprint.api';
+import {
+  Group,
+  GroupMembership,
+  GroupService,
+} from 'src/app/generated/blueprint.api';
 import { GroupMembershipDataService } from './group-membership-data.service';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
@@ -58,11 +62,9 @@ describe('GroupMembershipDataService', () => {
     await firstValueFrom(memberships.loadMemberships('g-2'));
 
     expect(memberIds(g1.at(-1))).toEqual(['user-1', 'user-2']);
-    expect(memberIds(recordEmissions(memberships.groupMemberships$).at(-1))).toEqual([
-      'user-1',
-      'user-2',
-      'user-3',
-    ]);
+    expect(
+      memberIds(recordEmissions(memberships.groupMemberships$).at(-1)),
+    ).toEqual(['user-1', 'user-2', 'user-3']);
   });
 
   /**
@@ -73,11 +75,18 @@ describe('GroupMembershipDataService', () => {
   it('create, delete and events keep the memberships current', async () => {
     const { memberships, groupApi } = setup();
     const emitted = recordEmissions(memberships.groupMemberships$);
-    groupApi.createGroupMembership.mockReturnValue(of({ id: 'm-1', groupId: 'g-1', userId: 'user-1' }));
+    groupApi.createGroupMembership.mockReturnValue(
+      of({ id: 'm-1', groupId: 'g-1', userId: 'user-1' }),
+    );
     groupApi.deleteGroupMembership.mockReturnValue(of(null));
 
-    await firstValueFrom(memberships.createMembership('g-1', { groupId: 'g-1', userId: 'user-1' }));
-    expect(groupApi.createGroupMembership).toHaveBeenCalledWith('g-1', { groupId: 'g-1', userId: 'user-1' });
+    await firstValueFrom(
+      memberships.createMembership('g-1', { groupId: 'g-1', userId: 'user-1' }),
+    );
+    expect(groupApi.createGroupMembership).toHaveBeenCalledWith('g-1', {
+      groupId: 'g-1',
+      userId: 'user-1',
+    });
     memberships.updateStore({ id: 'm-2', groupId: 'g-1', userId: 'user-2' });
     memberships.updateStore({ id: 'm-2', groupId: 'g-1', userId: 'user-9' });
     expect(memberIds(emitted.at(-1))).toEqual(['user-1', 'user-9']);
@@ -101,14 +110,20 @@ describe('GroupMembershipDataService', () => {
       ]),
     );
     await firstValueFrom(memberships.loadMemberships('g-1'));
-    groupApi.getGroupMemberships.mockReturnValue(of([{ id: 'm-1', groupId: 'g-1', userId: 'user-9' }]));
+    groupApi.getGroupMemberships.mockReturnValue(
+      of([{ id: 'm-1', groupId: 'g-1', userId: 'user-9' }]),
+    );
 
     const reload$ = memberships.loadMemberships('g-1');
-    expect(memberIds(recordEmissions(memberships.groupMemberships$).at(-1))).toEqual(['user-1', 'user-2']);
+    expect(
+      memberIds(recordEmissions(memberships.groupMemberships$).at(-1)),
+    ).toEqual(['user-1', 'user-2']);
     await firstValueFrom(reload$);
 
     expect(groupApi.getGroupMemberships).toHaveBeenLastCalledWith('g-1');
-    expect(memberIds(recordEmissions(memberships.selectMemberships('g-1')).at(-1))).toEqual(['user-9', 'user-2']);
+    expect(
+      memberIds(recordEmissions(memberships.selectMemberships('g-1')).at(-1)),
+    ).toEqual(['user-9', 'user-2']);
   });
 
   /**
@@ -125,13 +140,17 @@ describe('GroupMembershipDataService', () => {
       ]),
     );
     await firstValueFrom(memberships.loadMemberships('g-1'));
-    groupApi.getGroupMemberships.mockReturnValue(of([{ id: 'm-1', groupId: 'g-1', userId: 'user-1' }]));
+    groupApi.getGroupMemberships.mockReturnValue(
+      of([{ id: 'm-1', groupId: 'g-1', userId: 'user-1' }]),
+    );
 
     const reloaded = await firstValueFrom(memberships.loadMemberships('g-1'));
 
     expect(memberIds(reloaded)).toEqual(['user-1']);
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
-    expect(memberIds(recordEmissions(memberships.selectMemberships('g-1')).at(-1))).toEqual(['user-1', 'user-2']);
+    expect(
+      memberIds(recordEmissions(memberships.selectMemberships('g-1')).at(-1)),
+    ).toEqual(['user-1', 'user-2']);
   });
 
   /**
@@ -149,7 +168,11 @@ describe('GroupMembershipDataService', () => {
     memberships.updateStore({ id: 'm-3', groupId: 'g-1', userId: 'user-3' });
     memberships.deleteFromStore('m-1');
 
-    expect(g1.map(memberIds)).toEqual([['user-1'], ['user-1', 'user-3'], ['user-3']]);
+    expect(g1.map(memberIds)).toEqual([
+      ['user-1'],
+      ['user-1', 'user-3'],
+      ['user-3'],
+    ]);
     expect(empty.at(-1)).toEqual([]);
   });
 
@@ -179,7 +202,8 @@ describe('GroupMembershipDataService', () => {
     {
       method: 'loadMemberships',
       endpoint: 'getGroupMemberships',
-      call: (s: GroupMembershipDataService): Observable<unknown> => s.loadMemberships('g-1'),
+      call: (s: GroupMembershipDataService): Observable<unknown> =>
+        s.loadMemberships('g-1'),
     },
     {
       method: 'createMembership',
@@ -190,18 +214,22 @@ describe('GroupMembershipDataService', () => {
     {
       method: 'deleteMembership',
       endpoint: 'deleteGroupMembership',
-      call: (s: GroupMembershipDataService): Observable<unknown> => s.deleteMembership('m-1'),
+      call: (s: GroupMembershipDataService): Observable<unknown> =>
+        s.deleteMembership('m-1'),
     },
-  ] as const)('$method passes a failed request to the caller and keeps the memberships', async ({ endpoint, call }) => {
-    const { memberships, groupApi } = setup();
-    memberships.updateStore({ id: 'm-1', groupId: 'g-1', userId: 'user-1' });
-    const emitted = recordEmissions(memberships.groupMemberships$);
-    const failure = new Error('request failed');
-    groupApi[endpoint].mockReturnValue(throwError(() => failure));
+  ] as const)(
+    '$method passes a failed request to the caller and keeps the memberships',
+    async ({ endpoint, call }) => {
+      const { memberships, groupApi } = setup();
+      memberships.updateStore({ id: 'm-1', groupId: 'g-1', userId: 'user-1' });
+      const emitted = recordEmissions(memberships.groupMemberships$);
+      const failure = new Error('request failed');
+      groupApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    await expect(firstValueFrom(call(memberships))).rejects.toBe(failure);
+      await expect(firstValueFrom(call(memberships))).rejects.toBe(failure);
 
-    expect(emitted).toHaveLength(1);
-    expect(memberIds(emitted[0])).toEqual(['user-1']);
-  });
+      expect(emitted).toHaveLength(1);
+      expect(memberIds(emitted[0])).toEqual(['user-1']);
+    },
+  );
 });
