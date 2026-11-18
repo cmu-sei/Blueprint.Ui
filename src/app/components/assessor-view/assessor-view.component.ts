@@ -2962,8 +2962,9 @@ export class AssessorViewComponent
 
   // --- Printed assessment report ---
 
-  // Reads the statements and the MSEL image if they aren't in yet, draws the report into the print-only area, then
-  // prints it the way the MSEL Playbook does: the area is copied into the page body, printed, and the page reloads.
+  // Reads the statements and the MSEL image, draws the report into the print-only area, then prints it the way the
+  // MSEL Playbook does: the area is copied into the page body, printed, and the page reloads. The statements are read
+  // afresh, so ratings saved since they were last read are in the report.
   printReport() {
     if (this.printing || this.statementsLoading) return;
     const draw = () => {
@@ -2975,15 +2976,21 @@ export class AssessorViewComponent
           this.report = this.buildAssessmentReport();
           this.printedAt = new Date();
           this.printing = true;
+          const hidingNames = this.hidesNames;
           // a short wait so Angular draws the report before it is copied
-          setTimeout(() => this.printDocument(), 250);
+          setTimeout(() => {
+            // names hidden or shown meanwhile: the report was drawn the other way, so start again
+            if (this.hidesNames !== hidingNames) {
+              this.printing = false;
+              this.printReport();
+              return;
+            }
+            this.printDocument();
+          }, 250);
         });
     };
-    if (this.statementsLoaded) {
-      draw();
-    } else {
-      this.loadAllStatements(draw);
-    }
+    this.statementsLoaded = false;
+    this.loadAllStatements(draw);
   }
 
   protected printDocument() {
@@ -3206,9 +3213,12 @@ export class AssessorViewComponent
       competencies: competencyRows,
       levels,
       teams: reportTeams,
-      assessors: [
-        ...new Set(assertions.map((a) => a.assessor).filter((a) => a)),
-      ].sort(),
+      // none while the MSEL hides names, whatever the statements read before it did carry
+      assessors: this.hidesNames
+        ? []
+        : [
+            ...new Set(assertions.map((a) => a.assessor).filter((a) => a)),
+          ].sort(),
       injectCount: events.length,
       statementsUnavailable: this.statementsFailed,
     };
@@ -3239,10 +3249,16 @@ export class AssessorViewComponent
     return !!teamComps && comps.some((c) => teamComps.has(c.id));
   }
 
+  // read straight from the values, as the objective is: the Title field need not be one the assessors see
   private injectTitle(event: ScenarioEvent): string {
-    return (
-      plainText(this.getDataValue(event, 'Title').value) || 'Untitled inject'
-    );
+    const titleField = this.allDataFields.find((df) => df.name === 'Title');
+    const value = titleField
+      ? this.dataValues.find(
+          (v) =>
+            v.scenarioEventId === event.id && v.dataFieldId === titleField.id,
+        )?.value
+      : undefined;
+    return plainText(value) || 'Untitled inject';
   }
 
   // each event's move and group numbers by event id: what getMoveAndGroupNumbers returns, whatever its declared type

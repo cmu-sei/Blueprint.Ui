@@ -805,7 +805,7 @@ describe('AssessorViewComponent', () => {
     async function printReport(
       statements: unknown[] | 'unavailable',
       overrides: Parameters<typeof renderAssessorView>[0] = {},
-      beforePrinting?: () => void,
+      beforePrinting?: (view: AssessorViewComponent) => void,
     ) {
       vi.stubEnv('TZ', 'America/New_York');
       const rendered = await renderAssessorView({
@@ -826,7 +826,7 @@ describe('AssessorViewComponent', () => {
           'printDocument',
         )
         .mockImplementation(() => undefined);
-      beforePrinting?.();
+      beforePrinting?.(rendered.fixture.componentInstance);
 
       await userEvent.click(
         screen.getByRole('button', { name: 'Print Assessment Report' }),
@@ -1245,6 +1245,63 @@ describe('AssessorViewComponent', () => {
         ['Move 2 (whole move)', 'K-2 Proficient'],
         ['Ransom note', 'K-2 Novice'],
       ]);
+    });
+
+    /**
+     * Verifies: printing reads the statements again even when they were read before, so a rating saved since then is
+     * in the report.
+     * Interacts with: printReport, loadAllStatements.
+     * Data: the statements already read (none on screen); the read on printing answers the report's statements.
+     */
+    it('reads the statements again when printing, though they were read before', async () => {
+      await printReport(STATEMENTS, {}, (view) => {
+        // as after an inject was opened: read once, before the rating was saved
+        Object.assign(
+          view as unknown as {
+            statementsLoaded: boolean;
+            allMselStatements: unknown[];
+          },
+          { statementsLoaded: true, allMselStatements: [] },
+        );
+      });
+
+      expect(
+        tableRows(section('Blue Team').querySelector('table'))[0].slice(1),
+      ).toEqual(['Unusual logins', 'T-1 Expert Isolated both hosts']);
+    });
+
+    /**
+     * Verifies: while the MSEL hides names the cover names no assessors, even from statements that carry names.
+     * Interacts with: buildAssessmentReport (assessors), hidesNames.
+     * Data: the MSEL hiding names; statements with J. Doe's name.
+     */
+    it('names no assessors while the MSEL hides names', async () => {
+      await printReport(STATEMENTS, {
+        msel: { ...REPORT_MSEL, hideNamesOnAssessorView: true },
+      });
+
+      const facts = section('Cover').querySelector('.cover-facts');
+      expect(texts(facts, 'dt')).not.toContain('Assessors');
+      expect(section('Cover')).not.toHaveTextContent('J. Doe');
+    });
+
+    /**
+     * Verifies: the report titles injects from their values even when the Title field is not one the assessors see.
+     * Interacts with: injectTitle.
+     * Data: the Title field not assessor-visible.
+     */
+    it('titles injects though the Title field is not assessor-visible', async () => {
+      await printReport(STATEMENTS, {
+        fields: REPORT_FIELDS.map((f) =>
+          f.name === 'Title' ? { ...f, isAssessorVisible: false } : f,
+        ),
+      });
+
+      expect(
+        tableRows(section('Blue Team').querySelector('table')).map(
+          (row) => row[1],
+        ),
+      ).toContain('Unusual logins');
     });
   });
 
