@@ -102,8 +102,8 @@ const T1059_COUNTERED: MselCountermeasures = {
   }],
 };
 
-const attackSection = () => screen.getByText('Attack Techniques').closest('app-technique-pool') as HTMLElement;
-const defensiveSection = () => screen.getByText('Defensive Techniques').closest('app-technique-pool') as HTMLElement;
+const attackSection = () => screen.getByLabelText('Attack Techniques release').closest('app-technique-pool') as HTMLElement;
+const defensiveSection = () => screen.getByLabelText('Defensive Techniques release').closest('app-technique-pool') as HTMLElement;
 
 // With no release imported the Add Techniques browsers stay empty and only the pool can put MITRE content on screen;
 // an imported release is browsed by its family's section as soon as the component loads it.
@@ -154,8 +154,7 @@ describe('MselTechniquesComponent', () => {
 
     expect(poolApi.getMselTechniques).toHaveBeenCalledTimes(1);
     expect(poolApi.getMselTechniques).toHaveBeenCalledWith('msel-1');
-    expect(screen.getByText('Attack Techniques')).toBeInTheDocument();
-    expect(screen.getByText('Defensive Techniques')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /Techniques/ })).not.toBeInTheDocument();
     expect(screen.getByLabelText('Attack Techniques release')).toBeInTheDocument();
     expect(screen.getByLabelText('Defensive Techniques release')).toBeInTheDocument();
     expect(screen.getAllByText(/No releases have been imported/)).toHaveLength(2);
