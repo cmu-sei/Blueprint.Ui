@@ -8,9 +8,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="sp-icon">
     <mat-icon class="mdi-24px" [fontIcon]="icon" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
   </div>
-  <h3 class="family-title">{{ title }}</h3>
   <mat-form-field class="release-select">
-    <mat-label>Release</mat-label>
+    <mat-label>{{ isDefensive ? 'Defensive Technique Release' : 'Attack Technique Release' }}</mat-label>
     <mat-select [value]="selectedReleaseId" (selectionChange)="onReleaseChange($event.value)" [aria-label]="title + ' release'">
       @for (release of releases; track release.id) {
       <mat-option [value]="release.id">
