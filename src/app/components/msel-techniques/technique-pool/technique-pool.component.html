@@ -181,8 +181,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-cell>
       </ng-container>
       <ng-container matColumnDef="externalId">
-        <mat-header-cell *matHeaderCellDef class="col-id">ID</mat-header-cell>
-        <mat-cell *matCellDef="let item" class="col-id">
+        <mat-header-cell *matHeaderCellDef class="col-id" [class.with-domain]="showsDomainLabels">ID</mat-header-cell>
+        <mat-cell *matCellDef="let item" class="col-id" [class.with-domain]="showsDomainLabels">
           <a [href]="item.technique?.url" target="_blank" rel="noopener"
             title="Open {{ item.technique?.externalId }} on {{ linkHost(item.technique) }}">{{ item.technique?.externalId }}</a>
           @if (showsDomainLabels) {
