@@ -66,10 +66,24 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { IsDateTimeValuePipe } from 'src/app/utilities/date-time-value';
 
 @Component({
-    selector: 'app-msel-view',
-    templateUrl: './msel-view.component.html',
-    styleUrls: ['./msel-view.component.scss'],
-    imports: [MatSort, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatIcon, MatSortHeader, DurationViewComponent, AngularEditorModule, MatCheckbox, MatTooltip, IsDateTimeValuePipe]
+  selector: 'app-msel-view',
+  templateUrl: './msel-view.component.html',
+  styleUrls: ['./msel-view.component.scss'],
+  imports: [
+    MatSort,
+    MatFormField,
+    MatInput,
+    FormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatIcon,
+    MatSortHeader,
+    DurationViewComponent,
+    AngularEditorModule,
+    MatCheckbox,
+    MatTooltip,
+    IsDateTimeValuePipe,
+  ],
 })
 export class MselViewComponent implements OnDestroy, ScenarioEventView {
   private activatedRoute = inject(ActivatedRoute);
@@ -90,7 +104,9 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   private mselCompetencyQuery = inject(MselCompetencyQuery);
   private mselCompetencyDataService = inject(MselCompetencyDataService);
   private competencyFrameworkQuery = inject(CompetencyFrameworkQuery);
-  private competencyFrameworkDataService = inject(CompetencyFrameworkDataService);
+  private competencyFrameworkDataService = inject(
+    CompetencyFrameworkDataService,
+  );
   private uiDataService = inject(UIDataService);
   private http = inject(HttpClient);
   private settingsService = inject(ComnSettingsService);
@@ -165,7 +181,9 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
           const baseUrl = this.settingsService.settings.ApiUrl.endsWith('/')
             ? this.settingsService.settings.ApiUrl
             : this.settingsService.settings.ApiUrl + '/';
-          this.http.post(`${baseUrl}api/xapi/viewed/msel/${mselId}`, {}).subscribe();
+          this.http
+            .post(`${baseUrl}api/xapi/viewed/msel/${mselId}`, {})
+            .subscribe();
         }
       });
     // subscribe to the route query parameters.  Used when editing the MSEL and checking the view.
@@ -205,7 +223,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
         this.scenarioEventDataService.updateScenarioEventViewDataFields(this);
         this.scenarioEventDataService.updateScenarioEventViewDataValues(this);
         this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
-          this
+          this,
         );
       });
     // subscribe to data values
@@ -219,7 +237,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
         });
         this.scenarioEventDataService.updateScenarioEventViewDataValues(this);
         this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
-          this
+          this,
         );
       });
     // subscribe to scenario events
@@ -229,16 +247,16 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
       .subscribe((scenarioEvents) => {
         this.scenarioEventDataService.refreshScenarioEventViewEvents(
           this,
-          scenarioEvents
+          scenarioEvents,
         );
         if (scenarioEvents && scenarioEvents.length > 0) {
           this.moveAndGroupNumbers =
             this.scenarioEventDataService.getMoveAndGroupNumbers(
               this.mselScenarioEvents,
-              this.moveList
+              this.moveList,
             );
           this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
-            this
+            this,
           );
         }
       });
@@ -248,7 +266,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((organizations) => {
         this.organizationList = organizations.filter(
-          (org) => !org.isTemplate && org.mselId === this.msel.id
+          (org) => !org.isTemplate && org.mselId === this.msel.id,
         );
       });
     // observe the Cards
@@ -266,12 +284,12 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((moves) => {
         this.moveList = moves.sort((a, b) =>
-          +a.moveNumber < +b.moveNumber ? -1 : 1
+          +a.moveNumber < +b.moveNumber ? -1 : 1,
         );
         this.moveAndGroupNumbers =
           this.scenarioEventDataService.getMoveAndGroupNumbers(
             this.sortedScenarioEvents,
-            this.moveList
+            this.moveList,
           );
       });
     // observe the Teams
@@ -298,7 +316,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
       .pipe(
         debounceTime(250),
         distinctUntilChanged(),
-        mergeMap((search) => of(search).pipe(delay(250)))
+        mergeMap((search) => of(search).pipe(delay(250))),
       )
       .subscribe((event) => {
         this.applyFilter(this.filterString);
@@ -364,7 +382,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
         }
       });
       sortedDataFields.sort((a, b) =>
-        +a.displayOrder > +b.displayOrder ? 1 : -1
+        +a.displayOrder > +b.displayOrder ? 1 : -1,
       );
     }
     return sortedDataFields;
@@ -372,7 +390,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
 
   newDataValuePlus(
     scenarioEventId: string,
-    dataFieldId: string
+    dataFieldId: string,
   ): DataValuePlus {
     const ndvp = {
       id: uuidv4(),
@@ -387,7 +405,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
 
   getDataValue(
     scenarioEvent: ScenarioEvent,
-    dataFieldName: string
+    dataFieldName: string,
   ): DataValuePlus {
     if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
       return this.blankDataValue;
@@ -395,7 +413,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     return this.scenarioEventDataService.getDataValueFromView(
       this,
       scenarioEvent,
-      dataFieldName
+      dataFieldName,
     );
   }
 
@@ -406,7 +424,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     return this.scenarioEventDataService.getDisplayValueFromView(
       this,
       scenarioEvent,
-      dataFieldName
+      dataFieldName,
     );
   }
 
@@ -423,7 +441,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
       });
     });
     users = users.sort((a, b) =>
-      a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
+      a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1,
     );
     return users;
   }
@@ -449,7 +467,10 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
       type = 'Work Role';
     } else if (/^[TKSA][\d-]/.test(idNumber)) {
       const prefixMap: Record<string, string> = {
-        'T': 'Task', 'K': 'Knowledge', 'S': 'Skill', 'A': 'Ability',
+        T: 'Task',
+        K: 'Knowledge',
+        S: 'Skill',
+        A: 'Ability',
       };
       type = prefixMap[idNumber.charAt(0)] || '';
     } else if (/^[A-Z]{2}-[A-Z]{3}-\d+$/.test(idNumber)) {
@@ -514,13 +535,13 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   saveDataValue(
     scenarioEvent: ScenarioEvent,
     dataField: DataField,
-    newValue: string
+    newValue: string,
   ) {
     let dataValue = this.getDataValue(scenarioEvent, dataField.name);
     if (!dataValue || !dataValue.id) {
       // the dataValue doesn't exist, so create a new one
       const dataFieldId = this.sortedDataFields.find(
-        (df) => df.name === dataField.name
+        (df) => df.name === dataField.name,
       ).id;
       dataValue = this.newDataValuePlus(scenarioEvent.id, dataFieldId);
       dataValue.value = newValue;
@@ -579,7 +600,9 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   shouldShowMoveSeparators(): boolean {
     if (!this.sort || !this.sort.active || !this.sort.direction) return true;
     if (this.sort.direction !== 'asc') return false;
-    return this.sort.active === 'moveNumber' || this.sort.active === 'deltaSeconds';
+    return (
+      this.sort.active === 'moveNumber' || this.sort.active === 'deltaSeconds'
+    );
   }
 
   isMoveStartRow(rowIndex: number): boolean {

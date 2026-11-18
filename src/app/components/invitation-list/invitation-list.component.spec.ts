@@ -15,7 +15,14 @@ import userEvent from '@testing-library/user-event';
 import { of, Subject } from 'rxjs';
 import { ClipboardModule } from 'ngx-clipboard';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { CiteService, Invitation, InvitationService, Msel, MselItemStatus, MselRole } from 'src/app/generated/blueprint.api';
+import {
+  CiteService,
+  Invitation,
+  InvitationService,
+  Msel,
+  MselItemStatus,
+  MselRole,
+} from 'src/app/generated/blueprint.api';
 import { InvitationStore } from 'src/app/data/invitation/invitation.store';
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { TeamStore } from 'src/app/data/team/team.store';
@@ -25,13 +32,30 @@ import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
 const ME = 'user-me';
-const INVITATION: Invitation = { id: 'inv-1', mselId: 'msel-1', teamId: 'team-1', emailDomain: 'example.com', maxUsersAllowed: 5, userCount: 2 };
+const INVITATION: Invitation = {
+  id: 'inv-1',
+  mselId: 'msel-1',
+  teamId: 'team-1',
+  emailDomain: 'example.com',
+  maxUsersAllowed: 5,
+  userCount: 2,
+};
 
 function msel(overrides: Partial<Msel> = {}): Msel {
-  return { id: 'msel-1', name: 'Exercise Alpha', createdBy: 'someone-else', status: MselItemStatus.Deployed, isTemplate: false, userMselRoles: [], ...overrides };
+  return {
+    id: 'msel-1',
+    name: 'Exercise Alpha',
+    createdBy: 'someone-else',
+    status: MselItemStatus.Deployed,
+    isTemplate: false,
+    userMselRoles: [],
+    ...overrides,
+  };
 }
 
-async function renderInvitations(overrides: { canEditMsel?: boolean; activeMsel?: Msel } = {}) {
+async function renderInvitations(
+  overrides: { canEditMsel?: boolean; activeMsel?: Msel } = {},
+) {
   const { canEditMsel = true, activeMsel = msel() } = overrides;
   const invitationApi = {
     deleteInvitation: vi.fn(() => of<unknown>(null)),
@@ -40,11 +64,20 @@ async function renderInvitations(overrides: { canEditMsel?: boolean; activeMsel?
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
   const dialog = { confirm } satisfies Pick<CrucibleDialogService, 'confirm'>;
   const citeApi = {
-    getTeamRoles: vi.fn(() => of([{ id: 'r-1', name: 'Member' }, { id: 'r-2', name: 'Contributor' }, { id: 'r-3', name: 'Submitter' }])),
+    getTeamRoles: vi.fn(() =>
+      of([
+        { id: 'r-1', name: 'Member' },
+        { id: 'r-2', name: 'Contributor' },
+        { id: 'r-3', name: 'Submitter' },
+      ]),
+    ),
   } satisfies ApiStub<CiteService>;
   // The invitation dialog is not rendered; open records the data it is given.
   const matDialog = {
-    open: vi.fn(() => ({ componentInstance: { editComplete: new Subject() }, close: vi.fn() })),
+    open: vi.fn(() => ({
+      componentInstance: { editComplete: new Subject() },
+      close: vi.fn(),
+    })),
   };
   const rendered = await renderComponent(InvitationListComponent, {
     imports: [
@@ -77,7 +110,14 @@ async function renderInvitations(overrides: { canEditMsel?: boolean; activeMsel?
         provide: TeamStore,
         useFactory: () => {
           const store = new TeamStore();
-          store.set([{ id: 'team-1', mselId: 'msel-1', name: 'Blue Team', shortName: 'BLUE' }]);
+          store.set([
+            {
+              id: 'team-1',
+              mselId: 'msel-1',
+              name: 'Blue Team',
+              shortName: 'BLUE',
+            },
+          ]);
           return store;
         },
       },
@@ -96,14 +136,25 @@ async function renderInvitations(overrides: { canEditMsel?: boolean; activeMsel?
 }
 
 // The data the invitation dialog is opened with, from the MatDialog stub.
-type InvitationDialogData = { invitation: Invitation; useCite: boolean; citeTeamRoles: string[] };
-async function openedDialogData(matDialog: { open: ReturnType<typeof vi.fn> }, buttonTitle: string): Promise<InvitationDialogData> {
+type InvitationDialogData = {
+  invitation: Invitation;
+  useCite: boolean;
+  citeTeamRoles: string[];
+};
+async function openedDialogData(
+  matDialog: { open: ReturnType<typeof vi.fn> },
+  buttonTitle: string,
+): Promise<InvitationDialogData> {
   await userEvent.setup().click(screen.getByTitle(buttonTitle));
   return matDialog.open.mock.calls[0][1]?.data as InvitationDialogData;
 }
 
 const table = () => screen.getByRole('table');
-const ACTIONS = ['Add an invitation', 'Edit example.com invitation', 'Delete example.com invitation'];
+const ACTIONS = [
+  'Add an invitation',
+  'Edit example.com invitation',
+  'Delete example.com invitation',
+];
 
 describe('InvitationListComponent', () => {
   describe('CITE team role', () => {
@@ -112,14 +163,20 @@ describe('InvitationListComponent', () => {
      * Interacts with: CiteService.getTeamRoles (stub), MatDialog.open (stub).
      * Data: a deployed MSEL using CITE; CITE has Member, Contributor and Submitter.
      */
-    it('starts a new invitation at Member and offers CITE\'s team roles', async () => {
-      const { matDialog } = await renderInvitations({ activeMsel: msel({ useCite: true }) });
+    it("starts a new invitation at Member and offers CITE's team roles", async () => {
+      const { matDialog } = await renderInvitations({
+        activeMsel: msel({ useCite: true }),
+      });
 
       const data = await openedDialogData(matDialog, 'Add an invitation');
 
       expect(data.useCite).toBe(true);
       expect(data.invitation.citeTeamRole).toBe('Member');
-      expect(data.citeTeamRoles).toEqual(['Member', 'Contributor', 'Submitter']);
+      expect(data.citeTeamRoles).toEqual([
+        'Member',
+        'Contributor',
+        'Submitter',
+      ]);
     });
 
     /**
@@ -128,9 +185,14 @@ describe('InvitationListComponent', () => {
      * Data: a deployed MSEL using CITE; the seeded invitation has no citeTeamRole.
      */
     it('shows Member for an invitation that names no role', async () => {
-      const { matDialog } = await renderInvitations({ activeMsel: msel({ useCite: true }) });
+      const { matDialog } = await renderInvitations({
+        activeMsel: msel({ useCite: true }),
+      });
 
-      const data = await openedDialogData(matDialog, 'Edit example.com invitation');
+      const data = await openedDialogData(
+        matDialog,
+        'Edit example.com invitation',
+      );
 
       expect(data.invitation.citeTeamRole).toBe('Member');
     });
@@ -141,7 +203,9 @@ describe('InvitationListComponent', () => {
      * Data: a deployed MSEL not using CITE.
      */
     it('gives a new invitation no CITE role without CITE', async () => {
-      const { matDialog, citeApi } = await renderInvitations({ activeMsel: msel({ useCite: false }) });
+      const { matDialog, citeApi } = await renderInvitations({
+        activeMsel: msel({ useCite: false }),
+      });
 
       const data = await openedDialogData(matDialog, 'Add an invitation');
 
@@ -162,7 +226,11 @@ describe('InvitationListComponent', () => {
     for (const name of ACTIONS) {
       expect(within(table()).getByRole('button', { name })).toBeInTheDocument();
     }
-    expect(within(table()).getByRole('button', { name: /^Copy Invitation Link: .*\/join\/\?msel=msel-1&team=team-1$/ })).toBeEnabled();
+    expect(
+      within(table()).getByRole('button', {
+        name: /^Copy Invitation Link: .*\/join\/\?msel=msel-1&team=team-1$/,
+      }),
+    ).toBeEnabled();
     expect(within(table()).getByText('3')).toBeInTheDocument();
   });
 
@@ -174,7 +242,11 @@ describe('InvitationListComponent', () => {
   it('lets the MSEL owner manage invitations without canEditMsel', async () => {
     await renderInvitations({
       canEditMsel: false,
-      activeMsel: msel({ userMselRoles: [{ id: 'umr-1', userId: ME, mselId: 'msel-1', role: MselRole.Owner }] }),
+      activeMsel: msel({
+        userMselRoles: [
+          { id: 'umr-1', userId: ME, mselId: 'msel-1', role: MselRole.Owner },
+        ],
+      }),
     });
 
     for (const name of ACTIONS) {
@@ -190,13 +262,21 @@ describe('InvitationListComponent', () => {
   it('hides invitation changes without canEditMsel for a non-owner', async () => {
     await renderInvitations({
       canEditMsel: false,
-      activeMsel: msel({ userMselRoles: [{ id: 'umr-1', userId: ME, mselId: 'msel-1', role: MselRole.Editor }] }),
+      activeMsel: msel({
+        userMselRoles: [
+          { id: 'umr-1', userId: ME, mselId: 'msel-1', role: MselRole.Editor },
+        ],
+      }),
     });
 
     expect(within(table()).getByText('example.com')).toBeInTheDocument();
-    expect(within(table()).getByRole('button', { name: /^Copy Invitation Link/ })).toBeInTheDocument();
+    expect(
+      within(table()).getByRole('button', { name: /^Copy Invitation Link/ }),
+    ).toBeInTheDocument();
     for (const name of ACTIONS) {
-      expect(within(table()).queryByRole('button', { name })).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByRole('button', { name }),
+      ).not.toBeInTheDocument();
     }
   });
 
@@ -206,9 +286,13 @@ describe('InvitationListComponent', () => {
    * Data: a pending, non-template MSEL.
    */
   it('disables the invitation link until the MSEL is deployed', async () => {
-    await renderInvitations({ activeMsel: msel({ status: MselItemStatus.Pending }) });
+    await renderInvitations({
+      activeMsel: msel({ status: MselItemStatus.Pending }),
+    });
 
-    expect(within(table()).getByRole('button', { name: /^Copy Invitation Link/ })).toBeDisabled();
+    expect(
+      within(table()).getByRole('button', { name: /^Copy Invitation Link/ }),
+    ).toBeDisabled();
   });
 
   /**
@@ -217,12 +301,24 @@ describe('InvitationListComponent', () => {
    * Data: canEditMsel true.
    */
   it('deletes an invitation after confirmation', async () => {
-    const { invitationApi, confirm } = await renderInvitations({ canEditMsel: true });
+    const { invitationApi, confirm } = await renderInvitations({
+      canEditMsel: true,
+    });
     const user = userEvent.setup();
 
-    await user.click(within(table()).getByRole('button', { name: 'Delete example.com invitation' }));
+    await user.click(
+      within(table()).getByRole('button', {
+        name: 'Delete example.com invitation',
+      }),
+    );
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Invitation', confirmText: 'Delete', cancelText: 'Cancel' }));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Delete Invitation',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      }),
+    );
     expect(invitationApi.deleteInvitation).toHaveBeenCalledWith('inv-1');
     expect(screen.getByText('No invitations found')).toBeInTheDocument();
   });

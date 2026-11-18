@@ -2,10 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { Order, Query, QueryConfig, QueryEntity } from '@datorama/akita';
-import {
-  CatalogUnitState,
-  CatalogUnitStore,
-} from './catalog-unit.store';
+import { CatalogUnitState, CatalogUnitStore } from './catalog-unit.store';
 import { CatalogUnit } from 'src/app/generated/blueprint.api';
 import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
@@ -25,7 +22,7 @@ export class CatalogUnitQuery extends QueryEntity<CatalogUnitState> {
     const store = inject(CatalogUnitStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

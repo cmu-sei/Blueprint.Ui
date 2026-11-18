@@ -26,7 +26,7 @@ export class UserMselRoleDataService {
 
   private _requestedUserMselRoleId: string;
   private _requestedUserMselRoleId$ = this.activatedRoute.queryParamMap.pipe(
-    map((params) => params.get('userMselRoleId') || '')
+    map((params) => params.get('userMselRoleId') || ''),
   );
   readonly UserMselRoleList: Observable<UserMselRole[]>;
   readonly filterControl = new UntypedFormControl();
@@ -42,7 +42,7 @@ export class UserMselRoleDataService {
     a: UserMselRole,
     b: UserMselRole,
     column: string,
-    isAsc: boolean
+    isAsc: boolean,
   ) {
     switch (column) {
       case 'dateCreated':
@@ -63,18 +63,18 @@ export class UserMselRoleDataService {
         tap(() => {
           this.userMselRoleStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (userMselRoles) => {
-          userMselRoles.forEach(a => {
+          userMselRoles.forEach((a) => {
             this.setAsDates(a);
           });
           this.userMselRoleStore.set(userMselRoles);
         },
         (error) => {
           this.userMselRoleStore.set([]);
-        }
+        },
       );
   }
 
@@ -86,7 +86,7 @@ export class UserMselRoleDataService {
         tap(() => {
           this.userMselRoleStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.setAsDates(s);
@@ -106,7 +106,7 @@ export class UserMselRoleDataService {
         tap(() => {
           this.userMselRoleStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.setAsDates(s);
@@ -123,12 +123,22 @@ export class UserMselRoleDataService {
       });
   }
 
-  setIntegrationRoles(mselId: string, userId: string, citeEvaluationRole: string | null, galleryExhibitRole: string | null, steamfitterScenarioRole: string | null) {
+  setIntegrationRoles(
+    mselId: string,
+    userId: string,
+    citeEvaluationRole: string | null,
+    galleryExhibitRole: string | null,
+    steamfitterScenarioRole: string | null,
+  ) {
     this.userMselRoleService
-      .setUserMselIntegrationRoles(mselId, userId, { citeEvaluationRole, galleryExhibitRole, steamfitterScenarioRole })
+      .setUserMselIntegrationRoles(mselId, userId, {
+        citeEvaluationRole,
+        galleryExhibitRole,
+        steamfitterScenarioRole,
+      })
       .pipe(take(1))
       .subscribe((updated) => {
-        updated.forEach(u => {
+        updated.forEach((u) => {
           this.setAsDates(u);
           this.userMselRoleStore.upsert(u.id, u);
         });
@@ -156,5 +166,4 @@ export class UserMselRoleDataService {
     userMselRole.dateCreated = new Date(userMselRole.dateCreated);
     userMselRole.dateModified = new Date(userMselRole.dateModified);
   }
-
 }

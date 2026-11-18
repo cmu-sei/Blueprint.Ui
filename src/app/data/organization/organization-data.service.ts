@@ -29,9 +29,10 @@ export class OrganizationDataService {
   private activatedRoute = inject(ActivatedRoute);
 
   readonly OrganizationList: Observable<Organization[]>;
-  readonly filterControl = new UntypedFormControl(); private _requestedOrganizationId: string;
+  readonly filterControl = new UntypedFormControl();
+  private _requestedOrganizationId: string;
   private _requestedOrganizationId$ = this.activatedRoute.queryParamMap.pipe(
-    map((params) => params.get('organizationId') || '')
+    map((params) => params.get('organizationId') || ''),
   );
 
   private filterTerm: Observable<string>;
@@ -47,7 +48,7 @@ export class OrganizationDataService {
     const activatedRoute = this.activatedRoute;
 
     this.filterTerm = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('organizationmask') || '')
+      map((params) => params.get('organizationmask') || ''),
     );
     this.filterControl.valueChanges.subscribe((term) => {
       this.router.navigate([], {
@@ -56,16 +57,16 @@ export class OrganizationDataService {
       });
     });
     this.sortColumn = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('sorton') || 'name')
+      map((params) => params.get('sorton') || 'name'),
     );
     this.sortIsAscending = activatedRoute.queryParamMap.pipe(
-      map((params) => (params.get('sortdir') || 'asc') === 'asc')
+      map((params) => (params.get('sortdir') || 'asc') === 'asc'),
     );
     this.pageSize = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pagesize') || '20', 10))
+      map((params) => parseInt(params.get('pagesize') || '20', 10)),
     );
     this.pageIndex = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pageindex') || '0', 10))
+      map((params) => parseInt(params.get('pageindex') || '0', 10)),
     );
     this.OrganizationList = combineLatest([
       this.organizationQuery.selectAll(),
@@ -86,20 +87,20 @@ export class OrganizationDataService {
         ]) =>
           items
             ? (items as Organization[])
-              .sort((a: Organization, b: Organization) =>
-                this.sortOrganizations(a, b, sortColumn, sortIsAscending)
-              )
-              .filter(
-                (organization) =>
-                  ('' + organization.description)
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase()) ||
-                  organization.id
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase())
-              )
-            : []
-      )
+                .sort((a: Organization, b: Organization) =>
+                  this.sortOrganizations(a, b, sortColumn, sortIsAscending),
+                )
+                .filter(
+                  (organization) =>
+                    ('' + organization.description)
+                      .toLowerCase()
+                      .includes(filterTerm.toLowerCase()) ||
+                    organization.id
+                      .toLowerCase()
+                      .includes(filterTerm.toLowerCase()),
+                )
+            : [],
+      ),
     );
   }
 
@@ -111,13 +112,13 @@ export class OrganizationDataService {
         tap(() => {
           this.organizationStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (templates) => {
           this.organizationStore.upsertMany(templates);
         },
-        (error) => { }
+        (error) => {},
       );
   }
 
@@ -129,13 +130,13 @@ export class OrganizationDataService {
         tap(() => {
           this.organizationStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (organizations) => {
           this.organizationStore.upsertMany(organizations);
         },
-        (error) => { }
+        (error) => {},
       );
   }
 
@@ -147,7 +148,7 @@ export class OrganizationDataService {
         tap(() => {
           this.organizationStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.organizationStore.upsert(s.id, { ...s });
@@ -166,7 +167,7 @@ export class OrganizationDataService {
         tap(() => {
           this.organizationStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.organizationStore.add(s);
@@ -181,7 +182,7 @@ export class OrganizationDataService {
         tap(() => {
           this.organizationStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((n) => {
         this.updateStore(n);
@@ -209,7 +210,7 @@ export class OrganizationDataService {
         (event: any) => {
           if (event.type === HttpEventType.UploadProgress) {
             const uploadProgress = Math.round(
-              (100 * event.loaded) / event.total
+              (100 * event.loaded) / event.total,
             );
             this.uploadProgress.next(uploadProgress);
           } else if (event instanceof HttpResponse) {
@@ -224,7 +225,7 @@ export class OrganizationDataService {
         (error) => {
           this.organizationStore.setLoading(false);
           this.uploadProgress.next(0);
-        }
+        },
       );
   }
 
@@ -244,7 +245,7 @@ export class OrganizationDataService {
     a: Organization,
     b: Organization,
     column: string,
-    isAsc: boolean
+    isAsc: boolean,
   ) {
     switch (column) {
       case 'description':

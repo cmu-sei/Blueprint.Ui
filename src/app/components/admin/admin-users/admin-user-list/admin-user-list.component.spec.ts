@@ -18,7 +18,11 @@ import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { ClipboardModule } from 'ngx-clipboard';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { SystemRole, SystemRolesService, User } from 'src/app/generated/blueprint.api';
+import {
+  SystemRole,
+  SystemRolesService,
+  User,
+} from 'src/app/generated/blueprint.api';
 import { AdminUserListComponent } from './admin-user-list.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
@@ -57,10 +61,20 @@ async function renderUserList(overrides: { canEdit?: boolean } = {}) {
     ],
     inputs: { canEdit, users: [ALICE], isLoading: false },
   });
-  const events = { created: [] as User[], deleted: [] as string[], updated: [] as User[] };
-  rendered.fixture.componentInstance.create.subscribe((u) => events.created.push(u));
-  rendered.fixture.componentInstance.delete.subscribe((id) => events.deleted.push(id));
-  rendered.fixture.componentInstance.updateUser.subscribe((u) => events.updated.push(u));
+  const events = {
+    created: [] as User[],
+    deleted: [] as string[],
+    updated: [] as User[],
+  };
+  rendered.fixture.componentInstance.create.subscribe((u) =>
+    events.created.push(u),
+  );
+  rendered.fixture.componentInstance.delete.subscribe((id) =>
+    events.deleted.push(id),
+  );
+  rendered.fixture.componentInstance.updateUser.subscribe((u) =>
+    events.updated.push(u),
+  );
   return { ...rendered, rolesApi, confirm, events };
 }
 
@@ -77,7 +91,10 @@ describe('AdminUserListComponent', () => {
 
     expect(rolesApi.getSystemRoles).toHaveBeenCalledTimes(1);
     expect(within(table()).getByTitle('Add User')).toBeEnabled();
-    expect(within(table()).getByRole('combobox')).toHaveAttribute('aria-disabled', 'false');
+    expect(within(table()).getByRole('combobox')).toHaveAttribute(
+      'aria-disabled',
+      'false',
+    );
     expect(within(table()).getByTitle('Delete User')).toBeInTheDocument();
   });
 
@@ -91,7 +108,10 @@ describe('AdminUserListComponent', () => {
 
     expect(within(table()).getByText('Alice')).toBeInTheDocument();
     expect(within(table()).getByTitle('Add User')).toBeDisabled();
-    expect(within(table()).getByRole('combobox')).toHaveAttribute('aria-disabled', 'true');
+    expect(within(table()).getByRole('combobox')).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
     expect(within(table()).queryByTitle('Delete User')).not.toBeInTheDocument();
   });
 
@@ -121,7 +141,14 @@ describe('AdminUserListComponent', () => {
 
     await user.click(within(table()).getByTitle('Delete User'));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete User', message: 'Are you sure that you want to delete Alice?', confirmText: 'Delete', cancelText: 'Cancel' }));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Delete User',
+        message: 'Are you sure that you want to delete Alice?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      }),
+    );
     expect(events.deleted).toEqual(['user-a']);
   });
 

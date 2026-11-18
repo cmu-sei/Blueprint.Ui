@@ -6,7 +6,11 @@ import { screen } from '@testing-library/angular';
 import { DurationViewComponent } from './duration-view.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-async function renderDurationView(inputs: { durationSeconds: number; showRealTime: boolean; startTime?: Date }) {
+async function renderDurationView(inputs: {
+  durationSeconds: number;
+  showRealTime: boolean;
+  startTime?: Date;
+}) {
   return renderComponent(DurationViewComponent, {
     declarations: [DurationViewComponent],
     inputs: { startTime: new Date(2026, 0, 1, 12, 0, 0), ...inputs },
@@ -25,7 +29,10 @@ describe('DurationViewComponent', () => {
    * Data: a 90-second offset, delta time.
    */
   it('renders with the default test providers', async () => {
-    const { fixture } = await renderDurationView({ durationSeconds: 90, showRealTime: false });
+    const { fixture } = await renderDurationView({
+      durationSeconds: 90,
+      showRealTime: false,
+    });
 
     expect(fixture.componentInstance).toBeInstanceOf(DurationViewComponent);
     expect(fixture.nativeElement).toBeInTheDocument();
@@ -39,11 +46,14 @@ describe('DurationViewComponent', () => {
   it.each([
     { durationSeconds: 90061, text: '+ 1 01:01:01' },
     { durationSeconds: -90, text: '- 00:01:30' },
-  ])('shows $durationSeconds seconds as $text', async ({ durationSeconds, text }) => {
-    await renderDurationView({ durationSeconds, showRealTime: false });
+  ])(
+    'shows $durationSeconds seconds as $text',
+    async ({ durationSeconds, text }) => {
+      await renderDurationView({ durationSeconds, showRealTime: false });
 
-    expect(screen.getByText(text)).toBeInTheDocument();
-  });
+      expect(screen.getByText(text)).toBeInTheDocument();
+    },
+  );
 
   /**
    * Verifies: real time is the start time plus the offset, in the browser's timezone.
@@ -53,7 +63,9 @@ describe('DurationViewComponent', () => {
   it('shows the real time of the offset', async () => {
     await renderDurationView({ durationSeconds: 3600, showRealTime: true });
 
-    expect(screen.getByTitle('Time shown in your browser timezone')).toHaveTextContent(/^01 Jan 2026 13:00/);
+    expect(
+      screen.getByTitle('Time shown in your browser timezone'),
+    ).toHaveTextContent(/^01 Jan 2026 13:00/);
   });
 
   /**
@@ -64,8 +76,14 @@ describe('DurationViewComponent', () => {
   it('labels the real time with the zone in effect on that date', async () => {
     vi.stubEnv('TZ', 'America/New_York');
 
-    await renderDurationView({ durationSeconds: 30 * 86400, showRealTime: true, startTime: new Date('2026-10-20T16:00:00Z') });
+    await renderDurationView({
+      durationSeconds: 30 * 86400,
+      showRealTime: true,
+      startTime: new Date('2026-10-20T16:00:00Z'),
+    });
 
-    expect(screen.getByTitle('Time shown in your browser timezone')).toHaveTextContent('19 Nov 2026 11:00 EST');
+    expect(
+      screen.getByTitle('Time shown in your browser timezone'),
+    ).toHaveTextContent('19 Nov 2026 11:00 EST');
   });
 });

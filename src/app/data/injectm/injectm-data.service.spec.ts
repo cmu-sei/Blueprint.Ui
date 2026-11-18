@@ -12,7 +12,10 @@ import { InjectmQuery } from './injectm.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function inject(overrides: Partial<Injectm> = {}): Injectm {
   return {
@@ -40,7 +43,10 @@ function setup(queryParams: Record<string, string> = {}) {
   TestBed.configureTestingModule({
     providers: [
       { provide: InjectService, useValue: injectApi },
-      { provide: Router, useValue: { navigate } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -73,13 +79,19 @@ describe('InjectmDataService', () => {
     injectApi.getInjectsByInjectType.mockReturnValueOnce(
       of([inject({ id: 'inj-3', name: 'Press call' })]),
     );
-    injectApi.getInjectsByCatalog.mockReturnValueOnce(throwError(() => new Error('boom')));
-    injectApi.getInjectsByInjectType.mockReturnValueOnce(throwError(() => new Error('boom')));
+    injectApi.getInjectsByCatalog.mockReturnValueOnce(
+      throwError(() => new Error('boom')),
+    );
+    injectApi.getInjectsByInjectType.mockReturnValueOnce(
+      throwError(() => new Error('boom')),
+    );
 
     service.loadByCatalog('cat-1');
     expect(injectApi.getInjectsByCatalog).toHaveBeenCalledWith('cat-1');
     expect(names(query.getAll())).toEqual(['Bomb threat', 'Ransom note']);
-    expect(query.getEntity('inj-1').dateCreated).toEqual(new Date('2026-01-01T00:00:00Z'));
+    expect(query.getEntity('inj-1').dateCreated).toEqual(
+      new Date('2026-01-01T00:00:00Z'),
+    );
 
     service.loadByInjectType('it-email');
     expect(injectApi.getInjectsByInjectType).toHaveBeenCalledWith('it-email');
@@ -100,9 +112,15 @@ describe('InjectmDataService', () => {
    */
   it('single-inject calls keep the store in step with the API', async () => {
     const { service, query, injectApi } = setup();
-    injectApi.getInject.mockReturnValue(of(inject({ id: 'inj-2', name: 'Bomb threat' })));
-    injectApi.createInject.mockReturnValue(of(inject({ id: 'inj-3', name: 'Press call' })));
-    injectApi.updateInject.mockReturnValue(of(inject({ id: 'inj-2', name: 'Bomb threat (v2)' })));
+    injectApi.getInject.mockReturnValue(
+      of(inject({ id: 'inj-2', name: 'Bomb threat' })),
+    );
+    injectApi.createInject.mockReturnValue(
+      of(inject({ id: 'inj-3', name: 'Press call' })),
+    );
+    injectApi.updateInject.mockReturnValue(
+      of(inject({ id: 'inj-2', name: 'Bomb threat (v2)' })),
+    );
     injectApi.deleteInject.mockReturnValue(of(null));
 
     service.loadById('inj-2');
@@ -138,7 +156,9 @@ describe('InjectmDataService', () => {
     service.updateStore({ id: 'inj-1', name: 'Ransom note (edited)' });
     service.deleteFromStore('inj-2');
 
-    expect(emissions.at(-1).map((i) => i.name)).toEqual(['Ransom note (edited)']);
+    expect(emissions.at(-1).map((i) => i.name)).toEqual([
+      'Ransom note (edited)',
+    ]);
     const active$ = query.selectActive() as Observable<Injectm>;
     expect((await firstValueFrom(active$)).name).toBe('Ransom note (edited)');
   });
@@ -153,7 +173,9 @@ describe('InjectmDataService', () => {
     service.updateStore(inject());
     service.updateStore(inject({ id: 'inj-2', name: 'Bomb threat' }));
 
-    expect(names(recordEmissions(service.InjectmList).at(-1))).toEqual(['Bomb threat']);
+    expect(names(recordEmissions(service.InjectmList).at(-1))).toEqual([
+      'Bomb threat',
+    ]);
   });
 
   /**
@@ -162,24 +184,42 @@ describe('InjectmDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'loadById', endpoint: 'getInject', escapes: true, call: (s: InjectmDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createInject', escapes: true, call: (s: InjectmDataService) => s.add('cat-1', { id: 'x-1' }) },
-    { method: 'update', endpoint: 'updateInject', escapes: true, call: (s: InjectmDataService) => s.update({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, injectApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(InjectmStore).setLoading(false);
-    injectApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'loadById',
+      endpoint: 'getInject',
+      escapes: true,
+      call: (s: InjectmDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createInject',
+      escapes: true,
+      call: (s: InjectmDataService) => s.add('cat-1', { id: 'x-1' }),
+    },
+    {
+      method: 'update',
+      endpoint: 'updateInject',
+      escapes: true,
+      call: (s: InjectmDataService) => s.update({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, injectApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(InjectmStore).setLoading(false);
+      injectApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(InjectmQuery).getValue().loading).toBe(true);
-    // With no error callback the error escapes to ErrorService, the ErrorHandler
-    // app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(InjectmQuery).getValue().loading).toBe(true);
+      // With no error callback the error escapes to ErrorService, the ErrorHandler
+      // app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete escapes to the app's global ErrorHandler.
@@ -187,19 +227,26 @@ describe('InjectmDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteInject', call: (s: InjectmDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, injectApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    injectApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteInject',
+      call: (s: InjectmDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, injectApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      injectApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

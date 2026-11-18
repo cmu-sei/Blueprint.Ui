@@ -5,10 +5,7 @@
 */
 
 import { Order, QueryConfig, QueryEntity } from '@datorama/akita';
-import {
-  DataOptionState,
-  DataOptionStore,
-} from './data-option.store';
+import { DataOptionState, DataOptionStore } from './data-option.store';
 import { DataOption } from 'src/app/generated/blueprint.api';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -27,7 +24,7 @@ export class DataOptionQuery extends QueryEntity<DataOptionState> {
     const store = inject(DataOptionStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

@@ -7,9 +7,7 @@
   "paths": {
     "/api/views/{viewId}/applications": {
       "post": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Creates a new Application within a View.",
         "description": "Creates a new Application within a View with the attributes specified. An Application Template is a top-level resource that can optionally be the parent of an View specific Application resource, which would inherit it's properties",
         "operationId": "createApplication",
@@ -57,9 +55,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Gets all Applications for a View.",
         "description": "Returns all Applications assigned to a specific View.",
         "operationId": "getViewApplications",
@@ -103,9 +99,7 @@
     },
     "/api/teams/{id}/application-instances": {
       "post": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Creates a new Application Instance within a Team.",
         "description": "Creates a new Application Instance within a Team with the attributes specified",
         "operationId": "createApplicationInstance",
@@ -153,9 +147,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Gets all Applications Instances for a Team.",
         "description": "Returns all Application Instances assigned to a specific Team.",
         "operationId": "getTeamApplicationInstances",
@@ -199,9 +191,7 @@
     },
     "/api/application-templates": {
       "post": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Creates a new Application Template.",
         "description": "Creates a new Application Template with the attributes specified. An Application Template is a top-level resource that can optionally be the parent of an View specific Application resource, which would inherit it's properties",
         "operationId": "createApplicationTemplate",
@@ -238,9 +228,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Gets all Application Templates in the system.",
         "description": "Returns a list of all of the Application Templates in the system.",
         "operationId": "getApplicationTemplates",
@@ -273,9 +261,7 @@
     },
     "/api/applications/{id}": {
       "delete": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Deletes an Application.",
         "description": "Deletes an Application with the specified id.",
         "operationId": "deleteApplication",
@@ -307,9 +293,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Updates an Application.",
         "description": "Updates an Application with the attributes specified",
         "operationId": "updateApplication",
@@ -357,9 +341,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Gets a specific Application by id.",
         "description": "Returns the Application with the id specified.",
         "operationId": "getApplication",
@@ -400,9 +382,7 @@
     },
     "/api/application-instances/{id}": {
       "delete": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Deletes an Application Instance.",
         "description": "Deletes an Application Instance with the specified id.",
         "operationId": "deleteApplicationInstance",
@@ -434,9 +414,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Updates an Application Instance.",
         "description": "Updates an Application Instance with the attributes specified.",
         "operationId": "updateApplicationInstance",
@@ -484,9 +462,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Gets a specific Application Instance by id.",
         "description": "Returns the Application Instance with the id specified.",
         "operationId": "getApplicationInstance",
@@ -527,9 +503,7 @@
     },
     "/api/application-templates/{id}": {
       "delete": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Deletes an Application Template.",
         "description": "Deletes an Application Template with the specified id.",
         "operationId": "deleteApplicationTemplate",
@@ -561,9 +535,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Updates an Application Template.",
         "description": "Updates an Application Template with the attributes specified",
         "operationId": "updateApplicationTemplate",
@@ -611,9 +583,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Gets a specific Application Template by id.",
         "description": "Returns the Application Template with the id specified.",
         "operationId": "getApplicationTemplate",
@@ -654,9 +624,7 @@
     },
     "/api/application-templates/actions/export": {
       "get": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Export Application Templates.",
         "description": "Returns an archive of Application Templates and supporting files.",
         "operationId": "exportApplicationTemplates",
@@ -724,9 +692,7 @@
     },
     "/api/application-templates/actions/import": {
       "post": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Import Application Templates.",
         "description": "Import Application Templates",
         "operationId": "importApplicationTemplates",
@@ -786,9 +752,7 @@
     },
     "/api/application-instances/{id}/move-up": {
       "post": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Moves an Application Instance up.",
         "description": "Moves an Application Instance up one spot in the list.",
         "operationId": "moveUpApplicationInstance",
@@ -832,9 +796,7 @@
     },
     "/api/application-instances/{id}/move-down": {
       "post": {
-        "tags": [
-          "Application"
-        ],
+        "tags": ["Application"],
         "summary": "Moves an Application Instance down.",
         "description": "Moves an Application Instance down one spot in the list.",
         "operationId": "moveDownApplicationInstance",
@@ -878,9 +840,7 @@
     },
     "/api/files": {
       "post": {
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "summary": "Upload file(s)",
         "description": "File objects will be returned in the same order as their respective files within the form.",
         "operationId": "uploadMultipleFiles",
@@ -941,9 +901,7 @@
         }
       },
       "get": {
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "summary": "Get all files in the system",
         "operationId": "getAllFiles",
         "responses": {
@@ -991,9 +949,7 @@
     },
     "/api/views/{viewId}/files": {
       "get": {
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "summary": "Get all files in a view accessable to the calling user",
         "operationId": "getViewFiles",
         "parameters": [
@@ -1053,9 +1009,7 @@
     },
     "/api/teams/{teamId}/files": {
       "get": {
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "summary": "Get all files in a team",
         "operationId": "getTeamFiles",
         "parameters": [
@@ -1115,9 +1069,7 @@
     },
     "/api/files/{fileId}": {
       "get": {
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "summary": "Get a specific file by id",
         "operationId": "getById",
         "parameters": [
@@ -1166,9 +1118,7 @@
         }
       },
       "put": {
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "summary": "Update a file",
         "description": "Takes a form with fields for team IDs and a new file. File can be assigned to different teams and/or replaced.\r\n           The file entry will be changed to point at the newly uploaded file.",
         "operationId": "updateFile",
@@ -1254,9 +1204,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "summary": "Delete a file",
         "operationId": "deleteFile",
         "parameters": [
@@ -1290,9 +1238,7 @@
     },
     "/api/files/download/{fileId}": {
       "get": {
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "summary": "Download a file by id",
         "description": "This endpoint downloads the actual file, files/{fileId} returns the DB entry for a file",
         "operationId": "download",
@@ -1347,9 +1293,7 @@
     },
     "/api/health/live": {
       "get": {
-        "tags": [
-          "Health"
-        ],
+        "tags": ["Health"],
         "summary": "Checks the liveliness health endpoint",
         "description": "Returns a HealthStatus of the liveliness health check",
         "operationId": "Health_GetLiveliness",
@@ -1389,9 +1333,7 @@
     },
     "/api/health/ready": {
       "get": {
-        "tags": [
-          "Health"
-        ],
+        "tags": ["Health"],
         "summary": "Checks the readiness health endpoint",
         "description": "Returns a HealthStatus of the readiness health check",
         "operationId": "Health_GetReadiness",
@@ -1431,9 +1373,7 @@
     },
     "/api/roles/{roleId}/permissions/{permissionId}": {
       "post": {
-        "tags": [
-          "Permission"
-        ],
+        "tags": ["Permission"],
         "summary": "Adds a Permission to a Role.",
         "description": "Adds the specified Permission to the specified Role.",
         "operationId": "addPermissionToRole",
@@ -1474,9 +1414,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Permission"
-        ],
+        "tags": ["Permission"],
         "summary": "Removes a Permission from a Role.",
         "description": "Removes the specified Permission from the specified Role.",
         "operationId": "removePermissionFromRole",
@@ -1519,9 +1457,7 @@
     },
     "/api/permissions": {
       "post": {
-        "tags": [
-          "Permission"
-        ],
+        "tags": ["Permission"],
         "summary": "Creates a new Permission.",
         "description": "Creates a new Permission with the attributes specified.",
         "operationId": "createPermission",
@@ -1558,9 +1494,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Permission"
-        ],
+        "tags": ["Permission"],
         "summary": "Gets all Permissions in the system.",
         "description": "Returns a list of all of the Permissions in the system.",
         "operationId": "getPermissions",
@@ -1593,9 +1527,7 @@
     },
     "/api/permissions/{id}": {
       "delete": {
-        "tags": [
-          "Permission"
-        ],
+        "tags": ["Permission"],
         "summary": "Deletes a Permission.",
         "description": "Deletes a Permission with the specified id.",
         "operationId": "deletePermission",
@@ -1627,9 +1559,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Permission"
-        ],
+        "tags": ["Permission"],
         "summary": "Updates a Permission.",
         "description": "Updates a Permission with the attributes specified",
         "operationId": "updatePermission",
@@ -1677,9 +1607,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Permission"
-        ],
+        "tags": ["Permission"],
         "summary": "Gets a specific Permission by id.",
         "description": "Returns the Permission with the id specified.",
         "operationId": "getPermission",
@@ -1720,9 +1648,7 @@
     },
     "/api/permissions/mine": {
       "get": {
-        "tags": [
-          "Permission"
-        ],
+        "tags": ["Permission"],
         "summary": "Gets System Permissions for the current User.",
         "description": "Returns all System Permissions for the current user.",
         "operationId": "getMyPermissions",
@@ -1755,9 +1681,7 @@
     },
     "/api/roles": {
       "post": {
-        "tags": [
-          "Role"
-        ],
+        "tags": ["Role"],
         "summary": "Creates a new Role.",
         "description": "Creates a new Role with the attributes specified.",
         "operationId": "createRole",
@@ -1794,9 +1718,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Role"
-        ],
+        "tags": ["Role"],
         "summary": "Gets all Roles in the system.",
         "description": "Returns a list of all of the Roles in the system.",
         "operationId": "getRoles",
@@ -1829,9 +1751,7 @@
     },
     "/api/roles/{id}": {
       "delete": {
-        "tags": [
-          "Role"
-        ],
+        "tags": ["Role"],
         "summary": "Deletes a Role.",
         "description": "Deletes a Role with the specified id.",
         "operationId": "deleteRole",
@@ -1863,9 +1783,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Role"
-        ],
+        "tags": ["Role"],
         "summary": "Updates a Role.",
         "description": "Updates a Role with the attributes specified.",
         "operationId": "updateRole",
@@ -1913,9 +1831,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Role"
-        ],
+        "tags": ["Role"],
         "summary": "Gets a specific Role by id.",
         "description": "Returns the Role with the id specified.",
         "operationId": "getRole",
@@ -1956,9 +1872,7 @@
     },
     "/api/roles/name/{name}": {
       "get": {
-        "tags": [
-          "Role"
-        ],
+        "tags": ["Role"],
         "summary": "Gets a specific Role by name.",
         "description": "Returns the Role with the name specified.",
         "operationId": "getRoleByName",
@@ -1998,9 +1912,7 @@
     },
     "/api/views/{id}/teams": {
       "post": {
-        "tags": [
-          "Team"
-        ],
+        "tags": ["Team"],
         "summary": "Creates a new Team within a View.",
         "description": "Creates a new Team within a View with the attributes specified.",
         "operationId": "createTeam",
@@ -2048,9 +1960,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Team"
-        ],
+        "tags": ["Team"],
         "summary": "Gets all Teams for a View.",
         "description": "Returns all Teams within a specific View.",
         "operationId": "getViewTeams",
@@ -2094,9 +2004,7 @@
     },
     "/api/teams/{id}": {
       "delete": {
-        "tags": [
-          "Team"
-        ],
+        "tags": ["Team"],
         "summary": "Deletes a Team.",
         "description": "Deletes a Team with the specified id.",
         "operationId": "deleteTeam",
@@ -2128,9 +2036,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Team"
-        ],
+        "tags": ["Team"],
         "summary": "Updates a Team.",
         "description": "Updates a Team with the attributes specified.",
         "operationId": "updateTeam",
@@ -2178,9 +2084,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Team"
-        ],
+        "tags": ["Team"],
         "summary": "Gets a specific Team by id.",
         "description": "Returns the Team with the id specified.",
         "operationId": "getTeam",
@@ -2221,9 +2125,7 @@
     },
     "/api/teams": {
       "get": {
-        "tags": [
-          "Team"
-        ],
+        "tags": ["Team"],
         "summary": "Gets all Teams in the system.",
         "description": "Returns a list of all of the Teams in the system.",
         "operationId": "getTeams",
@@ -2256,9 +2158,7 @@
     },
     "/api/users/{userId}/views/{viewId}/teams": {
       "get": {
-        "tags": [
-          "Team"
-        ],
+        "tags": ["Team"],
         "summary": "Gets all Teams for a User by View.",
         "description": "Returns all Teams within a specific View that a User is a member of.",
         "operationId": "getUserViewTeams",
@@ -2311,9 +2211,7 @@
     },
     "/api/me/views/{id}/teams": {
       "get": {
-        "tags": [
-          "Team"
-        ],
+        "tags": ["Team"],
         "summary": "Gets all Teams for the current User by View.",
         "description": "Returns all Teams within a specific View that the current User is a member of.",
         "operationId": "getMyViewTeams",
@@ -2357,9 +2255,7 @@
     },
     "/api/teams/{id}/notifications": {
       "post": {
-        "tags": [
-          "Team"
-        ],
+        "tags": ["Team"],
         "summary": "Sends a new Team Notification.",
         "description": "Broadcasts a Notification to all members of the specified Team.",
         "operationId": "broadcastToTeam",
@@ -2409,9 +2305,7 @@
     },
     "/api/users/{userId}/teams/{teamId}/primary": {
       "post": {
-        "tags": [
-          "Team"
-        ],
+        "tags": ["Team"],
         "summary": "Sets a User's Primary Team.",
         "description": "Sets the specified Team as a Primary Team for the specified User.",
         "operationId": "setUserPrimaryTeam",
@@ -2461,9 +2355,7 @@
     },
     "/api/team-memberships/{id}": {
       "put": {
-        "tags": [
-          "TeamMembership"
-        ],
+        "tags": ["TeamMembership"],
         "summary": "Updates a Team Membership.",
         "description": "Updates a Team Membership with the attributes specified.",
         "operationId": "updateTeamMembership",
@@ -2511,9 +2403,7 @@
         }
       },
       "get": {
-        "tags": [
-          "TeamMembership"
-        ],
+        "tags": ["TeamMembership"],
         "summary": "Gets a specific Team Membership by id.",
         "description": "Returns the Team Membership with the id specified.",
         "operationId": "getTeamMembership",
@@ -2554,9 +2444,7 @@
     },
     "/api/users/{userId}/views/{viewId}/team-memberships": {
       "get": {
-        "tags": [
-          "TeamMembership"
-        ],
+        "tags": ["TeamMembership"],
         "summary": "Gets all Team Memberships for a User by View.",
         "description": "Returns a list of all of the Team Memberships for a User in the specified View.",
         "operationId": "getTeamMemberships",
@@ -2609,9 +2497,7 @@
     },
     "/api/team-roles/{roleId}/permissions/{permissionId}": {
       "post": {
-        "tags": [
-          "TeamPermission"
-        ],
+        "tags": ["TeamPermission"],
         "summary": "Adds a Team Permission to a Team Role.",
         "description": "Adds the specified TeamPermission to the specified Team Role.",
         "operationId": "addTeamPermissionToRole",
@@ -2652,9 +2538,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "TeamPermission"
-        ],
+        "tags": ["TeamPermission"],
         "summary": "Removes a Team Permission from a Team Role.",
         "description": "Removes the specified TeamPermission from the specified Team Role.",
         "operationId": "removeTeamPermissionFromRole",
@@ -2697,9 +2581,7 @@
     },
     "/api/teams/{teamId}/permissions/{permissionId}": {
       "post": {
-        "tags": [
-          "TeamPermission"
-        ],
+        "tags": ["TeamPermission"],
         "summary": "Adds a Team Permission to a Team.",
         "description": "Adds the specified TeamPermission to the specified Team.",
         "operationId": "addTeamPermissionToTeam",
@@ -2740,9 +2622,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "TeamPermission"
-        ],
+        "tags": ["TeamPermission"],
         "summary": "Removes a Team Permission from a Team.",
         "description": "Removes the specified TeamPermission from the specified Team.",
         "operationId": "removeTeamPermissionFromTeam",
@@ -2785,9 +2665,7 @@
     },
     "/api/team-permissions": {
       "post": {
-        "tags": [
-          "TeamPermission"
-        ],
+        "tags": ["TeamPermission"],
         "summary": "Creates a new TeamPermission.",
         "description": "Creates a new TeamPermission with the attributes specified.",
         "operationId": "createTeamPermission",
@@ -2824,9 +2702,7 @@
         }
       },
       "get": {
-        "tags": [
-          "TeamPermission"
-        ],
+        "tags": ["TeamPermission"],
         "summary": "Gets all TeamPermissions in the system.",
         "description": "Returns a list of all of the TeamPermissions in the system.",
         "operationId": "getTeamPermissions",
@@ -2859,9 +2735,7 @@
     },
     "/api/team-permissions/{id}": {
       "delete": {
-        "tags": [
-          "TeamPermission"
-        ],
+        "tags": ["TeamPermission"],
         "summary": "Deletes a TeamPermission.",
         "description": "Deletes a TeamPermission with the specified id.",
         "operationId": "deleteTeamPermission",
@@ -2893,9 +2767,7 @@
         }
       },
       "put": {
-        "tags": [
-          "TeamPermission"
-        ],
+        "tags": ["TeamPermission"],
         "summary": "Updates a TeamPermission.",
         "description": "Updates a TeamPermission with the attributes specified",
         "operationId": "updateTeamPermission",
@@ -2943,9 +2815,7 @@
         }
       },
       "get": {
-        "tags": [
-          "TeamPermission"
-        ],
+        "tags": ["TeamPermission"],
         "summary": "Gets a specific Team Permission by id.",
         "description": "Returns the Team Permission with the id specified.",
         "operationId": "getTeamPermission",
@@ -2986,9 +2856,7 @@
     },
     "/api/team-permissions/mine": {
       "get": {
-        "tags": [
-          "TeamPermission"
-        ],
+        "tags": ["TeamPermission"],
         "summary": "Gets Team Permissions for the current User.",
         "description": "Returns all TeamPermissions for the current user or those of a specified Team or View.\n                        If a Team is specified, can optionally include TeamPermissions for all Teams in the same View that the User is a member of.",
         "operationId": "getMyTeamPermissions",
@@ -3046,9 +2914,7 @@
     },
     "/api/team-roles": {
       "post": {
-        "tags": [
-          "TeamRole"
-        ],
+        "tags": ["TeamRole"],
         "summary": "Creates a new Team Role.",
         "description": "Creates a new Team Role with the attributes specified.",
         "operationId": "createTeamRole",
@@ -3085,9 +2951,7 @@
         }
       },
       "get": {
-        "tags": [
-          "TeamRole"
-        ],
+        "tags": ["TeamRole"],
         "summary": "Gets all Team Roles in the system.",
         "description": "Returns a list of all of the Team Roles in the system.",
         "operationId": "getTeamRoles",
@@ -3120,9 +2984,7 @@
     },
     "/api/team-roles/{id}": {
       "delete": {
-        "tags": [
-          "TeamRole"
-        ],
+        "tags": ["TeamRole"],
         "summary": "Deletes a Team Role.",
         "description": "Deletes a Team Role with the specified id.",
         "operationId": "deleteTeamRole",
@@ -3154,9 +3016,7 @@
         }
       },
       "put": {
-        "tags": [
-          "TeamRole"
-        ],
+        "tags": ["TeamRole"],
         "summary": "Updates a Team Role.",
         "description": "Updates a Team Role with the attributes specified.",
         "operationId": "updateTeamRole",
@@ -3204,9 +3064,7 @@
         }
       },
       "get": {
-        "tags": [
-          "TeamRole"
-        ],
+        "tags": ["TeamRole"],
         "summary": "Gets a specific Team Role by id.",
         "description": "Returns the Team Role with the id specified.",
         "operationId": "getTeamRole",
@@ -3247,9 +3105,7 @@
     },
     "/api/teams/{teamId}/users/{userId}": {
       "post": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Adds a User to a Team.",
         "description": "Adds the specified User to the specified Team.",
         "operationId": "addUserToTeam",
@@ -3290,9 +3146,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Removes a User from a Team.",
         "description": "Removes the specified User from the specified Team.",
         "operationId": "removeUserFromTeam",
@@ -3335,9 +3189,7 @@
     },
     "/api/users": {
       "post": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Creates a new User.",
         "description": "Creates a new User with the attributes specified.",
         "operationId": "createUser",
@@ -3374,9 +3226,7 @@
         }
       },
       "get": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Gets all Users in the system.",
         "description": "Returns a list of all of the Users in the system.",
         "operationId": "getUsers",
@@ -3409,9 +3259,7 @@
     },
     "/api/users/{id}": {
       "delete": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Deletes a User.",
         "description": "Deletes a User with the specified id.",
         "operationId": "deleteUser",
@@ -3443,9 +3291,7 @@
         }
       },
       "put": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Updates a User.",
         "description": "Updates a User with the attributes specified.",
         "operationId": "updateUser",
@@ -3493,9 +3339,7 @@
         }
       },
       "get": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Gets a specific User by id.",
         "description": "Returns the User with the id specified.",
         "operationId": "getUser",
@@ -3536,9 +3380,7 @@
     },
     "/api/teams/{id}/users": {
       "get": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Gets all Users for a Team.",
         "description": "Returns all Users within a specific Team.",
         "operationId": "getTeamUsers",
@@ -3582,9 +3424,7 @@
     },
     "/api/views/{id}/users": {
       "get": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": " Gets all Users for a View.",
         "description": "Returns all Users within a specific View.",
         "operationId": "getViewUsers",
@@ -3628,9 +3468,7 @@
     },
     "/api/views/{viewId}/users/{userId}/notifications": {
       "post": {
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Sends a new User Notification.",
         "description": "Send a Notification the User in the specified View.",
         "operationId": "broadcastToUser",
@@ -3689,9 +3527,7 @@
     },
     "/api/views/{id}/clone": {
       "post": {
-        "tags": [
-          "View"
-        ],
+        "tags": ["View"],
         "summary": "Clones a View.",
         "description": "Creates a new View from the View specified.",
         "operationId": "cloneView",
@@ -3741,9 +3577,7 @@
     },
     "/api/views": {
       "post": {
-        "tags": [
-          "View"
-        ],
+        "tags": ["View"],
         "summary": "Creates a new View.",
         "description": "Creates a new View with the attributes specified.",
         "operationId": "createView",
@@ -3780,9 +3614,7 @@
         }
       },
       "get": {
-        "tags": [
-          "View"
-        ],
+        "tags": ["View"],
         "summary": "Gets all Views in the system.",
         "description": "Returns a list of all of the Views in the system.",
         "operationId": "getViews",
@@ -3815,9 +3647,7 @@
     },
     "/api/views/{id}": {
       "delete": {
-        "tags": [
-          "View"
-        ],
+        "tags": ["View"],
         "summary": "Deletes a View.",
         "description": "Deletes a View with the specified id.",
         "operationId": "deleteView",
@@ -3849,9 +3679,7 @@
         }
       },
       "put": {
-        "tags": [
-          "View"
-        ],
+        "tags": ["View"],
         "summary": "Updates a View.",
         "description": "Updates a View with the attributes specified.",
         "operationId": "updateView",
@@ -3899,9 +3727,7 @@
         }
       },
       "get": {
-        "tags": [
-          "View"
-        ],
+        "tags": ["View"],
         "summary": "Gets a specific View by id.",
         "description": "Returns the View with the id specified.",
         "operationId": "getView",
@@ -3942,9 +3768,7 @@
     },
     "/api/views/{id}/notifications": {
       "delete": {
-        "tags": [
-          "View"
-        ],
+        "tags": ["View"],
         "summary": "Deletes all Notifications for a view.",
         "description": "Deletes all Notifications in the specified View.",
         "operationId": "deleteViewNotifications",
@@ -3983,9 +3807,7 @@
         }
       },
       "get": {
-        "tags": [
-          "View"
-        ],
+        "tags": ["View"],
         "summary": "Gets all Notifications for a View.",
         "description": "Gets all Notifications for a View.",
         "operationId": "getAllViewNotifications",
@@ -4027,9 +3849,7 @@
         }
       },
       "post": {
-        "tags": [
-          "View"
-        ],
+        "tags": ["View"],
         "summary": "Sends a new View Notification.",
         "description": "Broadcasts a Notification to all members of the specified View.",
         "operationId": "broadcastToView",
@@ -4079,9 +3899,7 @@
     },
     "/api/views/{id}/notifications/{key}": {
       "delete": {
-        "tags": [
-          "View"
-        ],
+        "tags": ["View"],
         "summary": "Deletes a Notification.",
         "description": "Deletes a Notification in the specified View.",
         "operationId": "deleteNotification",
@@ -4131,9 +3949,7 @@
     },
     "/api/views/actions/export": {
       "get": {
-        "tags": [
-          "View"
-        ],
+        "tags": ["View"],
         "summary": "Exports Views.",
         "description": "Exports the specified Views, or all Views if none specified.",
         "operationId": "exportViews",
@@ -4185,9 +4001,7 @@
     },
     "/api/users/{id}/views": {
       "get": {
-        "tags": [
-          "View"
-        ],
+        "tags": ["View"],
         "summary": "Gets all Views for a User.",
         "description": "Returns all Views where the specified User is a member of at least one of it's Teams.",
         "operationId": "getUserViews",
@@ -4231,9 +4045,7 @@
     },
     "/api/me/views": {
       "get": {
-        "tags": [
-          "View"
-        ],
+        "tags": ["View"],
         "summary": "Gets all Views for the current User.",
         "description": "Returns all Views where the current User is a member of at least one of it's Teams.",
         "operationId": "getMyViews",
@@ -4266,9 +4078,7 @@
     },
     "/api/views/actions/import": {
       "post": {
-        "tags": [
-          "View"
-        ],
+        "tags": ["View"],
         "summary": "Imports Views.",
         "description": "Imports the provided Views",
         "operationId": "importViews",
@@ -4336,9 +4146,7 @@
     },
     "/api/view-memberships/{id}": {
       "get": {
-        "tags": [
-          "ViewMembership"
-        ],
+        "tags": ["ViewMembership"],
         "summary": "Gets a specific View Membership by id.",
         "description": "Returns the View Membership with the id specified.",
         "operationId": "getViewMembership",
@@ -4379,9 +4187,7 @@
     },
     "/api/users/{userId}/view-memberships": {
       "get": {
-        "tags": [
-          "ViewMembership"
-        ],
+        "tags": ["ViewMembership"],
         "summary": "Gets all View Memberships for a User.",
         "description": "Returns all View Memberships for the specified User.",
         "operationId": "getViewMemberships",
@@ -4425,9 +4231,7 @@
     },
     "/api/webhooks/subscribe": {
       "post": {
-        "tags": [
-          "Webhook"
-        ],
+        "tags": ["Webhook"],
         "summary": "Subscribes to an event.",
         "description": "Creates a subscription to send specified events to the target.",
         "operationId": "createWebhookSubscription",
@@ -4466,9 +4270,7 @@
     },
     "/api/webhooks/{id}": {
       "delete": {
-        "tags": [
-          "Webhook"
-        ],
+        "tags": ["Webhook"],
         "summary": "Deletes a Webhook Subscription.",
         "description": "Deletes the Webhook Subscription with the specified id.",
         "operationId": "deleteWebhookSubscription",
@@ -4500,9 +4302,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Webhook"
-        ],
+        "tags": ["Webhook"],
         "summary": "Updates a Webhook Subscription.",
         "description": "Updates a Webhook Subscription with the attributes specified.",
         "operationId": "updateWebhookSubscription",
@@ -4550,9 +4350,7 @@
         }
       },
       "patch": {
-        "tags": [
-          "Webhook"
-        ],
+        "tags": ["Webhook"],
         "summary": "Partially updates a Webhook Subscription.",
         "description": "Partially updates a Webhook Subscription with the attributes specified.",
         "operationId": "partialUpdateWebhookSubscription",
@@ -4602,9 +4400,7 @@
     },
     "/api/webhooks": {
       "get": {
-        "tags": [
-          "Webhook"
-        ],
+        "tags": ["Webhook"],
         "summary": "Gets all Webhook Subscriptions in the system.",
         "description": "Returns a list of all of the Webhook Subscriptions in the system.",
         "operationId": "getAllWebhooks",
@@ -4639,9 +4435,7 @@
   "components": {
     "schemas": {
       "Application": {
-        "required": [
-          "viewId"
-        ],
+        "required": ["viewId"],
         "type": "object",
         "properties": {
           "id": {
@@ -4757,10 +4551,7 @@
         "additionalProperties": false
       },
       "ArchiveType": {
-        "enum": [
-          "zip",
-          "tgz"
-        ],
+        "enum": ["zip", "tgz"],
         "type": "string"
       },
       "CloneViewCommand": {
@@ -4778,9 +4569,7 @@
         "additionalProperties": false
       },
       "CreateApplicationCommand": {
-        "required": [
-          "viewId"
-        ],
+        "required": ["viewId"],
         "type": "object",
         "properties": {
           "name": {
@@ -4817,10 +4606,7 @@
         "additionalProperties": false
       },
       "CreateApplicationInstanceCommand": {
-        "required": [
-          "applicationId",
-          "teamId"
-        ],
+        "required": ["applicationId", "teamId"],
         "type": "object",
         "properties": {
           "teamId": {
@@ -4998,9 +4784,7 @@
         "additionalProperties": false
       },
       "EditApplicationCommand": {
-        "required": [
-          "viewId"
-        ],
+        "required": ["viewId"],
         "type": "object",
         "properties": {
           "name": {
@@ -5037,10 +4821,7 @@
         "additionalProperties": false
       },
       "EditApplicationInstanceCommand": {
-        "required": [
-          "applicationId",
-          "teamId"
-        ],
+        "required": ["applicationId", "teamId"],
         "type": "object",
         "properties": {
           "teamId": {
@@ -5204,10 +4985,7 @@
         "additionalProperties": false
       },
       "EventType": {
-        "enum": [
-          "ViewCreated",
-          "ViewDeleted"
-        ],
+        "enum": ["ViewCreated", "ViewDeleted"],
         "type": "string"
       },
       "FileModel": {
@@ -5237,11 +5015,7 @@
         "additionalProperties": false
       },
       "HealthStatus": {
-        "enum": [
-          "Unhealthy",
-          "Degraded",
-          "Healthy"
-        ],
+        "enum": ["Unhealthy", "Degraded", "Healthy"],
         "type": "string"
       },
       "ImportApplicationTemplatesResult": {
@@ -5280,10 +5054,7 @@
         "additionalProperties": false
       },
       "ImportViewFailureType": {
-        "enum": [
-          "ViewExists",
-          "Other"
-        ],
+        "enum": ["ViewExists", "Other"],
         "type": "string"
       },
       "ImportViewsResult": {
@@ -5361,22 +5132,11 @@
         "additionalProperties": false
       },
       "NotificationPriority": {
-        "enum": [
-          "Normal",
-          "Elevated",
-          "High",
-          "System"
-        ],
+        "enum": ["Normal", "Elevated", "High", "System"],
         "type": "string"
       },
       "NotificationType": {
-        "enum": [
-          "View",
-          "Team",
-          "User",
-          "Application",
-          "Admin"
-        ],
+        "enum": ["View", "Team", "User", "Application", "Admin"],
         "type": "string"
       },
       "Permission": {
@@ -5425,7 +5185,7 @@
             "nullable": true
           }
         },
-        "additionalProperties": { }
+        "additionalProperties": {}
       },
       "Role": {
         "type": "object",
@@ -5737,11 +5497,7 @@
         "additionalProperties": false
       },
       "TeamPermission": {
-        "enum": [
-          "ViewTeam",
-          "EditTeam",
-          "ManageTeam"
-        ],
+        "enum": ["ViewTeam", "EditTeam", "ManageTeam"],
         "type": "string"
       },
       "TeamPermissionModel": {
@@ -5937,18 +5693,11 @@
         "additionalProperties": false
       },
       "ViewPermission": {
-        "enum": [
-          "ViewView",
-          "EditView",
-          "ManageView"
-        ],
+        "enum": ["ViewView", "EditView", "ManageView"],
         "type": "string"
       },
       "ViewStatus": {
-        "enum": [
-          "Active",
-          "Inactive"
-        ],
+        "enum": ["Active", "Inactive"],
         "type": "string"
       },
       "WebhookEvent": {
@@ -6091,9 +5840,7 @@
   },
   "security": [
     {
-      "oauth2": [
-        "player"
-      ]
+      "oauth2": ["player"]
     }
   ]
 }

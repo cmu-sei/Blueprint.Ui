@@ -14,7 +14,12 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const PAGE: MselPage = { id: 'page-1', mselId: 'msel-1', name: 'Read Ahead', content: '<p>Welcome to the exercise</p>' };
+const PAGE: MselPage = {
+  id: 'page-1',
+  mselId: 'msel-1',
+  name: 'Read Ahead',
+  content: '<p>Welcome to the exercise</p>',
+};
 
 async function renderMselPage() {
   const pageApi = {
@@ -27,7 +32,13 @@ async function renderMselPage() {
     providers: [
       { provide: MselPageService, useValue: pageApi },
       { provide: ActivatedRoute, useValue: route },
-      { provide: ComnSettingsService, useValue: { settings: { AppTitle: 'Blueprint' } } satisfies Pick<ComnSettingsService, 'settings'> },
+      {
+        provide: ComnSettingsService,
+        useValue: { settings: { AppTitle: 'Blueprint' } } satisfies Pick<
+          ComnSettingsService,
+          'settings'
+        >,
+      },
       // angular-editor injects HttpClient for its image upload.
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -60,6 +71,8 @@ describe('MselPageComponent', () => {
     expect(fixture.componentInstance).toBeInstanceOf(MselPageComponent);
     expect(pageApi.getMselPage).toHaveBeenCalledWith('page-1');
     expect(fixture.nativeElement).toHaveTextContent('Welcome to the exercise');
-    expect(document.getElementById('appTitle')).toHaveTextContent('Blueprint MSEL Page');
+    expect(document.getElementById('appTitle')).toHaveTextContent(
+      'Blueprint MSEL Page',
+    );
   });
 });

@@ -14,7 +14,10 @@ import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { ComnAuthQuery, ComnAuthService, Theme } from '@cmusei/crucible-common';
-import { SystemPermission, SystemPermissionsService } from 'src/app/generated/blueprint.api';
+import {
+  SystemPermission,
+  SystemPermissionsService,
+} from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { CurrentUserStore } from 'src/app/data/user/user.store';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
@@ -23,7 +26,10 @@ import { TopbarView } from './topbar.models';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
 import { PresenceBarComponent } from '../presence-bar/presence-bar.component';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 @Component({ selector: 'app-presence-bar', template: '' })
 class PresenceBarStubComponent {}
@@ -36,12 +42,20 @@ async function renderTopbar(
     logout?: ComnAuthService['logout'];
   } = {},
 ) {
-  const { permissions = [], topbarView = TopbarView.BLUEPRINT_HOME, userName = 'Alice Analyst' } =
-    overrides;
+  const {
+    permissions = [],
+    topbarView = TopbarView.BLUEPRINT_HOME,
+    userName = 'Alice Analyst',
+  } = overrides;
   const logout = overrides.logout ?? vi.fn(() => Promise.resolve());
   const setUserTheme = vi.fn();
-  const auth: Pick<ComnAuthService, 'logout' | 'setUserTheme'> = { logout, setUserTheme };
-  const authQuery: Pick<ComnAuthQuery, 'userTheme$'> = { userTheme$: of(Theme.LIGHT) };
+  const auth: Pick<ComnAuthService, 'logout' | 'setUserTheme'> = {
+    logout,
+    setUserTheme,
+  };
+  const authQuery: Pick<ComnAuthQuery, 'userTheme$'> = {
+    userTheme$: of(Theme.LIGHT),
+  };
   // TopbarComponent loads the permissions itself in ngOnInit, so the real
   // service is provided over the stubbed endpoint, without priming it.
   const permissionApis = permissionApiStubs({ system: permissions });
@@ -58,7 +72,10 @@ async function renderTopbar(
       { replace: PresenceBarComponent, with: PresenceBarStubComponent },
     ],
     providers: [
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: ComnAuthService, useValue: auth },
       { provide: ComnAuthQuery, useValue: authQuery },
@@ -96,8 +113,12 @@ describe('TopbarComponent', () => {
   it('shows the title and the signed-in user', async () => {
     await renderTopbar();
 
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Blueprint');
-    expect(screen.getByRole('button', { name: 'Alice Analyst' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Blueprint',
+    );
+    expect(
+      screen.getByRole('button', { name: 'Alice Analyst' }),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -107,15 +128,25 @@ describe('TopbarComponent', () => {
    */
   it('hides Administration without a View permission', async () => {
     const { permissionApis } = await renderTopbar({
-      permissions: Object.values(SystemPermission).filter((p) => !p.startsWith('View')),
+      permissions: Object.values(SystemPermission).filter(
+        (p) => !p.startsWith('View'),
+      ),
     });
-    expect(permissionApis.systemPermissions.getMySystemPermissions).toHaveBeenCalledTimes(1);
+    expect(
+      permissionApis.systemPermissions.getMySystemPermissions,
+    ).toHaveBeenCalledTimes(1);
 
     await openUserMenu();
 
-    expect(screen.getByRole('menuitem', { name: 'Logout' })).toBeInTheDocument();
-    expect(screen.queryByRole('menuitem', { name: 'Administration' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('menuitem', { name: 'Exit Administration' })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: 'Logout' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('menuitem', { name: 'Administration' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('menuitem', { name: 'Exit Administration' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -126,7 +157,9 @@ describe('TopbarComponent', () => {
   it('shows Administration with a View permission', async () => {
     await renderTopbar({ permissions: [SystemPermission.ViewUsers] });
     const router = TestBed.inject(Router);
-    const navigateByUrl = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    const navigateByUrl = vi
+      .spyOn(router, 'navigateByUrl')
+      .mockResolvedValue(true);
 
     const user = await openUserMenu();
     await user.click(screen.getByRole('menuitem', { name: 'Administration' }));
@@ -148,8 +181,12 @@ describe('TopbarComponent', () => {
 
     await openUserMenu();
 
-    expect(screen.getByRole('menuitem', { name: 'Exit Administration' })).toBeInTheDocument();
-    expect(screen.queryByRole('menuitem', { name: 'Administration' })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: 'Exit Administration' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('menuitem', { name: 'Administration' }),
+    ).not.toBeInTheDocument();
   });
 
   /**

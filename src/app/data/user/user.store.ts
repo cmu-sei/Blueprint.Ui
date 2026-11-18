@@ -13,8 +13,8 @@ import {
 import { User } from 'src/app/generated/blueprint.api';
 import { UserUi } from './user.model';
 
-export interface UsersState extends EntityState<User> { }
-export interface UserUIState extends EntityState<UserUi> { }
+export interface UsersState extends EntityState<User> {}
+export interface UserUIState extends EntityState<UserUi> {}
 
 export const initialUserUiState: UserUi = {
   isSelected: false,

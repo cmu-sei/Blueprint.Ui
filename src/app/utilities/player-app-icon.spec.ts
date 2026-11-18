@@ -33,9 +33,12 @@ describe('playerAppIconUrl', () => {
    * Interacts with: playerAppIconUrl.
    * Data: https://cdn.example/mail.png and http://cdn.example/mail.png.
    */
-  it.each(['https://cdn.example/mail.png', 'http://cdn.example/mail.png'])('keeps the absolute URL %s', (icon) => {
-    expect(playerAppIconUrl(icon, SETTINGS)).toBe(icon);
-  });
+  it.each(['https://cdn.example/mail.png', 'http://cdn.example/mail.png'])(
+    'keeps the absolute URL %s',
+    (icon) => {
+      expect(playerAppIconUrl(icon, SETTINGS)).toBe(icon);
+    },
+  );
 
   /**
    * Verifies: each app URL placeholder is replaced with its setting, trailing slashes trimmed, and {blueprintUrl} with this page's origin.
@@ -51,7 +54,9 @@ describe('playerAppIconUrl', () => {
     { placeholder: '{vmUrl}', base: 'http://vm.example' },
     { placeholder: '{blueprintUrl}', base: window.location.origin },
   ])('resolves $placeholder', ({ placeholder, base }) => {
-    expect(playerAppIconUrl(`${placeholder}/assets/icon.png`, SETTINGS)).toBe(`${base}/assets/icon.png`);
+    expect(playerAppIconUrl(`${placeholder}/assets/icon.png`, SETTINGS)).toBe(
+      `${base}/assets/icon.png`,
+    );
   });
 
   /**
@@ -59,8 +64,14 @@ describe('playerAppIconUrl', () => {
    * Interacts with: playerAppIconUrl.
    * Data: PlayerUrl http://player.example/; 'assets/img/mail.png', '/assets/img/mail.png' and '//assets/img/mail.png'.
    */
-  it.each(['assets/img/mail.png', '/assets/img/mail.png', '//assets/img/mail.png'])('resolves the relative path %s under the Player UI', (icon) => {
-    expect(playerAppIconUrl(icon, SETTINGS)).toBe('http://player.example/assets/img/mail.png');
+  it.each([
+    'assets/img/mail.png',
+    '/assets/img/mail.png',
+    '//assets/img/mail.png',
+  ])('resolves the relative path %s under the Player UI', (icon) => {
+    expect(playerAppIconUrl(icon, SETTINGS)).toBe(
+      'http://player.example/assets/img/mail.png',
+    );
   });
 
   /**
@@ -69,9 +80,11 @@ describe('playerAppIconUrl', () => {
    * Data: settings with only PlayerUrl; icon '{citeUrl}/assets/icon.png'.
    */
   it('resolves a placeholder with no setting under the Player UI', () => {
-    expect(playerAppIconUrl('{citeUrl}/assets/icon.png', { PlayerUrl: 'http://player.example' })).toBe(
-      'http://player.example/assets/icon.png',
-    );
+    expect(
+      playerAppIconUrl('{citeUrl}/assets/icon.png', {
+        PlayerUrl: 'http://player.example',
+      }),
+    ).toBe('http://player.example/assets/icon.png');
   });
 
   /**
@@ -81,8 +94,11 @@ describe('playerAppIconUrl', () => {
    */
   it('replaces only the first occurrence of a placeholder', () => {
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
-    expect(playerAppIconUrl('{playerUrl}/icon.png?fallback={playerUrl}/default.png', SETTINGS)).toBe(
-      'http://player.example/icon.png?fallback={playerUrl}/default.png',
-    );
+    expect(
+      playerAppIconUrl(
+        '{playerUrl}/icon.png?fallback={playerUrl}/default.png',
+        SETTINGS,
+      ),
+    ).toBe('http://player.example/icon.png?fallback={playerUrl}/default.png');
   });
 });

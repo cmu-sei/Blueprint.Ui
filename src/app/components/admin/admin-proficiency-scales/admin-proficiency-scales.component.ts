@@ -1,11 +1,41 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, OnDestroy, OnInit, inject, input, viewChild } from '@angular/core';
-import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
+import {
+  UntypedFormControl,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatTable, MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
-import { animate, state, style, transition, trigger } from '@angular/animations';
+import {
+  MatTable,
+  MatTableDataSource,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
+import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
 import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import {
@@ -28,17 +58,45 @@ import { MatIconButton } from '@angular/material/button';
 import { MatRipple } from '@angular/material/core';
 
 @Component({
-    selector: 'app-admin-proficiency-scales',
-    templateUrl: './admin-proficiency-scales.component.html',
-    styleUrls: ['./admin-proficiency-scales.component.scss'],
-    animations: [
-        trigger('detailExpand', [
-            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-            state('expanded', style({ height: '*', visibility: 'visible' })),
-            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-        ]),
-    ],
-    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatRipple]
+  selector: 'app-admin-proficiency-scales',
+  templateUrl: './admin-proficiency-scales.component.html',
+  styleUrls: ['./admin-proficiency-scales.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state(
+        'collapsed',
+        style({ height: '0px', minHeight: '0', visibility: 'hidden' }),
+      ),
+      state('expanded', style({ height: '*', visibility: 'visible' })),
+      transition(
+        'expanded <=> collapsed',
+        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+      ),
+    ]),
+  ],
+  imports: [
+    MatIcon,
+    MatFormField,
+    MatInput,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatPaginator,
+    MatTable,
+    MatSort,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCellDef,
+    MatCell,
+    MatSortHeader,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+    MatRipple,
+  ],
 })
 export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
   private proficiencyScaleService = inject(ProficiencyScaleService);
@@ -51,7 +109,13 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
   scales: ProficiencyScale[] = [];
   scaleDataSource = new MatTableDataSource<ProficiencyScale>([]);
   scaleDisplayedColumns: string[] = ['action', 'name', 'description', 'levels'];
-  levelDisplayedColumns: string[] = ['action', 'name', 'value', 'displayOrder', 'description'];
+  levelDisplayedColumns: string[] = [
+    'action',
+    'name',
+    'value',
+    'displayOrder',
+    'description',
+  ];
   scaleSort: Sort = { active: 'name', direction: 'asc' };
   levelSort: Sort = { active: 'displayOrder', direction: 'asc' };
   readonly scaleTable = viewChild<MatTable<any>>('scaleTable');
@@ -73,9 +137,10 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
   }
 
   loadScales() {
-    this.proficiencyScaleService.getProficiencyScales()
+    this.proficiencyScaleService
+      .getProficiencyScales()
       .pipe(take(1))
-      .subscribe(scales => {
+      .subscribe((scales) => {
         this.scales = scales;
         this.applySorting();
       });
@@ -87,7 +152,8 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
     if (!file) {
       return;
     }
-    this.proficiencyScaleService.uploadJsonProficiencyScales(file, 'events', true)
+    this.proficiencyScaleService
+      .uploadJsonProficiencyScales(file, 'events', true)
       .subscribe((event: any) => {
         if (event instanceof HttpResponse && event.status === 200) {
           this.loadScales();
@@ -129,7 +195,7 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
       },
       (err) => {
         window.alert('Error downloading file');
-      }
+      },
     );
   }
 
@@ -139,9 +205,11 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
     let filtered = [...this.scales];
     if (this.filterString) {
       const term = this.filterString.toLowerCase();
-      filtered = filtered.filter(s =>
-        s.name?.toLowerCase().includes(term) ||
-        s.description?.toLowerCase().includes(term));
+      filtered = filtered.filter(
+        (s) =>
+          s.name?.toLowerCase().includes(term) ||
+          s.description?.toLowerCase().includes(term),
+      );
     }
     this.scaleDataSource.data = filtered.sort((a, b) => {
       let aVal: string;
@@ -171,7 +239,9 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
     this.scaleTable().renderRows();
   }
 
-  getLevelDataSource(scale: ProficiencyScale): MatTableDataSource<ProficiencyLevel> {
+  getLevelDataSource(
+    scale: ProficiencyScale,
+  ): MatTableDataSource<ProficiencyLevel> {
     const levels = scale.proficiencyLevels || [];
     const col = this.levelSort.active;
     const isAsc = this.levelSort.direction !== 'desc';
@@ -191,14 +261,17 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
     if (!scale) {
       scale = {};
     }
-    const dialogRef = this.dialog.open(AdminProficiencyScaleEditDialogComponent, {
-      minWidth: '400px',
-      maxWidth: '90vw',
-      width: 'auto',
-      data: {
-        scale: { ...scale },
+    const dialogRef = this.dialog.open(
+      AdminProficiencyScaleEditDialogComponent,
+      {
+        minWidth: '400px',
+        maxWidth: '90vw',
+        width: 'auto',
+        data: {
+          scale: { ...scale },
+        },
       },
-    });
+    );
     dialogRef.componentInstance.editComplete.subscribe((result) => {
       if (result.saveChanges && result.scale) {
         this.saveScale(result.scale);
@@ -209,13 +282,15 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
 
   saveScale(scale: ProficiencyScale) {
     if (scale.id) {
-      this.proficiencyScaleService.updateProficiencyScale(scale.id, scale)
+      this.proficiencyScaleService
+        .updateProficiencyScale(scale.id, scale)
         .pipe(take(1))
         .subscribe(() => {
           this.loadScales();
         });
     } else {
-      this.proficiencyScaleService.createProficiencyScale(scale)
+      this.proficiencyScaleService
+        .createProficiencyScale(scale)
         .pipe(take(1))
         .subscribe(() => {
           this.loadScales();
@@ -225,12 +300,20 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
 
   deleteScale(scale: ProficiencyScale) {
     this.dialogService
-      .confirm({ title: 'Delete Proficiency Scale', message: 'Are you sure that you want to delete ' + scale.name + '?', confirmText: 'Delete', cancelText: 'Cancel' }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Delete Proficiency Scale',
+        message: 'Are you sure that you want to delete ' + scale.name + '?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
-          this.proficiencyScaleService.deleteProficiencyScale(scale.id)
+          this.proficiencyScaleService
+            .deleteProficiencyScale(scale.id)
             .pipe(take(1))
             .subscribe(() => {
-              this.scales = this.scales.filter(s => s.id !== scale.id);
+              this.scales = this.scales.filter((s) => s.id !== scale.id);
               this.applySorting();
               if (this.expandedScaleId === scale.id) {
                 this.expandedScaleId = '';
@@ -246,14 +329,17 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
         proficiencyScaleId: scale.id,
       };
     }
-    const dialogRef = this.dialog.open(AdminProficiencyLevelEditDialogComponent, {
-      minWidth: '400px',
-      maxWidth: '90vw',
-      width: 'auto',
-      data: {
-        level: { ...level },
+    const dialogRef = this.dialog.open(
+      AdminProficiencyLevelEditDialogComponent,
+      {
+        minWidth: '400px',
+        maxWidth: '90vw',
+        width: 'auto',
+        data: {
+          level: { ...level },
+        },
       },
-    });
+    );
     dialogRef.componentInstance.editComplete.subscribe((result) => {
       if (result.saveChanges && result.level) {
         this.saveLevel(scale, result.level);
@@ -264,15 +350,17 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
 
   saveLevel(scale: ProficiencyScale, level: ProficiencyLevel) {
     if (level.id) {
-      this.proficiencyLevelService.updateProficiencyLevel(level.id, level)
+      this.proficiencyLevelService
+        .updateProficiencyLevel(level.id, level)
         .pipe(take(1))
         .subscribe(() => {
           this.loadScales();
         });
     } else {
-      this.proficiencyLevelService.createProficiencyLevel(level)
+      this.proficiencyLevelService
+        .createProficiencyLevel(level)
         .pipe(take(1))
-        .subscribe(l => {
+        .subscribe((l) => {
           if (!scale.proficiencyLevels) {
             scale.proficiencyLevels = [];
           }
@@ -282,10 +370,13 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
   }
 
   deleteLevel(scale: ProficiencyScale, level: ProficiencyLevel) {
-    this.proficiencyLevelService.deleteProficiencyLevel(level.id)
+    this.proficiencyLevelService
+      .deleteProficiencyLevel(level.id)
       .pipe(take(1))
       .subscribe(() => {
-        scale.proficiencyLevels = scale.proficiencyLevels.filter(l => l.id !== level.id);
+        scale.proficiencyLevels = scale.proficiencyLevels.filter(
+          (l) => l.id !== level.id,
+        );
       });
   }
 

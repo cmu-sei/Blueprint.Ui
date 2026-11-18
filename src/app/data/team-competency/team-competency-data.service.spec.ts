@@ -4,16 +4,27 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
-import { TeamCompetency, TeamCompetencyService } from 'src/app/generated/blueprint.api';
+import {
+  TeamCompetency,
+  TeamCompetencyService,
+} from 'src/app/generated/blueprint.api';
 import { TeamCompetencyStore } from './team-competency.store';
 import { TeamCompetencyDataService } from './team-competency-data.service';
 import { TeamCompetencyQuery } from './team-competency.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function tc(overrides: Partial<TeamCompetency> = {}): TeamCompetency {
-  return { id: 'tc-1', teamId: 'team-red', competencyId: 'comp-b', ...overrides };
+  return {
+    id: 'tc-1',
+    teamId: 'team-red',
+    competencyId: 'comp-b',
+    ...overrides,
+  };
 }
 
 function setup() {
@@ -33,7 +44,8 @@ function setup() {
   };
 }
 
-const competencyIds = (list: TeamCompetency[]) => list.map((t) => t.competencyId);
+const competencyIds = (list: TeamCompetency[]) =>
+  list.map((t) => t.competencyId);
 
 describe('TeamCompetencyDataService', () => {
   beforeEach(() => {
@@ -51,9 +63,15 @@ describe('TeamCompetencyDataService', () => {
     tcApi.getMselTeamCompetencies.mockReturnValueOnce(
       of([tc(), tc({ id: 'tc-2', competencyId: 'comp-a' })]),
     );
-    tcApi.getTeamCompetencies.mockReturnValueOnce(of([tc({ id: 'tc-3', competencyId: 'comp-c' })]));
-    tcApi.getMselTeamCompetencies.mockReturnValueOnce(throwError(() => new Error('boom')));
-    tcApi.getTeamCompetencies.mockReturnValueOnce(throwError(() => new Error('boom')));
+    tcApi.getTeamCompetencies.mockReturnValueOnce(
+      of([tc({ id: 'tc-3', competencyId: 'comp-c' })]),
+    );
+    tcApi.getMselTeamCompetencies.mockReturnValueOnce(
+      throwError(() => new Error('boom')),
+    );
+    tcApi.getTeamCompetencies.mockReturnValueOnce(
+      throwError(() => new Error('boom')),
+    );
 
     service.loadByMsel('msel-1');
     expect(tcApi.getMselTeamCompetencies).toHaveBeenCalledWith('msel-1');
@@ -80,7 +98,9 @@ describe('TeamCompetencyDataService', () => {
   it('add, delete and unload keep the store in step with the API', () => {
     const { service, query, tcApi } = setup();
     tcApi.createTeamCompetency.mockReturnValueOnce(of(tc()));
-    tcApi.createTeamCompetency.mockReturnValueOnce(of(tc({ id: 'tc-2', competencyId: 'comp-a' })));
+    tcApi.createTeamCompetency.mockReturnValueOnce(
+      of(tc({ id: 'tc-2', competencyId: 'comp-a' })),
+    );
     tcApi.deleteTeamCompetency.mockReturnValue(of(null));
 
     service.add(tc({ id: undefined }));
@@ -101,22 +121,30 @@ describe('TeamCompetencyDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'add', endpoint: 'createTeamCompetency', escapes: true, call: (s: TeamCompetencyDataService) => s.add({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, tcApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(TeamCompetencyStore).setLoading(false);
-    tcApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'add',
+      endpoint: 'createTeamCompetency',
+      escapes: true,
+      call: (s: TeamCompetencyDataService) => s.add({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, tcApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(TeamCompetencyStore).setLoading(false);
+      tcApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(TeamCompetencyQuery).getValue().loading).toBe(true);
-    // With no error callback the error escapes to ErrorService, the ErrorHandler
-    // app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(TeamCompetencyQuery).getValue().loading).toBe(true);
+      // With no error callback the error escapes to ErrorService, the ErrorHandler
+      // app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete escapes to the app's global ErrorHandler.
@@ -124,19 +152,26 @@ describe('TeamCompetencyDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteTeamCompetency', call: (s: TeamCompetencyDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, tcApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    tcApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteTeamCompetency',
+      call: (s: TeamCompetencyDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, tcApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      tcApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

@@ -11,23 +11,35 @@ import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
 import { AdminProficiencyLevelEditDialogComponent } from './admin-proficiency-level-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const LEVEL = { id: 'level-1', proficiencyScaleId: 'scale-1', name: 'Novice', value: 1, displayOrder: 1, description: 'Just starting' };
+const LEVEL = {
+  id: 'level-1',
+  proficiencyScaleId: 'scale-1',
+  name: 'Novice',
+  value: 1,
+  displayOrder: 1,
+  description: 'Just starting',
+};
 
 function dialogData(overrides: Partial<typeof LEVEL> = {}) {
   return { level: { ...structuredClone(LEVEL), ...overrides } };
 }
 
 async function renderAdminProficiencyLevelEditDialog(data = dialogData()) {
-  const rendered = await renderComponent(AdminProficiencyLevelEditDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, MatFormFieldModule, MatInputModule],
-    declarations: [AdminProficiencyLevelEditDialogComponent],
-    providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
-  });
+  const rendered = await renderComponent(
+    AdminProficiencyLevelEditDialogComponent,
+    {
+      imports: [...CRUCIBLE_DIALOG_IMPORTS, MatFormFieldModule, MatInputModule],
+      declarations: [AdminProficiencyLevelEditDialogComponent],
+      providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
+    },
+  );
   // ngModel writes the values into the inputs in a microtask.
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
   const results: unknown[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results };
 }
 
@@ -40,8 +52,12 @@ describe('AdminProficiencyLevelEditDialogComponent', () => {
   it('renders with the default test providers', async () => {
     const { fixture } = await renderAdminProficiencyLevelEditDialog();
 
-    expect(fixture.componentInstance).toBeInstanceOf(AdminProficiencyLevelEditDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Edit Proficiency Level' })).toBeInTheDocument();
+    expect(fixture.componentInstance).toBeInstanceOf(
+      AdminProficiencyLevelEditDialogComponent,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Edit Proficiency Level' }),
+    ).toBeInTheDocument();
   });
 
   /**

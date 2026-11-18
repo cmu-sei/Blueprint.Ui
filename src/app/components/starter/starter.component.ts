@@ -40,10 +40,10 @@ import { AsyncPipe } from '@angular/common';
 import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
-    selector: 'app-starter',
-    templateUrl: './starter.component.html',
-    styleUrls: ['./starter.component.scss'],
-    imports: [TopbarComponent, ScenarioEventListComponent, AsyncPipe]
+  selector: 'app-starter',
+  templateUrl: './starter.component.html',
+  styleUrls: ['./starter.component.scss'],
+  imports: [TopbarComponent, ScenarioEventListComponent, AsyncPipe],
 })
 export class StarterComponent implements OnDestroy, OnInit {
   private activatedRoute = inject(ActivatedRoute);
@@ -179,10 +179,13 @@ export class StarterComponent implements OnDestroy, OnInit {
         this.loggedInUserId = cu.id;
       });
     // Load permissions
-    this.permissionDataService.load()
+    this.permissionDataService
+      .load()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
-        this.isContentDeveloper = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
+        this.isContentDeveloper = this.permissionDataService.hasPermission(
+          SystemPermission.CreateMsels,
+        );
       });
     // Start SignalR connection
     this.signalRService

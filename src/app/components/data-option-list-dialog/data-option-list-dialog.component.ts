@@ -6,19 +6,64 @@ import { Component, inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { DataOption } from 'src/app/generated/blueprint.api';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective, CrucibleDialogActionsDirective } from '@cmusei/crucible-common';
-import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+  CrucibleDialogActionsDirective,
+} from '@cmusei/crucible-common';
+import {
+  MatFormField,
+  MatLabel,
+  MatInput,
+  MatSuffix,
+} from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
-import { MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+  MatTable,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 
 @Component({
-    selector: 'app-data-option-list-dialog',
-    templateUrl: './data-option-list-dialog.component.html',
-    styleUrls: ['./data-option-list-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatIcon, MatTooltip, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, CrucibleDialogActionsDirective, MatButton]
+  selector: 'app-data-option-list-dialog',
+  templateUrl: './data-option-list-dialog.component.html',
+  styleUrls: ['./data-option-list-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    FormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatIcon,
+    MatTooltip,
+    MatTable,
+    MatSort,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCellDef,
+    MatCell,
+    MatSortHeader,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+    CrucibleDialogActionsDirective,
+    MatButton,
+  ],
 })
 export class DataOptionListDialogComponent {
   dialogRef = inject<MatDialogRef<DataOptionListDialogComponent>>(MatDialogRef);
@@ -30,7 +75,7 @@ export class DataOptionListDialogComponent {
     onDelete: (option: DataOption) => void;
     onAdd: () => void;
     onImport: () => void;
-}>(MAT_DIALOG_DATA);
+  }>(MAT_DIALOG_DATA);
 
   searchText = '';
   sortActive = 'displayOrder';
@@ -47,9 +92,10 @@ export class DataOptionListDialogComponent {
       return this.sortedOptions;
     }
     const search = this.searchText.toLowerCase();
-    return this.sortedOptions.filter(option =>
-      option.optionName?.toLowerCase().includes(search) ||
-      option.optionValue?.toLowerCase().includes(search)
+    return this.sortedOptions.filter(
+      (option) =>
+        option.optionName?.toLowerCase().includes(search) ||
+        option.optionValue?.toLowerCase().includes(search),
     );
   }
 

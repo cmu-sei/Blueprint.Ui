@@ -21,12 +21,20 @@ async function renderTeamAdd() {
     ],
   };
   const rendered = await renderComponent(TeamAddDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule],
+    imports: [
+      ...CRUCIBLE_DIALOG_IMPORTS,
+      MatButtonModule,
+      MatFormFieldModule,
+      MatIconModule,
+      MatInputModule,
+    ],
     declarations: [TeamAddDialogComponent],
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
   });
   const results: unknown[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, results };
 }
 
@@ -40,8 +48,12 @@ describe('TeamAddDialogComponent', () => {
     const { fixture } = await renderTeamAdd();
 
     expect(fixture.componentInstance).toBeInstanceOf(TeamAddDialogComponent);
-    expect(screen.getByRole('button', { name: 'BLUE - Blue Cell' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'RED - Red Cell' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'BLUE - Blue Cell' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'RED - Red Cell' }),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -54,7 +66,9 @@ describe('TeamAddDialogComponent', () => {
     const user = userEvent.setup();
 
     await user.type(screen.getByPlaceholderText('Search'), 'red');
-    expect(screen.queryByRole('button', { name: 'BLUE - Blue Cell' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'BLUE - Blue Cell' }),
+    ).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'RED - Red Cell' }));
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
 

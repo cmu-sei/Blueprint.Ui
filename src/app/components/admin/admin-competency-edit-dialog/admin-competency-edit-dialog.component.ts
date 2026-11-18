@@ -4,17 +4,29 @@
 
 import { Component, inject, output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
 import { MatFormField, MatLabel, MatInput } from '@angular/material/input';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { FormsModule } from '@angular/forms';
 
 @Component({
-    selector: 'app-admin-competency-edit-dialog',
-    templateUrl: './admin-competency-edit-dialog.component.html',
-    styleUrls: ['./admin-competency-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatSelect, MatOption, FormsModule, MatInput]
+  selector: 'app-admin-competency-edit-dialog',
+  templateUrl: './admin-competency-edit-dialog.component.html',
+  styleUrls: ['./admin-competency-edit-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatFormField,
+    MatLabel,
+    MatSelect,
+    MatOption,
+    FormsModule,
+    MatInput,
+  ],
 })
 export class AdminCompetencyEditDialogComponent {
   data = inject(MAT_DIALOG_DATA);
@@ -26,10 +38,10 @@ export class AdminCompetencyEditDialogComponent {
   availableParents: { id: string; label: string }[] = [];
   private typePrefixMap: Record<string, string> = {
     'Work Role': 'WRL-',
-    'Task': 'T',
-    'Knowledge': 'K',
-    'Skill': 'S',
-    'Ability': 'A',
+    Task: 'T',
+    Knowledge: 'K',
+    Skill: 'S',
+    Ability: 'A',
   };
 
   constructor() {
@@ -52,7 +64,8 @@ export class AdminCompetencyEditDialogComponent {
       this.data.competency.idNumber = newPrefix;
     } else if (oldPrefix && newPrefix && current.startsWith(oldPrefix)) {
       // Both types have prefixes — swap old for new
-      this.data.competency.idNumber = newPrefix + current.substring(oldPrefix.length);
+      this.data.competency.idNumber =
+        newPrefix + current.substring(oldPrefix.length);
     } else if (!oldPrefix && newPrefix && !current) {
       // Old type had no prefix, new does, field empty — set prefix
       this.data.competency.idNumber = newPrefix;

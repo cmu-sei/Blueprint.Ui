@@ -39,21 +39,46 @@ import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
 
 const ME = 'user-me';
-const BLUE_UNIT: Unit = { id: 'unit-1', name: 'Blue Cell', shortName: 'BLUE', users: [{ id: 'user-a', name: 'Alice' }] };
-const BLUE_CONTRIBUTES: MselUnit = { id: 'mu-1', mselId: 'msel-1', unitId: 'unit-1', unit: BLUE_UNIT };
-const ALICE_EDITS: UserMselRole = { id: 'umr-a', userId: 'user-a', mselId: 'msel-1', role: MselRole.Editor };
-const ALL_BUT_MANAGE_MSELS = Object.values(SystemPermission).filter((p) => p !== SystemPermission.ManageMsels);
+const BLUE_UNIT: Unit = {
+  id: 'unit-1',
+  name: 'Blue Cell',
+  shortName: 'BLUE',
+  users: [{ id: 'user-a', name: 'Alice' }],
+};
+const BLUE_CONTRIBUTES: MselUnit = {
+  id: 'mu-1',
+  mselId: 'msel-1',
+  unitId: 'unit-1',
+  unit: BLUE_UNIT,
+};
+const ALICE_EDITS: UserMselRole = {
+  id: 'umr-a',
+  userId: 'user-a',
+  mselId: 'msel-1',
+  role: MselRole.Editor,
+};
+const ALL_BUT_MANAGE_MSELS = Object.values(SystemPermission).filter(
+  (p) => p !== SystemPermission.ManageMsels,
+);
 
 function msel(myRoles: MselRole[] = []): Msel {
   return {
     id: 'msel-1',
     name: 'Exercise Alpha',
     createdBy: 'someone-else',
-    userMselRoles: myRoles.map((role, i) => ({ id: `umr-me-${i}`, userId: ME, mselId: 'msel-1', role })),
+    userMselRoles: myRoles.map((role, i) => ({
+      id: `umr-me-${i}`,
+      userId: ME,
+      mselId: 'msel-1',
+      role,
+    })),
   };
 }
 
-function seeded<S extends { set(entities: unknown[]): void }>(Store: new () => S, entities: unknown[]) {
+function seeded<S extends { set(entities: unknown[]): void }>(
+  Store: new () => S,
+  entities: unknown[],
+) {
   return {
     provide: Store,
     useFactory: () => {
@@ -64,16 +89,35 @@ function seeded<S extends { set(entities: unknown[]): void }>(Store: new () => S
   };
 }
 
-async function renderContributors(overrides: { permissions?: SystemPermission[]; myRoles?: MselRole[]; mselUnits?: MselUnit[] } = {}) {
-  const { permissions = [], myRoles = [], mselUnits = [BLUE_CONTRIBUTES] } = overrides;
+async function renderContributors(
+  overrides: {
+    permissions?: SystemPermission[];
+    myRoles?: MselRole[];
+    mselUnits?: MselUnit[];
+  } = {},
+) {
+  const {
+    permissions = [],
+    myRoles = [],
+    mselUnits = [BLUE_CONTRIBUTES],
+  } = overrides;
   const unitApi = {
-    getUnits: vi.fn(() => of(structuredClone([BLUE_UNIT, { id: 'unit-2', name: 'Red Cell', shortName: 'RED', users: [] }]))),
+    getUnits: vi.fn(() =>
+      of(
+        structuredClone([
+          BLUE_UNIT,
+          { id: 'unit-2', name: 'Red Cell', shortName: 'RED', users: [] },
+        ]),
+      ),
+    ),
   } satisfies ApiStub<UnitService>;
   const mselUnitApi = {
     deleteMselUnit: vi.fn(() => of<unknown>(null)),
   } satisfies ApiStub<MselUnitService>;
   const roleApi = {
-    createUserMselRole: vi.fn((umr: UserMselRole) => of<UserMselRole>({ ...umr, id: 'umr-new' })),
+    createUserMselRole: vi.fn((umr: UserMselRole) =>
+      of<UserMselRole>({ ...umr, id: 'umr-new' }),
+    ),
   } satisfies ApiStub<UserMselRoleService>;
   // The user confirms every dialog.
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
@@ -96,7 +140,10 @@ async function renderContributors(overrides: { permissions?: SystemPermission[];
     ],
     declarations: [MselContributorsComponent],
     providers: [
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: UnitService, useValue: unitApi },
       { provide: MselUnitService, useValue: mselUnitApi },
@@ -130,7 +177,11 @@ async function expandBlue() {
 describe('MselContributorsComponent', () => {
   // The users who may manage contributors: ManageMsels, or the Owner role.
   const MANAGERS = [
-    { label: 'with ManageMsels', permissions: [SystemPermission.ManageMsels], myRoles: [] },
+    {
+      label: 'with ManageMsels',
+      permissions: [SystemPermission.ManageMsels],
+      myRoles: [],
+    },
     { label: 'as the MSEL owner', permissions: [], myRoles: [MselRole.Owner] },
   ];
 
@@ -139,31 +190,47 @@ describe('MselContributorsComponent', () => {
    * Interacts with: real PermissionDataService over SystemPermissionsService (stub), MselPlus.hasRole, UnitService.getUnits (stub).
    * Data: ManageMsels with no role; or the Owner role. Blue Cell contributes.
    */
-  it.each(MANAGERS)('offers adding and removing units $label', async ({ permissions, myRoles }) => {
-    const { unitApi } = await renderContributors({ permissions, myRoles });
+  it.each(MANAGERS)(
+    'offers adding and removing units $label',
+    async ({ permissions, myRoles }) => {
+      const { unitApi } = await renderContributors({ permissions, myRoles });
 
-    expect(unitApi.getUnits).toHaveBeenCalledTimes(1);
-    expect(within(table()).getByTitle('Add a contributor unit')).toBeInTheDocument();
-    expect(within(table()).getByTitle('Remove unit from MSEL')).toBeInTheDocument();
-  });
+      expect(unitApi.getUnits).toHaveBeenCalledTimes(1);
+      expect(
+        within(table()).getByTitle('Add a contributor unit'),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).getByTitle('Remove unit from MSEL'),
+      ).toBeInTheDocument();
+    },
+  );
 
   /**
    * Verifies: with ManageMsels, or as the MSEL owner, a member's MSEL roles can be changed.
    * Interacts with: the expanded unit's role select, UserMselRoleService.createUserMselRole (stub).
    * Data: ManageMsels with no role; or the Owner role. Alice, an Editor in Blue Cell, is made an Approver too.
    */
-  it.each(MANAGERS)('changes a member role $label', async ({ permissions, myRoles }) => {
-    const { roleApi } = await renderContributors({ permissions, myRoles });
+  it.each(MANAGERS)(
+    'changes a member role $label',
+    async ({ permissions, myRoles }) => {
+      const { roleApi } = await renderContributors({ permissions, myRoles });
 
-    const user = await expandBlue();
-    const roles = screen.getByLabelText('MSEL Roles');
-    expect(roles).toHaveAttribute('aria-disabled', 'false');
-    await user.click(roles);
-    // Scoped to the open listbox: a role query with a name over the whole page is slow.
-    await user.click(within(screen.getByRole('listbox')).getByText('Approver'));
+      const user = await expandBlue();
+      const roles = screen.getByLabelText('MSEL Roles');
+      expect(roles).toHaveAttribute('aria-disabled', 'false');
+      await user.click(roles);
+      // Scoped to the open listbox: a role query with a name over the whole page is slow.
+      await user.click(
+        within(screen.getByRole('listbox')).getByText('Approver'),
+      );
 
-    expect(roleApi.createUserMselRole).toHaveBeenCalledWith({ userId: 'user-a', mselId: 'msel-1', role: MselRole.Approver });
-  });
+      expect(roleApi.createUserMselRole).toHaveBeenCalledWith({
+        userId: 'user-a',
+        mselId: 'msel-1',
+        role: MselRole.Approver,
+      });
+    },
+  );
 
   /**
    * Verifies: without ManageMsels and not the owner the contributors are read-only: no add or remove, and the role select is disabled.
@@ -171,13 +238,23 @@ describe('MselContributorsComponent', () => {
    * Data: every permission but ManageMsels (near miss: EditMsels); MSEL roles Editor and Approver.
    */
   it('lists contributors read-only without ManageMsels or ownership', async () => {
-    await renderContributors({ permissions: ALL_BUT_MANAGE_MSELS, myRoles: [MselRole.Editor, MselRole.Approver] });
+    await renderContributors({
+      permissions: ALL_BUT_MANAGE_MSELS,
+      myRoles: [MselRole.Editor, MselRole.Approver],
+    });
 
-    expect(within(table()).queryByTitle('Add a contributor unit')).not.toBeInTheDocument();
-    expect(within(table()).queryByTitle('Remove unit from MSEL')).not.toBeInTheDocument();
+    expect(
+      within(table()).queryByTitle('Add a contributor unit'),
+    ).not.toBeInTheDocument();
+    expect(
+      within(table()).queryByTitle('Remove unit from MSEL'),
+    ).not.toBeInTheDocument();
     await expandBlue();
     expect(screen.getByText('Alice')).toBeInTheDocument();
-    expect(screen.getByLabelText('MSEL Roles')).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByLabelText('MSEL Roles')).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
   });
 
   /**
@@ -186,16 +263,56 @@ describe('MselContributorsComponent', () => {
    * Data: ViewMsels; or Viewer; or the user in Blue Cell with no role (near miss); or neither (near miss: every other permission).
    */
   it.each([
-    { label: 'with ViewMsels', permissions: [SystemPermission.ViewMsels], myRoles: [], inUnit: false, expected: true },
-    { label: 'as a Viewer', permissions: [], myRoles: [MselRole.Viewer], inUnit: true, expected: true },
-    { label: 'as a contributing unit member without a role', permissions: [], myRoles: [], inUnit: true, expected: false },
-    { label: 'otherwise', permissions: Object.values(SystemPermission).filter((p) => p !== SystemPermission.ViewMsels), myRoles: [], inUnit: false, expected: false },
-  ])('canViewMsel (unused) is $expected $label', async ({ permissions, myRoles, inUnit, expected }) => {
-    const units = inUnit ? [{ ...BLUE_CONTRIBUTES, unit: { ...BLUE_UNIT, users: [{ id: ME, name: 'Me' }] } }] : [BLUE_CONTRIBUTES];
-    const { fixture } = await renderContributors({ permissions, myRoles, mselUnits: units });
+    {
+      label: 'with ViewMsels',
+      permissions: [SystemPermission.ViewMsels],
+      myRoles: [],
+      inUnit: false,
+      expected: true,
+    },
+    {
+      label: 'as a Viewer',
+      permissions: [],
+      myRoles: [MselRole.Viewer],
+      inUnit: true,
+      expected: true,
+    },
+    {
+      label: 'as a contributing unit member without a role',
+      permissions: [],
+      myRoles: [],
+      inUnit: true,
+      expected: false,
+    },
+    {
+      label: 'otherwise',
+      permissions: Object.values(SystemPermission).filter(
+        (p) => p !== SystemPermission.ViewMsels,
+      ),
+      myRoles: [],
+      inUnit: false,
+      expected: false,
+    },
+  ])(
+    'canViewMsel (unused) is $expected $label',
+    async ({ permissions, myRoles, inUnit, expected }) => {
+      const units = inUnit
+        ? [
+            {
+              ...BLUE_CONTRIBUTES,
+              unit: { ...BLUE_UNIT, users: [{ id: ME, name: 'Me' }] },
+            },
+          ]
+        : [BLUE_CONTRIBUTES];
+      const { fixture } = await renderContributors({
+        permissions,
+        myRoles,
+        mselUnits: units,
+      });
 
-    expect(fixture.componentInstance.canViewMsel()).toBe(expected);
-  });
+      expect(fixture.componentInstance.canViewMsel()).toBe(expected);
+    },
+  );
 
   /**
    * Verifies: confirming Remove deletes the contributing unit through the API.
@@ -203,12 +320,16 @@ describe('MselContributorsComponent', () => {
    * Data: ManageMsels; Blue Cell.
    */
   it('removes a contributing unit after confirmation', async () => {
-    const { mselUnitApi, confirm } = await renderContributors({ permissions: [SystemPermission.ManageMsels] });
+    const { mselUnitApi, confirm } = await renderContributors({
+      permissions: [SystemPermission.ManageMsels],
+    });
     const user = userEvent.setup();
 
     await user.click(within(table()).getByTitle('Remove unit from MSEL'));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Remove Contributor' }));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Remove Contributor' }),
+    );
     expect(mselUnitApi.deleteMselUnit).toHaveBeenCalledWith('mu-1');
   });
 });

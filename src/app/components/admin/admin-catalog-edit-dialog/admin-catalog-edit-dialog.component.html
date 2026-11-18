@@ -21,7 +21,8 @@ project root for license information.
               title="The Name of the Catalog"
               matInput
               placeholder="Name (required)"
-              [(ngModel)]="data.catalog.name">
+              [(ngModel)]="data.catalog.name"
+            />
           </mat-form-field>
         </div>
       </div>
@@ -34,7 +35,8 @@ project root for license information.
               title="The Description of the Catalog"
               matInput
               placeholder="Description (required)"
-              [(ngModel)]="data.catalog.description">
+              [(ngModel)]="data.catalog.description"
+            />
           </mat-form-field>
         </div>
       </div>
@@ -42,9 +44,16 @@ project root for license information.
         <div>
           <mat-form-field class="full-width">
             <mat-label>Inject Type (required)</mat-label>
-            <mat-select placeholder="Inject Type (required)" [(ngModel)]="data.catalog.injectTypeId" (ngModelChange)="loadDataFields()">
+            <mat-select
+              placeholder="Inject Type (required)"
+              [(ngModel)]="data.catalog.injectTypeId"
+              (ngModelChange)="loadDataFields()"
+            >
               @for (injectType of data.injectTypeList; track injectType.id) {
-                <mat-option [value]="injectType.id" title="{{ injectType.name}}">
+                <mat-option
+                  [value]="injectType.id"
+                  title="{{ injectType.name }}"
+                >
                   {{ injectType.name }}
                 </mat-option>
               }
@@ -57,9 +66,9 @@ project root for license information.
           <mat-checkbox
             [(ngModel)]="data.catalog.isPublic"
             class="bottom-margin"
-            >
-            Is a Public Catalog
-          </mat-checkbox><br />
+          >
+            Is a Public Catalog </mat-checkbox
+          ><br />
         </div>
       </div>
       @if (data.catalog.injectTypeId) {
@@ -72,9 +81,8 @@ project root for license information.
                   [checked]="isInListDataFields(dataField.id)"
                   (change)="setDataFieldInList(dataField.id)"
                   class="bottom-margin"
-                  >
-                  {{ dataField.name }}
-                </mat-checkbox><br />
+                >
+                  {{ dataField.name }} </mat-checkbox><br />
               </div>
             }
           </div>

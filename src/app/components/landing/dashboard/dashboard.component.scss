@@ -411,7 +411,8 @@
 
 // Animations
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -420,7 +421,8 @@
 }
 
 @keyframes loadingPulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
   }
   50% {

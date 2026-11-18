@@ -9,7 +9,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   ErrorService, so it is always an error and never an informational message.
 -->
 <div role="alert">
-  <div class="cssLayoutRowStartCenter bottom-button" style="overflow: hidden;">
+  <div class="cssLayoutRowStartCenter bottom-button" style="overflow: hidden">
     <div class="icon">
       <img width="50" src="assets/img/SP_Icon_Alert.png" />
     </div>
@@ -22,8 +22,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
     </div>
     <div>
-      <button (click)="close()" mat-icon-button aria-label="Close" class="no-outline">
-        <mat-icon title="Close" class="icon-color icon-24px" fontIcon="mdi-close-circle-outline" />
+      <button
+        (click)="close()"
+        mat-icon-button
+        aria-label="Close"
+        class="no-outline"
+      >
+        <mat-icon
+          title="Close"
+          class="icon-color icon-24px"
+          fontIcon="mdi-close-circle-outline"
+        />
       </button>
     </div>
   </div>

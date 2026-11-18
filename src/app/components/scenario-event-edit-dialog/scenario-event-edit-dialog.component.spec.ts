@@ -13,7 +13,12 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
-import { DataField, DataFieldType, EventType, ScenarioEvent } from 'src/app/generated/blueprint.api';
+import {
+  DataField,
+  DataFieldType,
+  EventType,
+  ScenarioEvent,
+} from 'src/app/generated/blueprint.api';
 import { IntegrationTarget } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventEditDialogComponent } from './scenario-event-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
@@ -55,7 +60,13 @@ class SteamfitterTaskStub {
   readonly canEdit = input<boolean>(undefined);
 }
 
-const TITLE: DataField = { id: 'df-title', name: 'Title', dataType: DataFieldType.String, displayOrder: 1, onScenarioEventList: true };
+const TITLE: DataField = {
+  id: 'df-title',
+  name: 'Title',
+  dataType: DataFieldType.String,
+  displayOrder: 1,
+  onScenarioEventList: true,
+};
 
 interface Roles {
   isEditor?: boolean;
@@ -69,10 +80,24 @@ interface Roles {
   titleOnDefaultTab?: boolean;
 }
 
-const WHEN: DataField = { id: 'df-when', name: 'When', dataType: DataFieldType.DateTime, displayOrder: 2, onScenarioEventList: true };
+const WHEN: DataField = {
+  id: 'df-when',
+  name: 'When',
+  dataType: DataFieldType.DateTime,
+  displayOrder: 2,
+  onScenarioEventList: true,
+};
 
 function dialogData(roles: Roles = {}) {
-  const { isEditor = false, isApprover = false, isOwner = false, isEditingRestricted = false, steamfitter = false, when, titleOnDefaultTab = false } = roles;
+  const {
+    isEditor = false,
+    isApprover = false,
+    isOwner = false,
+    isEditingRestricted = false,
+    steamfitter = false,
+    when,
+    titleOnDefaultTab = false,
+  } = roles;
   return {
     scenarioEvent: {
       id: 'se-1',
@@ -81,15 +106,37 @@ function dialogData(roles: Roles = {}) {
       deltaSeconds: 600,
       rowMetadata: '',
       dataValues: [
-        { id: 'dv-1', scenarioEventId: 'se-1', dataFieldId: 'df-title', value: 'Phishing wave' },
-        ...(when === undefined ? [] : [{ id: 'dv-2', scenarioEventId: 'se-1', dataFieldId: 'df-when', value: when }]),
+        {
+          id: 'dv-1',
+          scenarioEventId: 'se-1',
+          dataFieldId: 'df-title',
+          value: 'Phishing wave',
+        },
+        ...(when === undefined
+          ? []
+          : [
+              {
+                id: 'dv-2',
+                scenarioEventId: 'se-1',
+                dataFieldId: 'df-when',
+                value: when,
+              },
+            ]),
       ],
-      integrationTarget: steamfitter ? IntegrationTarget.Steamfitter : undefined,
-      steamfitterTask: { id: 'task-1', name: steamfitter ? 'Ping the VM' : 'Unused task' },
+      integrationTarget: steamfitter
+        ? IntegrationTarget.Steamfitter
+        : undefined,
+      steamfitterTask: {
+        id: 'task-1',
+        name: steamfitter ? 'Ping the VM' : 'Unused task',
+      },
       steamfitterTaskId: 'task-1',
     } as ScenarioEvent,
     integrationTargetOptions: [],
-    dataFields: [{ ...TITLE, isShownOnDefaultTab: titleOnDefaultTab }, ...(when === undefined ? [] : [WHEN])],
+    dataFields: [
+      { ...TITLE, isShownOnDefaultTab: titleOnDefaultTab },
+      ...(when === undefined ? [] : [WHEN]),
+    ],
     organizationList: [],
     teamList: [],
     unitList: [],
@@ -114,7 +161,13 @@ function dialogData(roles: Roles = {}) {
 async function renderEventEdit(roles: Roles = {}) {
   const data = dialogData(roles);
   const rendered = await renderComponent(ScenarioEventEditDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, MatFormFieldModule, MatInputModule, MatSelectModule, MatTabsModule],
+    imports: [
+      ...CRUCIBLE_DIALOG_IMPORTS,
+      MatFormFieldModule,
+      MatInputModule,
+      MatSelectModule,
+      MatTabsModule,
+    ],
     childStubs: [
       { replace: DataValueComponent, with: DataValueStub },
       { replace: DurationEditComponent, with: DurationEditStub },
@@ -126,11 +179,16 @@ async function renderEventEdit(roles: Roles = {}) {
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
   const results: { saveChanges: boolean; scenarioEvent?: ScenarioEvent }[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results };
 }
 
-function child<T>(fixture: ComponentFixture<unknown>, stub: new (...args: never[]) => T): T {
+function child<T>(
+  fixture: ComponentFixture<unknown>,
+  stub: new (...args: never[]) => T,
+): T {
   return fixture.debugElement.query(By.directive(stub)).componentInstance;
 }
 
@@ -141,7 +199,10 @@ describe('ScenarioEventEditDialogComponent', () => {
    * Data: isEditor true (isApprover false); an Inject with a Title value that targets Steamfitter.
    */
   it('lets an editor edit the event', async () => {
-    const { fixture } = await renderEventEdit({ isEditor: true, steamfitter: true });
+    const { fixture } = await renderEventEdit({
+      isEditor: true,
+      steamfitter: true,
+    });
     const user = userEvent.setup();
 
     expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
@@ -159,13 +220,20 @@ describe('ScenarioEventEditDialogComponent', () => {
    * Data: isEditor false; isApprover and isOwner true (near miss); an Inject that targets Steamfitter.
    */
   it('makes the event read-only without the editor role', async () => {
-    const { fixture } = await renderEventEdit({ isEditor: false, isApprover: true, isOwner: true, steamfitter: true });
+    const { fixture } = await renderEventEdit({
+      isEditor: false,
+      isApprover: true,
+      isOwner: true,
+      steamfitter: true,
+    });
     const user = userEvent.setup();
 
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
     expect(child(fixture, DataValueStub).canEdit()).toBe(false);
     expect(child(fixture, DurationEditStub).canEdit()).toBe(false);
-    expect(screen.getByRole('textbox', { name: 'Row Metadata' })).toBeDisabled();
+    expect(
+      screen.getByRole('textbox', { name: 'Row Metadata' }),
+    ).toBeDisabled();
     await user.click(screen.getByText('Steamfitter Task'));
     expect(child(fixture, SteamfitterTaskStub).canEdit()).toBe(false);
   });
@@ -175,12 +243,19 @@ describe('ScenarioEventEditDialogComponent', () => {
    * Interacts with: DataValueStub inputs.
    * Data: isEditor true; approver and owner true, then false.
    */
-  it.each([true, false])('passes canApprove and isOwner %s to the data values', async (granted) => {
-    const { fixture } = await renderEventEdit({ isEditor: true, isApprover: granted, isOwner: granted });
+  it.each([true, false])(
+    'passes canApprove and isOwner %s to the data values',
+    async (granted) => {
+      const { fixture } = await renderEventEdit({
+        isEditor: true,
+        isApprover: granted,
+        isOwner: granted,
+      });
 
-    expect(child(fixture, DataValueStub).canApprove()).toBe(granted);
-    expect(child(fixture, DataValueStub).isOwner()).toBe(granted);
-  });
+      expect(child(fixture, DataValueStub).canApprove()).toBe(granted);
+      expect(child(fixture, DataValueStub).isOwner()).toBe(granted);
+    },
+  );
 
   /**
    * Verifies: on a starter MSEL an editor cannot change an inject's values, and the event type is not offered.
@@ -188,10 +263,15 @@ describe('ScenarioEventEditDialogComponent', () => {
    * Data: isEditor true; isEditingRestricted true; an Inject.
    */
   it('restricts inject values on a starter MSEL', async () => {
-    const { fixture } = await renderEventEdit({ isEditor: true, isEditingRestricted: true });
+    const { fixture } = await renderEventEdit({
+      isEditor: true,
+      isEditingRestricted: true,
+    });
 
     expect(child(fixture, DataValueStub).canEdit()).toBe(false);
-    expect(screen.queryByRole('combobox', { name: 'Scenario Event Type' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('combobox', { name: 'Scenario Event Type' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -201,12 +281,20 @@ describe('ScenarioEventEditDialogComponent', () => {
    */
   it.each([
     { roles: { isOwner: true, isEditor: true }, disabled: 'false' },
-    { roles: { isOwner: false, isEditor: true, isApprover: true }, disabled: 'true' },
-  ])('sets the event type select aria-disabled $disabled', async ({ roles, disabled }) => {
-    await renderEventEdit(roles);
+    {
+      roles: { isOwner: false, isEditor: true, isApprover: true },
+      disabled: 'true',
+    },
+  ])(
+    'sets the event type select aria-disabled $disabled',
+    async ({ roles, disabled }) => {
+      await renderEventEdit(roles);
 
-    expect(screen.getByRole('combobox', { name: 'Scenario Event Type' })).toHaveAttribute('aria-disabled', disabled);
-  });
+      expect(
+        screen.getByRole('combobox', { name: 'Scenario Event Type' }),
+      ).toHaveAttribute('aria-disabled', disabled);
+    },
+  );
 
   /**
    * Verifies: saving an event that does not target Steamfitter drops its Steamfitter task.
@@ -231,14 +319,27 @@ describe('ScenarioEventEditDialogComponent', () => {
    */
   it.each([
     { label: 'that can be edited', roles: { when: 'Team 2' }, disabled: true },
-    { label: 'on a starter MSEL, where inject values are read-only', roles: { when: 'Team 2', isEditingRestricted: true }, disabled: false },
-    { label: 'hidden from the Default tab', roles: { when: 'Team 2', titleOnDefaultTab: true }, disabled: false },
+    {
+      label: 'on a starter MSEL, where inject values are read-only',
+      roles: { when: 'Team 2', isEditingRestricted: true },
+      disabled: false,
+    },
+    {
+      label: 'hidden from the Default tab',
+      roles: { when: 'Team 2', titleOnDefaultTab: true },
+      disabled: false,
+    },
     { label: 'that is only spaces', roles: { when: '  ' }, disabled: false },
-  ])('sets Save disabled $disabled for a DateTime value $label', async ({ roles, disabled }) => {
-    await renderEventEdit({ isEditor: true, ...roles });
+  ])(
+    'sets Save disabled $disabled for a DateTime value $label',
+    async ({ roles, disabled }) => {
+      await renderEventEdit({ isEditor: true, ...roles });
 
-    expect(screen.getByRole('button', { name: 'Save' }).hasAttribute('disabled')).toBe(disabled);
-  });
+      expect(
+        screen.getByRole('button', { name: 'Save' }).hasAttribute('disabled'),
+      ).toBe(disabled);
+    },
+  );
 
   /**
    * Verifies: the event's data values get the MSEL's Gallery source types and Gallery article statuses the list passed in.
@@ -248,7 +349,13 @@ describe('ScenarioEventEditDialogComponent', () => {
   it("passes the MSEL's Gallery source types and statuses to the data values", async () => {
     const { fixture } = await renderEventEdit({ isEditor: true });
 
-    expect(child(fixture, DataValueStub).gallerySourceTypeOptions()).toEqual(['News', 'Social']);
-    expect(child(fixture, DataValueStub).galleryItemStatusOptions()).toEqual(['Green', 'Red']);
+    expect(child(fixture, DataValueStub).gallerySourceTypeOptions()).toEqual([
+      'News',
+      'Social',
+    ]);
+    expect(child(fixture, DataValueStub).galleryItemStatusOptions()).toEqual([
+      'Green',
+      'Red',
+    ]);
   });
 });

@@ -1,18 +1,44 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, OnDestroy, AfterViewInit, inject as inject_1, input, viewChild } from '@angular/core';
-import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  AfterViewInit,
+  inject as inject_1,
+  input,
+  viewChild,
+} from '@angular/core';
+import {
+  UntypedFormControl,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import {
+  MatTableDataSource,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 import { MatTable } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
-import { animate, state, style, transition, trigger } from '@angular/animations';
+import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import {
-  Card,
-  Move
-} from 'src/app/generated/blueprint.api';
+import { Card, Move } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
@@ -33,17 +59,48 @@ import { CardTeamsComponent } from '../card-teams/card-teams.component';
 import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
-    selector: 'app-card-list',
-    templateUrl: './card-list.component.html',
-    styleUrls: ['./card-list.component.scss'],
-    animations: [
-        trigger('detailExpand', [
-            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-            state('expanded', style({ height: '*', visibility: 'visible' })),
-            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-        ]),
-    ],
-    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatMenu, MatMenuItem, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, CardTeamsComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
+  selector: 'app-card-list',
+  templateUrl: './card-list.component.html',
+  styleUrls: ['./card-list.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state(
+        'collapsed',
+        style({ height: '0px', minHeight: '0', visibility: 'hidden' }),
+      ),
+      state('expanded', style({ height: '*', visibility: 'visible' })),
+      transition(
+        'expanded <=> collapsed',
+        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+      ),
+    ]),
+  ],
+  imports: [
+    MatIcon,
+    MatFormField,
+    MatInput,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatPaginator,
+    MatMenu,
+    MatMenuItem,
+    MatTable,
+    MatSort,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatMenuTrigger,
+    MatCellDef,
+    MatCell,
+    MatSortHeader,
+    CardTeamsComponent,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+  ],
 })
 export class CardListComponent implements OnDestroy, AfterViewInit {
   private mselQuery = inject_1(MselQuery);
@@ -74,7 +131,8 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
   contextMenuPosition = { x: '0px', y: '0px' };
   moveList: Move[] = [];
   private unsubscribe$ = new Subject();
-  isExpansionDetailRow = (i: number, row: Object) => (row as Card).id === this.expandedElementId;
+  isExpansionDetailRow = (i: number, row: Object) =>
+    (row as Card).id === this.expandedElementId;
 
   get displayedColumns(): string[] {
     if (this.showTemplates()) {
@@ -85,24 +143,32 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
 
   constructor() {
     // subscribe to cards
-    this.cardQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(cards => {
-      this.cardList = cards;
-      this.sortChanged(this.sort);
-    });
+    this.cardQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((cards) => {
+        this.cardList = cards;
+        this.sortChanged(this.sort);
+      });
     // subscribe to moves
-    this.moveQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(moves => {
-      this.moveList = moves;
-    });
+    this.moveQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((moves) => {
+        this.moveList = moves;
+      });
     // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (this.showTemplates()) {
-        this.msel = new MselPlus();
-      } else {
-        Object.assign(this.msel, msel);
-      }
-      this.sortedCards = this.getSortedCards(this.getFilteredCards(false));
-      this.cardDataSource.data = this.sortedCards;
-    });
+    (this.mselQuery.selectActive() as Observable<MselPlus>)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((msel) => {
+        if (this.showTemplates()) {
+          this.msel = new MselPlus();
+        } else {
+          Object.assign(this.msel, msel);
+        }
+        this.sortedCards = this.getSortedCards(this.getFilteredCards(false));
+        this.cardDataSource.data = this.sortedCards;
+      });
     this.filterControl.valueChanges
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((term) => {
@@ -136,9 +202,10 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
     if (this.showTemplates()) {
       return 'element-row no-clicks';
     }
-    const rowClass = this.expandedElementId === id
-      ? 'element-row element-row-expanded'
-      : 'element-row element-row-not-expanded';
+    const rowClass =
+      this.expandedElementId === id
+        ? 'element-row element-row-expanded'
+        : 'element-row element-row-not-expanded';
     return rowClass;
   }
 
@@ -148,7 +215,7 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
         mselId: this.showTemplates() ? '' : this.msel.id,
         move: 0,
         isTemplate: this.showTemplates(),
-        inject: 0
+        inject: 0,
       };
     } else {
       if (makeTemplate) {
@@ -157,7 +224,7 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
           description: card.description,
           isTemplate: true,
           move: 0,
-          inject: 0
+          inject: 0,
         };
       } else if (makeFromTemplate) {
         card = {
@@ -166,7 +233,7 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
           mselId: this.msel.id,
           isTemplate: false,
           move: 0,
-          inject: 0
+          inject: 0,
         };
       } else {
         card = { ...card };
@@ -179,8 +246,8 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
       data: {
         card: { ...card },
         moveList: this.moveList
-          .filter(m => m.mselId === this.msel.id)
-          .sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1)
+          .filter((m) => m.mselId === this.msel.id)
+          .sort((a, b) => (+a.moveNumber < +b.moveNumber ? -1 : 1)),
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -243,14 +310,20 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
       },
       (err) => {
         window.alert('Error downloading file');
-      }
+      },
     );
   }
 
   deleteCard(card: Card): void {
     this.dialogService
-      .confirm({ title: 'Delete Card', message: 'Are you sure that you want to delete ' + card.name + '?', confirmText: 'Delete', cancelText: 'Cancel'
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Delete Card',
+        message: 'Are you sure that you want to delete ' + card.name + '?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.cardDataService.delete(card.id);
           this.expandedElementId = '';
@@ -274,17 +347,16 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
     const mselId = getTemplatesOnly || this.showTemplates() ? '' : this.msel.id;
     let filteredCards: Card[] = [];
     if (cards) {
-      cards.forEach(card => {
+      cards.forEach((card) => {
         if ((mselId && card.mselId === mselId) || (!mselId && !card.mselId)) {
           filteredCards.push({ ...card });
         }
       });
       if (filteredCards && filteredCards.length > 0 && this.filterString) {
         const filterString = this.filterString.toLowerCase();
-        filteredCards = filteredCards
-          .filter((a) =>
-            a.description.toLowerCase().includes(filterString)
-          );
+        filteredCards = filteredCards.filter((a) =>
+          a.description.toLowerCase().includes(filterString),
+        );
       }
     }
     return filteredCards;
@@ -295,17 +367,23 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
     if (cards) {
       switch (this.sort.active) {
         case 'move':
-          cards.sort((a, b) => +a.move > +b.move ? dir : -dir);
+          cards.sort((a, b) => (+a.move > +b.move ? dir : -dir));
           break;
         case 'inject':
-          cards.sort((a, b) => +a.inject > +b.inject ? dir : -dir);
+          cards.sort((a, b) => (+a.inject > +b.inject ? dir : -dir));
           break;
         case 'description':
-          cards.sort((a, b) => (a.description ? a.description : '').toLowerCase() >
-            (b.description ? b.description : '').toLowerCase() ? dir : -dir);
+          cards.sort((a, b) =>
+            (a.description ? a.description : '').toLowerCase() >
+            (b.description ? b.description : '').toLowerCase()
+              ? dir
+              : -dir,
+          );
           break;
         default:
-          cards.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? dir : -dir);
+          cards.sort((a, b) =>
+            a.name.toLowerCase() > b.name.toLowerCase() ? dir : -dir,
+          );
           break;
       }
     }

@@ -4,8 +4,15 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { Subject, combineLatest, of } from 'rxjs';
 import { catchError, filter, take, takeUntil } from 'rxjs/operators';
-import { ComnSettingsService, CrucibleLandingBackgroundDirective } from '@cmusei/crucible-common';
-import { Msel, MselCompetencyService, SystemPermission } from 'src/app/generated/blueprint.api';
+import {
+  ComnSettingsService,
+  CrucibleLandingBackgroundDirective,
+} from '@cmusei/crucible-common';
+import {
+  Msel,
+  MselCompetencyService,
+  SystemPermission,
+} from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
@@ -25,10 +32,18 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 // The Assess list: the running events the user can assess, as cards like the
 // Join page's. A card opens that event's assessor view.
 @Component({
-    selector: 'app-assess',
-    templateUrl: './assess.component.html',
-    styleUrls: ['../join/join.component.scss', './assess.component.scss'],
-    imports: [CrucibleLandingBackgroundDirective, TopbarComponent, MatButton, MatIcon, MatProgressSpinner, RouterLink, OverflowTooltipDirective]
+  selector: 'app-assess',
+  templateUrl: './assess.component.html',
+  styleUrls: ['../join/join.component.scss', './assess.component.scss'],
+  imports: [
+    CrucibleLandingBackgroundDirective,
+    TopbarComponent,
+    MatButton,
+    MatIcon,
+    MatProgressSpinner,
+    RouterLink,
+    OverflowTooltipDirective,
+  ],
 })
 export class AssessComponent implements OnDestroy, OnInit {
   private settingsService = inject(ComnSettingsService);
@@ -60,7 +75,10 @@ export class AssessComponent implements OnDestroy, OnInit {
     // The list needs both who the user is and whether they are a system admin,
     // so it waits for both rather than racing them.
     combineLatest([
-      this.currentUserQuery.select().pipe(filter((cu) => !!cu?.id), take(1)),
+      this.currentUserQuery.select().pipe(
+        filter((cu) => !!cu?.id),
+        take(1),
+      ),
       // permissions that fail to load count as none, as on the dashboard
       this.permissionDataService.load().pipe(catchError(() => of([]))),
       this.mselDataService.getMyBuildMsels(),
@@ -74,7 +92,9 @@ export class AssessComponent implements OnDestroy, OnInit {
           this.errorService.handleError(err);
         },
         next: ([cu, , msels]) => {
-          const isSystemAdmin = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
+          const isSystemAdmin = this.permissionDataService.hasPermission(
+            SystemPermission.CreateMsels,
+          );
           this.assessMselList = assessableMsels(msels, cu.id, isSystemAdmin);
           this.isLoading = false;
           this.assessMselList.forEach((msel) => {
@@ -92,7 +112,7 @@ export class AssessComponent implements OnDestroy, OnInit {
                 take(1),
                 // A failed count leaves the card usable; the assessor view reports its own errors.
                 catchError(() => of(null)),
-                takeUntil(this.unsubscribe$)
+                takeUntil(this.unsubscribe$),
               )
               .subscribe((competencies) => {
                 if (competencies) {

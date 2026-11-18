@@ -30,14 +30,16 @@ export class PlayerApplicationDataService {
 
   readonly PlayerApplicationList: Observable<PlayerApplication[]>;
   readonly filterControl = new UntypedFormControl();
-  private _requestedPlayerApplicationId$ = this.activatedRoute.queryParamMap.pipe(
-    map((params) => params.get('playerApplicationId') || '')
-  );
+  private _requestedPlayerApplicationId$ =
+    this.activatedRoute.queryParamMap.pipe(
+      map((params) => params.get('playerApplicationId') || ''),
+    );
   private filterTerm: Observable<string>;
   private sortColumn: Observable<string>;
   private sortIsAscending: Observable<boolean>;
   private _pageEvent: PageEvent = { length: 0, pageIndex: 0, pageSize: 10 };
-  readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent); private _requestedPlayerApplicationId: string;
+  readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent);
+  private _requestedPlayerApplicationId: string;
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
   public uploadProgress = new Subject<number>();
@@ -46,7 +48,7 @@ export class PlayerApplicationDataService {
     const activatedRoute = this.activatedRoute;
 
     this.filterTerm = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('playerApplicationmask') || '')
+      map((params) => params.get('playerApplicationmask') || ''),
     );
     this.filterControl.valueChanges.subscribe((term) => {
       this.router.navigate([], {
@@ -55,16 +57,16 @@ export class PlayerApplicationDataService {
       });
     });
     this.sortColumn = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('sorton') || 'name')
+      map((params) => params.get('sorton') || 'name'),
     );
     this.sortIsAscending = activatedRoute.queryParamMap.pipe(
-      map((params) => (params.get('sortdir') || 'asc') === 'asc')
+      map((params) => (params.get('sortdir') || 'asc') === 'asc'),
     );
     this.pageSize = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pagesize') || '20', 10))
+      map((params) => parseInt(params.get('pagesize') || '20', 10)),
     );
     this.pageIndex = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pageindex') || '0', 10))
+      map((params) => parseInt(params.get('pageindex') || '0', 10)),
     );
     this.PlayerApplicationList = combineLatest([
       this.playerApplicationQuery.selectAll(),
@@ -85,20 +87,25 @@ export class PlayerApplicationDataService {
         ]) =>
           items
             ? (items as PlayerApplication[])
-              .sort((a: PlayerApplication, b: PlayerApplication) =>
-                this.sortPlayerApplications(a, b, sortColumn, sortIsAscending)
-              )
-              .filter(
-                (playerApplication) =>
-                  ('' + playerApplication.name)
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase()) ||
-                  playerApplication.id
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase())
-              )
-            : []
-      )
+                .sort((a: PlayerApplication, b: PlayerApplication) =>
+                  this.sortPlayerApplications(
+                    a,
+                    b,
+                    sortColumn,
+                    sortIsAscending,
+                  ),
+                )
+                .filter(
+                  (playerApplication) =>
+                    ('' + playerApplication.name)
+                      .toLowerCase()
+                      .includes(filterTerm.toLowerCase()) ||
+                    playerApplication.id
+                      .toLowerCase()
+                      .includes(filterTerm.toLowerCase()),
+                )
+            : [],
+      ),
     );
   }
 
@@ -110,13 +117,13 @@ export class PlayerApplicationDataService {
         tap(() => {
           this.playerApplicationStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (templates) => {
           this.playerApplicationStore.upsertMany(templates);
         },
-        (error) => {}
+        (error) => {},
       );
   }
 
@@ -128,16 +135,19 @@ export class PlayerApplicationDataService {
         tap(() => {
           this.playerApplicationStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (playerApplications) => {
           // the templates share the store, so replacing the MSEL's applications keeps them
-          this.playerApplicationStore.set([...this.templatesInStore(), ...playerApplications]);
+          this.playerApplicationStore.set([
+            ...this.templatesInStore(),
+            ...playerApplications,
+          ]);
         },
         (error) => {
           this.playerApplicationStore.set(this.templatesInStore());
-        }
+        },
       );
   }
 
@@ -153,7 +163,7 @@ export class PlayerApplicationDataService {
         tap(() => {
           this.playerApplicationStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.playerApplicationStore.upsert(s.id, { ...s });
@@ -172,7 +182,7 @@ export class PlayerApplicationDataService {
         tap(() => {
           this.playerApplicationStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.playerApplicationStore.add(s);
@@ -180,7 +190,9 @@ export class PlayerApplicationDataService {
   }
 
   addAndPush(playerApplication: PlayerApplication) {
-    return this.playerApplicationService.createAndPushPlayerApplication(playerApplication);
+    return this.playerApplicationService.createAndPushPlayerApplication(
+      playerApplication,
+    );
   }
 
   updatePlayerApplication(playerApplication: PlayerApplication) {
@@ -191,7 +203,7 @@ export class PlayerApplicationDataService {
         tap(() => {
           this.playerApplicationStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((n) => {
         this.updateStore(n);
@@ -219,7 +231,7 @@ export class PlayerApplicationDataService {
         (event: any) => {
           if (event.type === HttpEventType.UploadProgress) {
             const uploadProgress = Math.round(
-              (100 * event.loaded) / event.total
+              (100 * event.loaded) / event.total,
             );
             this.uploadProgress.next(uploadProgress);
           } else if (event instanceof HttpResponse) {
@@ -234,7 +246,7 @@ export class PlayerApplicationDataService {
         (error) => {
           this.playerApplicationStore.setLoading(false);
           this.uploadProgress.next(0);
-        }
+        },
       );
   }
 
@@ -254,7 +266,7 @@ export class PlayerApplicationDataService {
     a: PlayerApplication,
     b: PlayerApplication,
     column: string,
-    isAsc: boolean
+    isAsc: boolean,
   ) {
     switch (column) {
       case 'name':

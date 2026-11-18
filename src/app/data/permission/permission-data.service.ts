@@ -4,7 +4,10 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, asapScheduler, defer } from 'rxjs';
 import { observeOn, shareReplay, tap, take } from 'rxjs/operators';
-import { SystemPermission, SystemPermissionsService } from 'src/app/generated/blueprint.api';
+import {
+  SystemPermission,
+  SystemPermissionsService,
+} from 'src/app/generated/blueprint.api';
 
 @Injectable({
   providedIn: 'root',
@@ -25,19 +28,23 @@ export class PermissionDataService {
   // kept, so the next call tries again.
   load(): Observable<SystemPermission[]> {
     if (!this.permissions$) {
-      this.permissions$ = defer(() => this.permissionsService.getMySystemPermissions()).pipe(
+      this.permissions$ = defer(() =>
+        this.permissionsService.getMySystemPermissions(),
+      ).pipe(
         take(1),
         tap((x) => {
           this._permissions = x;
           this.isLoaded = true;
         }),
-        shareReplay(1)
+        shareReplay(1),
       );
     }
     // An answer already in hand is still delivered asynchronously, as the request is: callers
     // update stores in their subscriptions, and doing that synchronously in ngOnInit changes a
     // parent's bindings after they were checked (NG0100).
-    return this.isLoaded ? this.permissions$.pipe(observeOn(asapScheduler)) : this.permissions$;
+    return this.isLoaded
+      ? this.permissions$.pipe(observeOn(asapScheduler))
+      : this.permissions$;
   }
 
   hasPermission(permission: SystemPermission) {

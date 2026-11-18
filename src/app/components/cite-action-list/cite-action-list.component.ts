@@ -2,21 +2,38 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, ElementRef, OnDestroy, OnInit, AfterViewInit, inject, input, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  AfterViewInit,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import {
-  CiteAction,
-  Team,
-  Move
-} from 'src/app/generated/blueprint.api';
+import { CiteAction, Team, Move } from 'src/app/generated/blueprint.api';
 import { MoveQuery } from 'src/app/data/move/move.query';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
-import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+  MatTableDataSource,
+  MatTable,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { CiteActionDataService } from 'src/app/data/cite-action/cite-action-data.service';
@@ -27,19 +44,53 @@ import { CiteActionEditDialogComponent } from '../cite-action-edit-dialog/cite-a
 import { ItemDownloadDialogComponent } from '../item-download-dialog/item-download-dialog.component';
 import { MatIcon } from '@angular/material/icon';
 
-import { MatFormField, MatInput, MatSuffix, MatLabel } from '@angular/material/input';
+import {
+  MatFormField,
+  MatInput,
+  MatSuffix,
+  MatLabel,
+} from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
-    selector: 'app-cite-action-list',
-    templateUrl: './cite-action-list.component.html',
-    styleUrls: ['./cite-action-list.component.scss'],
-    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatLabel, MatSelect, MatOption, MatPaginator, MatMenu, MatMenuItem, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
+  selector: 'app-cite-action-list',
+  templateUrl: './cite-action-list.component.html',
+  styleUrls: ['./cite-action-list.component.scss'],
+  imports: [
+    MatIcon,
+    MatFormField,
+    MatInput,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatLabel,
+    MatSelect,
+    MatOption,
+    MatPaginator,
+    MatMenu,
+    MatMenuItem,
+    MatTable,
+    MatSort,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatMenuTrigger,
+    MatCellDef,
+    MatCell,
+    MatSortHeader,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+  ],
 })
-export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit {
+export class CiteActionListComponent
+  implements OnInit, OnDestroy, AfterViewInit
+{
   private mselQuery = inject(MselQuery);
   private citeActionDataService = inject(CiteActionDataService);
   private citeActionQuery = inject(CiteActionQuery);
@@ -60,7 +111,9 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
   filterString = '';
   sort: Sort = { active: 'moveNumber', direction: 'asc' };
   sortedCiteActions: CiteAction[] = [];
-  citeActionDataSource = new MatTableDataSource<CiteAction>(new Array<CiteAction>());
+  citeActionDataSource = new MatTableDataSource<CiteAction>(
+    new Array<CiteAction>(),
+  );
   displayedColumns: string[] = [];
   isAddingCiteAction = false;
   editingId = '';
@@ -96,7 +149,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
             Object.assign(this.msel, msel);
           }
           this.sortedCiteActions = this.getSortedCiteActions(
-            this.getFilteredCiteActions(false)
+            this.getFilteredCiteActions(false),
           );
           this.citeActionDataSource.data = this.sortedCiteActions;
         }
@@ -122,7 +175,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
           }
         });
         this.mselTeamList = mtList.sort((a, b) =>
-          a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1
+          a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1,
         );
       });
     // subscribe to filter changes
@@ -131,7 +184,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
       .subscribe((term) => {
         this.filterString = term;
         this.sortedCiteActions = this.getSortedCiteActions(
-          this.getFilteredCiteActions(false)
+          this.getFilteredCiteActions(false),
         );
         this.citeActionDataSource.data = this.sortedCiteActions;
       });
@@ -154,7 +207,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
   addOrEditCiteAction(
     citeAction: CiteAction,
     makeTemplate: boolean,
-    makeFromTemplate: boolean
+    makeFromTemplate: boolean,
   ) {
     if (!citeAction) {
       citeAction = {
@@ -278,7 +331,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
       },
       (err) => {
         window.alert('Error downloading file');
-      }
+      },
     );
   }
 
@@ -289,10 +342,21 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
     ) {
       return;
     }
-    const title = this.showTemplates() ? 'Delete CITE Action Template' : 'Delete CITE Action';
+    const title = this.showTemplates()
+      ? 'Delete CITE Action Template'
+      : 'Delete CITE Action';
     this.dialogService
-      .confirm({ title: title, message: 'Are you sure that you want to delete ' + citeAction.description + '?', confirmText: 'Delete', cancelText: 'Cancel'
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: title,
+        message:
+          'Are you sure that you want to delete ' +
+          citeAction.description +
+          '?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.citeActionDataService.delete(citeAction.id);
           this.editingId = '';
@@ -303,7 +367,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
   sortChanged(sort: Sort) {
     this.sort = sort;
     this.sortedCiteActions = this.getSortedCiteActions(
-      this.getFilteredCiteActions(false)
+      this.getFilteredCiteActions(false),
     );
     this.citeActionDataSource.data = this.sortedCiteActions;
     const paginator = this.paginator();
@@ -311,14 +375,14 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
       paginator.length = this.sortedCiteActions.length;
     }
     this.templateList = this.getSortedCiteActions(
-      this.getFilteredCiteActions(true)
+      this.getFilteredCiteActions(true),
     );
   }
 
   getSortedCiteActions(citeActions: CiteAction[]) {
     if (citeActions) {
       citeActions = citeActions.sort((a, b) =>
-        this.sortCiteActions(a, b, this.sort.active, this.sort.direction)
+        this.sortCiteActions(a, b, this.sort.active, this.sort.direction),
       );
     }
     return citeActions;
@@ -328,7 +392,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
     a: CiteAction,
     b: CiteAction,
     column: string,
-    direction: string
+    direction: string,
   ) {
     const isAsc = direction !== 'desc';
     switch (column) {
@@ -390,17 +454,17 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
             (a) =>
               a.description.toLowerCase().includes(filterString) ||
               a.team?.name.toLowerCase().includes(filterString) ||
-              a.team?.shortName.toLowerCase().includes(filterString)
+              a.team?.shortName.toLowerCase().includes(filterString),
           );
         }
         if (this.selectedMoveNumber >= 0) {
           filteredCiteActions = filteredCiteActions.filter(
-            (a) => +a.moveNumber === +this.selectedMoveNumber
+            (a) => +a.moveNumber === +this.selectedMoveNumber,
           );
         }
         if (this.selectedTeamId) {
           filteredCiteActions = filteredCiteActions.filter(
-            (a) => a.teamId === this.selectedTeamId
+            (a) => a.teamId === this.selectedTeamId,
           );
         }
       }
@@ -411,7 +475,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
   selectMove(moveNumber: number) {
     this.selectedMoveNumber = moveNumber;
     this.sortedCiteActions = this.getSortedCiteActions(
-      this.getFilteredCiteActions(false)
+      this.getFilteredCiteActions(false),
     );
     this.citeActionDataSource.data = this.sortedCiteActions;
   }
@@ -419,7 +483,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
   selectTeam(teamId: string) {
     this.selectedTeamId = teamId;
     this.sortedCiteActions = this.getSortedCiteActions(
-      this.getFilteredCiteActions(false)
+      this.getFilteredCiteActions(false),
     );
     this.citeActionDataSource.data = this.sortedCiteActions;
   }

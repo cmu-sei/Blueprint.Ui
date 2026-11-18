@@ -5,14 +5,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, firstValueFrom, of, throwError } from 'rxjs';
-import { CatalogUnit, CatalogUnitService, Unit } from 'src/app/generated/blueprint.api';
+import {
+  CatalogUnit,
+  CatalogUnitService,
+  Unit,
+} from 'src/app/generated/blueprint.api';
 import { CatalogUnitStore } from './catalog-unit.store';
 import { CatalogUnitDataService } from './catalog-unit-data.service';
 import { CatalogUnitQuery } from './catalog-unit.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function link(overrides: Partial<CatalogUnit> = {}): CatalogUnit {
   return { id: 'cu-1', catalogId: 'cat-1', unitId: 'unit-red', ...overrides };
@@ -30,7 +37,10 @@ function setup(queryParams: Record<string, string> = {}) {
   TestBed.configureTestingModule({
     providers: [
       { provide: CatalogUnitService, useValue: catalogUnitApi },
-      { provide: Router, useValue: { navigate: vi.fn() } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate: vi.fn() } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -58,7 +68,9 @@ describe('CatalogUnitDataService', () => {
     catalogUnitApi.getCatalogUnits.mockReturnValueOnce(
       of([link(), link({ id: 'cu-2', unitId: 'unit-blue' })]),
     );
-    catalogUnitApi.getCatalogUnits.mockReturnValueOnce(throwError(() => new Error('boom')));
+    catalogUnitApi.getCatalogUnits.mockReturnValueOnce(
+      throwError(() => new Error('boom')),
+    );
 
     service.loadByCatalog('cat-1');
     expect(catalogUnitApi.getCatalogUnits).toHaveBeenCalledWith('cat-1');
@@ -76,9 +88,15 @@ describe('CatalogUnitDataService', () => {
    */
   it('single-link calls keep the store in step with the API', () => {
     const { service, query, catalogUnitApi } = setup();
-    catalogUnitApi.getCatalogUnit.mockReturnValue(of(link({ id: 'cu-2', unitId: 'unit-blue' })));
-    catalogUnitApi.createCatalogUnit.mockReturnValue(of(link({ id: 'cu-3', unitId: 'unit-grn' })));
-    catalogUnitApi.updateCatalogUnit.mockReturnValue(of(link({ id: 'cu-2', unitId: 'unit-gold' })));
+    catalogUnitApi.getCatalogUnit.mockReturnValue(
+      of(link({ id: 'cu-2', unitId: 'unit-blue' })),
+    );
+    catalogUnitApi.createCatalogUnit.mockReturnValue(
+      of(link({ id: 'cu-3', unitId: 'unit-grn' })),
+    );
+    catalogUnitApi.updateCatalogUnit.mockReturnValue(
+      of(link({ id: 'cu-2', unitId: 'unit-gold' })),
+    );
     catalogUnitApi.deleteCatalogUnit.mockReturnValue(of(null));
 
     service.loadById('cu-2');
@@ -131,7 +149,9 @@ describe('CatalogUnitDataService', () => {
     service.updateStore(link());
     service.updateStore(link({ id: 'cu-2', unitId: 'unit-blue' }));
 
-    expect(unitIds(recordEmissions(service.CatalogUnitList).at(-1))).toEqual(['unit-blue']);
+    expect(unitIds(recordEmissions(service.CatalogUnitList).at(-1))).toEqual([
+      'unit-blue',
+    ]);
   });
 
   /**
@@ -140,24 +160,42 @@ describe('CatalogUnitDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'loadById', endpoint: 'getCatalogUnit', escapes: true, call: (s: CatalogUnitDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createCatalogUnit', escapes: true, call: (s: CatalogUnitDataService) => s.add({ id: 'x-1' }) },
-    { method: 'updateCatalogUnit', endpoint: 'updateCatalogUnit', escapes: true, call: (s: CatalogUnitDataService) => s.updateCatalogUnit({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, catalogUnitApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(CatalogUnitStore).setLoading(false);
-    catalogUnitApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'loadById',
+      endpoint: 'getCatalogUnit',
+      escapes: true,
+      call: (s: CatalogUnitDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createCatalogUnit',
+      escapes: true,
+      call: (s: CatalogUnitDataService) => s.add({ id: 'x-1' }),
+    },
+    {
+      method: 'updateCatalogUnit',
+      endpoint: 'updateCatalogUnit',
+      escapes: true,
+      call: (s: CatalogUnitDataService) => s.updateCatalogUnit({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, catalogUnitApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(CatalogUnitStore).setLoading(false);
+      catalogUnitApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(CatalogUnitQuery).getValue().loading).toBe(true);
-    // With no error callback the error escapes to ErrorService, the ErrorHandler
-    // app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(CatalogUnitQuery).getValue().loading).toBe(true);
+      // With no error callback the error escapes to ErrorService, the ErrorHandler
+      // app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete escapes to the app's global ErrorHandler.
@@ -165,19 +203,26 @@ describe('CatalogUnitDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteCatalogUnit', call: (s: CatalogUnitDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, catalogUnitApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    catalogUnitApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteCatalogUnit',
+      call: (s: CatalogUnitDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, catalogUnitApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      catalogUnitApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });
