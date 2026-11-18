@@ -40,6 +40,7 @@ import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-r
 import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-role-data.service';
 import { XApiService } from 'src/app/services/xapi/xapi.service';
 import { MatDrawerContainer, MatDrawer, MatDrawerContent } from '@angular/material/sidenav';
+import { ResizableDirective, ResizeHandleDirective } from 'angular-resizable-element';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatList, MatDivider, MatListItem } from '@angular/material/list';
@@ -65,11 +66,17 @@ import { MselAiBuildComponent } from '../msel-ai-build/msel-ai-build.component';
 import { MselAiBuildService } from 'src/app/data/msel/msel-ai-build.service';
 import { MselScoringModelTabComponent } from '../msel-scoring-model-tab/msel-scoring-model-tab.component';
 
+const ASSISTANT_DEFAULT_WIDTH = 420;
+const ASSISTANT_MIN_WIDTH = 320;
+// never so wide the tabs have no room
+const ASSISTANT_MAX_VIEWPORT_SHARE = 0.8;
+const ASSISTANT_WIDTH_KEY = 'blueprint.askAiPanelWidth';
+
 @Component({
     selector: 'app-msel',
     templateUrl: './msel.component.html',
     styleUrls: ['./msel.component.scss'],
-    imports: [MatDrawerContainer, MatDrawer, MatIconButton, MatIcon, MatList, MatDivider, MatListItem, NgClass, MatDrawerContent, MselInfoComponent, MselContributorsComponent, MselTeamsComponent, DataFieldListComponent, OrganizationListComponent, MoveListComponent, PlayerApplicationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, MselCompetenciesComponent, MselTechniquesComponent, ScenarioEventListComponent, MselViewComponent, AssessorViewComponent, InvitationListComponent, MselPlaybookComponent, MselScoringModelTabComponent, MselAssistantComponent, MselAiBuildComponent, AsyncPipe]
+    imports: [MatDrawerContainer, MatDrawer, MatIconButton, MatIcon, MatList, MatDivider, MatListItem, NgClass, MatDrawerContent, MselInfoComponent, MselContributorsComponent, MselTeamsComponent, DataFieldListComponent, OrganizationListComponent, MoveListComponent, PlayerApplicationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, MselCompetenciesComponent, MselTechniquesComponent, ScenarioEventListComponent, MselViewComponent, AssessorViewComponent, InvitationListComponent, MselPlaybookComponent, MselScoringModelTabComponent, MselAssistantComponent, MselAiBuildComponent, ResizableDirective, ResizeHandleDirective, AsyncPipe]
 })
 export class MselComponent implements OnDestroy {
   private activatedRoute = inject(ActivatedRoute);
@@ -165,6 +172,8 @@ export class MselComponent implements OnDestroy {
   sideNavCollapsed = false;
   // the Ask AI panel, which stays open while the planner moves between tabs
   assistantOpen = false;
+  // how wide the Ask AI panel is; the planner drags its left edge to change it
+  assistantWidth = this.clampAssistantWidth(Number(localStorage.getItem(ASSISTANT_WIDTH_KEY)) || ASSISTANT_DEFAULT_WIDTH);
   theme$: Observable<Theme>;
 
   constructor() {
@@ -351,6 +360,22 @@ export class MselComponent implements OnDestroy {
     } else {
       return 'non-selected-item';
     }
+  }
+
+  /** The Ask AI panel's width, within what the window allows. */
+  private clampAssistantWidth(width: number): number {
+    const max = Math.max(ASSISTANT_MIN_WIDTH, Math.floor(window.innerWidth * ASSISTANT_MAX_VIEWPORT_SHARE));
+    return Math.min(Math.max(width, ASSISTANT_MIN_WIDTH), max);
+  }
+
+  assistantResizing(event: { rectangle: { width?: number } }) {
+    this.assistantWidth = this.clampAssistantWidth(event.rectangle.width ?? ASSISTANT_DEFAULT_WIDTH);
+  }
+
+  assistantResizeEnd(event: { rectangle: { width?: number } }) {
+    this.assistantResizing(event);
+    // kept for the next page and visit, as a window setting, not an MSEL's
+    localStorage.setItem(ASSISTANT_WIDTH_KEY, String(this.assistantWidth));
   }
 
   toggleAssistant() {

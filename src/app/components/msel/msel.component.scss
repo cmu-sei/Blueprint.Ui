@@ -238,7 +238,15 @@
 }
 
 .assistant-drawer {
-  width: 420px;
-  max-width: 40vw;
   border-left: 1px solid var(--mat-sys-outline-variant);
+}
+
+.assistant-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 8px;
+  z-index: 2;
+  cursor: col-resize;
 }

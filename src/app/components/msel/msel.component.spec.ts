@@ -463,6 +463,45 @@ describe('MselComponent', () => {
   });
 
   /**
+   * Verifies: the open Ask AI panel has a drag handle on its left edge, and the panel is as wide as the component says.
+   * Interacts with: MselComponent template, the resize handle.
+   * Data: canEditMsel true; the panel opened.
+   */
+  it('gives the open Ask AI panel a resize handle', async () => {
+    localStorage.removeItem('blueprint.askAiPanelWidth');
+    const { fixture } = await renderMsel({ canEditMsel: true });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Ask AI' }));
+    fixture.detectChanges();
+
+    expect(screen.getByRole('separator', { name: 'Resize the Ask AI panel' })).toBeInTheDocument();
+    const drawer = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('.assistant-drawer');
+    expect(drawer?.style.width).toBe('420px');
+  });
+
+  /**
+   * Verifies: dragging the panel's edge sets its width within what the window allows, and the width is remembered.
+   * Interacts with: the component's resize handlers, localStorage.
+   * Data: widths below the minimum, in range and above 80% of the window.
+   */
+  it('resizes the Ask AI panel within limits and remembers the width', async () => {
+    localStorage.removeItem('blueprint.askAiPanelWidth');
+    const { fixture } = await renderMsel({ canEditMsel: true });
+    const msel = fixture.componentInstance;
+    const max = Math.floor(window.innerWidth * 0.8);
+
+    expect(msel.assistantWidth).toBe(420);
+    msel.assistantResizing({ rectangle: { width: 100 } });
+    expect(msel.assistantWidth).toBe(320);
+    msel.assistantResizing({ rectangle: { width: 100000 } });
+    expect(msel.assistantWidth).toBe(max);
+
+    msel.assistantResizeEnd({ rectangle: { width: 500 } });
+    expect(localStorage.getItem('blueprint.askAiPanelWidth')).toBe(String(Math.min(500, max)));
+  });
+
+  /**
    * Verifies: without canEditMsel there is no Ask AI button and no panel.
    * Interacts with: MselComponent template.
    * Data: canEditMsel false.

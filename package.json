@@ -46,6 +46,7 @@
     "@ngxmc/datetime-picker": "^20.1.0",
     "@types/lodash": "^4.17.27",
     "ajv": "^8.20.0",
+    "angular-resizable-element": "^8.0.3",
     "bootstrap": "^5.3.8",
     "bootstrap-scss": "^5.3.8",
     "core-js": "^3.51.0",
