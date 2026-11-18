@@ -1,10 +1,8 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-// Helpers for the printed reports (the Assessor View's assessment report).
-// The footer and duration follow the MSEL Playbook print (playbookFooterCss and
-// formatPlaybookDuration on feature/playbook-print-cover); once that print is on
-// main the two can share them.
+// Helpers for the printed reports: the MSEL Playbook and the Assessor View's
+// assessment report.
 
 /**
  * A print footer's MSEL name, as the bottom-left margin box of an @page named
