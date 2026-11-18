@@ -148,12 +148,20 @@ export class AdminTechniqueFrameworksComponent implements OnInit, OnDestroy {
       width: '800px',
       data: { title, form: toForm(definition) },
     });
-    // the dialog stays open until the save succeeds, so a definition the API refuses is not lost
-    dialogRef.componentInstance.editComplete.subscribe((result) => {
-      if (result.saveChanges && result.definition) {
-        save(result.definition).subscribe(() => dialogRef.close());
-      } else {
+    // the dialog stays open until the save succeeds, so a definition the API refuses is not lost; one save at a time
+    const dialog = dialogRef.componentInstance;
+    dialog.editComplete.subscribe((result) => {
+      if (!result.saveChanges || !result.definition) {
         dialogRef.close();
+      } else if (!dialog.saving()) {
+        dialog.saving.set(true);
+        save(result.definition).subscribe({
+          next: () => dialogRef.close(),
+          error: (error: unknown) => {
+            dialog.saving.set(false);
+            throw error;
+          },
+        });
       }
     });
   }

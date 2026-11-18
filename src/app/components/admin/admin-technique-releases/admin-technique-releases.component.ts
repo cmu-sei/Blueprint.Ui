@@ -207,14 +207,22 @@ export class AdminTechniqueReleasesComponent
         data: { release, notice, frameworks: this.frameworks },
       },
     );
-    // the dialog stays open until the save succeeds, so a notice the API refuses is not lost
-    dialogRef.componentInstance.editComplete.subscribe((result) => {
-      if (result.saveChanges && result.notice) {
+    // the dialog stays open until the save succeeds, so a notice the API refuses is not lost; one save at a time
+    const dialog = dialogRef.componentInstance;
+    dialog.editComplete.subscribe((result) => {
+      if (!result.saveChanges || !result.notice) {
+        dialogRef.close();
+      } else if (!dialog.saving()) {
+        dialog.saving.set(true);
         this.techniqueReleaseDataService
           .updateNotice(release.id, result.notice)
-          .subscribe(() => dialogRef.close());
-      } else {
-        dialogRef.close();
+          .subscribe({
+            next: () => dialogRef.close(),
+            error: (error: unknown) => {
+              dialog.saving.set(false);
+              throw error;
+            },
+          });
       }
     });
   }

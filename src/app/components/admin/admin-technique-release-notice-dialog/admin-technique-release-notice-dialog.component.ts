@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, inject, output } from '@angular/core';
+import { Component, inject, output, signal } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import {
   CrucibleDialogComponent,
@@ -55,6 +55,8 @@ export function isWebAddress(url: string | null | undefined): boolean {
   ],
 })
 export class AdminTechniqueReleaseNoticeDialogComponent {
+  /** True while the page saves what was submitted: Save waits for the answer. */
+  readonly saving = signal(false);
   data = inject<{
     release: TechniqueRelease;
     notice: TechniqueReleaseNotice;

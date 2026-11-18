@@ -5,7 +5,7 @@ project root for license information.
 -->
 <crucible-dialog
   [dialogTitle]="'Edit Release: ' + release.name + ' ' + release.version"
-  [submitDisabled]="!errorFree()"
+  [submitDisabled]="!errorFree() || saving()"
   [guardUnsavedWork]="true"
   (cancel)="handleEditComplete(false)"
   (submit)="handleEditComplete(true)"

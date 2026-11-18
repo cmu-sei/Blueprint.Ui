@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { fireEvent, screen, waitFor } from '@testing-library/angular';
-import { of, throwError } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 import userEvent from '@testing-library/user-event';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import {
@@ -251,6 +251,38 @@ describe('AdminTechniqueFrameworksComponent', () => {
       ).not.toBeInTheDocument(),
     );
     expect(frameworkApi.updateTechniqueFramework).toHaveBeenCalledTimes(2);
+  });
+
+  /**
+   * Verifies: Save is disabled while a save is under way, so a second one cannot start and the first answer cannot
+   * close the dialog over newer input; a refused save enables it again.
+   * Interacts with: TechniqueFrameworkService.updateTechniqueFramework (stub answering when the test says), crucible-dialog submitDisabled.
+   * Data: the Attacks definition, saved and then refused.
+   */
+  it('saves one definition at a time', async () => {
+    const errors = captureUnhandledRxErrors();
+    const { frameworkApi } = await renderFrameworks([BUNDLE]);
+    const answer = new Subject<
+      TechniqueFramework & { id: string; releaseCount: number }
+    >();
+    frameworkApi.updateTechniqueFramework.mockReturnValueOnce(answer);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Edit Attacks' }));
+    await screen.findByRole('textbox', { name: 'Name' });
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled(),
+    );
+    const failure = new Error('400');
+    answer.error(failure);
+    await flush();
+    expect(errors).toEqual([failure]);
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled(),
+    );
+    expect(frameworkApi.updateTechniqueFramework).toHaveBeenCalledTimes(1);
   });
 
   /**

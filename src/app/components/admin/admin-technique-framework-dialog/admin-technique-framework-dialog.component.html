@@ -5,7 +5,7 @@ project root for license information.
 -->
 <crucible-dialog
   [dialogTitle]="data.title"
-  [submitDisabled]="!errorFree()"
+  [submitDisabled]="!errorFree() || saving()"
   [guardUnsavedWork]="true"
   (cancel)="handleEditComplete(false)"
   (submit)="handleEditComplete(true)"
