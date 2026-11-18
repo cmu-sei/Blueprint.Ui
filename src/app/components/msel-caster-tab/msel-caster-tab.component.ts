@@ -245,12 +245,33 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
   }
 
   saveChanges() {
+    // the API deletes the copy of a directory when the MSEL links another one
+    const replacesCopy = !!this.copy && !!this.casterDirectoryId && this.casterDirectoryId !== this.msel.casterDirectoryId;
+    if (!replacesCopy) {
+      this.doSave(false);
+      return;
+    }
+    this.dialogService
+      .confirm({
+        title: 'Link Another Directory',
+        message: `Linking another directory deletes the stored copy of "${this.copyPath()}" from ${this.copy?.projectName}. Link it?`,
+        confirmText: 'Link',
+        cancelText: 'Cancel',
+      })
+      .afterClosed()
+      .subscribe((confirmed) => confirmed && this.doSave(true));
+  }
+
+  private doSave(replacesCopy: boolean) {
     const update: Msel = { ...(this.mselQuery.getActive() as MselPlus), casterDirectoryId: this.casterDirectoryId || null };
     this.busy = true;
     this.mselDataService.updateMsel(update).subscribe({
       next: () => {
         this.busy = false;
         this.isChanged = false;
+        if (replacesCopy) {
+          this.copy = null;
+        }
       },
       // the choice stays up to be retried
       error: (err) => {

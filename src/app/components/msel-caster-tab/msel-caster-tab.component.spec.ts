@@ -145,6 +145,25 @@ describe('MselCasterTabComponent', () => {
   });
 
   /**
+   * Verifies: linking another directory while a copy is stored asks first, since the API deletes the copy of the old one, and the tab drops it once saved.
+   * Interacts with: the Caster Directory select, Save Changes, CrucibleDialogService.confirm (stub, confirms), MselService.updateMsel (stub).
+   * Data: MSEL role Owner; a pending MSEL linked to dir-1 with a copy; Range / Extended chosen.
+   */
+  it('asks before linking another directory replaces the copy', async () => {
+    const { fixture, mselApi, confirm } = await renderTab({ copy: COPY, mselExtra: { casterDirectoryId: 'dir-1' } });
+    const [select] = await directorySelects(fixture);
+
+    await select.clickOptions({ text: 'Range / Extended' });
+    fixture.detectChanges();
+    await userEvent.setup().click(button('Save Changes'));
+    fixture.detectChanges();
+
+    expect(confirm).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ title: 'Link Another Directory', confirmText: 'Link' }));
+    expect(mselApi.updateMsel).toHaveBeenCalledExactlyOnceWith('msel-1', expect.objectContaining({ casterDirectoryId: 'dir-2' }));
+    expect(screen.getByText('No copy is stored.')).toBeInTheDocument();
+  });
+
+  /**
    * Verifies: Cancel Changes puts the saved directory back, and nothing is saved.
    * Interacts with: the Caster Directory select, Cancel Changes, MselService.updateMsel (stub).
    * Data: MSEL role Owner; a pending MSEL linked to dir-1; Range / Extended chosen.
