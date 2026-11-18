@@ -362,7 +362,7 @@ describe('DataValueComponent', () => {
   it.each([
     { value: 'CRITICAL', shown: 'Orange', color: 'rgb(250, 163, 2)' },
     { value: 'red', shown: 'Red', color: 'rgb(255, 51, 51)' },
-    { value: 'Pending review', shown: 'Pending review', color: null as string },
+    { value: 'Pending review', shown: 'Pending review', color: null },
   ])('shows the Gallery status $value as $shown', async ({ value, shown, color }) => {
     const { container } = await renderDataValue(ARTICLE_STATUS, value, { showValueOnly: true }, GALLERY_STATUSES);
 
@@ -421,7 +421,7 @@ async function renderTechniqueField(dataField: DataField, value: string, flags: 
   TestBed.inject(MselTechniqueStore).set(options.pool ?? TECHNIQUE_POOL);
   rendered.fixture.detectChanges();
   const changes: string[] = [];
-  rendered.fixture.componentInstance.valueChange.subscribe((v) => changes.push(v));
+  rendered.fixture.componentInstance.valueChange.subscribe((v: string) => changes.push(v));
   return { ...rendered, changes, ensureLoaded, poolApi };
 }
 

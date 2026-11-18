@@ -4,7 +4,7 @@
 import { TechniqueReleaseStore } from './technique-release.store';
 import { TechniqueReleaseQuery } from './technique-release.query';
 import { TechniqueFrameworkStore } from 'src/app/data/technique-framework/technique-framework.store';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { TechniqueRelease, TechniqueReleaseNotice, TechniqueReleaseService, TechniqueCountermeasureImport } from 'src/app/generated/blueprint.api';
 import { take, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
@@ -16,12 +16,10 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class TechniqueReleaseDataService {
-  constructor(
-    private techniqueReleaseStore: TechniqueReleaseStore,
-    private techniqueReleaseService: TechniqueReleaseService,
-    private techniqueReleaseQuery: TechniqueReleaseQuery,
-    private techniqueFrameworkStore: TechniqueFrameworkStore
-  ) {}
+  private techniqueReleaseStore = inject(TechniqueReleaseStore);
+  private techniqueReleaseService = inject(TechniqueReleaseService);
+  private techniqueReleaseQuery = inject(TechniqueReleaseQuery);
+  private techniqueFrameworkStore = inject(TechniqueFrameworkStore);
 
   /** Keeps a framework's release count right as its releases are imported, relinked and deleted. */
   private countRelease(frameworkId: string | null | undefined, change: number) {
@@ -40,14 +38,14 @@ export class TechniqueReleaseDataService {
         }),
         take(1)
       )
-      .subscribe(
-        (releases) => {
+      .subscribe({
+        next: (releases) => {
           this.techniqueReleaseStore.set(releases);
         },
-        (error) => {
+        error: () => {
           this.techniqueReleaseStore.set([]);
-        }
-      );
+        },
+      });
   }
 
   /** Imports a release file, read as the framework it matches, or the one given when more than one does. */

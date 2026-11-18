@@ -43,7 +43,7 @@ describe('TechniqueNoticeDialogComponent', () => {
 
     expect(screen.getByRole('heading', { name: 'Copyright & Terms: Acme Techniques 1.0' })).toBeTruthy();
     expect(screen.getByText('Acme Corp')).toBeTruthy();
-    const notice = container.ownerDocument.querySelector('.notice') as HTMLElement;
+    const notice = container.ownerDocument.querySelector<HTMLElement>('.notice');
     expect(notice.textContent).toBe(RELEASE.notice);
     expect(getComputedStyle(notice).whiteSpace).toBe('pre-line');
     const terms = screen.getByRole('link', { name: 'Acme Corp Terms of Use' });

@@ -310,7 +310,7 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
         onScenarioEventList: true,
         onExerciseView: true,
         isTemplate: makeTemplate,
-      } as DataField;
+      };
     } else {
       if (makeTemplate === dataField.isTemplate) {
         dialogTitle = dialogTitle.replace('Add a', 'Edit');

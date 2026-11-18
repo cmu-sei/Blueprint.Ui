@@ -5,7 +5,7 @@ import { EntityState, EntityStore, StoreConfig } from '@datorama/akita';
 import { TechniqueFramework } from 'src/app/generated/blueprint.api';
 import { Injectable } from '@angular/core';
 
-export interface TechniqueFrameworkState extends EntityState<TechniqueFramework> {}
+export type TechniqueFrameworkState = EntityState<TechniqueFramework>;
 
 @Injectable({
   providedIn: 'root',

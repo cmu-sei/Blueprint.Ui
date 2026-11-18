@@ -3,7 +3,7 @@
 
 import { MselTechniqueStore } from './msel-technique.store';
 import { MselTechniqueQuery } from './msel-technique.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   MselTechnique,
   MselTechniqueService,
@@ -16,16 +16,11 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class MselTechniqueDataService {
-  readonly MselTechniqueList: Observable<MselTechnique[]>;
+  private mselTechniqueStore = inject(MselTechniqueStore);
+  private mselTechniqueQuery = inject(MselTechniqueQuery);
+  private mselTechniqueService = inject(MselTechniqueService);
+  readonly MselTechniqueList: Observable<MselTechnique[]> = this.mselTechniqueQuery.selectAll();
   private loadedMselId = '';
-
-  constructor(
-    private mselTechniqueStore: MselTechniqueStore,
-    private mselTechniqueQuery: MselTechniqueQuery,
-    private mselTechniqueService: MselTechniqueService
-  ) {
-    this.MselTechniqueList = this.mselTechniqueQuery.selectAll();
-  }
 
   loadByMsel(mselId: string) {
     this.loadedMselId = mselId;
@@ -38,14 +33,14 @@ export class MselTechniqueDataService {
         }),
         take(1)
       )
-      .subscribe(
-        (items) => {
+      .subscribe({
+        next: (items) => {
           this.mselTechniqueStore.set(items);
         },
-        (error) => {
+        error: () => {
           this.mselTechniqueStore.set([]);
-        }
-      );
+        },
+      });
   }
 
   /** Loads the pool unless it is already the given MSEL's, for views that only read it. */

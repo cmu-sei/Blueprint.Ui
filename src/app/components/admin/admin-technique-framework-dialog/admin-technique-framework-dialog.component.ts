@@ -8,7 +8,7 @@ import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei
 import { MatFormField, MatLabel, MatInput, MatHint } from '@angular/material/input';
 import { MatSelect, MatOption } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
-import { TechniqueFileFormat } from 'src/app/generated/blueprint.api';
+import { TechniqueFileFormat, TechniqueFrameworkSettings } from 'src/app/generated/blueprint.api';
 import { TechniqueFrameworkDefinition } from 'src/app/data/technique-framework/technique-framework-data.service';
 
 /** The parts of a definition the dialog edits as fields; the settings are edited as JSON. */
@@ -59,7 +59,7 @@ export class AdminTechniqueFrameworkDialogComponent {
   /** Why the settings cannot be saved; empty when they can. */
   get settingsError(): string {
     try {
-      const settings = JSON.parse(this.form.settingsJson || '{}');
+      const settings: unknown = JSON.parse(this.form.settingsJson || '{}');
       return settings && typeof settings === 'object' && !Array.isArray(settings) ? '' : 'The settings must be a JSON object.';
     } catch (e) {
       return 'The settings are not valid JSON: ' + (e as Error).message;
@@ -82,7 +82,7 @@ export class AdminTechniqueFrameworkDialogComponent {
           domain: this.form.domain.trim(),
           isDefensive: this.form.isDefensive,
           format: this.form.format,
-          settings: JSON.parse(this.form.settingsJson || '{}'),
+          settings: JSON.parse(this.form.settingsJson || '{}') as TechniqueFrameworkSettings,
         },
       });
     }

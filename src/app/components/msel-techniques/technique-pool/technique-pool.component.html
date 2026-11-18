@@ -6,7 +6,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <div class="top-toolbar">
   <div class="sp-icon">
-    <mat-icon class="mdi-24px" [fontIcon]="icon" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
+    <mat-icon class="mdi-24px" [fontIcon]="icon" [style.color]="'var(--mat-sys-primary)'" />
   </div>
   <mat-form-field class="release-select">
     <mat-label>{{ isDefensive ? 'Defensive Technique Release' : 'Attack Technique Release' }}</mat-label>
@@ -27,7 +27,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <mat-expansion-panel class="section-panel" [(expanded)]="addPanelExpanded">
     <mat-expansion-panel-header>
       <mat-panel-title>
-        <mat-icon class="mdi-18px panel-icon" fontIcon="mdi-plus-circle-outline"></mat-icon>
+        <mat-icon class="mdi-18px panel-icon" fontIcon="mdi-plus-circle-outline" />
         Add Techniques
       </mat-panel-title>
     </mat-expansion-panel-header>
@@ -38,7 +38,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </div>
     }
     @if (browsedUnpinnedRelease) {
-    <app-technique-notice [release]="browsedUnpinnedRelease"></app-technique-notice>
+    <app-technique-notice [release]="browsedUnpinnedRelease" />
     }
     <div class="toolbar-row">
       <mat-form-field style="width: 220px;">
@@ -54,7 +54,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <input matInput [formControl]="searchControl" placeholder="Search techniques" />
         @if (searchString) {
         <button mat-icon-button matSuffix (click)="searchControl.setValue('')" title="Clear">
-          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
         </button>
         }
       </mat-form-field>
@@ -62,23 +62,23 @@ project root for license information or contact permission@sei.cmu.edu for full 
         Sub-techniques
       </mat-checkbox>
       <div class="button-end">
-        <mat-paginator #browserPaginator [pageSize]="25" [pageSizeOptions]="[10, 25, 50, 100]"></mat-paginator>
+        <mat-paginator #browserPaginator [pageSize]="25" [pageSizeOptions]="[10, 25, 50, 100]" />
       </div>
     </div>
     @if (isLoadingRelease) {
     <div class="browser-loading">
-      <mat-spinner diameter="36"></mat-spinner>
+      <mat-spinner diameter="36" />
       <div class="browser-loading-text">Loading techniques...</div>
     </div>
     }
     <div class="browser-table-scroll" [class.hidden]="isLoadingRelease">
       <mat-table [dataSource]="browserDataSource">
         <ng-container matColumnDef="check">
-          <mat-header-cell *matHeaderCellDef class="col-check"></mat-header-cell>
+          <mat-header-cell *matHeaderCellDef class="col-check" />
           <mat-cell *matCellDef="let t" class="col-check">
             @if (canEditMsel()) {
             <mat-checkbox [checked]="isInPool(t)" [disabled]="needsUpgrade" (change)="togglePoolItem(t)"
-              [attr.aria-label]="'Add ' + t.externalId"></mat-checkbox>
+              [attr.aria-label]="'Add ' + t.externalId" />
             }
           </mat-cell>
         </ng-container>
@@ -123,8 +123,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
             }
           </mat-cell>
         </ng-container>
-        <mat-header-row *matHeaderRowDef="browserColumns; sticky: true"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: browserColumns"></mat-row>
+        <mat-header-row *matHeaderRowDef="browserColumns; sticky: true" />
+        <mat-row *matRowDef="let row; columns: browserColumns" />
       </mat-table>
       @if (!isLoadingRelease && selectedReleaseId && browserDataSource.filteredData.length === 0) {
       <div class="empty-text">No matching techniques</div>
@@ -136,7 +136,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <mat-expansion-panel class="section-panel" [expanded]="true">
     <mat-expansion-panel-header>
       <mat-panel-title>
-        <mat-icon class="mdi-18px panel-icon" [fontIcon]="icon"></mat-icon>
+        <mat-icon class="mdi-18px panel-icon" [fontIcon]="icon" />
         MSEL Techniques ({{ pool.length }})
       </mat-panel-title>
       @if (pinnedDomains.length === 1) {
@@ -153,13 +153,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
         @if (pinned.upgradeTo && canEditMsel()) {
         <button mat-stroked-button class="upgrade-button" (click)="upgradePool(pinned)"
           title="Move this MSEL's {{ pinned.domain }} techniques to {{ pinned.upgradeTo.version }}">
-          <mat-icon fontIcon="mdi-arrow-up-bold-circle-outline"></mat-icon>
+          <mat-icon fontIcon="mdi-arrow-up-bold-circle-outline" />
           Upgrade {{ pinned.domain }} to {{ pinned.upgradeTo.version }}
         </button>
         }
       </div>
       <!-- the release's own copyright and terms, kept with the techniques it covers -->
-      <app-technique-notice [release]="pinned.release"></app-technique-notice>
+      <app-technique-notice [release]="pinned.release" />
       }
     </div>
     }
@@ -170,12 +170,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
     } @else {
     <mat-table [dataSource]="poolDataSource" multiTemplateDataRows>
       <ng-container matColumnDef="action">
-        <mat-header-cell *matHeaderCellDef class="col-check"></mat-header-cell>
+        <mat-header-cell *matHeaderCellDef class="col-check" />
         <mat-cell *matCellDef="let item" class="col-check">
           @if (canEditMsel()) {
           <button mat-icon-button class="msel-action" (click)="removeFromPool(item)"
             title="Remove {{ item.technique?.externalId }}">
-            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
+            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
           </button>
           }
         </mat-cell>
@@ -207,12 +207,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-cell *matCellDef="let item" class="col-countermeasures">
           <app-technique-countermeasures [mselId]="msel.id" [externalId]="item.technique?.externalId"
             [group]="countermeasuresFor(item)" [countermeasures]="countermeasures" [canEdit]="canEditMsel()"
-            [hasDefensiveRelease]="hasDefensiveRelease"></app-technique-countermeasures>
+            [hasDefensiveRelease]="hasDefensiveRelease" />
         </mat-cell>
       </ng-container>
-      <mat-header-row *matHeaderRowDef="poolColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: poolColumns" class="pool-row"></mat-row>
-      <mat-row *matRowDef="let row; columns: ['countermeasures']; when: showsCountermeasures" class="countermeasures-row"></mat-row>
+      <mat-header-row *matHeaderRowDef="poolColumns" />
+      <mat-row *matRowDef="let row; columns: poolColumns" class="pool-row" />
+      <mat-row *matRowDef="let row; columns: ['countermeasures']; when: showsCountermeasures" class="countermeasures-row" />
     </mat-table>
     }
   </mat-expansion-panel>

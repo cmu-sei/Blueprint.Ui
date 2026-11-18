@@ -429,7 +429,7 @@ describe('AdminTechniqueReleasesComponent', () => {
   it('imports a file as the framework chosen, or matches it automatically', async () => {
     const { releaseApi, fixture } = await renderReleases([], true, [D3FEND_FRAMEWORK, ATTACK_FRAMEWORK]);
     const file = new File(['{}'], 'release.json', { type: 'application/json' });
-    const input = fixture.nativeElement.querySelector('input[type=file]:not([data-testid])') as HTMLInputElement;
+    const input = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>('input[type=file]:not([data-testid])');
 
     fireEvent.change(input, { target: { files: [file] } });
     expect(releaseApi.importTechniqueRelease).toHaveBeenLastCalledWith(file, undefined, undefined);

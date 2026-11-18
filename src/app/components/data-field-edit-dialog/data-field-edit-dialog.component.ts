@@ -60,9 +60,9 @@ export class DataFieldEditDialogComponent {
       }
       // technique fields offer the MSEL's technique pool (attack or defensive), not an option list
       if (selectedDataType === DataFieldType.AttackTechnique || selectedDataType === DataFieldType.DefensiveTechnique) {
-        this.data.dataField.isChosenFromList = false;
-        this.data.dataField.isMultiSelect = true;
-        this.data.dataField.isFacilitationField = true;
+        this.field.isChosenFromList = false;
+        this.field.isMultiSelect = true;
+        this.field.isFacilitationField = true;
       }
     }
   }
@@ -199,8 +199,13 @@ export class DataFieldEditDialogComponent {
 
   /** An Attack Technique or Defensive Technique field, whose values come from the MSEL's Techniques tab. */
   isTechniqueField(): boolean {
-    return this.data.dataField.dataType === DataFieldType.AttackTechnique ||
-      this.data.dataField.dataType === DataFieldType.DefensiveTechnique;
+    return this.field.dataType === DataFieldType.AttackTechnique ||
+      this.field.dataType === DataFieldType.DefensiveTechnique;
+  }
+
+  /** The field being edited, typed. */
+  private get field(): DataField {
+    return (this.data as { dataField: DataField }).dataField;
   }
 
   optionListNotAllowed(): boolean {

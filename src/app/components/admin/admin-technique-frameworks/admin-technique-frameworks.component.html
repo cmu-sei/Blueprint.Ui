@@ -10,10 +10,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <mat-header-cell *matHeaderCellDef class="col-action">
       @if (canEdit()) {
       <button mat-icon-button title="Add a technique framework" aria-label="Add a technique framework" (click)="add()">
-        <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle-outline"></mat-icon>
+        <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle-outline" />
       </button>
       <button mat-icon-button title="Import technique framework definitions" aria-label="Import technique framework definitions" (click)="chooseFile()">
-        <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
+        <mat-icon class="mdi-24px" fontIcon="mdi-upload" />
       </button>
       }
     </mat-header-cell>
@@ -21,17 +21,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
       @if (canEdit()) {
       <button mat-icon-button class="msel-action" (click)="edit(framework)"
         title="Edit {{ framework.name }}" [attr.aria-label]="'Edit ' + framework.name">
-        <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
+        <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" />
       </button>
       }
       <button mat-icon-button class="msel-action" (click)="export(framework)"
         title="Download {{ framework.name }} as JSON" [attr.aria-label]="'Download ' + framework.name + ' as JSON'">
-        <mat-icon class="mdi-18px" fontIcon="mdi-download"></mat-icon>
+        <mat-icon class="mdi-18px" fontIcon="mdi-download" />
       </button>
       @if (canEdit()) {
       <button mat-icon-button class="msel-action" (click)="delete(framework)"
         title="Delete {{ framework.name }}" [attr.aria-label]="'Delete ' + framework.name">
-        <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
+        <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
       </button>
       }
     </mat-cell>
@@ -56,8 +56,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <mat-header-cell *matHeaderCellDef class="col-count">Releases</mat-header-cell>
     <mat-cell *matCellDef="let framework" class="col-count">{{ framework.releaseCount }}</mat-cell>
   </ng-container>
-  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-  <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+  <mat-header-row *matHeaderRowDef="displayedColumns" />
+  <mat-row *matRowDef="let row; columns: displayedColumns" />
 </mat-table>
 @if (dataSource.data.length === 0) {
 <div class="empty-text">

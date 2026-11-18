@@ -116,8 +116,8 @@ async function closeNotice() {
   await userEvent.setup().click(screen.getByRole('button', { name: 'Close' }));
 }
 
-const attackSection = () => screen.getByLabelText('Attack Techniques release').closest('app-technique-pool') as HTMLElement;
-const defensiveSection = () => screen.getByLabelText('Defensive Techniques release').closest('app-technique-pool') as HTMLElement;
+const attackSection = () => screen.getByLabelText('Attack Techniques release').closest<HTMLElement>('app-technique-pool');
+const defensiveSection = () => screen.getByLabelText('Defensive Techniques release').closest<HTMLElement>('app-technique-pool');
 
 // With no release imported the Add Techniques browsers stay empty and only the pool can put MITRE content on screen;
 // an imported release is browsed by its family's section as soon as the component loads it.
@@ -433,7 +433,7 @@ describe('MselTechniquesComponent', () => {
     const attack = within(attackSection());
 
     expect(attack.getByText('MSEL Techniques (2)')).toBeInTheDocument();
-    const pinned = within(attackSection().querySelector('.pinned-releases') as HTMLElement);
+    const pinned = within(attackSection().querySelector<HTMLElement>('.pinned-releases'));
     expect(pinned.getByText('Enterprise ATT&CK 17.1')).toBeInTheDocument();
     expect(pinned.getByText('MITRE CAPEC 3.9')).toBeInTheDocument();
     expect(attack.getByText('enterprise-attack', { selector: '.domain-tag' })).toBeInTheDocument();

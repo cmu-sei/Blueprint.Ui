@@ -3,13 +3,13 @@
 
 import { QueryEntity } from '@datorama/akita';
 import { TechniqueReleaseState, TechniqueReleaseStore } from './technique-release.store';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TechniqueReleaseQuery extends QueryEntity<TechniqueReleaseState> {
-  constructor(protected store: TechniqueReleaseStore) {
-    super(store);
+  constructor() {
+    super(inject(TechniqueReleaseStore));
   }
 }

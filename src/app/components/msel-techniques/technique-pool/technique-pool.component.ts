@@ -2,11 +2,10 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 import { TechniqueNoticeComponent } from '../../technique-notice/technique-notice.component';
-import { AfterViewInit, Component, OnDestroy, OnInit, inject, input, output, viewChild } from '@angular/core';
-import { UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
+import { AfterViewInit, Component, OnDestroy, OnInit, inject, input, viewChild } from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
-import { NgStyle } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatFormField, MatLabel, MatInput, MatSuffix, MatHint } from '@angular/material/input';
 import { MatSelect } from '@angular/material/select';
@@ -65,7 +64,7 @@ export interface PinnedDomain {
   selector: 'app-technique-pool',
   templateUrl: './technique-pool.component.html',
   styleUrls: ['./technique-pool.component.scss'],
-  imports: [TechniqueNoticeComponent, MatIcon, MatFormField, MatLabel, MatHint, MatSelect, MatOption, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatExpansionPanelDescription, MatInput, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatProgressSpinner, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCheckbox, MatCellDef, MatCell, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatButton, NgStyle, TechniqueCountermeasuresComponent]
+  imports: [TechniqueNoticeComponent, MatIcon, MatFormField, MatLabel, MatHint, MatSelect, MatOption, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatExpansionPanelDescription, MatInput, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatProgressSpinner, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCheckbox, MatCellDef, MatCell, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatButton, TechniqueCountermeasuresComponent]
 })
 export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy {
   private mselQuery = inject(MselQuery);
@@ -100,7 +99,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
 
   // --- Panel 1: Add Techniques (browser) ---
   tacticFilter = '';
-  searchControl = new UntypedFormControl('');
+  searchControl = new FormControl<string>('');
   searchString = '';
   showSubTechniques = true;
   browserDataSource = new MatTableDataSource<Technique>([]);
@@ -138,7 +137,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
       this.searchString = term || '';
       this.applyBrowserFilter();
     });
-    this.browserDataSource.filterPredicate = (t: Technique, filter: string) => this.matchesBrowserFilter(t, filter);
+    this.browserDataSource.filterPredicate = (t: Technique) => this.matchesBrowserFilter(t);
   }
 
   // subscribed in ngOnInit, when the family input is known
@@ -262,7 +261,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
           domain,
           release,
           count: counts.get(domain) || 0,
-          upgradeTo: selected && selected.domain === domain && selected.id !== releaseId ? selected : null,
+          upgradeTo: selected?.domain === domain && selected.id !== releaseId ? selected : null,
         };
       })
       .filter(p => !!p.release)
@@ -382,7 +381,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
     }
   }
 
-  private matchesBrowserFilter(t: Technique, filter: string): boolean {
+  private matchesBrowserFilter(t: Technique): boolean {
     if (!this.showSubTechniques && t.isSubTechnique) return false;
     if (this.tacticFilter && !(t.tactics || []).includes(this.tacticFilter)) return false;
     const s = this.searchString.trim().toLowerCase();

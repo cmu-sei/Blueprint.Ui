@@ -98,7 +98,7 @@ describe('AdminTechniqueFrameworksComponent', () => {
 
     fireEvent.change(input, { target: { files: [new File([JSON.stringify([ONTOLOGY, BUNDLE])], 'frameworks.json')] } });
     await waitFor(() => expect(frameworkApi.createTechniqueFramework).toHaveBeenCalledTimes(2));
-    expect(frameworkApi.createTechniqueFramework.mock.calls.map(c => (c[0] as TechniqueFramework).domain)).toEqual(['defences', 'attacks']);
+    expect(frameworkApi.createTechniqueFramework.mock.calls.map(c => (c[0]).domain)).toEqual(['defences', 'attacks']);
     expect(frameworkApi.createTechniqueFramework.mock.calls[0][0]).not.toHaveProperty('id');
     fixture.detectChanges();
     expect(screen.getByText('Defences')).toBeInTheDocument();

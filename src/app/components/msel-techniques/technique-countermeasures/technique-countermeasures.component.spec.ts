@@ -65,7 +65,7 @@ async function renderCounteredBy(options: Options = {}) {
   const countermeasures = 'countermeasures' in options ? options.countermeasures : ANSWER;
   const { canEdit = true, hasDefensiveRelease = true, pool = [], releases = [D3FEND_RELEASE] } = options;
   const poolApi = {
-    createMselTechnique: vi.fn((body) => of({ id: 'mat-new', ...body, technique: { id: body.techniqueId, domain: 'd3fend', isDefensive: true } })),
+    createMselTechnique: vi.fn((body: MselTechnique) => of({ id: 'mat-new', ...body, technique: { id: body.techniqueId, domain: 'd3fend', isDefensive: true } })),
   } satisfies ApiStub<MselTechniqueService>;
   const rendered = await renderComponent(TechniqueCountermeasuresComponent, {
     providers: [{ provide: MselTechniqueService, useValue: poolApi }],
@@ -78,10 +78,8 @@ async function renderCounteredBy(options: Options = {}) {
 }
 
 const toggleButton = () => screen.getByRole('button', { name: /, T1003\.005$/ });
-const open = async () => {
-  fireEvent.click(toggleButton());
-};
-const tactic = (name: string) => screen.getByText(name).closest('.tactic') as HTMLElement;
+const open = () => Promise.resolve(fireEvent.click(toggleButton()));
+const tactic = (name: string) => screen.getByText(name).closest<HTMLElement>('.tactic');
 const idsIn = (section: HTMLElement) => within(section).getAllByRole('link').map(a => a.textContent.trim());
 
 describe('TechniqueCountermeasuresComponent', () => {
@@ -205,7 +203,7 @@ describe('TechniqueCountermeasuresComponent', () => {
     },
     {
       name: 'no defensive release imported',
-      options: { countermeasures: { mselId: 'msel-1', techniqueReleaseId: null, hasMappings: false, techniques: [] }, group: undefined as MselTechniqueCountermeasures, hasDefensiveRelease: false },
+      options: { countermeasures: { mselId: 'msel-1', techniqueReleaseId: null, hasMappings: false, techniques: [] }, group: undefined, hasDefensiveRelease: false },
       message: 'No defensive release has been imported. An administrator imports one on the Technique Frameworks page.',
     },
     {

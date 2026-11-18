@@ -18,12 +18,12 @@ import { AdminTechniqueFrameworkDialogComponent, toForm } from '../admin-techniq
 
 /** The definitions in a file an administrator imports: one definition, or a list of them. */
 export function definitionsIn(json: string): TechniqueFrameworkDefinition[] {
-  const parsed = JSON.parse(json);
-  const list = Array.isArray(parsed) ? parsed : [parsed];
+  const parsed: unknown = JSON.parse(json);
+  const list: unknown[] = Array.isArray(parsed) ? parsed : [parsed];
   if (list.length === 0 || list.some(d => !d || typeof d !== 'object' || Array.isArray(d))) {
     throw new Error('The file holds no technique framework definitions.');
   }
-  return list.map(d => toDefinition(d));
+  return list.map(d => toDefinition(d as TechniqueFramework));
 }
 
 /**
@@ -104,12 +104,12 @@ export class AdminTechniqueFrameworksComponent implements OnInit, OnDestroy {
   /** Creates each definition the chosen file holds, one after another. */
   selectFile(e: Event) {
     const input = e.target as HTMLInputElement;
-    const file = input.files && input.files[0];
+    const file = input.files?.[0];
     input.value = null;
     if (!file) {
       return;
     }
-    file.text().then(text => {
+    void file.text().then(text => {
       let definitions: TechniqueFrameworkDefinition[];
       try {
         definitions = definitionsIn(text);

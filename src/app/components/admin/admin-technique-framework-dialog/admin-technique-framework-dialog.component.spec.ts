@@ -50,7 +50,7 @@ describe('AdminTechniqueFrameworkDialogComponent', () => {
     await renderDialog(null);
 
     expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('');
-    expect(JSON.parse((screen.getByRole('textbox', { name: 'Settings (JSON)' }) as HTMLTextAreaElement).value)).toEqual({ match: {} });
+    expect(JSON.parse(screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Settings (JSON)' }).value)).toEqual({ match: {} });
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
 
     await user.type(screen.getByRole('textbox', { name: 'Name' }), 'New');

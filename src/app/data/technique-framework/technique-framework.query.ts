@@ -3,13 +3,13 @@
 
 import { QueryEntity } from '@datorama/akita';
 import { TechniqueFrameworkState, TechniqueFrameworkStore } from './technique-framework.store';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TechniqueFrameworkQuery extends QueryEntity<TechniqueFrameworkState> {
-  constructor(protected store: TechniqueFrameworkStore) {
-    super(store);
+  constructor() {
+    super(inject(TechniqueFrameworkStore));
   }
 }

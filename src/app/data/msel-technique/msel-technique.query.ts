@@ -8,7 +8,7 @@ import {
 } from './msel-technique.store';
 import { Technique, MselTechnique } from 'src/app/generated/blueprint.api';
 import { TechniqueFamily, techniqueFamily } from 'src/app/utilities/technique-family';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -16,8 +16,8 @@ import { map } from 'rxjs/operators';
   providedIn: 'root',
 })
 export class MselTechniqueQuery extends QueryEntity<MselTechniqueState> {
-  constructor(protected store: MselTechniqueStore) {
-    super(store);
+  constructor() {
+    super(inject(MselTechniqueStore));
   }
 
   selectById(id: string): Observable<MselTechnique> {

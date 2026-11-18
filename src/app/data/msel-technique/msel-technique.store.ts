@@ -5,7 +5,7 @@ import { EntityState, EntityStore, StoreConfig } from '@datorama/akita';
 import { MselTechnique } from 'src/app/generated/blueprint.api';
 import { Injectable } from '@angular/core';
 
-export interface MselTechniqueState extends EntityState<MselTechnique> {}
+export type MselTechniqueState = EntityState<MselTechnique>;
 
 @Injectable({
   providedIn: 'root',

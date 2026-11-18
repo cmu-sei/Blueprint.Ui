@@ -285,7 +285,7 @@ describe('DataFieldListComponent', () => {
       expect(within(table()).queryByText('AttackTechnique')).not.toBeInTheDocument();
       expect(within(table()).queryByText('DefensiveTechnique')).not.toBeInTheDocument();
       // no option list to manage, so the Options cell is plain text pointing at the tab
-      const row = (name: string) => within(within(table()).getByText(name).closest('mat-row') as HTMLElement);
+      const row = (name: string) => within(within(table()).getByText(name).closest<HTMLElement>('mat-row'));
       expect(row('Techniques').getByText('Techniques tab')).not.toHaveClass('clickable');
       expect(row('Countermeasures').getByText('Techniques tab')).not.toHaveClass('clickable');
       expect(row('Techniques').queryByTitle('Click to manage options')).not.toBeInTheDocument();

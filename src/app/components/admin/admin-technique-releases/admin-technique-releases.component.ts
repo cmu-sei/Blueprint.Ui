@@ -2,10 +2,10 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, inject, input, viewChild } from '@angular/core';
-import { UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
-import { AsyncPipe, DatePipe, NgStyle } from '@angular/common';
+import { AsyncPipe, DatePipe } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatFormField, MatLabel, MatInput, MatSuffix, MatHint } from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
@@ -35,7 +35,7 @@ import { TechniqueNoticeComponent, hasTechniqueNotice } from '../../technique-no
   selector: 'app-admin-technique-releases',
   templateUrl: './admin-technique-releases.component.html',
   styleUrls: ['./admin-technique-releases.component.scss'],
-  imports: [MatIcon, MatFormField, MatLabel, MatHint, MatInput, ReactiveFormsModule, MatIconButton, MatSuffix, MatProgressSpinner, MatTable, MatSort, MatSortHeader, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, NgStyle, AsyncPipe, DatePipe, TechniqueNoticeComponent, MatSelect, MatOption, AdminTechniqueFrameworksComponent]
+  imports: [MatIcon, MatFormField, MatLabel, MatHint, MatInput, ReactiveFormsModule, MatIconButton, MatSuffix, MatProgressSpinner, MatTable, MatSort, MatSortHeader, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, AsyncPipe, DatePipe, TechniqueNoticeComponent, MatSelect, MatOption, AdminTechniqueFrameworksComponent]
 })
 export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, OnDestroy {
   private techniqueReleaseDataService = inject(TechniqueReleaseDataService);
@@ -56,11 +56,11 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
   // the release whose notice is open under its row
   expandedId = '';
   displayedColumns: string[] = ['action', 'name', 'framework', 'domain', 'version', 'releaseDate', 'tacticCount', 'techniqueCount'];
-  versionControl = new UntypedFormControl('');
+  versionControl = new FormControl<string>('');
   /** The framework to read the next file as; empty to match it automatically. */
-  frameworkControl = new UntypedFormControl('');
+  frameworkControl = new FormControl<string>('');
   frameworks: TechniqueFramework[] = [];
-  filterControl = new UntypedFormControl('');
+  filterControl = new FormControl<string>('');
   filterString = '';
   isLoading$: Observable<boolean>;
   private unsubscribe$ = new Subject();
@@ -137,7 +137,7 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
 
   selectFile(e: Event) {
     const input = e.target as HTMLInputElement;
-    const file = input.files && input.files[0];
+    const file = input.files?.[0];
     if (!file) {
       return;
     }
@@ -156,7 +156,7 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
 
   selectMappingsFile(e: Event) {
     const input = e.target as HTMLInputElement;
-    const file = input.files && input.files[0];
+    const file = input.files?.[0];
     const release = this.mappingsRelease;
     if (!file || !release) {
       return;
