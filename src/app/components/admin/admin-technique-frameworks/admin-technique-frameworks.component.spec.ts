@@ -7,7 +7,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { fireEvent, screen, waitFor } from '@testing-library/angular';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
+import userEvent from '@testing-library/user-event';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import {
   TechniqueFramework,
@@ -22,6 +23,10 @@ import {
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 // definitions as an administrator entered them (test data)
 const ONTOLOGY: TechniqueFramework = {
@@ -54,6 +59,9 @@ async function renderFrameworks(
     getTechniqueFrameworks: vi.fn(() => of(structuredClone(frameworks))),
     createTechniqueFramework: vi.fn((f: TechniqueFramework) =>
       of({ ...f, id: `fw-new-${f.domain}`, releaseCount: 0 }),
+    ),
+    updateTechniqueFramework: vi.fn((id: string, f: TechniqueFramework) =>
+      of({ ...f, id, releaseCount: 0 }),
     ),
     deleteTechniqueFramework: vi.fn(() => of(null)),
   } satisfies ApiStub<TechniqueFrameworkService>;
@@ -207,6 +215,42 @@ describe('AdminTechniqueFrameworksComponent', () => {
       definitionsIn(JSON.stringify(ONTOLOGY)),
     );
     vi.restoreAllMocks();
+  });
+
+  /**
+   * Verifies: a definition the API refuses stays in the open dialog, so it is not entered again; once a save
+   * succeeds the dialog closes. The refusal reaches the app's error handler, as other saves' do.
+   * Interacts with: TechniqueFrameworkService.updateTechniqueFramework (stub failing once), AdminTechniqueFrameworkDialogComponent.
+   * Data: the Attacks definition, renamed; its first save refused.
+   */
+  it('keeps the definition dialog open with what was entered when the save is refused', async () => {
+    const errors = captureUnhandledRxErrors();
+    const { frameworkApi } = await renderFrameworks([BUNDLE]);
+    const failure = new Error('400');
+    frameworkApi.updateTechniqueFramework.mockReturnValueOnce(
+      throwError(() => failure),
+    );
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Edit Attacks' }));
+    const name = await screen.findByRole('textbox', { name: 'Name' });
+    await user.clear(name);
+    await user.type(name, 'Attacks, renamed');
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await flush();
+
+    expect(errors).toEqual([failure]);
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue(
+      'Attacks, renamed',
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('textbox', { name: 'Name' }),
+      ).not.toBeInTheDocument(),
+    );
+    expect(frameworkApi.updateTechniqueFramework).toHaveBeenCalledTimes(2);
   });
 
   /**

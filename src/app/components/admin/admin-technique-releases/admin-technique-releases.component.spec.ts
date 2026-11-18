@@ -10,11 +10,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { fireEvent, screen, within } from '@testing-library/angular';
+import { fireEvent, screen, waitFor, within } from '@testing-library/angular';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import userEvent from '@testing-library/user-event';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import {
   TechniqueFramework,
@@ -29,6 +29,10 @@ import { AdminTechniqueReleasesComponent } from './admin-technique-releases.comp
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 // What the API's parsers stamp on a release: the notice, the publisher and the terms it carries.
 const COPYRIGHT =
@@ -403,6 +407,47 @@ describe('AdminTechniqueReleasesComponent', () => {
     expect(
       dialog.getByRole('link', { name: 'Acme Corp Terms of Use' }),
     ).toHaveAttribute('href', 'https://acme.example/terms');
+  });
+
+  /**
+   * Verifies: a notice the API refuses stays in the open dialog, so it is not typed again; once a save succeeds the
+   * dialog closes. The refusal reaches the app's error handler, as other saves' do.
+   * Interacts with: TechniqueReleaseService.updateTechniqueRelease (stub failing once), AdminTechniqueReleaseNoticeDialogComponent.
+   * Data: a custom release; its first save refused.
+   */
+  it('keeps the notice dialog open with what was typed when the save is refused', async () => {
+    const errors = captureUnhandledRxErrors();
+    const { releaseApi } = await renderReleases([CUSTOM]);
+    const failure = new Error('400');
+    releaseApi.updateTechniqueRelease.mockReturnValueOnce(
+      throwError(() => failure),
+    );
+    const user = userEvent.setup();
+    await user.click(
+      screen.getByRole('button', { name: 'Edit Acme Techniques 1.0' }),
+    );
+    await user.type(
+      await screen.findByRole('textbox', { name: 'Notice' }),
+      '© Acme Corp',
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await flush();
+
+    expect(errors).toEqual([failure]);
+    expect(screen.getByRole('textbox', { name: 'Notice' })).toHaveValue(
+      '© Acme Corp',
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('heading', {
+          name: 'Edit Release: Acme Techniques 1.0',
+        }),
+      ).not.toBeInTheDocument(),
+    );
+    expect(releaseApi.updateTechniqueRelease).toHaveBeenCalledTimes(2);
   });
 
   /**

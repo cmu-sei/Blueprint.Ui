@@ -27,7 +27,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
-import { Subject, from } from 'rxjs';
+import { Observable, Subject, from } from 'rxjs';
 import { concatMap, takeUntil } from 'rxjs/operators';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import {
@@ -124,7 +124,7 @@ export class AdminTechniqueFrameworksComponent implements OnInit, OnDestroy {
 
   add() {
     this.openDialog('Add Technique Framework', null, (definition) =>
-      this.techniqueFrameworkDataService.create(definition).subscribe(),
+      this.techniqueFrameworkDataService.create(definition),
     );
   }
 
@@ -133,16 +133,14 @@ export class AdminTechniqueFrameworksComponent implements OnInit, OnDestroy {
       'Edit Technique Framework: ' + framework.name,
       toDefinition(framework),
       (definition) =>
-        this.techniqueFrameworkDataService
-          .update(framework.id, definition)
-          .subscribe(),
+        this.techniqueFrameworkDataService.update(framework.id, definition),
     );
   }
 
   private openDialog(
     title: string,
     definition: TechniqueFrameworkDefinition | null,
-    save: (d: TechniqueFrameworkDefinition) => void,
+    save: (d: TechniqueFrameworkDefinition) => Observable<unknown>,
   ) {
     const dialogRef = this.dialog.open(AdminTechniqueFrameworkDialogComponent, {
       minWidth: '500px',
@@ -150,11 +148,13 @@ export class AdminTechniqueFrameworksComponent implements OnInit, OnDestroy {
       width: '800px',
       data: { title, form: toForm(definition) },
     });
+    // the dialog stays open until the save succeeds, so a definition the API refuses is not lost
     dialogRef.componentInstance.editComplete.subscribe((result) => {
       if (result.saveChanges && result.definition) {
-        save(result.definition);
+        save(result.definition).subscribe(() => dialogRef.close());
+      } else {
+        dialogRef.close();
       }
-      dialogRef.close();
     });
   }
 

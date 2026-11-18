@@ -207,13 +207,15 @@ export class AdminTechniqueReleasesComponent
         data: { release, notice, frameworks: this.frameworks },
       },
     );
+    // the dialog stays open until the save succeeds, so a notice the API refuses is not lost
     dialogRef.componentInstance.editComplete.subscribe((result) => {
       if (result.saveChanges && result.notice) {
         this.techniqueReleaseDataService
           .updateNotice(release.id, result.notice)
-          .subscribe();
+          .subscribe(() => dialogRef.close());
+      } else {
+        dialogRef.close();
       }
-      dialogRef.close();
     });
   }
 
