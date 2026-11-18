@@ -2962,7 +2962,7 @@ export class AssessorViewComponent
     const printContents = this.document.getElementById('assessment-print-area')?.innerHTML ?? '';
     this.document.body.innerHTML = printContents;
     window.print();
-    location.reload();
+    window.location.reload();
   }
 
   // Puts the MSEL name in the print footer; the page number is in the scss.
@@ -3086,7 +3086,7 @@ export class AssessorViewComponent
       }
       rows.sort((a, b) => a.deltaSeconds - b.deltaSeconds || kindOrder[a.kind] - kindOrder[b.kind]);
 
-      return {
+      const team: AssessmentReportTeam = {
         teamId: section.teamId,
         name: section.name,
         rows,
@@ -3097,7 +3097,8 @@ export class AssessorViewComponent
             .map(e => this.injectTitle(e))
           : [],
         levelCounts: countLevels(mine),
-      } as AssessmentReportTeam;
+      };
+      return team;
     });
 
     return {
@@ -3141,19 +3142,24 @@ export class AssessorViewComponent
     return plainText(this.getDataValue(event, 'Title').value) || 'Untitled inject';
   }
 
+  // each event's move and group numbers by event id: what getMoveAndGroupNumbers returns, whatever its declared type
+  private get eventMoveAndGroup(): Record<string, number[]> {
+    return this.moveAndGroupNumbers as unknown as Record<string, number[]>;
+  }
+
   private reportRow(contextKey: string, events: ScenarioEvent[]): AssessmentReportRow | null {
-    const moveMatch = contextKey.match(/^move-(\d+)$/);
+    const moveMatch = /^move-(\d+)$/.exec(contextKey);
     if (moveMatch) {
       const moveNumber = +moveMatch[1];
       const move = this.moveList.find(m => +m.moveNumber === moveNumber);
       return { key: contextKey, kind: 'move', title: `Move ${moveNumber} (whole move)`, deltaSeconds: +(move?.deltaSeconds ?? 0) || 0, ratings: [] };
     }
-    const groupMatch = contextKey.match(/^group-(\d+)-(\d+)$/);
+    const groupMatch = /^group-(\d+)-(\d+)$/.exec(contextKey);
     if (groupMatch) {
       const moveNumber = +groupMatch[1];
       const groupNumber = +groupMatch[2];
       const first = events.find(e => {
-        const nums = this.moveAndGroupNumbers[e.id];
+        const nums = this.eventMoveAndGroup[e.id];
         return nums && +nums[0] === moveNumber && +nums[1] === groupNumber;
       });
       return {
