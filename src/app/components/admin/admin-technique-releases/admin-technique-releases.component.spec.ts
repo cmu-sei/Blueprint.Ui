@@ -391,6 +391,36 @@ describe('AdminTechniqueReleasesComponent', () => {
   });
 
   /**
+   * Verifies: the Frameworks table's release count follows a release being linked to a framework and unlinked
+   * again, without reloading the page.
+   * Interacts with: editNotice, TechniqueReleaseDataService.updateNotice, the framework store's releaseCount.
+   * Data: MITRE D3FEND 1.6.0 with no framework, and a defensive framework definition with no releases.
+   */
+  it('counts a release on its framework as soon as it is linked or unlinked', async () => {
+    const unframed: TechniqueRelease = { ...D3FEND, techniqueFrameworkId: null, techniqueFrameworkName: null };
+    const { fixture } = await renderReleases([unframed], true, [D3FEND_FRAMEWORK]);
+    const user = userEvent.setup();
+    const releaseCount = () => {
+      fixture.detectChanges();
+      const row = within(screen.getByRole('table', { name: 'Technique frameworks' })).getAllByRole('row')[1];
+      return row.querySelector('.col-count').textContent.trim();
+    };
+    const pickFramework = async (text: string) => {
+      await user.click(screen.getByRole('button', { name: 'Edit MITRE D3FEND 1.6.0' }));
+      const select = await TestbedHarnessEnvironment.documentRootLoader(fixture).getHarness(MatSelectHarness.with({ selector: '[title="The framework definition the release belongs to"]' }));
+      await select.clickOptions({ text });
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+    };
+    expect(releaseCount()).toBe('0');
+
+    await pickFramework('D3FEND definition');
+    expect(releaseCount()).toBe('1');
+
+    await pickFramework('No framework');
+    expect(releaseCount()).toBe('0');
+  });
+
+  /**
    * Verifies: a file is read as the framework chosen under Read As, for when more than one matches it; with
    * none chosen it is matched automatically.
    * Interacts with: frameworkControl, selectFile, TechniqueReleaseService.importTechniqueRelease (stub).
