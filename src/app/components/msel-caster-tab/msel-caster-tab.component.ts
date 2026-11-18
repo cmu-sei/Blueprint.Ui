@@ -96,7 +96,6 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
   isChanged = false;
   directoryList: CasterDirectory[] = [];
   directoryError = '';
-  private directoriesRequested = false;
   copy: MselCasterExport | null = null;
   copyLoaded = false;
   busy = false;
@@ -134,10 +133,6 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
 
   // the directories this user can view in Caster, which Caster answers with the user's own permissions
   private loadDirectories() {
-    if (this.directoriesRequested) {
-      return;
-    }
-    this.directoriesRequested = true;
     this.casterService
       .getCasterDirectories()
       .pipe(takeUntil(this.unsubscribe$))
@@ -151,7 +146,6 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
           this.directoryList = [];
           this.directoryError =
             'Caster directories could not be loaded. You need access to Caster to choose one.';
-          this.directoriesRequested = false;
         },
       });
   }
@@ -384,7 +378,6 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
             next: (result) => {
               this.busy = false;
               // the new directory is not in the list loaded before it existed
-              this.directoriesRequested = false;
               this.loadDirectories();
               if (result.msel) {
                 this.mselDataService.setAsDates(result.msel);
