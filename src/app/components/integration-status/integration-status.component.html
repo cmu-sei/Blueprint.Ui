@@ -10,8 +10,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-progress-bar mode="indeterminate" class="progress-bar" />
       <p class="status-message">{{ statusMessage }} ...</p>
       @if (isCasterStep && casterWorkspaceUrl()) {
-        <a mat-stroked-button [href]="casterWorkspaceUrl()" target="_blank"
-           title="Watch the terraform plan and apply in Caster">
+        <a
+          mat-stroked-button
+          [href]="casterWorkspaceUrl()"
+          target="_blank"
+          title="Watch the terraform plan and apply in Caster"
+        >
           <mat-icon fontIcon="mdi-open-in-new" />
           Open Workspace in Caster
         </a>

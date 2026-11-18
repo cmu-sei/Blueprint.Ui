@@ -159,21 +159,38 @@ describe('IntegrationStatusComponent', () => {
    * Data: running statuses with and without a workspace URL.
    */
   it.each([
-    ['Caster - applying', 'http://caster.example/projects/proj-1?workspace=ws-1', true],
-    ['Caster - planning', 'http://caster.example/projects/proj-1?workspace=ws-1', true],
+    [
+      'Caster - applying',
+      'http://caster.example/projects/proj-1?workspace=ws-1',
+      true,
+    ],
+    [
+      'Caster - planning',
+      'http://caster.example/projects/proj-1?workspace=ws-1',
+      true,
+    ],
     ['Caster - creating workspace', '', false],
-    ['Pushing to Gallery', 'http://caster.example/projects/proj-1?workspace=ws-1', false],
-  ])('links a running push to its Caster workspace at "%s"', async (status, url, shown) => {
-    await renderStatus(status, url);
+    [
+      'Pushing to Gallery',
+      'http://caster.example/projects/proj-1?workspace=ws-1',
+      false,
+    ],
+  ])(
+    'links a running push to its Caster workspace at "%s"',
+    async (status, url, shown) => {
+      await renderStatus(status, url);
 
-    const link = screen.queryByRole('link', { name: 'Open Workspace in Caster' });
-    if (shown) {
-      expect(link).toHaveAttribute('href', url);
-      expect(link).toHaveAttribute('target', '_blank');
-    } else {
-      expect(link).not.toBeInTheDocument();
-    }
-  });
+      const link = screen.queryByRole('link', {
+        name: 'Open Workspace in Caster',
+      });
+      if (shown) {
+        expect(link).toHaveAttribute('href', url);
+        expect(link).toHaveAttribute('target', '_blank');
+      } else {
+        expect(link).not.toBeInTheDocument();
+      }
+    },
+  );
 
   /**
    * Verifies: a push that failed at its Caster step offers Retry Caster, which asks the API to retry and leaves the status open.

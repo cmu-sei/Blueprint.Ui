@@ -46,8 +46,12 @@ export class IntegrationStatusComponent {
 
   // a running push at its Caster step, which can take many minutes; its workspace shows the terraform output
   get isCasterStep(): boolean {
-    return !this.isError && !this.isPulling && !this.isCancelling &&
-      (this.msel()?.integrationStatus?.startsWith('Caster - ') || false);
+    return (
+      !this.isError &&
+      !this.isPulling &&
+      !this.isCancelling &&
+      (this.msel()?.integrationStatus?.startsWith('Caster - ') || false)
+    );
   }
 
   // only a push that failed at its last step, Caster, can redo that step alone
