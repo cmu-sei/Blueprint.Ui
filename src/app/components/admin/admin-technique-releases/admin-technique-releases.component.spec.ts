@@ -47,18 +47,6 @@ const ENTERPRISE: TechniqueRelease = {
   termsUrl: ATTACK_TERMS,
   notice: `${COPYRIGHT}\nMITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation.`,
 };
-const ATLAS: TechniqueRelease = {
-  id: 'rel-2',
-  domain: 'ATLAS',
-  name: 'ATLAS',
-  version: '2026.10',
-  releaseDate: new Date('2026-10-28T00:00:00Z'),
-  tacticCount: 16,
-  techniqueCount: 221,
-  source: 'MITRE ATLAS',
-  termsUrl: ATTACK_TERMS,
-  notice: `${COPYRIGHT}\nMITRE ATLAS™ is a trademark of The MITRE Corporation.`,
-};
 // what the release's framework definition says about mappings is served on the release (test data)
 const D3FEND: TechniqueRelease = {
   id: 'rel-3',
@@ -118,8 +106,6 @@ const IMPORT_RESULT: TechniqueCountermeasureImport = {
 };
 const TRADEMARKS =
   /MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation/;
-const ATLAS_TRADEMARK =
-  /MITRE ATLAS™ is a trademark of The MITRE Corporation\./;
 const D3FEND_TRADEMARK =
   /MITRE D3FEND™ is a trademark of The MITRE Corporation\./;
 
@@ -247,7 +233,6 @@ describe('AdminTechniqueReleasesComponent', () => {
     expect(
       screen.queryByText(/© 2026 The MITRE Corporation/),
     ).not.toBeInTheDocument();
-    expect(screen.queryByText(ATLAS_TRADEMARK)).not.toBeInTheDocument();
     expect(screen.queryByText(D3FEND_TRADEMARK)).not.toBeInTheDocument();
     expect(screen.queryByText(CAPEC_TRADEMARK)).not.toBeInTheDocument();
     expect(
@@ -301,39 +286,26 @@ describe('AdminTechniqueReleasesComponent', () => {
   });
 
   /**
-   * Verifies: each release's dialog shows its own framework's mark and terms link, and no other framework's.
+   * Verifies: each release's dialog shows its own notice and terms link, and not another release's. How the
+   * dialog draws a notice is TechniqueNoticeDialogComponent's to test.
    * Interacts with: rowClicked, TechniqueNoticeComponent.
-   * Data: Enterprise ATT&CK 17.1, ATLAS, MITRE D3FEND and MITRE CAPEC, opened one at a time.
+   * Data: MITRE D3FEND and MITRE CAPEC, opened one at a time.
    */
-  it("shows each release's own trademark line and terms link, and no other framework's", async () => {
-    await renderReleases([ENTERPRISE, ATLAS, D3FEND, CAPEC]);
+  it("shows each release's own notice, and not another release's", async () => {
+    await renderReleases([D3FEND, CAPEC]);
     const user = userEvent.setup();
 
     let dialog = await readNotice(user, 'MITRE CAPEC');
     expect(dialog.getByText(CAPEC_TRADEMARK)).toBeInTheDocument();
-    const capecTerms = dialog.getByRole('link', {
-      name: 'MITRE CAPEC Terms of Use',
-    });
-    expect(capecTerms).toHaveAttribute(
-      'href',
-      'https://capec.mitre.org/about/termsofuse.html',
-    );
-    expect(capecTerms).toHaveAttribute('target', '_blank');
-    expect(capecTerms).toHaveAttribute('rel', 'noopener');
-    expect(dialog.queryByText(TRADEMARKS)).not.toBeInTheDocument();
+    expect(
+      dialog.getByRole('link', { name: 'MITRE CAPEC Terms of Use' }),
+    ).toHaveAttribute('href', 'https://capec.mitre.org/about/termsofuse.html');
+    expect(dialog.queryByText(D3FEND_TRADEMARK)).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Close' }));
 
     dialog = await readNotice(user, 'MITRE D3FEND');
     expect(dialog.getByText(D3FEND_TRADEMARK)).toBeInTheDocument();
-    expect(
-      dialog.getByRole('link', { name: 'MITRE D3FEND Terms of Use' }),
-    ).toHaveAttribute('href', 'https://d3fend.mitre.org/tou/');
     expect(dialog.queryByText(CAPEC_TRADEMARK)).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Close' }));
-
-    dialog = await readNotice(user, 'ATLAS');
-    expect(dialog.getByText(ATLAS_TRADEMARK)).toBeInTheDocument();
-    expect(dialog.queryByText(D3FEND_TRADEMARK)).not.toBeInTheDocument();
   });
 
   /**

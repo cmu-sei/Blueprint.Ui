@@ -339,7 +339,7 @@ describe('MselTechniquesComponent', () => {
 
   /**
    * Verifies: with a technique in the pool, the release's copyright and trademark notice shows under its pinned row, with
-   * its Terms of Use link and without the ATLAS or D3FEND marks.
+   * its Terms of Use link.
    * Interacts with: MselTechniqueService.getMselTechniques (stub), TechniqueNoticeComponent, linkHost.
    * Data: T1059 in the pool; Enterprise ATT&CK 17.1 imported, carrying MITRE's notice.
    */
@@ -369,14 +369,9 @@ describe('MselTechniquesComponent', () => {
         /MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation/,
       ),
     ).toBeInTheDocument();
-    expect(dialog.queryByText(/MITRE ATLAS/)).not.toBeInTheDocument();
-    expect(dialog.queryByText(/MITRE D3FEND/)).not.toBeInTheDocument();
-    const terms = dialog.getByRole('link', {
-      name: 'MITRE ATT&CK Terms of Use',
-    });
-    expect(terms).toHaveAttribute('href', TERMS_OF_USE);
-    expect(terms).toHaveAttribute('target', '_blank');
-    expect(terms).toHaveAttribute('rel', 'noopener');
+    expect(
+      dialog.getByRole('link', { name: 'MITRE ATT&CK Terms of Use' }),
+    ).toHaveAttribute('href', TERMS_OF_USE);
   });
 
   /**
@@ -639,13 +634,9 @@ describe('MselTechniquesComponent', () => {
         /MITRE D3FEND™ is a trademark of The MITRE Corporation\./,
       ),
     ).toBeInTheDocument();
-    expect(d3fend.queryByText(/MITRE ATLAS/)).not.toBeInTheDocument();
-    const terms = d3fend.getByRole('link', {
-      name: 'MITRE D3FEND Terms of Use',
-    });
-    expect(terms).toHaveAttribute('href', D3FEND_TERMS_OF_USE);
-    expect(terms).toHaveAttribute('target', '_blank');
-    expect(terms).toHaveAttribute('rel', 'noopener');
+    expect(
+      d3fend.getByRole('link', { name: 'MITRE D3FEND Terms of Use' }),
+    ).toHaveAttribute('href', D3FEND_TERMS_OF_USE);
     expect(
       d3fend.queryByRole('link', { name: 'MITRE ATT&CK Terms of Use' }),
     ).not.toBeInTheDocument();
