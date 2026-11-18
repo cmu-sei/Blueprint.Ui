@@ -549,6 +549,35 @@ describe('MselCasterTabComponent', () => {
   });
 
   /**
+   * Verifies: what the import changed to fit Caster, such as a directory renamed because Caster no longer takes its name, is shown once it is done.
+   * Interacts with: Import into Caster, MselCasterExportService.importMselCasterExport (stub, with a warning), CrucibleDialogService.confirm (stub).
+   * Data: MSEL role Owner; a pending MSEL with no directory and a copy; the import renames "Basic Topology".
+   */
+  it('shows what the import changed to fit Caster', async () => {
+    const { fixture, copyApi, confirm } = await renderTab({ copy: COPY });
+    const warning =
+      'Caster no longer takes the directory name "Basic Topology", so it was imported as "Basic_Topology".';
+    copyApi.importMselCasterExport.mockReturnValue(
+      of<MselCasterImportResult>({
+        casterDirectoryId: 'dir-new',
+        lockedFiles: [],
+        warnings: [warning],
+        msel: { ...msel([MselRole.Owner]), casterDirectoryId: 'dir-new' },
+      }),
+    );
+
+    await userEvent.setup().click(button('Import into Caster'));
+    fixture.detectChanges();
+
+    expect(confirm).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        title: 'Imported With Changes',
+        message: warning,
+      }),
+    );
+  });
+
+  /**
    * Verifies: Delete the Copy asks first, then deletes it.
    * Interacts with: Delete the Copy, CrucibleDialogService.confirm (stub, confirms), MselCasterExportService.deleteMselCasterExport (stub).
    * Data: MSEL role Owner; a pending MSEL linked to dir-1 with a copy.

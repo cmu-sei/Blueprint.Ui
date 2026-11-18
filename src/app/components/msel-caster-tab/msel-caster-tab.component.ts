@@ -410,11 +410,15 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
                 this.mselDataService.setAsDates(result.msel);
                 this.mselDataService.updateStore(result.msel);
               }
+              // what the import changed to fit Caster, and any file Caster held back
+              const notes = [...(result.warnings ?? [])];
               if (result.lockedFiles?.length) {
-                this.showMessage(
-                  'Imported Without Some Files',
+                notes.push(
                   `Caster did not import these locked files: ${result.lockedFiles.join(', ')}`,
                 );
+              }
+              if (notes.length) {
+                this.showMessage('Imported With Changes', notes.join('\n'));
               }
             },
             error: (err) => {

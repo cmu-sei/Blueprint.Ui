@@ -22,5 +22,9 @@ export interface MselCasterImportResult {
     msel?: Msel;
     casterDirectoryId?: string;
     lockedFiles?: Array<string> | null;
+    /**
+     * What the import changed to fit Caster, such as a directory name Caster no longer takes.
+     */
+    warnings?: Array<string> | null;
 }
 
