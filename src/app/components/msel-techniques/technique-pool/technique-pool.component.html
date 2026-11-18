@@ -38,6 +38,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       Upgrade them to {{ selectedRelease?.version }} to add techniques from it.
     </div>
     }
+    @if (browsedUnpinnedRelease) {
+    <app-technique-notice [releases]="[browsedUnpinnedRelease]"></app-technique-notice>
+    }
     <div class="toolbar-row">
       <mat-form-field style="width: 220px;">
         <mat-label>{{ groupLabel }}</mat-label>
@@ -150,6 +153,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </button>
         }
       </div>
+      <!-- the release's own copyright and terms, kept with the techniques it covers -->
+      <app-technique-notice [releases]="[pinned.release]"></app-technique-notice>
       }
     </div>
     }

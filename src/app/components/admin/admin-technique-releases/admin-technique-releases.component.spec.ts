@@ -119,101 +119,90 @@ describe('AdminTechniqueReleasesComponent', () => {
     expect(screen.queryByRole('link', { name: /Terms of Use/ })).not.toBeInTheDocument();
   });
 
-  /**
-   * Verifies: a release of the capec domain adds MITRE's CAPEC trademark sentence and a link to CAPEC's own terms
-   * of use beside the ATT&CK ones, and neither the ATLAS nor the D3FEND mark appears.
-   * Interacts with: TechniqueReleaseService.getTechniqueReleases (stub), hasCapecRelease.
-   * Data: Enterprise ATT&CK 17.1 and MITRE CAPEC 3.9.
-   */
-  it('also credits MITRE CAPEC and links its terms of use once a CAPEC release is listed', async () => {
-    await renderReleases([ENTERPRISE, CAPEC]);
-
-    expect(screen.getByText('MITRE CAPEC')).toBeInTheDocument();
-    expect(screen.getByText(TRADEMARKS)).toBeInTheDocument();
-    expect(screen.getByText(CAPEC_TRADEMARK)).toBeInTheDocument();
-    expect(screen.queryByText(ATLAS_TRADEMARK)).not.toBeInTheDocument();
-    expect(screen.queryByText(D3FEND_TRADEMARK)).not.toBeInTheDocument();
-    const terms = screen.getByRole('link', { name: 'MITRE CAPEC Terms of Use' });
-    expect(terms).toHaveAttribute('href', 'https://capec.mitre.org/about/termsofuse.html');
-    expect(terms).toHaveAttribute('target', '_blank');
-    expect(terms).toHaveAttribute('rel', 'noopener');
-  });
+  /** Opens the notice under a release's row. */
+  async function open(user: ReturnType<typeof userEvent.setup>, name: string) {
+    // the name cell: a release's domain can read the same as its name (ATLAS)
+    const cell = screen.getAllByRole('cell').find(c => c.classList.contains('col-name') && c.textContent?.trim().startsWith(name));
+    await user.click(cell);
+  }
 
   /**
-   * Verifies: an imported ATT&CK release brings MITRE's copyright line but not the ATLAS mark.
-   * Interacts with: TechniqueReleaseService.getTechniqueReleases (stub), hasAtlasRelease.
-   * Data: Enterprise ATT&CK 17.1 only.
+   * Verifies: no notice is shown until a row is opened; opening a row shows that release's own copyright and
+   * trademark lines and a link to its terms, and opening it again hides them.
+   * Interacts with: rowClicked, TechniqueNoticeComponent.
+   * Data: Enterprise ATT&CK 17.1.
    */
-  it('credits MITRE for an ATT&CK release without the ATLAS mark', async () => {
+  it('shows a release\'s notice under its row when the row is opened', async () => {
     await renderReleases([ENTERPRISE]);
+    const user = userEvent.setup();
 
-    expect(screen.getByText('Enterprise ATT&CK')).toBeInTheDocument();
+    expect(screen.queryByText(TRADEMARKS)).not.toBeInTheDocument();
+
+    await open(user, 'Enterprise ATT&CK');
     expect(screen.getByText(/© 2026 The MITRE Corporation/)).toBeInTheDocument();
     expect(screen.getByText(TRADEMARKS)).toBeInTheDocument();
-    expect(screen.queryByText(ATLAS_TRADEMARK)).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'MITRE ATT&CK Terms of Use' })).toHaveAttribute('href', ATTACK_TERMS);
+
+    await open(user, 'Enterprise ATT&CK');
+    expect(screen.queryByText(TRADEMARKS)).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: each release shows its own framework's mark and terms link, and no other framework's.
+   * Interacts with: rowClicked, TechniqueNoticeComponent.
+   * Data: Enterprise ATT&CK 17.1, ATLAS, MITRE D3FEND and MITRE CAPEC, opened one at a time.
+   */
+  it('shows each release\'s own trademark line and terms link, and no other framework\'s', async () => {
+    await renderReleases([ENTERPRISE, ATLAS, D3FEND, CAPEC]);
+    const user = userEvent.setup();
+
+    await open(user, 'MITRE CAPEC');
+    expect(screen.getByText(CAPEC_TRADEMARK)).toBeInTheDocument();
+    const capecTerms = screen.getByRole('link', { name: 'MITRE CAPEC Terms of Use' });
+    expect(capecTerms).toHaveAttribute('href', 'https://capec.mitre.org/about/termsofuse.html');
+    expect(capecTerms).toHaveAttribute('target', '_blank');
+    expect(capecTerms).toHaveAttribute('rel', 'noopener');
+    expect(screen.queryByText(TRADEMARKS)).not.toBeInTheDocument();
+
+    await open(user, 'MITRE D3FEND');
+    expect(screen.getByText(D3FEND_TRADEMARK)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'MITRE D3FEND Terms of Use' })).toHaveAttribute('href', 'https://d3fend.mitre.org/tou/');
+    expect(screen.queryByText(CAPEC_TRADEMARK)).not.toBeInTheDocument();
+
+    await open(user, 'ATLAS');
+    expect(screen.getByText(ATLAS_TRADEMARK)).toBeInTheDocument();
     expect(screen.queryByText(D3FEND_TRADEMARK)).not.toBeInTheDocument();
   });
 
   /**
-   * Verifies: a release of the d3fend domain adds MITRE's D3FEND trademark sentence and a link to D3FEND's own
-   * terms of use, beside the ATT&CK sentence and link, which stay.
-   * Interacts with: TechniqueReleaseService.getTechniqueReleases (stub), hasD3fendRelease.
-   * Data: Enterprise ATT&CK 17.1 and MITRE D3FEND 1.6.0.
-   */
-  it('also credits MITRE D3FEND and links its terms of use once a D3FEND release is listed', async () => {
-    await renderReleases([ENTERPRISE, D3FEND]);
-
-    expect(screen.getByText('MITRE D3FEND')).toBeInTheDocument();
-    expect(screen.getByText('d3fend')).toBeInTheDocument();
-    expect(screen.getByText(TRADEMARKS)).toBeInTheDocument();
-    expect(screen.getByText(D3FEND_TRADEMARK)).toBeInTheDocument();
-    expect(screen.queryByText(ATLAS_TRADEMARK)).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'MITRE ATT&CK Terms of Use' })).toHaveAttribute('href', 'https://attack.mitre.org/resources/legal-and-branding/terms-of-use/');
-    const terms = screen.getByRole('link', { name: 'MITRE D3FEND Terms of Use' });
-    expect(terms).toHaveAttribute('href', 'https://d3fend.mitre.org/tou/');
-    expect(terms).toHaveAttribute('target', '_blank');
-    expect(terms).toHaveAttribute('rel', 'noopener');
-  });
-
-  /**
-   * Verifies: a release of the ATLAS domain adds MITRE's ATLAS trademark sentence beside the ATT&CK one.
-   * Interacts with: TechniqueReleaseService.getTechniqueReleases (stub), hasAtlasRelease.
-   * Data: Enterprise ATT&CK 17.1 and ATLAS 2026.10.
-   */
-  it('also credits MITRE ATLAS once an ATLAS release is listed', async () => {
-    await renderReleases([ENTERPRISE, ATLAS]);
-
-    // the name and the domain cells both read ATLAS
-    expect(screen.getAllByText('ATLAS', { selector: 'mat-cell' })).toHaveLength(2);
-    expect(screen.getByText(TRADEMARKS)).toBeInTheDocument();
-    expect(screen.getByText(ATLAS_TRADEMARK)).toBeInTheDocument();
-    expect(screen.getAllByText(/© 2026 The MITRE Corporation/)).toHaveLength(1);
-  });
-  /**
-   * Verifies: the ATT&CK trademark line comes from an ATT&CK release alone: a page listing only CAPEC and a custom
-   * release has no ATT&CK line, and the custom release adds no notice of its own.
-   * Interacts with: TechniqueNoticeComponent.
-   * Data: MITRE CAPEC 3.9 and a custom release with no notice.
-   */
-  it('shows the ATT&CK trademark line only when an ATT&CK release is listed, and none for a custom release', async () => {
-    await renderReleases([CAPEC, CUSTOM]);
-
-    expect(screen.getByText(CAPEC_TRADEMARK)).toBeInTheDocument();
-    expect(screen.queryByText(TRADEMARKS)).not.toBeInTheDocument();
-    expect(screen.getAllByRole('link', { name: /Terms of Use/ })).toHaveLength(1);
-  });
-
-  /**
-   * Verifies: a page of custom releases shows no notice or terms link at all.
-   * Interacts with: TechniqueNoticeComponent.
+   * Verifies: a release with no notice says so when opened, and offers the edit button to an administrator.
+   * Interacts with: rowClicked.
    * Data: a custom release with no notice.
    */
-  it('shows no notice when no listed release carries one', async () => {
+  it('says a custom release carries no notice when its row is opened', async () => {
     await renderReleases([CUSTOM]);
+    const user = userEvent.setup();
 
-    expect(screen.getByText('Acme Techniques')).toBeInTheDocument();
+    await open(user, 'Acme Techniques');
+
+    expect(screen.getByText(/This release carries no copyright or terms notice\. Use its edit button to add one\./)).toBeInTheDocument();
     expect(screen.queryByText(/The MITRE Corporation/)).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Terms of Use/ })).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a click on one of a row's own buttons does not open its notice.
+   * Interacts with: rowClicked.
+   * Data: Enterprise ATT&CK 17.1.
+   */
+  it('does not open the notice when a row button is clicked', async () => {
+    await renderReleases([ENTERPRISE]);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Edit notice of Enterprise ATT&CK 17.1' }));
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByText(TRADEMARKS)).not.toBeInTheDocument();
   });
 
   /**
@@ -241,6 +230,7 @@ describe('AdminTechniqueReleasesComponent', () => {
 
     const sent: TechniqueReleaseNotice = { source: 'Acme Corp', sourceUrl: '', notice: '© Acme Corp', termsUrl: 'https://acme.example/terms' };
     expect(releaseApi.updateTechniqueRelease).toHaveBeenCalledWith('rel-5', sent);
+    await open(user, 'Acme Techniques');
     expect(await screen.findByText('© Acme Corp')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Acme Corp Terms of Use' })).toHaveAttribute('href', 'https://acme.example/terms');
   });

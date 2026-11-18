@@ -1,6 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
+import { TechniqueNoticeComponent } from '../../technique-notice/technique-notice.component';
 import { AfterViewInit, Component, OnDestroy, OnInit, inject, input, output, viewChild } from '@angular/core';
 import { UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
@@ -66,7 +67,7 @@ export interface PinnedDomain {
   selector: 'app-technique-pool',
   templateUrl: './technique-pool.component.html',
   styleUrls: ['./technique-pool.component.scss'],
-  imports: [MatIcon, MatFormField, MatLabel, MatHint, MatSelect, MatOption, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatExpansionPanelDescription, MatInput, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatProgressSpinner, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCheckbox, MatCellDef, MatCell, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatButton, NgStyle, TechniqueCountermeasuresComponent]
+  imports: [TechniqueNoticeComponent, MatIcon, MatFormField, MatLabel, MatHint, MatSelect, MatOption, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatExpansionPanelDescription, MatInput, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatProgressSpinner, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCheckbox, MatCellDef, MatCell, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatButton, NgStyle, TechniqueCountermeasuresComponent]
 })
 export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy {
   private mselQuery = inject(MselQuery);
@@ -85,7 +86,6 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
   readonly family = input<TechniqueFamily>('attack');
   readonly loggedInUserId = input<string>(undefined);
   /** The releases whose content the section has on screen, for the notice their publishers ask for. */
-  readonly releasesShown = output<TechniqueRelease[]>();
   readonly browserPaginator = viewChild<MatPaginator>('browserPaginator');
   msel = new MselPlus();
   releases: TechniqueRelease[] = [];
@@ -181,13 +181,11 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
         this.addPanelExpanded = pool.length === 0;
       }
       this.chooseDefaultRelease();
-      this.emitReleasesShown();
     });
     this.techniqueReleaseQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(releases => {
       this.allReleases = releases;
       this.releases = releases.filter(r => techniqueFamily(r) === this.family());
       this.chooseDefaultRelease();
-      this.emitReleasesShown();
     });
     this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(fields => {
       this.allDataFields = fields;
@@ -276,20 +274,10 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
     return this.pinnedByDomain.size > 1;
   }
 
-  /** The releases whose techniques are on screen: the ones the pool is pinned to, and the browsed one once it has loaded. */
-  private get releasesOnScreen(): TechniqueRelease[] {
-    const releases = [...this.pinnedByDomain.values()]
-      .map(id => this.releases.find(r => r.id === id))
-      .filter(r => !!r);
+  /** The browsed release when its techniques are listed but the MSEL's pool is not pinned to it: those techniques carry its notice. */
+  get browsedUnpinnedRelease(): TechniqueRelease | null {
     const browsed = this.selectedRelease;
-    if (browsed && this.techniques.length > 0 && !releases.some(r => r.id === browsed.id)) {
-      releases.push(browsed);
-    }
-    return releases;
-  }
-
-  private emitReleasesShown() {
-    this.releasesShown.emit(this.releasesOnScreen);
+    return browsed && this.techniques.length > 0 && !this.isPinned(browsed) ? browsed : null;
   }
 
   // =============================================
@@ -320,7 +308,6 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
     this.tactics = [];
     this.techniques = [];
     this.browserDataSource.data = [];
-    this.emitReleasesShown();
     if (!releaseId) {
       return;
     }
@@ -337,7 +324,6 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
         this.browserDataSource.data = this.techniques;
         this.isLoadingRelease = false;
         this.applyBrowserFilter();
-        this.emitReleasesShown();
       },
       error: () => (this.isLoadingRelease = false),
     });

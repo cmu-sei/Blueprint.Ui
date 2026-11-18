@@ -58,6 +58,8 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
   /** The D3FEND release the mappings file picker was opened for. */
   private mappingsRelease: TechniqueRelease;
   dataSource = new MatTableDataSource<TechniqueRelease>([]);
+  // the release whose notice is open under its row
+  expandedId = '';
   displayedColumns: string[] = ['action', 'name', 'domain', 'version', 'releaseDate', 'tacticCount', 'techniqueCount'];
   versionControl = new UntypedFormControl('');
   filterControl = new UntypedFormControl('');
@@ -67,6 +69,14 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
 
   constructor() {
     this.isLoading$ = this.techniqueReleaseQuery.selectLoading();
+  }
+
+  /** Opens or closes the notice under a row; a click on one of the row's own buttons does neither. */
+  rowClicked(release: TechniqueRelease, event: Event) {
+    if ((event.target as HTMLElement)?.closest('button, a')) {
+      return;
+    }
+    this.expandedId = this.expandedId === release.id ? '' : release.id;
   }
 
   ngOnInit() {
