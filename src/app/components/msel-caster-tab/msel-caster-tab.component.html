@@ -73,7 +73,7 @@ project root for license information.
       Store a Copy Now
     </button>
     <button mat-stroked-button (click)="importCopy()" [disabled]="busy || isChanged || !copy || !!msel.casterDirectoryId"
-      matTooltip="Create a new Caster project from the copy and link the MSEL to it, so every MSEL launched from this one deploys the same directory.">
+      matTooltip="Create a new Caster project from the copy, as you, and link the MSEL to it. A template needs this before it can be launched.">
       <mat-icon fontIcon="mdi-import" />
       Import into Caster
     </button>
@@ -99,9 +99,12 @@ project root for license information.
   @for (warning of copy.warnings; track warning) {
   <span class="warning">{{ warning }}</span>
   }
+  @if (!contentsIncluded()) {
+  <p class="help">File contents are shown to the MSEL's owners and editors.</p>
+  }
   <mat-accordion class="copy-files" multi>
     @for (file of copyFiles(); track file.path) {
-    <mat-expansion-panel>
+    <mat-expansion-panel [disabled]="!contentsIncluded()">
       <mat-expansion-panel-header>
         <mat-panel-title class="file-path">{{ file.path }}</mat-panel-title>
         @if (file.note) {

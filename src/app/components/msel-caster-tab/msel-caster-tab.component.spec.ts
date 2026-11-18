@@ -50,6 +50,7 @@ const COPY: MselCasterExport = {
     { path: '__Workspaces__/topology/topology.auto.tfvars', workspace: 'topology', content: 'blue = "x"' },
   ],
   warnings: [],
+  contentsIncluded: true,
 };
 
 function msel(myRoles: MselRole[] = [], extra: Partial<Msel> = {}): Msel {
@@ -212,6 +213,18 @@ describe('MselCasterTabComponent', () => {
     await userEvent.setup().click(screen.getByText('Range/main.tf'));
 
     expect(screen.getByText('variable "blue" {}')).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: without the file contents, which the API keeps for owners and editors, the files are listed but cannot be opened, and the tab says who sees them.
+   * Interacts with: contentsIncluded, the file expansion panels.
+   * Data: MSEL role Viewer; a pending MSEL with a copy answered without contents.
+   */
+  it('lists the files without their contents for a contributor who may not change the copy', async () => {
+    await renderTab({ myRoles: [MselRole.Viewer], copy: { ...COPY, contentsIncluded: false } });
+
+    expect(screen.getByText("File contents are shown to the MSEL's owners and editors.")).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Range\/main\.tf/ })).toHaveAttribute('aria-disabled', 'true');
   });
 
   /**

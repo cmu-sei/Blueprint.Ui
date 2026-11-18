@@ -39,6 +39,10 @@ export interface MselCasterExport {
      */
     entries?: Array<MselCasterExportEntry> | null;
     /**
+     * Whether file contents are included; only those who may change the copy read them.
+     */
+    contentsIncluded?: boolean;
+    /**
      * What the copy could not carry, when it was just taken from Caster.
      */
     warnings?: Array<string> | null;

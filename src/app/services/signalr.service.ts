@@ -431,9 +431,8 @@ export class SignalRService implements OnDestroy {
       this.mselDataService.updateIntegrationStatus(mselId, integrationStatus);
     });
 
-    // a push that imports the MSEL's copy of a directory sends the directory it made as well
-    this.hubConnection.on('CasterIdsUpdated', (mselId: string, casterWorkspaceId: string, casterRunId: string, casterDirectoryId?: string) => {
-      this.mselDataService.updateCasterIds(mselId, casterWorkspaceId, casterRunId, casterDirectoryId);
+    this.hubConnection.on('CasterIdsUpdated', (mselId: string, casterWorkspaceId: string, casterRunId: string) => {
+      this.mselDataService.updateCasterIds(mselId, casterWorkspaceId, casterRunId);
     });
 
   }

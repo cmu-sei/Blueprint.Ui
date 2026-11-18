@@ -206,6 +206,11 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
     return (this.copy?.directories || []).map((d) => d.name).join(' / ');
   }
 
+  // the API leaves out file contents for contributors who may not change the copy
+  contentsIncluded(): boolean {
+    return !!this.copy?.contentsIncluded;
+  }
+
   // the copy's files, from the project's root down: those shared from above, then the exported directory's own
   copyFiles(): CasterCopyFile[] {
     if (!this.copy) {
@@ -234,7 +239,7 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
       return 'The push creates a workspace in the linked directory.';
     }
     if (this.copy) {
-      return 'No directory is linked, so the push imports the copy into Caster as a new project, links the MSEL to it, and creates a workspace there.';
+      return 'No directory is linked, so the push imports the copy into Caster as a new project, as you, links the MSEL to it, and creates a workspace there. You need Caster\'s Create Projects permission.';
     }
     return 'Link a Caster directory, or upload a MSEL file that carries a copy of one, before pushing.';
   }

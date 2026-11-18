@@ -166,7 +166,7 @@ export class MselCasterExportService extends BaseService {
 
     /**
      * Gets the copy of its Caster directory a Msel carries
-     * Returns the Caster directory the Msel carries to another Caster: the project it came from, the directories from the project\&#39;s root down to it with their shared files, and the directory\&#39;s own contents. Downloading the Msel\&#39;s JSON file refreshes it from the linked directory. A Msel without one answers 204.
+     * Returns the Caster directory the Msel carries to another Caster: the project it came from, the directories from the project\&#39;s root down to it with their shared files, and the directory\&#39;s own contents. Downloading the Msel\&#39;s JSON file refreshes it from the linked directory. A Msel without one answers 204. File contents are included only for EditMsels, the Msel\&#39;s owner and its editors, since a workspace\&#39;s files can hold credentials; other contributors get the paths alone.
      * @param id The id of the Msel
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -286,7 +286,7 @@ export class MselCasterExportService extends BaseService {
 
     /**
      * Imports a Msel\&#39;s copy of a Caster directory into Caster
-     * Creates a new Caster project, as the caller, from the copy the Msel carries, and links the Msel to the directory it creates. The caller needs Caster\&#39;s Create Projects permission. A push does the same, as Blueprint\&#39;s service account, for a Msel that has a copy and no directory; importing first lets a template\&#39;s launches share one directory. Not while the Msel is pushed, nor while it has a directory.
+     * Creates a new Caster project, as the caller, from the copy the Msel carries, and links the Msel to the directory it creates. The caller needs Caster\&#39;s Create Projects permission. Pushing a Msel that has a copy and no directory does the same, as the pusher. A template\&#39;s launches need a directory, so a template with only a copy is imported here first. Not while the Msel is pushed, nor while it has a directory.
      * @param id The id of the Msel
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
