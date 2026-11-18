@@ -23,6 +23,7 @@ export interface JsonLdFormatOptions {
     displayOrderProperty?: string | null;
     definitionProperty?: string | null;
     releaseDateProperty?: string | null;
+    publisherProperty?: string | null;
     noticeProperty?: string | null;
 }
 
