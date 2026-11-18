@@ -20,7 +20,7 @@ import { TechniqueReleaseDataService } from 'src/app/data/technique-release/tech
 import { TechniqueReleaseQuery } from 'src/app/data/technique-release/technique-release.query';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
 import { AdminTechniqueReleaseNoticeDialogComponent } from '../admin-technique-release-notice-dialog/admin-technique-release-notice-dialog.component';
-import { TechniqueNoticeComponent } from '../../technique-notice/technique-notice.component';
+import { TechniqueNoticeComponent, hasTechniqueNotice } from '../../technique-notice/technique-notice.component';
 
 /** Where MITRE serves a release's d3fend-full-mappings.json; the unversioned "latest" path is not served. */
 export function d3fendMappingsUrl(version: string): string {
@@ -70,6 +70,8 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
   constructor() {
     this.isLoading$ = this.techniqueReleaseQuery.selectLoading();
   }
+
+  hasNotice = hasTechniqueNotice;
 
   /** Opens or closes the notice under a row; a click on one of the row's own buttons does neither. */
   rowClicked(release: TechniqueRelease, event: Event) {

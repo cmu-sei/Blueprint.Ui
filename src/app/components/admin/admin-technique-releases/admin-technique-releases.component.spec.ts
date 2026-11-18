@@ -119,36 +119,38 @@ describe('AdminTechniqueReleasesComponent', () => {
     expect(screen.queryByRole('link', { name: /Terms of Use/ })).not.toBeInTheDocument();
   });
 
-  /** Opens the notice under a release's row. */
-  async function open(user: ReturnType<typeof userEvent.setup>, name: string) {
-    // the name cell: a release's domain can read the same as its name (ATLAS)
-    const cell = screen.getAllByRole('cell').find(c => c.classList.contains('col-name') && c.textContent?.trim().startsWith(name));
-    await user.click(cell);
+  /** Opens a release's row, then its Copyright & terms link, and returns the dialog. */
+  async function readNotice(user: ReturnType<typeof userEvent.setup>, name: string) {
+    await user.click(screen.getByText(name, { selector: '.col-name' }));
+    await user.click(await screen.findByRole('button', { name: 'Copyright & terms' }));
+    return within(await screen.findByRole('dialog'));
   }
 
   /**
-   * Verifies: no notice is shown until a row is opened; opening a row shows that release's own copyright and
-   * trademark lines and a link to its terms, and opening it again hides them.
+   * Verifies: nothing is shown until a row is opened; opening a row shows a Copyright & terms link under it, the link
+   * opens that release's own notice and terms in a dialog, and opening the row again hides the link.
    * Interacts with: rowClicked, TechniqueNoticeComponent.
    * Data: Enterprise ATT&CK 17.1.
    */
-  it('shows a release\'s notice under its row when the row is opened', async () => {
+  it('shows a release\'s copyright and terms link under its row when the row is opened', async () => {
     await renderReleases([ENTERPRISE]);
     const user = userEvent.setup();
 
+    expect(screen.queryByRole('button', { name: 'Copyright & terms' })).not.toBeInTheDocument();
     expect(screen.queryByText(TRADEMARKS)).not.toBeInTheDocument();
 
-    await open(user, 'Enterprise ATT&CK');
-    expect(screen.getByText(/© 2026 The MITRE Corporation/)).toBeInTheDocument();
-    expect(screen.getByText(TRADEMARKS)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'MITRE ATT&CK Terms of Use' })).toHaveAttribute('href', ATTACK_TERMS);
+    const dialog = await readNotice(user, 'Enterprise ATT&CK');
+    expect(dialog.getByText(/© 2026 The MITRE Corporation/)).toBeInTheDocument();
+    expect(dialog.getByText(TRADEMARKS)).toBeInTheDocument();
+    expect(dialog.getByRole('link', { name: 'MITRE ATT&CK Terms of Use' })).toHaveAttribute('href', ATTACK_TERMS);
 
-    await open(user, 'Enterprise ATT&CK');
-    expect(screen.queryByText(TRADEMARKS)).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    await user.click(screen.getByText('Enterprise ATT&CK', { selector: '.col-name' }));
+    expect(screen.queryByRole('button', { name: 'Copyright & terms' })).not.toBeInTheDocument();
   });
 
   /**
-   * Verifies: each release shows its own framework's mark and terms link, and no other framework's.
+   * Verifies: each release's dialog shows its own framework's mark and terms link, and no other framework's.
    * Interacts with: rowClicked, TechniqueNoticeComponent.
    * Data: Enterprise ATT&CK 17.1, ATLAS, MITRE D3FEND and MITRE CAPEC, opened one at a time.
    */
@@ -156,22 +158,24 @@ describe('AdminTechniqueReleasesComponent', () => {
     await renderReleases([ENTERPRISE, ATLAS, D3FEND, CAPEC]);
     const user = userEvent.setup();
 
-    await open(user, 'MITRE CAPEC');
-    expect(screen.getByText(CAPEC_TRADEMARK)).toBeInTheDocument();
-    const capecTerms = screen.getByRole('link', { name: 'MITRE CAPEC Terms of Use' });
+    let dialog = await readNotice(user, 'MITRE CAPEC');
+    expect(dialog.getByText(CAPEC_TRADEMARK)).toBeInTheDocument();
+    const capecTerms = dialog.getByRole('link', { name: 'MITRE CAPEC Terms of Use' });
     expect(capecTerms).toHaveAttribute('href', 'https://capec.mitre.org/about/termsofuse.html');
     expect(capecTerms).toHaveAttribute('target', '_blank');
     expect(capecTerms).toHaveAttribute('rel', 'noopener');
-    expect(screen.queryByText(TRADEMARKS)).not.toBeInTheDocument();
+    expect(dialog.queryByText(TRADEMARKS)).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Close' }));
 
-    await open(user, 'MITRE D3FEND');
-    expect(screen.getByText(D3FEND_TRADEMARK)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'MITRE D3FEND Terms of Use' })).toHaveAttribute('href', 'https://d3fend.mitre.org/tou/');
-    expect(screen.queryByText(CAPEC_TRADEMARK)).not.toBeInTheDocument();
+    dialog = await readNotice(user, 'MITRE D3FEND');
+    expect(dialog.getByText(D3FEND_TRADEMARK)).toBeInTheDocument();
+    expect(dialog.getByRole('link', { name: 'MITRE D3FEND Terms of Use' })).toHaveAttribute('href', 'https://d3fend.mitre.org/tou/');
+    expect(dialog.queryByText(CAPEC_TRADEMARK)).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Close' }));
 
-    await open(user, 'ATLAS');
-    expect(screen.getByText(ATLAS_TRADEMARK)).toBeInTheDocument();
-    expect(screen.queryByText(D3FEND_TRADEMARK)).not.toBeInTheDocument();
+    dialog = await readNotice(user, 'ATLAS');
+    expect(dialog.getByText(ATLAS_TRADEMARK)).toBeInTheDocument();
+    expect(dialog.queryByText(D3FEND_TRADEMARK)).not.toBeInTheDocument();
   });
 
   /**
@@ -183,7 +187,7 @@ describe('AdminTechniqueReleasesComponent', () => {
     await renderReleases([CUSTOM]);
     const user = userEvent.setup();
 
-    await open(user, 'Acme Techniques');
+    await user.click(screen.getByText('Acme Techniques', { selector: '.col-name' }));
 
     expect(screen.getByText(/This release carries no copyright or terms notice\. Use its edit button to add one\./)).toBeInTheDocument();
     expect(screen.queryByText(/The MITRE Corporation/)).not.toBeInTheDocument();
@@ -230,9 +234,9 @@ describe('AdminTechniqueReleasesComponent', () => {
 
     const sent: TechniqueReleaseNotice = { source: 'Acme Corp', sourceUrl: '', notice: '© Acme Corp', termsUrl: 'https://acme.example/terms' };
     expect(releaseApi.updateTechniqueRelease).toHaveBeenCalledWith('rel-5', sent);
-    await open(user, 'Acme Techniques');
-    expect(await screen.findByText('© Acme Corp')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Acme Corp Terms of Use' })).toHaveAttribute('href', 'https://acme.example/terms');
+    const dialog = await readNotice(user, 'Acme Techniques');
+    expect(dialog.getByText('© Acme Corp')).toBeInTheDocument();
+    expect(dialog.getByRole('link', { name: 'Acme Corp Terms of Use' })).toHaveAttribute('href', 'https://acme.example/terms');
   });
 
   /**

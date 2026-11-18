@@ -93,8 +93,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <ng-container matColumnDef="expandedDetail">
       <mat-cell *matCellDef="let release" class="col-detail">
         @if (release.id !== expandedId) {
-        } @else if (release.notice || release.termsUrl) {
-        <app-technique-notice [releases]="[release]"></app-technique-notice>
+        } @else if (hasNotice(release)) {
+        <app-technique-notice [release]="release"></app-technique-notice>
         } @else {
         <span class="no-notice">This release carries no copyright or terms notice.@if (canEdit()) { Use its edit button to add one.}</span>
         }

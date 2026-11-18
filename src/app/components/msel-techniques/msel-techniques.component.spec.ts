@@ -5,6 +5,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { fireEvent, screen, within } from '@testing-library/angular';
+import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import {
@@ -102,6 +103,15 @@ const T1059_COUNTERED: MselCountermeasures = {
   }],
 };
 
+// The notice is behind each release's Copyright & terms link: open the nth one and read the dialog, then close it.
+async function readNotice(index = 0): Promise<HTMLElement> {
+  await userEvent.setup().click(screen.getAllByRole('button', { name: 'Copyright & terms' })[index]);
+  return await screen.findByRole('dialog');
+}
+async function closeNotice() {
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Close' }));
+}
+
 const attackSection = () => screen.getByLabelText('Attack Techniques release').closest('app-technique-pool') as HTMLElement;
 const defensiveSection = () => screen.getByLabelText('Defensive Techniques release').closest('app-technique-pool') as HTMLElement;
 
@@ -170,17 +180,19 @@ describe('MselTechniquesComponent', () => {
     await renderTechniques([T1059], [ENTERPRISE_RELEASE]);
 
     expect(screen.getByRole('link', { name: 'T1059' })).toHaveAttribute('title', 'Open T1059 on attack.mitre.org');
-    expect(screen.getAllByText(/© 2026 The MITRE Corporation/)).toHaveLength(1);
-    // the notice sits with the pinned release it covers, not at the foot of the tab
-    expect(within(attackSection()).getByLabelText('Pinned releases')).toContainElement(screen.getByText(/© 2026 The MITRE Corporation/));
-    expect(screen.getByText(/MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation/)).toBeInTheDocument();
-    expect(screen.queryByText(/MITRE ATLAS/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/MITRE D3FEND/)).not.toBeInTheDocument();
-    const terms = screen.getByRole('link', { name: 'MITRE ATT&CK Terms of Use' });
+    // the link sits with the pinned release it covers, not at the foot of the tab, and nothing is shown until it is opened
+    expect(screen.getAllByRole('button', { name: 'Copyright & terms' })).toHaveLength(1);
+    expect(within(attackSection()).getByLabelText('Pinned releases')).toContainElement(screen.getByRole('button', { name: 'Copyright & terms' }));
+    expect(screen.queryByText(/The MITRE Corporation/)).not.toBeInTheDocument();
+    const dialog = within(await readNotice());
+    expect(dialog.getByText(/© 2026 The MITRE Corporation/)).toBeInTheDocument();
+    expect(dialog.getByText(/MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation/)).toBeInTheDocument();
+    expect(dialog.queryByText(/MITRE ATLAS/)).not.toBeInTheDocument();
+    expect(dialog.queryByText(/MITRE D3FEND/)).not.toBeInTheDocument();
+    const terms = dialog.getByRole('link', { name: 'MITRE ATT&CK Terms of Use' });
     expect(terms).toHaveAttribute('href', TERMS_OF_USE);
     expect(terms).toHaveAttribute('target', '_blank');
     expect(terms).toHaveAttribute('rel', 'noopener');
-    expect(screen.queryByRole('link', { name: 'MITRE D3FEND Terms of Use' })).not.toBeInTheDocument();
   });
 
   /**
@@ -192,8 +204,7 @@ describe('MselTechniquesComponent', () => {
     await renderTechniques([], [ENTERPRISE_RELEASE]);
 
     expect(screen.getAllByText(/No techniques yet/)).toHaveLength(2);
-    expect(screen.queryByText(/The MITRE Corporation/)).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Terms of Use' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Copyright & terms' })).not.toBeInTheDocument();
   });
 
   /**
@@ -208,9 +219,10 @@ describe('MselTechniquesComponent', () => {
     expect(releaseApi.getTechniques).toHaveBeenCalledWith('rel-1');
     expect(screen.getByRole('link', { name: 'AML.T0000' })).toHaveAttribute('href', 'https://atlas.mitre.org/techniques/AML.T0000');
     expect(screen.getByRole('link', { name: 'AML.T0000' })).toHaveAttribute('title', 'Open AML.T0000 on atlas.mitre.org');
-    expect(screen.queryByText(/ATT&CK and ATT&CK are registered trademarks/)).not.toBeInTheDocument();
-    expect(screen.getByText(/MITRE ATLAS™ is a trademark of The MITRE Corporation\./)).toBeInTheDocument();
-    expect(screen.queryByText(/MITRE D3FEND/)).not.toBeInTheDocument();
+    const dialog = within(await readNotice());
+    expect(dialog.queryByText(/ATT&CK and ATT&CK are registered trademarks/)).not.toBeInTheDocument();
+    expect(dialog.getByText(/MITRE ATLAS™ is a trademark of The MITRE Corporation\./)).toBeInTheDocument();
+    expect(dialog.queryByText(/MITRE D3FEND/)).not.toBeInTheDocument();
   });
 
   /**
@@ -234,10 +246,12 @@ describe('MselTechniquesComponent', () => {
     expect(attack.getByRole('link', { name: 'CWE-1286' })).toHaveAttribute('href', 'https://cwe.mitre.org/data/definitions/1286.html');
     expect(attack.getByRole('link', { name: 'WASC' })).toHaveAttribute('href', 'http://projects.webappsec.org/SQL-Injection');
     expect(attack.getByRole('link', { name: 'OWASP' })).toHaveAttribute('href', 'https://owasp.org/www-community/attacks/SQL_Injection');
-    expect(screen.getByText(/MITRE CAPEC™ is a trademark of The MITRE Corporation\./)).toBeInTheDocument();
-    expect(screen.queryByText(/MITRE ATLAS/)).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'MITRE CAPEC Terms of Use' })).toHaveAttribute('href', CAPEC_TERMS_OF_USE);
-    expect(screen.queryByText(/ATT&CK and ATT&CK are registered trademarks/)).not.toBeInTheDocument();
+    const dialog = within(await readNotice());
+    expect(dialog.getByText(/MITRE CAPEC™ is a trademark of The MITRE Corporation\./)).toBeInTheDocument();
+    expect(dialog.queryByText(/MITRE ATLAS/)).not.toBeInTheDocument();
+    expect(dialog.getByRole('link', { name: 'MITRE CAPEC Terms of Use' })).toHaveAttribute('href', CAPEC_TERMS_OF_USE);
+    expect(dialog.queryByText(/ATT&CK and ATT&CK are registered trademarks/)).not.toBeInTheDocument();
+    await closeNotice();
 
     fireEvent.input(attack.getByPlaceholderText('Search techniques'), { target: { value: 'cwe-120' } });
 
@@ -258,8 +272,9 @@ describe('MselTechniquesComponent', () => {
     expect(attack.getByText('Tactics')).toBeInTheDocument();
     expect(attack.getByText('Platforms')).toBeInTheDocument();
     expect(attack.queryByText('Weaknesses')).not.toBeInTheDocument();
-    expect(screen.queryByText(/MITRE CAPEC/)).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'MITRE CAPEC Terms of Use' })).not.toBeInTheDocument();
+    const dialog = within(await readNotice());
+    expect(dialog.queryByText(/MITRE CAPEC/)).not.toBeInTheDocument();
+    expect(dialog.queryByRole('link', { name: 'MITRE CAPEC Terms of Use' })).not.toBeInTheDocument();
   });
 
   /**
@@ -278,15 +293,18 @@ describe('MselTechniquesComponent', () => {
     expect(d3ch).toHaveAttribute('href', 'https://d3fend.mitre.org/technique/d3f:CredentialHardening/');
     expect(d3ch).toHaveAttribute('title', 'Open D3-CH on d3fend.mitre.org');
     expect(within(defensiveSection()).getByText('MSEL Techniques (1)')).toBeInTheDocument();
-    // each pinned release shows its own notice under its row: ATT&CK's and D3FEND's
-    expect(screen.getAllByText(/© 2026 The MITRE Corporation/)).toHaveLength(2);
-    expect(screen.getByText(/MITRE D3FEND™ is a trademark of The MITRE Corporation\./)).toBeInTheDocument();
-    expect(screen.queryByText(/MITRE ATLAS/)).not.toBeInTheDocument();
-    const terms = screen.getByRole('link', { name: 'MITRE D3FEND Terms of Use' });
+    // each pinned release has its own link under its row: ATT&CK's, then D3FEND's
+    expect(screen.getAllByRole('button', { name: 'Copyright & terms' })).toHaveLength(2);
+    const d3fend = within(await readNotice(1));
+    expect(d3fend.getByText(/MITRE D3FEND™ is a trademark of The MITRE Corporation\./)).toBeInTheDocument();
+    expect(d3fend.queryByText(/MITRE ATLAS/)).not.toBeInTheDocument();
+    const terms = d3fend.getByRole('link', { name: 'MITRE D3FEND Terms of Use' });
     expect(terms).toHaveAttribute('href', D3FEND_TERMS_OF_USE);
     expect(terms).toHaveAttribute('target', '_blank');
     expect(terms).toHaveAttribute('rel', 'noopener');
-    expect(screen.getByRole('link', { name: 'MITRE ATT&CK Terms of Use' })).toHaveAttribute('href', TERMS_OF_USE);
+    expect(d3fend.queryByRole('link', { name: 'MITRE ATT&CK Terms of Use' })).not.toBeInTheDocument();
+    await closeNotice();
+    expect(within(await readNotice(0)).getByRole('link', { name: 'MITRE ATT&CK Terms of Use' })).toHaveAttribute('href', TERMS_OF_USE);
   });
 
   /**
@@ -314,7 +332,7 @@ describe('MselTechniquesComponent', () => {
     expect(within(attackSection()).getByText('Platforms')).toBeInTheDocument();
     expect(within(defensiveSection()).queryByText('Platforms')).not.toBeInTheDocument();
     expect(within(defensiveSection()).getByRole('link', { name: 'D3-CH' })).toBeInTheDocument();
-    expect(screen.getByText(/MITRE D3FEND™ is a trademark of The MITRE Corporation\./)).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Copyright & terms' })).toHaveLength(2);
   });
   /**
    * Verifies: each pooled attack technique gets a Countered by row loaded for the MSEL once, the defensive pool
@@ -372,10 +390,14 @@ describe('MselTechniquesComponent', () => {
     expect(attack.getByText('enterprise-attack', { selector: '.domain-tag' })).toBeInTheDocument();
     expect(attack.getByText('capec', { selector: '.domain-tag' })).toBeInTheDocument();
     expect(within(defensiveSection()).queryByText('d3fend', { selector: '.domain-tag' })).not.toBeInTheDocument();
-    // each of the three pinned releases shows its own notice
-    expect(screen.getAllByText(/© 2026 The MITRE Corporation/)).toHaveLength(3);
-    expect(screen.getByText(/MITRE CAPEC™ is a trademark/)).toBeInTheDocument();
-    expect(screen.getByText(/MITRE D3FEND™ is a trademark/)).toBeInTheDocument();
+    // each of the three pinned releases has its own link, and opens its own notice
+    expect(screen.getAllByRole('button', { name: 'Copyright & terms' })).toHaveLength(3);
+    // the attack section lists its pinned domains alphabetically (capec, then enterprise-attack), the defensive one follows
+    const capec = within(await readNotice(0));
+    expect(capec.getByText(/MITRE CAPEC™ is a trademark/)).toBeInTheDocument();
+    expect(capec.queryByText(/MITRE D3FEND/)).not.toBeInTheDocument();
+    await closeNotice();
+    expect(within(await readNotice(2)).getByText(/MITRE D3FEND™ is a trademark/)).toBeInTheDocument();
   });
 
   /**
