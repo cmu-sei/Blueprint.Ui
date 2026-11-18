@@ -122,9 +122,9 @@ project root for license information.
                         track printMove.moveNumber
                       ) {
                         <li>
-                          {{ printMove.label }}
+                          <span>{{ printMove.label }}</span>
                           @if (printMove.move?.description) {
-                            : {{ printMove.move.description }}
+                            <span>: {{ printMove.move.description }}</span>
                           }
                         </li>
                       }
