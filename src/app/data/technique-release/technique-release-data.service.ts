@@ -2,6 +2,8 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { TechniqueReleaseStore } from './technique-release.store';
+import { TechniqueReleaseQuery } from './technique-release.query';
+import { TechniqueFrameworkStore } from 'src/app/data/technique-framework/technique-framework.store';
 import { Injectable } from '@angular/core';
 import { TechniqueRelease, TechniqueReleaseNotice, TechniqueReleaseService, TechniqueCountermeasureImport } from 'src/app/generated/blueprint.api';
 import { take, tap } from 'rxjs/operators';
@@ -16,8 +18,17 @@ import { Observable } from 'rxjs';
 export class TechniqueReleaseDataService {
   constructor(
     private techniqueReleaseStore: TechniqueReleaseStore,
-    private techniqueReleaseService: TechniqueReleaseService
+    private techniqueReleaseService: TechniqueReleaseService,
+    private techniqueReleaseQuery: TechniqueReleaseQuery,
+    private techniqueFrameworkStore: TechniqueFrameworkStore
   ) {}
+
+  /** Keeps a framework's release count right as its releases are imported, relinked and deleted. */
+  private countRelease(frameworkId: string | null | undefined, change: number) {
+    if (frameworkId) {
+      this.techniqueFrameworkStore.update(frameworkId, f => ({ releaseCount: Math.max(0, (f.releaseCount || 0) + change) }));
+    }
+  }
 
   load() {
     this.techniqueReleaseStore.setLoading(true);
@@ -50,6 +61,7 @@ export class TechniqueReleaseDataService {
           next: (release) => {
             this.techniqueReleaseStore.setLoading(false);
             this.techniqueReleaseStore.add(release);
+            this.countRelease(release.techniqueFrameworkId, 1);
           },
           error: () => this.techniqueReleaseStore.setLoading(false),
         })
@@ -79,7 +91,14 @@ export class TechniqueReleaseDataService {
       .updateTechniqueRelease(id, notice)
       .pipe(
         take(1),
-        tap((release) => this.techniqueReleaseStore.update(id, release))
+        tap((release) => {
+          const before = this.techniqueReleaseQuery.getEntity(id)?.techniqueFrameworkId;
+          this.techniqueReleaseStore.update(id, release);
+          if (before !== release.techniqueFrameworkId) {
+            this.countRelease(before, -1);
+            this.countRelease(release.techniqueFrameworkId, 1);
+          }
+        })
       );
   }
 
@@ -88,6 +107,7 @@ export class TechniqueReleaseDataService {
       .deleteTechniqueRelease(id)
       .pipe(take(1))
       .subscribe(() => {
+        this.countRelease(this.techniqueReleaseQuery.getEntity(id)?.techniqueFrameworkId, -1);
         this.techniqueReleaseStore.remove(id);
       });
   }
