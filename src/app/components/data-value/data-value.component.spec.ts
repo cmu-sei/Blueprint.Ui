@@ -779,6 +779,34 @@ describe('DataValueComponent ATT&CK techniques', () => {
   });
 
   /**
+   * Verifies: choosing a technique while the search hides another the cell names keeps the hidden one, which the
+   * select does not report because it is not shown.
+   * Interacts with: techniqueFilter, filteredTechniqueOptions, setTechniques.
+   * Data: value "T1059"; canEdit; search "phish", choose "T1566 - Phishing".
+   */
+  it('keeps a chosen technique the search hides', async () => {
+    const { fixture, changes } = await renderTechniques('T1059', {
+      canEdit: true,
+    });
+    const select =
+      await TestbedHarnessEnvironment.loader(fixture).getHarness(
+        MatSelectHarness,
+      );
+    await select.open();
+    // set as the search box's ngModel does: typing into the panel's input closes it under jsdom
+    fixture.componentInstance.techniqueFilter = 'phish';
+    fixture.detectChanges();
+
+    const options = await select.getOptions();
+    expect(await Promise.all(options.map((o) => o.getText()))).toEqual([
+      'T1566 - Phishing',
+    ]);
+    await options[0].click();
+
+    expect(changes).toEqual(['T1059, T1566']);
+  });
+
+  /**
    * Verifies: with attack techniques of two domains in the pool the select names each option's domain, offers an id
    * the two domains share once (a cell stores the id and nothing else), and a pool of one domain names none.
    * Interacts with: offerTechniques, showsTechniqueDomains.

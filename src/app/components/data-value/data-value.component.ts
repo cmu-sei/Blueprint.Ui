@@ -363,12 +363,15 @@ export class DataValueComponent implements OnChanges, OnDestroy {
   }
 
   private filterTechniques(techniques: Technique[]): Technique[] {
-    if (!this.techniqueFilter) return techniques;
+    return techniques.filter((t) => this.matchesTechniqueFilter(t));
+  }
+
+  private matchesTechniqueFilter(technique: Technique): boolean {
+    if (!this.techniqueFilter) return true;
     const s = this.techniqueFilter.toLowerCase();
-    return techniques.filter(
-      (t) =>
-        t.externalId?.toLowerCase().includes(s) ||
-        t.name?.toLowerCase().includes(s),
+    return (
+      technique.externalId?.toLowerCase().includes(s) ||
+      technique.name?.toLowerCase().includes(s)
     );
   }
 
@@ -381,11 +384,12 @@ export class DataValueComponent implements OnChanges, OnDestroy {
     return t ? t.name : "Not in this MSEL's techniques";
   }
 
-  // ids the pool no longer offers aren't options, so keep them rather than let the select drop them
+  // the select reports only the options it shows: ids the pool no longer offers, or the search hides, are kept
   setTechniques(selected: string[]) {
-    const kept = this.selectedTechniques.filter(
-      (id) => !this.techniquesById.has(id),
-    );
+    const kept = this.selectedTechniques.filter((id) => {
+      const technique = this.techniquesById.get(id);
+      return !technique || !this.matchesTechniqueFilter(technique);
+    });
     this.value = [...kept, ...selected].join(', ');
     this.valueChangeHandler();
   }
