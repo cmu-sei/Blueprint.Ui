@@ -21,6 +21,14 @@ export interface StixFormatOptions {
     idSource?: string | null;
     idPrefix?: string | null;
     grouping?: StixGrouping;
+    tacticType?: string | null;
+    tacticShortNameProperty?: string | null;
+    matrixType?: string | null;
+    collectionType?: string | null;
+    collectionVersionProperty?: string | null;
+    domainsProperty?: string | null;
+    subTechniqueRelationship?: string | null;
+    deprecatedProperty?: string | null;
     abstractionProperty?: string | null;
     groupAbstraction?: string | null;
     parentRefsProperty?: string | null;
