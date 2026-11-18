@@ -4,6 +4,7 @@
 
 import { Component, inject, output } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Move } from 'src/app/generated/blueprint.api';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EDITOR_CONFIG } from 'src/app/utilities/editor-config';
 import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
@@ -24,7 +25,7 @@ import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
 })
 
 export class MoveEditDialogComponent {
-  data = inject(MAT_DIALOG_DATA);
+  data = inject<{ move: Move; mselStartTime?: Date; title?: string }>(MAT_DIALOG_DATA);
 
   readonly editComplete = output<any>();
 
@@ -33,6 +34,21 @@ export class MoveEditDialogComponent {
     []
   );
   editorConfig = EDITOR_CONFIG;
+
+  // a cleared number field is null, and only a whole number is a move number
+  numberError(): string {
+    const moveNumber = this.data.move.moveNumber;
+    return moveNumber === null ||
+      moveNumber === undefined ||
+      `${moveNumber}`.trim() === '' ||
+      !Number.isInteger(+moveNumber)
+      ? 'Move Number must be a whole number.'
+      : '';
+  }
+
+  validationError(): string {
+    return this.numberError();
+  }
 
   saveMove(which: string) {
     switch (which) {
@@ -52,7 +68,7 @@ export class MoveEditDialogComponent {
   handleEditComplete(saveChanges: boolean): void {
     if (!saveChanges) {
       this.editComplete.emit({ saveChanges: false, move: null });
-    } else {
+    } else if (!this.validationError()) {
       this.editComplete.emit({
         saveChanges: saveChanges,
         move: this.data.move,

@@ -339,7 +339,14 @@ export class ScenarioEventDataService {
         if (m < moves.length - 1 &&
           +scenarioEvent.deltaSeconds >= +moves[m + 1].deltaSeconds
         ) {
-          m++;
+          // go to the last move whose start this event has reached, so an event past a move with no events is
+          // in the right move, and one at a start two moves share (a MSEL saved before each move needed its
+          // own) is in the higher-numbered move
+          while (m < moves.length - 1 &&
+            +scenarioEvent.deltaSeconds >= +moves[m + 1].deltaSeconds
+          ) {
+            m++;
+          }
           group = 0;
           groupSeconds = +scenarioEvent.deltaSeconds;
         } else if (+scenarioEvent.deltaSeconds > +groupSeconds) {

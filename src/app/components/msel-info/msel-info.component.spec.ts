@@ -60,6 +60,7 @@ import {
   UserService,
 } from 'src/app/generated/blueprint.api';
 import { MselStore } from 'src/app/data/msel/msel.store';
+import { MoveStore } from 'src/app/data/move/move.store';
 import { UserStore } from 'src/app/data/user/user.store';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
@@ -139,6 +140,7 @@ async function renderInfo(
     authored?: MselScoringModel | null;
     citeModels?: ScoringModel[];
     confirms?: boolean;
+    moves?: { moveNumber: number; deltaSeconds: number }[];
     updateMsel?: (id: string, edit: MselEdit) => Observable<Msel>;
   } = {},
 ) {
@@ -154,6 +156,7 @@ async function renderInfo(
     authored = null,
     citeModels = [],
     confirms = true,
+    moves = [],
     // the API answers with the saved MSEL, which always has its created and modified dates
     updateMsel = (id: string, edit: MselEdit) =>
       of<Msel>({ ...msel(myRoles, startTime, mselExtra), ...edit, id, dateCreated: new Date('2026-10-01T12:00:00Z'), dateModified: new Date() }),
@@ -250,6 +253,14 @@ async function renderInfo(
       // angular-editor injects HttpClient for its image upload.
       provideHttpClient(),
       provideHttpClientTesting(),
+      {
+        provide: MoveStore,
+        useFactory: () => {
+          const store = new MoveStore();
+          store.set(moves.map((m) => ({ id: `move-${m.moveNumber}`, mselId: 'msel-1', ...m })));
+          return store;
+        },
+      },
       // The MSEL page loads the MSEL; the store is seeded instead.
       {
         provide: MselStore,
@@ -359,6 +370,45 @@ describe('MselInfoComponent', () => {
     expect(screen.getByText(/Add Page/)).toBeInTheDocument();
     await openPage();
     expect(screen.getByTitle('Edit Page')).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: Push Integrations is disabled while the MSEL's moves share a start time or are out of order, and the tab says
+   * which; moves in order leave it enabled with no warning.
+   * Interacts with: MselInfoComponent.moveProblems, real MoveStore (seeded), the Push Integrations button.
+   * Data: an owner; Move 0 and Move 1 both at +0s, or Move 1 at +600s.
+   */
+  it.each([
+    { label: 'share a start time', moves: [{ moveNumber: 0, deltaSeconds: 0 }, { moveNumber: 1, deltaSeconds: 0 }], warning: '** Move 0 and Move 1 start at the same time.' },
+    { label: 'are in order', moves: [{ moveNumber: 0, deltaSeconds: 0 }, { moveNumber: 1, deltaSeconds: 600 }], warning: '' },
+  ])('blocks Push Integrations when the moves $label', async ({ moves, warning }) => {
+    await renderInfo({ myRoles: [MselRole.Owner], moves });
+
+    if (warning) {
+      expect(screen.getByTitle('Push Integrations')).toBeDisabled();
+      expect(screen.getByText(warning)).toBeInTheDocument();
+    } else {
+      expect(screen.getByTitle('Push Integrations')).toBeEnabled();
+      expect(screen.queryByRole('status', { name: 'Moves to fix before pushing' })).not.toBeInTheDocument();
+    }
+  });
+
+  /**
+   * Verifies: a template, which has no Push Integrations button, still lists the moves to fix, because launching by
+   * invitation pushes and the API refuses an invalid template.
+   * Interacts with: MselInfoComponent.moveProblems, real MoveStore (seeded).
+   * Data: a template whose Move 0 and Move 1 both start at +0s.
+   */
+  it('lists the moves to fix on a template', async () => {
+    await renderInfo({
+      myRoles: [MselRole.Owner],
+      mselExtra: { isTemplate: true },
+      moves: [{ moveNumber: 0, deltaSeconds: 0 }, { moveNumber: 1, deltaSeconds: 0 }],
+    });
+
+    expect(screen.queryByTitle('Push Integrations')).not.toBeInTheDocument();
+    expect(screen.getByText('** Move 0 and Move 1 start at the same time.')).toBeInTheDocument();
+    expect(screen.getByText(/before anyone launches this template/)).toBeInTheDocument();
   });
 
   /**

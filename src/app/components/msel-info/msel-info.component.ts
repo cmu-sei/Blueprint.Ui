@@ -19,6 +19,7 @@ import {
   MselScoringModelService,
   MselService,
   MselUnit,
+  Move,
   ScenarioEvent,
   SteamfitterScenarioStartMode,
   SystemPermission,
@@ -56,6 +57,8 @@ import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/c
 import { EDITOR_CONFIG_PARAGRAPH, VIEW_CONFIG } from 'src/app/utilities/editor-config';
 import { casterVmAppWarning } from 'src/app/utilities/caster-vm-app';
 import { ComnSettingsService } from '@cmusei/crucible-common';
+import { MoveQuery } from 'src/app/data/move/move.query';
+import { moveOrderPushProblems } from '../../utilities/move-order';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { IntegrationStatusComponent } from '../integration-status/integration-status.component';
 import { MatTabGroup, MatTab, MatTabLabel } from '@angular/material/tabs';
@@ -112,6 +115,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   private activatedRoute = inject(ActivatedRoute);
   private settingsService = inject(ComnSettingsService);
   private scenarioEventQuery = inject(ScenarioEventQuery);
+  private moveQuery = inject(MoveQuery);
+  private moveList: Move[] = [];
   private mselScoringModelService = inject(MselScoringModelService);
 
   readonly loggedInUserId = input<string>(undefined);
@@ -368,6 +373,12 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((dataFields) => {
         this.dataFieldList = dataFields;
+      });
+    this.moveQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((moves) => {
+        this.moveList = moves ?? [];
       });
     // subscribe to scenario events
     this.scenarioEventQuery
@@ -681,6 +692,16 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       return false; // CITE not enabled or already deployed, no validation needed
     }
     return this.citeToDo();
+  }
+
+  // What stops a push: moves that share a start time or are out of order, and events that start in no move.
+  // The API refuses the push with the same list; this says why the button is off.
+  moveProblems(): string[] {
+    const id = this.msel?.id;
+    return moveOrderPushProblems(
+      this.moveList.filter((m) => m.mselId === id),
+      this.scenarioEventList.filter((e) => e.mselId === id).map((e) => e.deltaSeconds),
+    );
   }
 
   hasGalleryEventsWithMissingData(): boolean {

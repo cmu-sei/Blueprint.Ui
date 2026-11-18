@@ -24,6 +24,8 @@ import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
+import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
+import { MOVE_ORDER_RULE, moveOrderPushProblems } from '../../utilities/move-order';
 
 @Component({
     selector: 'app-move-list',
@@ -35,6 +37,8 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
   private mselQuery = inject(MselQuery);
   private moveDataService = inject(MoveDataService);
   private moveQuery = inject(MoveQuery);
+  private scenarioEventQuery = inject(ScenarioEventQuery);
+  private eventStarts: { mselId: string; deltaSeconds: number }[] = [];
   dialog = inject(MatDialog);
   dialogService = inject(CrucibleDialogService);
 
@@ -55,6 +59,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
   showRealTime = false;
   maxMoveNumber = Number.MIN_SAFE_INTEGER;
   maxMoveStartSeconds = 0;
+  readonly moveOrderRule = MOVE_ORDER_RULE;
 
   private unsubscribe$ = new Subject();
   // context menu
@@ -71,6 +76,15 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
         this.moveList = moves;
         this.displayedMoves = this.getSortedMoves(this.getFilteredMoves());
         this.setNewMoveDefaults();
+      });
+    this.scenarioEventQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((events) => {
+        this.eventStarts = (events ?? []).map((e) => ({
+          mselId: e.mselId,
+          deltaSeconds: e.deltaSeconds,
+        }));
       });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>)
@@ -109,9 +123,11 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
     let editMove: Move = {};
     if (!move) {
       dialogTitle = 'Add a Move';
+      // each move starts after the one before it, so a new move starts an hour after the latest
       editMove = {
         moveNumber: this.maxMoveNumber + 1,
-        deltaSeconds: this.maxMoveStartSeconds,
+        deltaSeconds:
+          this.mselMoves().length > 0 ? this.maxMoveStartSeconds + 3600 : 0,
         description: '',
         situationDescription: '',
         situationTime: new Date(),
@@ -130,6 +146,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
       data: {
         move: editMove,
         mselStartTime: this.msel.startTime,
+        otherMoves: this.mselMoves().filter((m) => m.id !== editMove.id),
         title: dialogTitle,
       },
     });
@@ -239,18 +256,12 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
     return filteredMoves;
   }
 
-  badMoveTimeOrder(): boolean {
-    const orderedMoves = this.mselMoves().sort((a, b) =>
-      +a.moveNumber < +b.moveNumber ? -1 : 1
+  // what stops a push: moves that share a start time or are out of order, and events in no move
+  moveOrderProblems(): string[] {
+    return moveOrderPushProblems(
+      this.mselMoves(),
+      this.eventStarts.filter((e) => e.mselId === this.msel.id).map((e) => e.deltaSeconds),
     );
-    let deltaSeconds = Number.MIN_SAFE_INTEGER;
-    for (let index = 0; index < orderedMoves.length; index++) {
-      if (+orderedMoves[index].deltaSeconds <= +deltaSeconds) {
-        return true;
-      }
-      deltaSeconds = orderedMoves[index].deltaSeconds;
-    }
-    return false;
   }
 
   ngOnDestroy() {
