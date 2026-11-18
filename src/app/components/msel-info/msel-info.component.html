@@ -220,7 +220,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     (ngModelChange)="setMarking($event)"
                   >
                     @for (marking of markings; track marking.value) {
-                      <mat-option [value]="marking.value">{{ marking.label }}</mat-option>
+                      <mat-option [value]="marking.value">{{
+                        marking.label
+                      }}</mat-option>
                     }
                   </mat-select>
                 </mat-form-field>
@@ -231,7 +233,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
                       [ngModel]="msel.articleMarkingText || 'CLEAR'"
                       aria-label="TLP level"
                       [disabled]="!canEditMsel()"
-                      (ngModelChange)="msel.articleMarkingText = $event; isChanged = true"
+                      (ngModelChange)="
+                        msel.articleMarkingText = $event; isChanged = true
+                      "
                     >
                       @for (level of tlpLevels; track level) {
                         <mat-option [value]="level">TLP:{{ level }}</mat-option>
@@ -256,7 +260,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </div>
               <div class="single-detail center-self">
                 <span class="msel-image-hint"
-                  >Shown on the MSEL's pages, and on its Gallery articles when they are pushed.</span
+                  >Shown on the MSEL's pages, and on its Gallery articles when
+                  they are pushed.</span
                 >
               </div>
               <!-- Is a Template -->

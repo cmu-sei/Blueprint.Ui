@@ -6,7 +6,10 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
 <div class="article-container background">
   <div class="page">
     @if (banner(); as marking) {
-      <ng-container [ngTemplateOutlet]="markingBar" [ngTemplateOutletContext]="{ $implicit: marking }" />
+      <ng-container
+        [ngTemplateOutlet]="markingBar"
+        [ngTemplateOutletContext]="{ $implicit: marking }"
+      />
     }
     <angular-editor
       [placeholder]="'Description'"
@@ -14,7 +17,10 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
       [config]="viewConfig"
     />
     @if (banner(); as marking) {
-      <ng-container [ngTemplateOutlet]="markingBar" [ngTemplateOutletContext]="{ $implicit: marking }" />
+      <ng-container
+        [ngTemplateOutlet]="markingBar"
+        [ngTemplateOutletContext]="{ $implicit: marking }"
+      />
     }
   </div>
 </div>

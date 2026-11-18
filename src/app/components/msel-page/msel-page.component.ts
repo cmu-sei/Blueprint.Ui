@@ -4,7 +4,14 @@ import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable, of } from 'rxjs';
-import { catchError, distinctUntilChanged, filter, map, switchMap, takeUntil } from 'rxjs/operators';
+import {
+  catchError,
+  distinctUntilChanged,
+  filter,
+  map,
+  switchMap,
+  takeUntil,
+} from 'rxjs/operators';
 import { MselPage, MselService } from 'src/app/generated/blueprint.api';
 import { MselPageDataService } from 'src/app/data/msel-page/msel-page-data.service';
 import { MselPageQuery } from 'src/app/data/msel-page/msel-page.query';
@@ -65,11 +72,21 @@ export class MselPageComponent implements OnDestroy {
         map((mselPage) => mselPage?.mselId),
         filter((mselId) => !!mselId),
         distinctUntilChanged(),
-        switchMap((mselId) => this.mselService.getMsel(mselId).pipe(catchError(() => of(null)))),
+        switchMap((mselId) =>
+          this.mselService.getMsel(mselId).pipe(catchError(() => of(null))),
+        ),
         takeUntil(this.unsubscribe$),
       )
       .subscribe((msel) => {
-        this.banner.set(msel ? markingBanner(msel.articleMarking, msel.articleMarkingText, msel.name) : null);
+        this.banner.set(
+          msel
+            ? markingBanner(
+                msel.articleMarking,
+                msel.articleMarkingText,
+                msel.name,
+              )
+            : null,
+        );
       });
   }
 

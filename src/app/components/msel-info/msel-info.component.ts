@@ -113,7 +113,11 @@ import { AngularEditorModule } from '@kolkov/angular-editor';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
 import { DatePipe, formatDate } from '@angular/common';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
-import { CLASSIFICATION_MAX_LENGTH, MSEL_MARKINGS, TLP_LEVELS } from '../../utilities/msel-marking';
+import {
+  CLASSIFICATION_MAX_LENGTH,
+  MSEL_MARKINGS,
+  TLP_LEVELS,
+} from '../../utilities/msel-marking';
 import {
   normalizeScoringModel,
   scoringModelCounts,

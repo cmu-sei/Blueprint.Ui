@@ -29,8 +29,15 @@ export interface MarkingBanner {
 }
 
 /** The banner for a MSEL's marking, or null for none: a marking not set or not known is none, as in the API. */
-export function markingBanner(marking: string | null | undefined, text: string | null | undefined, exerciseName?: string): MarkingBanner | null {
-  const kind = MSEL_MARKINGS.find((m) => m.value.toLowerCase() === (marking ?? '').trim().toLowerCase())?.value ?? 'None';
+export function markingBanner(
+  marking: string | null | undefined,
+  text: string | null | undefined,
+  exerciseName?: string,
+): MarkingBanner | null {
+  const kind =
+    MSEL_MARKINGS.find(
+      (m) => m.value.toLowerCase() === (marking ?? '').trim().toLowerCase(),
+    )?.value ?? 'None';
   const value = text?.trim() || null;
   switch (kind) {
     case 'Exercise':
@@ -38,13 +45,20 @@ export function markingBanner(marking: string | null | undefined, text: string |
         text: 'EXERCISE · EXERCISE · EXERCISE',
         background: '#FDB516',
         color: '#000000',
-        subtext: (exerciseName?.trim() ? exerciseName.trim() + ' · ' : '') + 'FICTIONAL SCENARIO',
+        subtext:
+          (exerciseName?.trim() ? exerciseName.trim() + ' · ' : '') +
+          'FICTIONAL SCENARIO',
         align: 'center',
       };
     case 'Tlp': {
       const asked = value?.replace(/TLP:/i, '').trim().toUpperCase();
       const level = TLP_LEVELS.find((l) => l === asked) ?? 'CLEAR';
-      return { text: 'TLP:' + level, background: '#000000', color: tlpColor(level), align: 'left' };
+      return {
+        text: 'TLP:' + level,
+        background: '#000000',
+        color: tlpColor(level),
+        align: 'left',
+      };
     }
     case 'Classification': {
       if (!value) {
@@ -73,9 +87,15 @@ function tlpColor(level: string): string {
 }
 
 // the colours used on US classification banners, by the level the text names
-function classificationColors(upper: string): { background: string; color: string } {
+function classificationColors(upper: string): {
+  background: string;
+  color: string;
+} {
   if (upper.includes('TOP SECRET')) {
-    return { background: upper.includes('SCI') ? '#FCE83A' : '#FF8C00', color: '#000000' };
+    return {
+      background: upper.includes('SCI') ? '#FCE83A' : '#FF8C00',
+      color: '#000000',
+    };
   }
   if (/\bSECRET\b/.test(upper)) {
     return { background: '#C8102E', color: '#FFFFFF' };
