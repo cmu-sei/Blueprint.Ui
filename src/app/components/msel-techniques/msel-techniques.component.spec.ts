@@ -121,14 +121,14 @@ const defensiveSection = () => screen.getByLabelText('Defensive Techniques relea
 
 // With no release imported the Add Techniques browsers stay empty and only the pool can put MITRE content on screen;
 // an imported release is browsed by its family's section as soon as the component loads it.
-async function renderTechniques(pool: MselTechnique[], releases: TechniqueRelease[] = [], techniques: Record<string, Technique[]> = {}, countermeasures: MselCountermeasures = NO_MAPPINGS, grants: PermissionGrants = {}) {
+async function renderTechniques(pool: MselTechnique[], releases: TechniqueRelease[] = [], techniques: Record<string, Technique[]> = {}, countermeasures: MselCountermeasures = NO_MAPPINGS, grants: PermissionGrants = {}, tactics: Record<string, TechniqueTactic[]> = {}) {
   const poolApi = {
     getMselTechniques: vi.fn(() => of(structuredClone(pool))),
     getMselCountermeasures: vi.fn(() => of(structuredClone(countermeasures))),
   } satisfies ApiStub<MselTechniqueService>;
   const releaseApi = {
     getTechniqueReleases: vi.fn(() => of(structuredClone(releases))),
-    getTechniqueTactics: vi.fn(() => of<TechniqueTactic[]>([])),
+    getTechniqueTactics: vi.fn((id: string) => of<TechniqueTactic[]>(structuredClone(tactics[id] ?? []))),
     getTechniques: vi.fn((id: string) => of(structuredClone(techniques[id] ?? []))),
   } satisfies ApiStub<TechniqueReleaseService>;
   // The sections load the permissions themselves in ngOnInit, so the real service is provided over the
@@ -261,6 +261,25 @@ describe('MselTechniquesComponent', () => {
 
     expect(await attack.findByRole('link', { name: 'CAPEC-8' })).toBeInTheDocument();
     expect(attack.queryByRole('link', { name: 'CAPEC-66' })).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: the pool names each technique's groups from its own release, so a pattern from a release that is not
+   * the one being browsed shows its category name, not its short name.
+   * Interacts with: TechniquePoolComponent.getTacticNames/loadTacticNames, TechniqueReleaseService.getTechniqueTactics (stub).
+   * Data: a pool holding T1059 (Enterprise ATT&CK, Execution) and CAPEC-66 (MITRE CAPEC, Command Injection).
+   */
+  it('names each pool technique\'s groups from its own release', async () => {
+    const t1059: MselTechnique = { ...T1059, technique: { ...T1059.technique, tactics: ['execution'] } };
+    await renderTechniques([t1059, CAPEC_66_IN_POOL], [ENTERPRISE_RELEASE, CAPEC_RELEASE], {}, NO_MAPPINGS, {}, {
+      'rel-1': [{ id: 'tac-1', techniqueReleaseId: 'rel-1', shortName: 'execution', name: 'Execution' }],
+      'rel-c': [{ id: 'tac-c', techniqueReleaseId: 'rel-c', shortName: 'capec-248', name: 'Command Injection' }],
+    });
+    const attack = within(attackSection());
+
+    expect(await attack.findByText('Command Injection')).toBeInTheDocument();
+    expect(attack.getAllByText('Execution').length).toBeGreaterThan(0);
+    expect(attack.queryByText('capec-248')).not.toBeInTheDocument();
   });
 
   /**

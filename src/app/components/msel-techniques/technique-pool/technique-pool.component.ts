@@ -124,7 +124,8 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
   poolColumns: string[] = ['action', 'externalId', 'name', 'tactics', 'events'];
   private allDataFields: DataField[] = [];
   private allDataValues: DataValue[] = [];
-  private tacticNames = new Map<string, string>();
+  /** Each release's group names by short name, for the browser and for every release in the pool. */
+  private tacticNamesByRelease = new Map<string, Map<string, string>>();
   // the mapping rows of the attack family
   countermeasures: MselCountermeasures;
   private countermeasuresByTechniqueId = new Map<string, MselTechniqueCountermeasures>();
@@ -167,6 +168,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
       this.pool = [...pool].sort((a, b) => compareAttackIds(a.technique?.externalId, b.technique?.externalId));
       this.poolByTechniqueId = new Map(pool.map(m => [m.techniqueId, m]));
       this.poolDataSource.data = this.pool;
+      new Set(pool.map(m => m.technique?.techniqueReleaseId)).forEach(id => this.loadTacticNames(id));
       this.pinnedByDomain = new Map();
       for (const m of pool) {
         if (m.technique?.domain && !this.pinnedByDomain.has(m.technique.domain)) {
@@ -313,7 +315,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
     this.techniqueReleaseService.getTechniqueTactics(releaseId).pipe(take(1)).subscribe(tactics => {
       if (releaseId !== this.selectedReleaseId) return;
       this.tactics = tactics;
-      this.tacticNames = new Map(tactics.map(t => [t.shortName, t.name]));
+      this.tacticNamesByRelease.set(releaseId, new Map(tactics.map(t => [t.shortName, t.name])));
     });
     this.techniqueReleaseService.getTechniques(releaseId).pipe(take(1)).subscribe({
       next: techniques => {
@@ -499,8 +501,19 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
     }
   }
 
+  /** Loads a pool release's group names once, so its techniques show names even when another release is browsed. */
+  private loadTacticNames(releaseId: string | undefined) {
+    if (!releaseId || this.tacticNamesByRelease.has(releaseId)) return;
+    this.tacticNamesByRelease.set(releaseId, new Map());
+    this.techniqueReleaseService.getTechniqueTactics(releaseId).pipe(take(1)).subscribe({
+      next: tactics => this.tacticNamesByRelease.set(releaseId, new Map(tactics.map(t => [t.shortName, t.name]))),
+      error: () => this.tacticNamesByRelease.delete(releaseId),
+    });
+  }
+
   getTacticNames(technique: Technique): string {
-    return (technique?.tactics || []).map(t => this.tacticNames.get(t) || t).join(', ');
+    const names = this.tacticNamesByRelease.get(technique?.techniqueReleaseId);
+    return (technique?.tactics || []).map(t => names?.get(t) || t).join(', ');
   }
 
   /** The site a technique's link opens, for its link title. */
