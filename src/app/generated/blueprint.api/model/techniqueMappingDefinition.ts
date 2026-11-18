@@ -23,7 +23,6 @@ export interface TechniqueMappingDefinition {
     sourceIdVariable?: string | null;
     targetVariable?: string | null;
     targetMatch?: MappingTargetMatch;
-    targetLabelVariable?: string | null;
     tacticVariable?: string | null;
     targetRelationVariable?: string | null;
     targetArtifactVariable?: string | null;
