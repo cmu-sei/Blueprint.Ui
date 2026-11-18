@@ -29,7 +29,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 </div>
 
 <section class="scrolling-region">
-  <mat-table [dataSource]="dataSource" matSort matSortActive="releaseDate" matSortDirection="desc">
+  <mat-table [dataSource]="dataSource" matSort matSortActive="releaseDate" matSortDirection="desc" multiTemplateDataRows>
     <!-- action column -->
     <ng-container matColumnDef="action">
       <mat-header-cell *matHeaderCellDef class="col-action">
@@ -90,8 +90,20 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-header-cell mat-sort-header *matHeaderCellDef class="col-count">Techniques</mat-header-cell>
       <mat-cell *matCellDef="let release" class="col-count">{{ release.techniqueCount }}</mat-cell>
     </ng-container>
+    <ng-container matColumnDef="expandedDetail">
+      <mat-cell *matCellDef="let release" class="col-detail">
+        @if (release.id !== expandedId) {
+        } @else if (release.notice || release.termsUrl) {
+        <app-technique-notice [releases]="[release]"></app-technique-notice>
+        } @else {
+        <span class="no-notice">This release carries no copyright or terms notice.@if (canEdit()) { Use its edit button to add one.}</span>
+        }
+      </mat-cell>
+    </ng-container>
     <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns" class="release-row" (click)="rowClicked(row, $event)"
+      [attr.aria-expanded]="row.id === expandedId" [class.expanded]="row.id === expandedId"></mat-row>
+    <mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row" [class.collapsed]="row.id !== expandedId"></mat-row>
   </mat-table>
   @if (dataSource.data.length === 0) {
   <div class="empty-text">
@@ -121,7 +133,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
     }
   </div>
   }
-  <app-technique-notice [releases]="dataSource.data"></app-technique-notice>
 </section>
 
 <input hidden (change)="selectFile($event)" #stixInput type="file" accept=".json,application/json" />
