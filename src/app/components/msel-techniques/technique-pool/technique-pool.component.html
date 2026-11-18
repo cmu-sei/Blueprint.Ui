@@ -105,7 +105,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-header-cell *matHeaderCellDef class="col-weaknesses">Weaknesses</mat-header-cell>
           <mat-cell *matCellDef="let t" class="col-weaknesses">
             @for (w of t.weaknesses; track w; let isLast = $last) {
-            <a [href]="weaknessUrl(w)" target="_blank" rel="noopener" title="Open {{ w }} on cwe.mitre.org">{{ w }}</a>@if (!isLast) {<span>, </span>}
+            @if (weaknessUrl(w); as url) {<a [href]="url" target="_blank" rel="noopener" title="Open {{ w }} on {{ hostOf(url) }}">{{ w }}</a>} @else {<span>{{ w }}</span>}@if (!isLast) {<span>, </span>}
             }
           </mat-cell>
         </ng-container>

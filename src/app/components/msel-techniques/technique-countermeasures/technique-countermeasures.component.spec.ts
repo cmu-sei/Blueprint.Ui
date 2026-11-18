@@ -19,7 +19,11 @@ import { TechniqueCountermeasuresComponent } from './technique-countermeasures.c
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const D3FEND_RELEASE: TechniqueRelease = { id: 'rel-d3', domain: 'd3fend', isDefensive: true, name: 'MITRE D3FEND', version: '1.6.0' };
+// what the release's framework definition says (test data): the relation its mappings read with, and its tactic order
+const D3FEND_RELEASE: TechniqueRelease = {
+  id: 'rel-d3', domain: 'd3fend', isDefensive: true, name: 'MITRE D3FEND', version: '1.6.0',
+  mappingRelation: 'countered by', tacticOrder: ['Model', 'Harden', 'Detect', 'Isolate', 'Deceive', 'Evict', 'Restore'],
+};
 const cm = (externalId: string, name: string, tactic: string, weight: number, rationale = `${tactic.toLowerCase()}s something`): TechniqueCountermeasure => ({
   id: `cm-${externalId}`,
   techniqueReleaseId: 'rel-d3',
@@ -73,20 +77,22 @@ async function renderCounteredBy(options: Options = {}) {
   return { ...rendered, poolApi };
 }
 
+const toggleButton = () => screen.getByRole('button', { name: /, T1003\.005$/ });
 const open = async () => {
-  fireEvent.click(screen.getByRole('button', { name: 'Countered by, T1003.005' }));
+  fireEvent.click(toggleButton());
 };
 const tactic = (name: string) => screen.getByText(name).closest('.tactic') as HTMLElement;
 const idsIn = (section: HTMLElement) => within(section).getAllByRole('link').map(a => a.textContent.trim());
 
 describe('TechniqueCountermeasuresComponent', () => {
   /**
-   * Verifies: collapsed, the row is a one-line "Countered by (N)" summary; opened, the countermeasures are grouped
-   * by D3FEND tactic in the matrix's order (Harden, Detect, Evict) and ranked by weight within each.
+   * Verifies: collapsed, the row is a one-line summary under the relation the release's framework names
+   * ("Countered by (N)"); opened, the mappings are grouped by tactic in the framework's order (Harden, Detect,
+   * Evict) and ranked by weight within each.
    * Interacts with: the toggle, groups, groupByTactic.
    * Data: six countermeasures across three tactics, arriving out of order.
    */
-  it('groups the countermeasures by tactic in matrix order and ranks them by weight', async () => {
+  it('groups the countermeasures by tactic in the framework\'s order and ranks them by weight', async () => {
     await renderCounteredBy();
 
     const toggle = screen.getByRole('button', { name: 'Countered by, T1003.005' });
@@ -134,7 +140,7 @@ describe('TechniqueCountermeasuresComponent', () => {
 
     const name = screen.getByText('Credential Hardening');
     const tooltip = fixture.componentInstance.tooltip(COUNTERMEASURES[2]);
-    expect(tooltip).toBe('hardens Credential; T1003.005 accesses Encrypted Credential (3 artifact paths)');
+    expect(tooltip).toBe('hardens Credential; T1003.005 accesses Encrypted Credential (3 paths)');
     expect(name).toHaveClass('cm-name');
   });
 
@@ -198,30 +204,49 @@ describe('TechniqueCountermeasuresComponent', () => {
       message: 'Loading countermeasures...',
     },
     {
-      name: 'no D3FEND release imported',
+      name: 'no defensive release imported',
       options: { countermeasures: { mselId: 'msel-1', techniqueReleaseId: null, hasMappings: false, techniques: [] }, group: undefined as MselTechniqueCountermeasures, hasDefensiveRelease: false },
-      message: 'No MITRE D3FEND release has been imported. An administrator imports one on the Technique Frameworks page.',
+      message: 'No defensive release has been imported. An administrator imports one on the Technique Frameworks page.',
     },
     {
       name: 'no mappings imported on any release',
       options: { countermeasures: { mselId: 'msel-1', techniqueReleaseId: null, hasMappings: false, techniques: [] }, group: undefined as MselTechniqueCountermeasures },
-      message: 'No ATT&CK mappings have been imported. Import ATT&CK mappings on the Technique Frameworks page.',
+      message: 'No mappings have been imported. An administrator imports them on the Technique Frameworks page.',
     },
     {
       name: 'the pinned release without mappings',
       options: { countermeasures: { mselId: 'msel-1', techniqueReleaseId: 'rel-d3', hasMappings: false, techniques: [] }, group: { ...GROUP, countermeasures: [] } },
-      message: 'MITRE D3FEND 1.6.0 has no ATT&CK mappings. Import ATT&CK mappings on the Technique Frameworks page.',
+      message: 'MITRE D3FEND 1.6.0 has no mappings. An administrator imports them on the Technique Frameworks page.',
     },
     {
       name: 'a technique nothing is mapped to',
       options: { group: { ...GROUP, countermeasures: [] } },
-      message: 'No D3FEND technique is mapped to T1003.005.',
+      message: 'No technique of MITRE D3FEND 1.6.0 is mapped to T1003.005.',
     },
   ])('explains an empty list: $name', async ({ options, message }) => {
     await renderCounteredBy(options);
     await open();
 
     expect(screen.getByText(message)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Countered by, T1003.005' })).toHaveTextContent(/^Countered by$/);
+    // no count when there is nothing to list; the relation is the framework's once a release is named
+    expect(toggleButton()).toHaveTextContent(/^(Countered by|Mapped to)$/);
+  });
+
+  /**
+   * Verifies: what the row shows comes from the release's framework: without a relation it reads "Mapped to", and
+   * without a tactic order the groups are alphabetical; a technique with no page is shown without a link.
+   * Interacts with: relation, groups, the technique link.
+   * Data: the same mappings, from a release whose framework gives no relation, order or technique pages.
+   */
+  it('shows what the framework gives, and only that', async () => {
+    const plain: TechniqueRelease = { id: 'rel-d3', domain: 'other', isDefensive: true, name: 'Other defences', version: '1' };
+    const unlinked = COUNTERMEASURES.map(c => ({ ...c, defensiveTechnique: { ...c.defensiveTechnique, url: null } }));
+    await renderCounteredBy({ releases: [plain], group: { ...GROUP, countermeasures: unlinked } });
+
+    expect(screen.getByRole('button', { name: 'Mapped to, T1003.005' })).toHaveTextContent('Mapped to (6)');
+    await open();
+    expect(screen.getAllByText(/^(Harden|Detect|Evict)$/).map(e => e.textContent)).toEqual(['Detect', 'Evict', 'Harden']);
+    expect(screen.queryByRole('link', { name: 'D3-CH' })).not.toBeInTheDocument();
+    expect(screen.getByText('D3-CH')).toBeInTheDocument();
   });
 });

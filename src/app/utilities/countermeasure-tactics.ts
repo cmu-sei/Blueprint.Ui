@@ -4,20 +4,22 @@
 
 import { TechniqueCountermeasure } from 'src/app/generated/blueprint.api';
 
-/** The defensive tactics in the order the matrix shows them, which the "Countered by" groups follow. */
-export const D3FEND_TACTIC_ORDER = ['Model', 'Harden', 'Detect', 'Isolate', 'Deceive', 'Evict', 'Restore'];
-
-/** One defensive tactic's share of a technique's countermeasures, strongest first. */
+/** One tactic's share of a technique's mappings, strongest first. */
 export interface CountermeasureTacticGroup {
   tactic: string;
   countermeasures: TechniqueCountermeasure[];
 }
 
 /**
- * Groups countermeasures by defensive tactic in the matrix's order (an unnamed tactic goes last) and ranks
- * each group by weight, then by id.
+ * Groups mappings by tactic in the order the release's framework gives (a tactic it does not list goes after,
+ * alphabetically) and ranks each group by weight, then by id.
  */
-export function groupByTactic(countermeasures: TechniqueCountermeasure[] | null | undefined): CountermeasureTacticGroup[] {
+export function groupByTactic(countermeasures: TechniqueCountermeasure[] | null | undefined, tacticOrder: string[] = []): CountermeasureTacticGroup[] {
+  const order = tacticOrder || [];
+  const tacticRank = (tactic: string): number => {
+    const index = order.indexOf(tactic);
+    return index < 0 ? order.length : index;
+  };
   const groups = new Map<string, TechniqueCountermeasure[]>();
   for (const c of countermeasures || []) {
     const tactic = c.defensiveTactic || 'Other';
@@ -36,7 +38,3 @@ export function groupByTactic(countermeasures: TechniqueCountermeasure[] | null 
     }));
 }
 
-function tacticRank(tactic: string): number {
-  const index = D3FEND_TACTIC_ORDER.indexOf(tactic);
-  return index < 0 ? D3FEND_TACTIC_ORDER.length : index;
-}

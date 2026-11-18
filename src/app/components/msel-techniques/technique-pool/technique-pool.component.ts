@@ -44,7 +44,7 @@ import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
 import { TechniqueFamily, techniqueFamily } from 'src/app/utilities/technique-family';
-import { compareReleases, groupLabel } from 'src/app/utilities/technique-notices';
+import { compareReleases, groupLabel, weaknessLink } from 'src/app/utilities/technique-notices';
 import { TechniqueCountermeasuresComponent } from '../technique-countermeasures/technique-countermeasures.component';
 
 /** One domain a MSEL's pool holds techniques of, and the release it is pinned to. */
@@ -58,7 +58,8 @@ export interface PinnedDomain {
 
 /**
  * One family (attack or defensive) of a MSEL's technique pool. Each domain in the pool is pinned to one release;
- * picking another release of a domain offers to upgrade it. Each pooled attack technique has a "Countered by" row.
+ * picking another release of a domain offers to upgrade it. Each pooled attack technique has a row of the mappings
+ * imported onto a defensive release.
  */
 @Component({
   selector: 'app-technique-pool',
@@ -124,10 +125,10 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
   private allDataFields: DataField[] = [];
   private allDataValues: DataValue[] = [];
   private tacticNames = new Map<string, string>();
-  // the Countered by rows of the attack family
+  // the mapping rows of the attack family
   countermeasures: MselCountermeasures;
   private countermeasuresByTechniqueId = new Map<string, MselTechniqueCountermeasures>();
-  /** The attack family's pool table has a Countered by row under each technique; the defensive family's does not. */
+  /** The attack family's pool table has a mappings row under each technique; the defensive family's does not. */
   readonly showsCountermeasures = () => !this.isDefensive;
   private unsubscribe$ = new Subject();
 
@@ -424,7 +425,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
       });
   }
 
-  /** Whether any defensive release is imported, for the Countered by row's empty states. */
+  /** Whether any defensive release is imported, for the mappings row's empty states. */
   get hasDefensiveRelease(): boolean {
     return this.allReleases.some(r => techniqueFamily(r) === 'defensive');
   }
@@ -468,9 +469,17 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
     return this.browsesWeaknesses ? 'Domains' : 'Platforms';
   }
 
-  /** The CWE list's page for a weakness. */
-  weaknessUrl(weakness: string): string {
-    return `https://cwe.mitre.org/data/definitions/${(weakness || '').replace(/^CWE-/i, '')}.html`;
+  /** A weakness's page, from the browsed release's framework; null when it gives no template. */
+  weaknessUrl(weakness: string): string | null {
+    return weaknessLink(this.selectedRelease?.weaknessUrlTemplate, weakness);
+  }
+
+  hostOf(url: string): string {
+    try {
+      return new URL(url).host;
+    } catch {
+      return url;
+    }
   }
 
   getTacticNames(technique: Technique): string {

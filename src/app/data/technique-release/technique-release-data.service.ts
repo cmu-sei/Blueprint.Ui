@@ -8,7 +8,7 @@ import { take, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 /**
- * The releases an administrator has imported. Techniques are read-only; only the publisher and notice fields change.
+ * The releases an administrator has imported. Techniques are read-only; only the framework and notice fields change.
  */
 @Injectable({
   providedIn: 'root',
@@ -39,10 +39,11 @@ export class TechniqueReleaseDataService {
       );
   }
 
-  import(file: Blob, version: string): Observable<TechniqueRelease> {
+  /** Imports a release file, read as the framework it matches, or the one given when more than one does. */
+  import(file: Blob, version: string, techniqueFrameworkId?: string): Observable<TechniqueRelease> {
     this.techniqueReleaseStore.setLoading(true);
     return this.techniqueReleaseService
-      .importTechniqueRelease(file, version || undefined)
+      .importTechniqueRelease(file, version || undefined, techniqueFrameworkId || undefined)
       .pipe(
         take(1),
         tap({
@@ -55,7 +56,7 @@ export class TechniqueReleaseDataService {
       );
   }
 
-  /** Imports a mappings file onto a defensive release and shows the stored count on its row. */
+  /** Imports a mappings file onto a release and shows the stored count on its row. */
   importCountermeasures(releaseId: string, file: Blob): Observable<TechniqueCountermeasureImport> {
     this.techniqueReleaseStore.setLoading(true);
     return this.techniqueReleaseService
@@ -72,7 +73,7 @@ export class TechniqueReleaseDataService {
       );
   }
 
-  /** Saves a release's source, source URL, notice and terms URL. */
+  /** Saves a release's framework, source, source URL, notice and terms URL. */
   updateNotice(id: string, notice: TechniqueReleaseNotice): Observable<TechniqueRelease> {
     return this.techniqueReleaseService
       .updateTechniqueRelease(id, notice)

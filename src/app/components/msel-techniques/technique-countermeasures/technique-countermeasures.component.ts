@@ -8,18 +8,20 @@ import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { TechniqueCountermeasure, MselCountermeasures, MselTechniqueCountermeasures } from 'src/app/generated/blueprint.api';
+import { TechniqueCountermeasure, TechniqueRelease, MselCountermeasures, MselTechniqueCountermeasures } from 'src/app/generated/blueprint.api';
 import { TechniqueReleaseQuery } from 'src/app/data/technique-release/technique-release.query';
 import { MselTechniqueDataService } from 'src/app/data/msel-technique/msel-technique-data.service';
 import { MselTechniqueQuery } from 'src/app/data/msel-technique/msel-technique.query';
 import { CountermeasureTacticGroup, groupByTactic } from 'src/app/utilities/countermeasure-tactics';
+import { relationLabel } from 'src/app/utilities/technique-notices';
 
-/** How many countermeasures a tactic shows before "Show all". */
+/** How many mappings a tactic shows before "Show all". */
 export const TOP_COUNTERMEASURES = 3;
 
 /**
- * The "Countered by" row under a pooled attack technique: the defensive techniques mapped against it, grouped by
- * tactic and ranked by weight, each addable to the MSEL's defensive techniques. Collapsed until opened.
+ * The mappings row under a pooled attack technique: the defensive techniques the release's mappings join to it,
+ * under the relation its framework names, grouped by tactic in the framework's order and ranked by weight, each
+ * addable to the MSEL's defensive techniques. Collapsed until opened.
  */
 @Component({
   selector: 'app-technique-countermeasures',
@@ -54,8 +56,19 @@ export class TechniqueCountermeasuresComponent implements OnDestroy {
     });
   }
 
+  /** The defensive release the mappings come from, once the answer names one. */
+  get release(): TechniqueRelease | undefined {
+    const id = this.countermeasures()?.techniqueReleaseId;
+    return id ? this.techniqueReleaseQuery.getEntity(id) : undefined;
+  }
+
+  /** The row's heading: the relation the release's framework names its mappings with. */
+  get relation(): string {
+    return relationLabel(this.release?.mappingRelation);
+  }
+
   get groups(): CountermeasureTacticGroup[] {
-    return groupByTactic(this.group()?.countermeasures);
+    return groupByTactic(this.group()?.countermeasures, this.release?.tacticOrder || []);
   }
 
   get count(): number {
@@ -75,14 +88,14 @@ export class TechniqueCountermeasuresComponent implements OnDestroy {
     }
     if (!all.techniqueReleaseId) {
       return this.hasDefensiveRelease()
-        ? 'No ATT&CK mappings have been imported. Import ATT&CK mappings on the Technique Frameworks page.'
-        : 'No MITRE D3FEND release has been imported. An administrator imports one on the Technique Frameworks page.';
+        ? 'No mappings have been imported. An administrator imports them on the Technique Frameworks page.'
+        : 'No defensive release has been imported. An administrator imports one on the Technique Frameworks page.';
     }
     if (!all.hasMappings) {
-      return `${this.releaseName(all.techniqueReleaseId)} has no ATT&CK mappings. Import ATT&CK mappings on the Technique Frameworks page.`;
+      return `${this.releaseName(all.techniqueReleaseId)} has no mappings. An administrator imports them on the Technique Frameworks page.`;
     }
     if (this.count === 0) {
-      return `No D3FEND technique is mapped to ${this.externalId()}.`;
+      return `No technique of ${this.releaseName(all.techniqueReleaseId)} is mapped to ${this.externalId()}.`;
     }
     return '';
   }
@@ -113,13 +126,13 @@ export class TechniqueCountermeasuresComponent implements OnDestroy {
   }
 
   tooltip(c: TechniqueCountermeasure): string {
-    const paths = c.weight === 1 ? '1 artifact path' : `${c.weight} artifact paths`;
+    const paths = c.weight === 1 ? '1 path' : `${c.weight} paths`;
     return c.rationale ? `${c.rationale} (${paths})` : paths;
   }
 
   private releaseName(releaseId: string): string {
     const release = this.techniqueReleaseQuery.getEntity(releaseId);
-    return release ? `${release.name} ${release.version}` : 'The MSEL\'s D3FEND release';
+    return release ? `${release.name} ${release.version}` : 'The MSEL\'s defensive release';
   }
 
   ngOnDestroy() {

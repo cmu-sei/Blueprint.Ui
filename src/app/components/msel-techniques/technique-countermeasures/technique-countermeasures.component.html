@@ -6,9 +6,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <div class="countered-by">
   <button mat-button class="toggle" (click)="expanded = !expanded" [attr.aria-expanded]="expanded"
-    [attr.aria-label]="'Countered by, ' + externalId()">
+    [attr.aria-label]="relation + ', ' + externalId()">
     <mat-icon class="mdi-18px" [fontIcon]="expanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"></mat-icon>
-    Countered by@if (count > 0) { ({{ count }})}
+    {{ relation }}@if (count > 0) { ({{ count }})}
     @if (inheritedFrom) {
     <span class="inherited-chip" title="{{ externalId() }} has no mappings of its own; these are {{ inheritedFrom }}'s">(from {{ inheritedFrom }})</span>
     }
@@ -30,8 +30,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
         } @else if (isPooled(c)) {
         <mat-icon class="mdi-18px pooled-icon" fontIcon="mdi-check" title="In this MSEL's defensive techniques"></mat-icon>
         }
-        <a class="cm-id" [href]="c.defensiveTechnique?.url" target="_blank" rel="noopener"
-          title="Open {{ c.defensiveTechnique?.externalId }} on d3fend.mitre.org">{{ c.defensiveTechnique?.externalId }}</a>
+        @if (c.defensiveTechnique?.url) {
+        <a class="cm-id" [href]="c.defensiveTechnique.url" target="_blank" rel="noopener"
+          title="Open {{ c.defensiveTechnique?.externalId }}">{{ c.defensiveTechnique?.externalId }}</a>
+        } @else {
+        <span class="cm-id">{{ c.defensiveTechnique?.externalId }}</span>
+        }
         <span class="cm-name" [matTooltip]="tooltip(c)" matTooltipShowDelay="300">{{ c.defensiveTechnique?.name }}</span>
       </div>
       }

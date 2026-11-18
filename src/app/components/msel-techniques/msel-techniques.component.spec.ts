@@ -53,11 +53,15 @@ const ATLAS_RELEASE: TechniqueRelease = {
 const D3FEND_RELEASE: TechniqueRelease = {
   id: 'rel-d3', domain: 'd3fend', isDefensive: true, name: 'MITRE D3FEND', version: '1.6.0',
   source: 'MITRE D3FEND', termsUrl: D3FEND_TERMS_OF_USE, groupLabel: 'Tactics',
+  // from its framework definition (test data)
+  mappingRelation: 'countered by', tacticOrder: ['Model', 'Harden', 'Detect', 'Isolate', 'Deceive', 'Evict', 'Restore'],
   notice: `${COPYRIGHT}\nMITRE D3FEND™ is a trademark of The MITRE Corporation.`,
 };
 const CAPEC_RELEASE: TechniqueRelease = {
   id: 'rel-c', domain: 'capec', name: 'MITRE CAPEC', version: '3.9',
   source: 'MITRE CAPEC', termsUrl: 'https://capec.mitre.org/about/termsofuse.html', groupLabel: 'Categories',
+  // from its framework definition (test data)
+  weaknessUrlTemplate: 'https://cwe.mitre.org/data/definitions/{id}.html',
   notice: `${COPYRIGHT}\nMITRE CAPEC™ is a trademark of The MITRE Corporation.`,
 };
 const NEXT_ENTERPRISE_RELEASE: TechniqueRelease = { ...ENTERPRISE_RELEASE, id: 'rel-2', version: '18.0' };
@@ -360,16 +364,16 @@ describe('MselTechniquesComponent', () => {
   });
 
   /**
-   * Verifies: with no D3FEND release imported the Countered by row says so rather than listing nothing.
+   * Verifies: with no defensive release imported the mappings row says so rather than listing nothing.
    * Interacts with: TechniqueCountermeasuresComponent.emptyMessage, TechniquePoolComponent.hasDefensiveRelease.
    * Data: T1059 in the pool; Enterprise ATT&CK 17.1 the only release.
    */
-  it('says when no D3FEND release is there to counter with', async () => {
+  it('says when no defensive release is there to map to', async () => {
     await renderTechniques([T1059], [ENTERPRISE_RELEASE], { 'rel-1': [T1059.technique] });
 
-    fireEvent.click(within(attackSection()).getByRole('button', { name: 'Countered by, T1059' }));
+    fireEvent.click(within(attackSection()).getByRole('button', { name: 'Mapped to, T1059' }));
 
-    expect(screen.getByText('No MITRE D3FEND release has been imported. An administrator imports one on the Technique Frameworks page.')).toBeInTheDocument();
+    expect(screen.getByText('No defensive release has been imported. An administrator imports one on the Technique Frameworks page.')).toBeInTheDocument();
   });
 
   /**

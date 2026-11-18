@@ -50,7 +50,7 @@ describe('AdminTechniqueReleaseNoticeDialogComponent', () => {
   it('starts a custom release with all four fields empty', async () => {
     await renderDialog();
 
-    expect(screen.getByRole('heading', { name: 'Edit Notice: Acme Techniques 1.0' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Edit Release: Acme Techniques 1.0' })).toBeInTheDocument();
     for (const label of ['Source', 'Source URL', 'Notice', 'Terms URL']) {
       expect(screen.getByRole('textbox', { name: label })).toHaveValue('');
     }

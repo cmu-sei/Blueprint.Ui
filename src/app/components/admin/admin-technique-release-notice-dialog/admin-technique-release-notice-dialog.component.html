@@ -4,7 +4,7 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information.
 -->
 <crucible-dialog
-  [dialogTitle]="'Edit Notice: ' + release.name + ' ' + release.version"
+  [dialogTitle]="'Edit Release: ' + release.name + ' ' + release.version"
   [submitDisabled]="!errorFree()"
   [guardUnsavedWork]="true"
   (cancel)="handleEditComplete(false)"
@@ -13,12 +13,24 @@ project root for license information.
   <div crucibleDialogContent>
     <div class="add-margin">
       <mat-form-field class="full-width">
+        <mat-label>Framework</mat-label>
+        <mat-select [(ngModel)]="data.notice.techniqueFrameworkId" title="The framework definition the release belongs to">
+          <mat-option [value]="null">No framework</mat-option>
+          @for (framework of frameworks; track framework.id) {
+          <mat-option [value]="framework.id">{{ framework.name }}</mat-option>
+          }
+        </mat-select>
+        <mat-hint>Frameworks of the release's domain and family. The release shows the links and mappings its framework defines.</mat-hint>
+      </mat-form-field>
+    </div>
+    <div class="add-margin">
+      <mat-form-field class="full-width">
         <mat-label>Source</mat-label>
         <input
           type="text"
-          title="Who publishes the release (e.g. MITRE ATT&CK)"
+          title="Who publishes the release"
           matInput
-          placeholder="Source (e.g. MITRE ATT&CK)"
+          placeholder="The publisher's name"
           [(ngModel)]="data.notice.source">
       </mat-form-field>
     </div>
