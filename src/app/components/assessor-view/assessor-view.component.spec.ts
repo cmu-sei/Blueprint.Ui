@@ -1222,14 +1222,12 @@ describe('AssessorViewComponent', () => {
       });
       fixture.detectChanges();
       first.flush({ statements: STATEMENTS });
-      http
-        .expectOne(isRead)
-        .flush({
-          statements: STATEMENTS.map((stmt) => ({
-            ...stmt,
-            actor: { objectType: 'Agent' },
-          })),
-        });
+      http.expectOne(isRead).flush({
+        statements: STATEMENTS.map((stmt) => ({
+          ...stmt,
+          actor: { objectType: 'Agent' },
+        })),
+      });
       fixture.detectChanges();
       await vi.waitFor(() => expect(printDocument).toHaveBeenCalledTimes(1));
       fixture.detectChanges();
