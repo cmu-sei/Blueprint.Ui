@@ -4,10 +4,22 @@
  project root for license information.
 */
 
-import { Component, Input, input, output } from '@angular/core';
 import {
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  inject,
+  input,
+  output,
+} from '@angular/core';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import {
+  Technique,
   DataField,
   DataFieldType,
+  MselCountermeasures,
   MselItemStatus,
 } from 'src/app/generated/blueprint.api';
 import { EDITOR_CONFIG, VIEW_CONFIG } from 'src/app/utilities/editor-config';
@@ -21,11 +33,12 @@ import {
   MatLabel,
   MatInput,
   MatError,
+  MatHint,
   MatSuffix,
 } from '@angular/material/input';
 import { MatSelect, MatSelectTrigger } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
-import { MatOption } from '@angular/material/autocomplete';
+import { MatOptgroup, MatOption } from '@angular/material/autocomplete';
 import {
   NgxMatDatepickerInput,
   NgxMatDatetimepicker,
@@ -40,6 +53,13 @@ import { MatIcon } from '@angular/material/icon';
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
 import { IsDateTimeValuePipe } from '../../utilities/date-time-value';
+import { MselTechniqueQuery } from 'src/app/data/msel-technique/msel-technique.query';
+import { MselTechniqueDataService } from 'src/app/data/msel-technique/msel-technique-data.service';
+import { MselCountermeasureDataService } from 'src/app/data/msel-technique/msel-countermeasure-data.service';
+import {
+  TechniqueFamily,
+  techniqueFamily,
+} from 'src/app/utilities/technique-family';
 
 @Component({
   selector: 'app-data-value',
@@ -51,9 +71,11 @@ import { IsDateTimeValuePipe } from '../../utilities/date-time-value';
     MatTooltip,
     MatFormField,
     MatLabel,
+    MatHint,
     MatSelect,
     FormsModule,
     MatSelectTrigger,
+    MatOptgroup,
     MatOption,
     MatInput,
     MatError,
@@ -76,9 +98,15 @@ import { IsDateTimeValuePipe } from '../../utilities/date-time-value';
     IsDateTimeValuePipe,
   ],
 })
-export class DataValueComponent {
+export class DataValueComponent implements OnChanges, OnDestroy {
+  private mselTechniqueQuery = inject(MselTechniqueQuery);
+  private mselTechniqueDataService = inject(MselTechniqueDataService);
+  private mselCountermeasureDataService = inject(MselCountermeasureDataService);
+
   @Input() value: any;
   @Input() dataField: DataField;
+  /** The event's Attack Technique values, comma-separated, so a Defensive Technique field can suggest countermeasures first. */
+  readonly techniques = input<string>(undefined);
   readonly canEdit = input<boolean>(undefined); // enables editing of values
   readonly canApprove = input<boolean>(undefined); // enables editing of status value
   readonly isOwner = input<boolean>(undefined); // enables editing of assigned unit value
@@ -104,7 +132,7 @@ export class DataValueComponent {
     MselItemStatus.Archived,
   ];
   // the color Gallery shows for each article status
-  galleryItemStatusColors: { [status: string]: string } = {
+  galleryItemStatusColors: Record<string, string> = {
     Gray: '#b5b5b5',
     Green: 'rgb(163, 235, 163)',
     Yellow: 'rgb(250, 235, 100)',
@@ -112,7 +140,7 @@ export class DataValueComponent {
     Red: '#ff3333',
   };
   // the names Gallery used before its statuses were named for colors; existing MSELs still hold them
-  legacyGalleryItemStatuses: { [status: string]: string } = {
+  legacyGalleryItemStatuses: Record<string, string> = {
     unused: 'Gray',
     closed: 'Red',
     critical: 'Orange',
@@ -189,6 +217,190 @@ export class DataValueComponent {
     this.valueChangeHandler();
   }
 
+  // --- technique chips + search list, offered from the MSEL's technique pool ---
+  techniqueFilter = '';
+  techniqueOptions: Technique[] = [];
+  /** The pool holds several domains of this field's techniques, so each option names its domain. */
+  showsTechniqueDomains = false;
+  private techniquesById = new Map<string, Technique>();
+  private wholePool: Technique[] = [];
+  private mselCountermeasures: MselCountermeasures;
+  private unsubscribe$ = new Subject();
+
+  constructor() {
+    this.mselTechniqueQuery
+      .selectTechniques()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((techniques) => {
+        this.wholePool = techniques;
+        this.offerTechniques();
+      });
+    this.mselCountermeasureDataService.countermeasures$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((countermeasures) => {
+        this.mselCountermeasures = countermeasures;
+      });
+  }
+
+  ngOnChanges() {
+    if (this.isTechniqueField) {
+      this.mselTechniqueDataService.ensureLoaded(this.dataField.mselId);
+      this.offerTechniques();
+      if (this.suggestsCountermeasures) {
+        this.mselCountermeasureDataService.ensureLoaded(this.dataField.mselId);
+      }
+    }
+  }
+
+  /** A Defensive Technique field on an event with attack techniques offers their countermeasures first. */
+  get suggestsCountermeasures(): boolean {
+    return (
+      this.dataField?.dataType === DataFieldType.DefensiveTechnique &&
+      this.eventTechniqueIds.length > 0
+    );
+  }
+
+  private get eventTechniqueIds(): string[] {
+    return (this.techniques() || '')
+      .split(',')
+      .map((v) => v.trim())
+      .filter((v) => v);
+  }
+
+  /**
+   * The pooled defensive techniques mapped against the event's attack techniques, strongest first.
+   */
+  get suggestedTechniqueOptions(): Technique[] {
+    if (!this.suggestsCountermeasures || !this.mselCountermeasures?.techniques)
+      return [];
+    const wanted = new Set(this.eventTechniqueIds);
+    const weights = new Map<string, number>();
+    for (const group of this.mselCountermeasures.techniques) {
+      if (!wanted.has(group.offensiveExternalId)) continue;
+      for (const c of group.countermeasures || []) {
+        const id = c.defensiveTechnique?.externalId;
+        if (id) weights.set(id, Math.max(weights.get(id) || 0, c.weight || 0));
+      }
+    }
+    return this.techniqueOptions
+      .filter((t) => weights.has(t.externalId))
+      .sort(
+        (a, b) =>
+          weights.get(b.externalId) - weights.get(a.externalId) ||
+          a.externalId.localeCompare(b.externalId, undefined, {
+            numeric: true,
+          }),
+      );
+  }
+
+  get filteredSuggestedTechniqueOptions(): Technique[] {
+    return this.filterTechniques(this.suggestedTechniqueOptions);
+  }
+
+  /** The rest of the pool, after the suggested ones. */
+  get filteredOtherTechniqueOptions(): Technique[] {
+    const suggested = new Set(
+      this.suggestedTechniqueOptions.map((t) => t.externalId),
+    );
+    return this.filterTechniques(
+      this.techniqueOptions.filter((t) => !suggested.has(t.externalId)),
+    );
+  }
+
+  /** The list is split into Suggested and the rest only when there is something to suggest. */
+  get showsSuggestedGroup(): boolean {
+    return this.suggestedTechniqueOptions.length > 0;
+  }
+
+  /** An Attack Technique or Defensive Technique field. */
+  get isTechniqueField(): boolean {
+    return (
+      this.dataField?.dataType === DataFieldType.AttackTechnique ||
+      this.dataField?.dataType === DataFieldType.DefensiveTechnique
+    );
+  }
+
+  private get techniqueFamily(): TechniqueFamily {
+    return this.dataField?.dataType === DataFieldType.DefensiveTechnique
+      ? 'defensive'
+      : 'attack';
+  }
+
+  /**
+   * A cell stores only a technique's id, so an id the pool holds in two domains is offered once.
+   */
+  private offerTechniques() {
+    const techniques = this.wholePool.filter(
+      (t) => techniqueFamily(t) === this.techniqueFamily,
+    );
+    const seen = new Set<string>();
+    const options = techniques.filter(
+      (t) => !seen.has(t.externalId) && !!seen.add(t.externalId),
+    );
+    this.techniqueOptions = options;
+    this.techniquesById = new Map(options.map((t) => [t.externalId, t]));
+    this.showsTechniqueDomains =
+      new Set(techniques.map((t) => t.domain)).size > 1;
+  }
+
+  ngOnDestroy() {
+    this.unsubscribe$.next(null);
+    this.unsubscribe$.complete();
+  }
+
+  get selectedTechniques(): string[] {
+    const value = this.value as string;
+    return value
+      ? value
+          .split(',')
+          .map((v) => v.trim())
+          .filter((v) => v)
+      : [];
+  }
+
+  get filteredTechniqueOptions(): Technique[] {
+    return this.filterTechniques(this.techniqueOptions);
+  }
+
+  private filterTechniques(techniques: Technique[]): Technique[] {
+    return techniques.filter((t) => this.matchesTechniqueFilter(t));
+  }
+
+  private matchesTechniqueFilter(technique: Technique): boolean {
+    if (!this.techniqueFilter) return true;
+    const s = this.techniqueFilter.toLowerCase();
+    return (
+      technique.externalId?.toLowerCase().includes(s) ||
+      technique.name?.toLowerCase().includes(s)
+    );
+  }
+
+  getTechnique(externalId: string): Technique {
+    return this.techniquesById.get(externalId);
+  }
+
+  getTechniqueTooltip(externalId: string): string {
+    const t = this.techniquesById.get(externalId);
+    return t ? t.name : "Not in this MSEL's techniques";
+  }
+
+  // the select reports only the options it shows: ids the pool no longer offers, or the search hides, are kept
+  setTechniques(selected: string[]) {
+    const kept = this.selectedTechniques.filter((id) => {
+      const technique = this.techniquesById.get(id);
+      return !technique || !this.matchesTechniqueFilter(technique);
+    });
+    this.value = [...kept, ...selected].join(', ');
+    this.valueChangeHandler();
+  }
+
+  removeTechnique(externalId: string) {
+    this.value = this.selectedTechniques
+      .filter((v) => v !== externalId)
+      .join(', ');
+    this.valueChangeHandler();
+  }
+
   // shows the value's error as soon as it applies, rather than waiting for the field to lose focus
   valueErrorMatcher: ErrorStateMatcher = {
     isErrorState: () => !!this.valueError(),
@@ -208,7 +420,7 @@ export class DataValueComponent {
 
   setDataValueArray(newValues: string[]) {
     if (newValues.includes('None')) {
-      newValues = new Array();
+      newValues = [];
     }
     this.value = newValues.join(', ');
     this.valueChangeHandler();

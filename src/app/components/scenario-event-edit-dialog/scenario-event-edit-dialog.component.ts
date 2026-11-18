@@ -89,7 +89,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     value: '',
     valueArray: [],
   } as DataValuePlus;
-  scenarioEventBackgroundColors: Array<string>;
+  scenarioEventBackgroundColors: string[];
   sortedDataFields: DataField[] = [];
   selectedTab = 0;
   selectedTabName = '';
@@ -131,10 +131,19 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
 
   setDataValueArray(dataFieldName: string, newValues: string[]) {
     if (newValues.includes('None')) {
-      newValues = new Array();
+      newValues = [];
     }
     this.getDataValue(dataFieldName).valueArray = newValues;
     this.getDataValue(dataFieldName).value = newValues.join(', ');
+  }
+
+  /** The event's Attack Technique values, for a Defensive Technique field to suggest their countermeasures first. */
+  techniqueValues(): string {
+    return (this.data as { dataFields: DataField[] }).dataFields
+      .filter((df) => df.dataType === DataFieldType.AttackTechnique)
+      .map((df) => this.getDataValue(df.name).value)
+      .filter((v) => v)
+      .join(', ');
   }
 
   getDataFieldByName(name: string) {
@@ -149,7 +158,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   }
 
   verifyNumber(newValue: DataValuePlus) {
-    if (!newValue || !newValue.value) {
+    if (!newValue?.value) {
       return;
     }
     // remove non numeric characters, but allow '.' and '-'

@@ -1,0 +1,95 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+
+import { MselTechniqueStore } from './msel-technique.store';
+import { MselTechniqueQuery } from './msel-technique.query';
+import { Injectable, inject } from '@angular/core';
+import {
+  MselTechnique,
+  MselTechniqueService,
+  MselTechniqueUpgrade,
+} from 'src/app/generated/blueprint.api';
+import { take, tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class MselTechniqueDataService {
+  private mselTechniqueStore = inject(MselTechniqueStore);
+  private mselTechniqueQuery = inject(MselTechniqueQuery);
+  private mselTechniqueService = inject(MselTechniqueService);
+  readonly MselTechniqueList: Observable<MselTechnique[]> =
+    this.mselTechniqueQuery.selectAll();
+  private loadedMselId = '';
+  // the latest load; a response to an earlier one, or one made before unload, is dropped
+  private request = 0;
+
+  loadByMsel(mselId: string) {
+    this.loadedMselId = mselId;
+    const request = ++this.request;
+    this.mselTechniqueStore.setLoading(true);
+    this.mselTechniqueService
+      .getMselTechniques(mselId)
+      .pipe(take(1))
+      .subscribe({
+        next: (items) => {
+          if (request !== this.request) return;
+          // loading ends before the pool changes, so the countermeasures reload for it
+          this.mselTechniqueStore.setLoading(false);
+          this.mselTechniqueStore.set(items);
+        },
+        error: () => {
+          if (request !== this.request) return;
+          // loading ends before the pool changes, so the countermeasures reload for it
+          this.mselTechniqueStore.setLoading(false);
+          this.mselTechniqueStore.set([]);
+        },
+      });
+  }
+
+  /** Loads the pool unless it is already the given MSEL's, for views that only read it. */
+  ensureLoaded(mselId: string) {
+    if (mselId && mselId !== this.loadedMselId) {
+      this.loadByMsel(mselId);
+    }
+  }
+
+  unload() {
+    this.loadedMselId = '';
+    this.request++;
+    this.mselTechniqueStore.setLoading(false);
+    this.mselTechniqueStore.set([]);
+  }
+
+  add(mselId: string, techniqueId: string) {
+    this.mselTechniqueService
+      .createMselTechnique({ mselId, techniqueId })
+      .pipe(take(1))
+      .subscribe((s) => {
+        this.mselTechniqueStore.upsert(s.id, s);
+      });
+  }
+
+  delete(id: string) {
+    this.mselTechniqueService
+      .deleteMselTechnique(id)
+      .pipe(take(1))
+      .subscribe(() => {
+        this.mselTechniqueStore.remove(id);
+      });
+  }
+
+  /** Moves the pool to another release and reloads it; the caller reports what was dropped. */
+  upgrade(
+    mselId: string,
+    techniqueReleaseId: string,
+  ): Observable<MselTechniqueUpgrade> {
+    return this.mselTechniqueService
+      .upgradeMselTechniques(mselId, techniqueReleaseId)
+      .pipe(
+        take(1),
+        tap(() => this.loadByMsel(mselId)),
+      );
+  }
+}

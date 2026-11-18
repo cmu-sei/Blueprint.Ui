@@ -1,0 +1,98 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information.
+-->
+<crucible-dialog
+  [dialogTitle]="data.title"
+  [submitDisabled]="!errorFree() || saving()"
+  [guardUnsavedWork]="true"
+  (cancel)="handleEditComplete(false)"
+  (submit)="handleEditComplete(true)"
+>
+  <div crucibleDialogContent>
+    <div class="add-margin">
+      <mat-form-field class="full-width">
+        <mat-label>Name</mat-label>
+        <input
+          type="text"
+          matInput
+          required
+          [(ngModel)]="form.name"
+          [disabled]="saving()"
+          title="The framework's name"
+        />
+      </mat-form-field>
+    </div>
+    <div class="add-margin">
+      <mat-form-field class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea
+          matInput
+          rows="2"
+          [(ngModel)]="form.description"
+          [disabled]="saving()"
+          title="What the framework covers"
+        ></textarea>
+      </mat-form-field>
+    </div>
+    <div class="row">
+      <mat-form-field class="grow">
+        <mat-label>Domain</mat-label>
+        <input
+          type="text"
+          matInput
+          required
+          [(ngModel)]="form.domain"
+          [disabled]="saving()"
+          title="The domain its releases are filed under"
+        />
+        <mat-hint>Unique. A MSEL pins one release per domain.</mat-hint>
+      </mat-form-field>
+      <mat-form-field class="fixed">
+        <mat-label>Family</mat-label>
+        <mat-select
+          [(ngModel)]="form.isDefensive"
+          [disabled]="saving()"
+          title="Whether its techniques are attacks or defences"
+        >
+          <mat-option [value]="false">Attack</mat-option>
+          <mat-option [value]="true">Defensive</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field class="fixed">
+        <mat-label>File Format</mat-label>
+        <mat-select
+          [(ngModel)]="form.format"
+          [disabled]="saving()"
+          title="The format its release files are published in"
+        >
+          @for (format of formats; track format.value) {
+            <mat-option [value]="format.value">{{ format.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="add-margin">
+      <mat-form-field class="full-width">
+        <mat-label>Settings (JSON)</mat-label>
+        <textarea
+          matInput
+          class="settings"
+          rows="16"
+          spellcheck="false"
+          [(ngModel)]="form.settingsJson"
+          [disabled]="saving()"
+          title="Match conditions, format options, mappings, links and download hints"
+        ></textarea>
+        <mat-hint
+          >The match conditions, format options, mappings, link templates and
+          download hints, as an exported definition holds them.</mat-hint
+        >
+      </mat-form-field>
+      @if (settingsError) {
+        <div class="settings-error" role="alert">{{ settingsError }}</div>
+      }
+    </div>
+  </div>
+</crucible-dialog>

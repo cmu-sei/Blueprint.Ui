@@ -50,6 +50,7 @@ import { DataFieldListComponent } from '../../data-field-list/data-field-list.co
 import { AdminInjectTypesComponent } from '../admin-inject-types/admin-inject-types.component';
 import { AdminCompetencyFrameworksComponent } from '../admin-competency-frameworks/admin-competency-frameworks.component';
 import { AdminProficiencyScalesComponent } from '../admin-proficiency-scales/admin-proficiency-scales.component';
+import { AdminTechniqueReleasesComponent } from '../admin-technique-releases/admin-technique-releases.component';
 import { AdminCatalogListComponent } from '../admin-catalog-list/admin-catalog-list.component';
 import { OrganizationListComponent } from '../../organization-list/organization-list.component';
 import { CardListComponent } from '../../card-list/card-list.component';
@@ -81,6 +82,7 @@ import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
     AdminInjectTypesComponent,
     AdminCompetencyFrameworksComponent,
     AdminProficiencyScalesComponent,
+    AdminTechniqueReleasesComponent,
     AdminCatalogListComponent,
     OrganizationListComponent,
     CardListComponent,
@@ -126,6 +128,8 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   competencyFrameworksText = 'Competency Frameworks';
   competencyFrameworksSidebarText = 'Competencies';
   proficiencyScalesText = 'Proficiency Scales';
+  techniqueReleasesText = 'Technique Frameworks';
+  techniqueReleasesSidebarText = 'Techniques';
   selectedTab = 'Organizations';
   displayedSection = '';
   exitSection = '';
@@ -143,6 +147,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     ['Player Apps', 'mdi-application'],
     ['Competency Frameworks', 'mdi-certificate-outline'],
     ['Proficiency Scales', 'mdi-tune-variant'],
+    ['Technique Frameworks', 'mdi-shield-bug-outline'],
     ['Users', 'mdi-account'],
     ['Roles', 'mdi-shield-account'],
     ['Groups', 'mdi-account-multiple'],
@@ -392,6 +397,8 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   getSidebarLabel(section: string): string {
     if (section === this.competencyFrameworksText)
       return this.competencyFrameworksSidebarText;
+    if (section === this.techniqueReleasesText)
+      return this.techniqueReleasesSidebarText;
     return section;
   }
 
