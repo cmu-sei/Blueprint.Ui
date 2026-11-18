@@ -264,6 +264,32 @@ describe('MselTechniquesComponent', () => {
   });
 
   /**
+   * Verifies: a pattern that cites many weaknesses shows the first four and a "+n more" toggle that opens the rest
+   * and closes them again; a pattern with four or fewer has no toggle.
+   * Interacts with: TechniquePoolComponent.shownWeaknesses/toggleWeaknesses.
+   * Data: MITRE CAPEC 3.9 with CAPEC-1 citing six CWEs, and CAPEC-8 citing one.
+   */
+  it('shows the first four weaknesses of a pattern and the rest on request', async () => {
+    const capec1: Technique = {
+      ...CAPEC_8, id: 'at-c1', externalId: 'CAPEC-1', name: 'Accessing Functionality Not Properly Constrained by ACLs',
+      weaknesses: ['CWE-276', 'CWE-285', 'CWE-434', 'CWE-693', 'CWE-732', 'CWE-1191'],
+    };
+    await renderTechniques([], [CAPEC_RELEASE], { 'rel-c': [capec1, CAPEC_8] });
+    const attack = within(attackSection());
+    const user = userEvent.setup();
+
+    expect(attack.getByRole('link', { name: 'CWE-693' })).toBeInTheDocument();
+    expect(attack.queryByRole('link', { name: 'CWE-732' })).not.toBeInTheDocument();
+    expect(attack.getAllByRole('button', { name: /more$/ })).toHaveLength(1);
+
+    await user.click(attack.getByRole('button', { name: '+2 more' }));
+    expect(attack.getByRole('link', { name: 'CWE-1191' })).toBeInTheDocument();
+
+    await user.click(attack.getByRole('button', { name: 'show fewer' }));
+    expect(attack.queryByRole('link', { name: 'CWE-732' })).not.toBeInTheDocument();
+  });
+
+  /**
    * Verifies: the CAPEC columns and sentences are only for a CAPEC release; an ATT&CK release keeps its Tactics and
    * Platforms and has no weaknesses column, and no CAPEC notice appears.
    * Interacts with: TechniquePoolComponent.browsesWeaknesses, the release's groupLabel.

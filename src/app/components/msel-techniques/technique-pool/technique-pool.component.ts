@@ -470,6 +470,23 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   /** A weakness's page, from the browsed release's framework; null when it gives no template. */
+  /** How many of a technique's weaknesses show before "+n more". */
+  readonly weaknessesShown = 4;
+  /** The techniques whose full weakness list is open. */
+  readonly openWeaknesses = new Set<string>();
+
+  shownWeaknesses(t: Technique): string[] {
+    const all = t.weaknesses || [];
+    return this.openWeaknesses.has(t.id) ? all : all.slice(0, this.weaknessesShown);
+  }
+
+  toggleWeaknesses(t: Technique, event: Event) {
+    event.stopPropagation();
+    if (!this.openWeaknesses.delete(t.id)) {
+      this.openWeaknesses.add(t.id);
+    }
+  }
+
   weaknessUrl(weakness: string): string | null {
     return weaknessLink(this.selectedRelease?.weaknessUrlTemplate, weakness);
   }

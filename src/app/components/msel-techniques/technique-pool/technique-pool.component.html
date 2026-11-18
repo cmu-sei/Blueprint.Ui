@@ -104,8 +104,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <ng-container matColumnDef="weaknesses">
           <mat-header-cell *matHeaderCellDef class="col-weaknesses">Weaknesses</mat-header-cell>
           <mat-cell *matCellDef="let t" class="col-weaknesses">
-            @for (w of t.weaknesses; track w; let isLast = $last) {
+            @for (w of shownWeaknesses(t); track w; let isLast = $last) {
             @if (weaknessUrl(w); as url) {<a [href]="url" target="_blank" rel="noopener" title="Open {{ w }} on {{ hostOf(url) }}">{{ w }}</a>} @else {<span>{{ w }}</span>}@if (!isLast) {<span>, </span>}
+            }
+            @if ((t.weaknesses?.length || 0) > weaknessesShown) {
+            <button type="button" class="more-toggle" (click)="toggleWeaknesses(t, $event)"
+              [attr.aria-expanded]="openWeaknesses.has(t.id)">
+              {{ openWeaknesses.has(t.id) ? 'show fewer' : '+' + (t.weaknesses.length - weaknessesShown) + ' more' }}
+            </button>
             }
           </mat-cell>
         </ng-container>
