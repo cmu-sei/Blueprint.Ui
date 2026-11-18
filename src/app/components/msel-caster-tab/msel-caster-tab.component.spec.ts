@@ -8,7 +8,7 @@ import { MatSelectHarness } from '@angular/material/select/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { NEVER, Observable, of, throwError } from 'rxjs';
+import { NEVER, Observable, of, Subject, throwError } from 'rxjs';
 import {
   ComnSettingsService,
   CrucibleDialogService,
@@ -277,6 +277,32 @@ describe('MselCasterTabComponent', () => {
     expect(
       screen.queryByText('The stored copy could not be loaded.'),
     ).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a first read that answers after Store a Copy Now has succeeded is ignored, so the new copy stays and linking another directory still asks first.
+   * Interacts with: Store a Copy Now, copyKnown, the cancelled first read, Save Changes, CrucibleDialogService.confirm (stub).
+   * Data: MSEL role Owner; a pending MSEL linked to dir-1 whose first read answers "no copy" only after the capture.
+   */
+  it('ignores a first read that answers after the copy was stored', async () => {
+    const firstRead = new Subject<MselCasterExport | null>();
+    const { fixture, confirm } = await renderTab({
+      mselExtra: { casterDirectoryId: 'dir-1' },
+      copyAnswer: () => firstRead,
+    });
+
+    await userEvent.setup().click(button('Store a Copy Now'));
+    firstRead.next(null);
+    fixture.detectChanges();
+    expect(screen.getByText('Range Project')).toBeInTheDocument();
+    const [select] = await directorySelects(fixture);
+    await select.clickOptions({ text: 'Range / Extended' });
+    fixture.detectChanges();
+    await userEvent.setup().click(button('Save Changes'));
+
+    expect(confirm).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ title: 'Link Another Directory' }),
+    );
   });
 
   /**

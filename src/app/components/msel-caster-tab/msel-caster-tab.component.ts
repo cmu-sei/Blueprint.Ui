@@ -18,7 +18,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatFormField, MatLabel } from '@angular/material/input';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { MatTooltip } from '@angular/material/tooltip';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
@@ -100,6 +100,9 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
   copyLoaded = false;
   // a copy that could not be read is unknown, not absent: saving another directory may delete it
   copyError = false;
+  // the first read of the copy, cancelled once a store, delete or relink has settled it, so a late answer
+  // cannot put back what was there before
+  private copyRead?: Subscription;
   busy = false;
   private unsubscribe$ = new Subject();
 
@@ -156,7 +159,8 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
     this.copy = null;
     this.copyLoaded = false;
     this.copyError = false;
-    this.mselCasterExportService
+    this.copyRead?.unsubscribe();
+    this.copyRead = this.mselCasterExportService
       .getMselCasterExport(mselId)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe({
@@ -450,6 +454,7 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
 
   // a store, delete, import or relink that succeeded says whether there is a copy, whatever the first read did
   private copyKnown(copy: MselCasterExport | null) {
+    this.copyRead?.unsubscribe();
     this.copy = copy;
     this.copyLoaded = true;
     this.copyError = false;
