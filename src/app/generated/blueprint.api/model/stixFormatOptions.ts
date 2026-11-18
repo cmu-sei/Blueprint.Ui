@@ -24,6 +24,7 @@ export interface StixFormatOptions {
     tacticType?: string | null;
     tacticShortNameProperty?: string | null;
     matrixType?: string | null;
+    matrixTacticRefsProperty?: string | null;
     collectionType?: string | null;
     collectionVersionProperty?: string | null;
     domainsProperty?: string | null;
