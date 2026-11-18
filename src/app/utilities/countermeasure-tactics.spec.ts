@@ -3,7 +3,10 @@
 
 import { describe, it, expect } from 'vitest';
 import { TechniqueCountermeasure } from 'src/app/generated/blueprint.api';
-import { D3FEND_TACTIC_ORDER, groupByTactic } from './countermeasure-tactics';
+import { groupByTactic } from './countermeasure-tactics';
+
+// a framework's tactic order, as its definition gives it (test data)
+const ORDER = ['Model', 'Harden', 'Detect', 'Isolate', 'Deceive', 'Evict', 'Restore'];
 
 const cm = (externalId: string, tactic: string, weight: number): TechniqueCountermeasure => ({
   id: `cm-${externalId}`,
@@ -14,17 +17,28 @@ const cm = (externalId: string, tactic: string, weight: number): TechniqueCounte
 
 describe('groupByTactic', () => {
   /**
-   * Verifies: the groups follow D3FEND's matrix order (Model, Harden, Detect, Isolate, Deceive, Evict, Restore)
-   * whatever order the countermeasures arrive in, and a tactic the matrix does not name goes last.
-   * Interacts with: groupByTactic, D3FEND_TACTIC_ORDER.
-   * Data: one countermeasure per tactic, in reverse order, plus one of an unknown tactic.
+   * Verifies: the groups follow the tactic order the framework gives, whatever order the mappings arrive in, and
+   * a tactic the order does not name goes last.
+   * Interacts with: groupByTactic.
+   * Data: one mapping per tactic, in reverse order, plus one of an unknown tactic.
    */
-  it('orders the groups as the D3FEND matrix does', () => {
-    const reversed = [...D3FEND_TACTIC_ORDER].reverse().map((t, i) => cm(`D3-${i}`, t, 1));
+  it('orders the groups as the framework\'s tactic order does', () => {
+    const reversed = [...ORDER].reverse().map((t, i) => cm(`D3-${i}`, t, 1));
 
-    const groups = groupByTactic([cm('D3-X', 'Analyze', 1), ...reversed]);
+    const groups = groupByTactic([cm('D3-X', 'Analyze', 1), ...reversed], ORDER);
 
-    expect(groups.map(g => g.tactic)).toEqual([...D3FEND_TACTIC_ORDER, 'Analyze']);
+    expect(groups.map(g => g.tactic)).toEqual([...ORDER, 'Analyze']);
+  });
+
+  /**
+   * Verifies: with no order from the framework the groups are alphabetical; the code knows no tactic names.
+   * Interacts with: groupByTactic.
+   * Data: three tactics, out of order, and no tactic order.
+   */
+  it('orders the groups alphabetically when the framework gives no order', () => {
+    const groups = groupByTactic([cm('A', 'Model', 1), cm('B', 'Detect', 1), cm('C', 'Harden', 1)]);
+
+    expect(groups.map(g => g.tactic)).toEqual(['Detect', 'Harden', 'Model']);
   });
 
   /**

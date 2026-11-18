@@ -15,9 +15,16 @@
  */
 
 
+/**
+ * What an administrator may edit on a release: its framework and its notice fields. Nothing else about a release changes.
+ */
 export interface TechniqueReleaseNotice { 
     /**
-     * Who publishes the release (e.g. \"MITRE ATT&CK\"); blank for none.
+     * The framework the release belongs to, of the same domain and family; null for none.
+     */
+    techniqueFrameworkId?: string | null;
+    /**
+     * Who publishes the release; blank for none.
      */
     source?: string | null;
     /**

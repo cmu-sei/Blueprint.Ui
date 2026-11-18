@@ -17,6 +17,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
     }
   </mat-form-field>
   @if (canEdit()) {
+  <mat-form-field style="width: 240px; margin-left: 10px;">
+    <mat-label>Read As</mat-label>
+    <mat-select [formControl]="frameworkControl" title="The framework to read the next file as">
+      <mat-option value="">Match automatically</mat-option>
+      @for (framework of frameworks; track framework.id) {
+      <mat-option [value]="framework.id">{{ framework.name }}</mat-option>
+      }
+    </mat-select>
+    <mat-hint>Only when more than one framework matches</mat-hint>
+  </mat-form-field>
   <mat-form-field style="width: 260px; margin-left: 10px;">
     <mat-label>Version</mat-label>
     <input matInput [formControl]="versionControl" placeholder="From the file" />
@@ -29,6 +39,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
 </div>
 
 <section class="scrolling-region">
+  <app-admin-technique-frameworks [canEdit]="canEdit()"></app-admin-technique-frameworks>
+  <h3 class="section-title">Releases</h3>
   <mat-table [dataSource]="dataSource" matSort matSortActive="releaseDate" matSortDirection="desc" multiTemplateDataRows>
     <!-- action column -->
     <ng-container matColumnDef="action">
@@ -43,18 +55,18 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-cell *matCellDef="let release" class="col-action">
         @if (canEdit()) {
         <button mat-icon-button class="msel-action" (click)="editNotice(release)"
-          title="Edit notice of {{ release.name }} {{ release.version }}"
-          [attr.aria-label]="'Edit notice of ' + release.name + ' ' + release.version">
+          title="Edit {{ release.name }} {{ release.version }}"
+          [attr.aria-label]="'Edit ' + release.name + ' ' + release.version">
           <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
         </button>
         <button mat-icon-button class="msel-action" (click)="deleteRelease(release)"
           title="Delete {{ release.name }} {{ release.version }}">
           <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
         </button>
-        @if (isDefensive(release)) {
+        @if (takesMappings(release)) {
         <button mat-icon-button class="msel-action" (click)="chooseMappingsFile(release)" [disabled]="isLoading$ | async"
-          title="Import ATT&CK mappings"
-          [attr.aria-label]="'Import ATT&CK mappings for ' + release.name + ' ' + release.version">
+          title="Import mappings"
+          [attr.aria-label]="'Import mappings for ' + release.name + ' ' + release.version">
           <mat-icon class="mdi-18px" fontIcon="mdi-swap-horizontal"></mat-icon>
         </button>
         }
@@ -66,7 +78,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-cell *matCellDef="let release" class="col-name" [matTooltip]="release.description" matTooltipShowDelay="800">
         {{ release.name }}
         @if (release.countermeasureCount) {
-        <div class="row-note">{{ release.countermeasureCount }} countermeasure mappings</div>
+        <div class="row-note">{{ release.countermeasureCount }} mappings</div>
+        }
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="framework">
+      <mat-header-cell mat-sort-header="techniqueFrameworkName" *matHeaderCellDef class="col-small">Framework</mat-header-cell>
+      <mat-cell *matCellDef="let release" class="col-small">
+        @if (release.techniqueFrameworkName) {
+        {{ release.techniqueFrameworkName }}
+        } @else {
+        <span class="no-framework" title="Imported before frameworks were defined; give it one with its edit button">No framework</span>
         }
       </mat-cell>
     </ng-container>
@@ -107,28 +129,34 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </mat-table>
   @if (dataSource.data.length === 0) {
   <div class="empty-text">
-    <p>No technique framework releases have been imported. Download a file from MITRE and import it here.</p>
+    @if (frameworks.length === 0) {
+    <p>No releases have been imported. Add or import a framework definition above first, then import its release files here.</p>
+    } @else {
+    <p>No releases have been imported. Import a release file of one of the frameworks above.</p>
+    @if (frameworksWithDownloads.length > 0) {
     <ul>
-      <li><strong>MITRE ATT&amp;CK&reg;:</strong> enterprise-attack.json, mobile-attack.json or ics-attack.json from
-        <a href="https://github.com/mitre-attack/attack-stix-data" target="_blank" rel="noopener">attack-stix-data</a></li>
-      <li><strong>MITRE ATLAS&trade;:</strong> stix-atlas.json from the
-        <a href="https://github.com/mitre-atlas/atlas-data/releases" target="_blank" rel="noopener">atlas-data releases</a></li>
-      <li><strong>MITRE CAPEC&trade;:</strong> stix-capec.json from
-        <a href="https://github.com/mitre/cti/tree/master/capec/2.1" target="_blank" rel="noopener">mitre/cti</a></li>
-      <li><strong>MITRE D3FEND&trade;:</strong> d3fend.json from the
-        <a href="https://d3fend.mitre.org/resources/" target="_blank" rel="noopener">D3FEND resources page</a></li>
+      @for (framework of frameworksWithDownloads; track framework.id) {
+      <li><strong>{{ framework.name }}:</strong> {{ framework.settings?.downloadHint }}
+        @if (framework.settings?.downloadUrl) {
+        (<a [href]="framework.settings.downloadUrl" target="_blank" rel="noopener">{{ framework.settings.downloadUrl }}</a>)
+        }
+      </li>
+      }
     </ul>
-    <p>A D3FEND release then takes its ATT&amp;CK mappings: download d3fend-full-mappings.json from
-      {{ mappingsUrl(null) }} (the unversioned path is not served) and use the row's Import ATT&amp;CK mappings button.</p>
+    }
+    }
   </div>
   }
-  @if (canEdit() && defensiveReleasesWithoutMappings.length > 0) {
+  @if (canEdit() && releasesWithoutMappings.length > 0) {
   <div class="hint-text">
-    @for (release of defensiveReleasesWithoutMappings; track release.id) {
+    @for (release of releasesWithoutMappings; track release.id) {
     <div>
-      {{ release.name }} {{ release.version }} has no ATT&amp;CK mappings yet. Download d3fend-full-mappings.json from
-      <a [href]="mappingsUrl(release)" target="_blank" rel="noopener">{{ mappingsUrl(release) }}</a> (the unversioned path
-      is not served) and import it with the row's Import ATT&amp;CK mappings button.
+      {{ release.name }} {{ release.version }} has no mappings yet.
+      @if (release.mappingsDownloadHint) { Download {{ release.mappingsDownloadHint }}}
+      @if (release.mappingsDownloadUrl) {
+      from <a [href]="release.mappingsDownloadUrl" target="_blank" rel="noopener">{{ release.mappingsDownloadUrl }}</a>
+      }
+      and import it with the row's Import mappings button.
     </div>
     }
   </div>

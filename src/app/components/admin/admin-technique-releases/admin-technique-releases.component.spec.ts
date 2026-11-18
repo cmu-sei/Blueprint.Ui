@@ -11,10 +11,12 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { fireEvent, screen, within } from '@testing-library/angular';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { TechniqueRelease, TechniqueReleaseNotice, TechniqueReleaseService, TechniqueCountermeasureImport } from 'src/app/generated/blueprint.api';
+import { TechniqueFramework, TechniqueFrameworkService, TechniqueRelease, TechniqueReleaseNotice, TechniqueReleaseService, TechniqueCountermeasureImport } from 'src/app/generated/blueprint.api';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
 import { AdminTechniqueReleasesComponent } from './admin-technique-releases.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
@@ -36,8 +38,12 @@ const ATLAS: TechniqueRelease = {
   source: 'MITRE ATLAS', termsUrl: ATTACK_TERMS,
   notice: `${COPYRIGHT}\nMITRE ATLAS™ is a trademark of The MITRE Corporation.`,
 };
+// what the release's framework definition says about mappings is served on the release (test data)
 const D3FEND: TechniqueRelease = {
   id: 'rel-3', domain: 'd3fend', isDefensive: true, name: 'MITRE D3FEND', version: '1.6.0',
+  techniqueFrameworkId: 'fw-d3', techniqueFrameworkName: 'D3FEND definition', mappingRelation: 'countered by',
+  mappingsDownloadUrl: 'https://d3fend.mitre.org/ontologies/d3fend/1.6.0/d3fend-full-mappings.json',
+  mappingsDownloadHint: 'd3fend-full-mappings.json for the release\'s version',
   releaseDate: new Date('2026-08-31T00:12:00Z'), tacticCount: 7, techniqueCount: 271,
   source: 'MITRE D3FEND', termsUrl: 'https://d3fend.mitre.org/tou/',
   notice: `${COPYRIGHT}\nMITRE D3FEND™ is a trademark of The MITRE Corporation.`,
@@ -61,11 +67,27 @@ const TRADEMARKS = /MITRE ATT&CK and ATT&CK are registered trademarks of The MIT
 const ATLAS_TRADEMARK = /MITRE ATLAS™ is a trademark of The MITRE Corporation\./;
 const D3FEND_TRADEMARK = /MITRE D3FEND™ is a trademark of The MITRE Corporation\./;
 
-// The component loads the releases itself in ngOnInit, so the stubbed endpoint is all the store needs.
-async function renderReleases(releases: TechniqueRelease[], canEdit = true) {
+// Framework definitions, as an administrator entered them (test data).
+const D3FEND_FRAMEWORK: TechniqueFramework = {
+  id: 'fw-d3', name: 'D3FEND definition', domain: 'd3fend', isDefensive: true, format: 'JsonLdOntology',
+  settings: { match: { property: 'd3f:d3fend-id' }, downloadHint: 'd3fend.json from the resources page', downloadUrl: 'https://d3fend.mitre.org/resources/' },
+  releaseCount: 0,
+};
+const ATTACK_FRAMEWORK: TechniqueFramework = {
+  id: 'fw-ent', name: 'Enterprise definition', domain: 'enterprise-attack', isDefensive: false, format: 'StixBundle',
+  settings: { match: { stixDomain: 'enterprise-attack' }, downloadHint: 'enterprise-attack.json', downloadUrl: 'https://github.com/mitre-attack/attack-stix-data' },
+  releaseCount: 0,
+};
+
+// The component loads the releases and frameworks itself in ngOnInit, so the stubbed endpoints are all the stores need.
+async function renderReleases(releases: TechniqueRelease[], canEdit = true, frameworks: TechniqueFramework[] = []) {
+  const frameworkApi = {
+    getTechniqueFrameworks: vi.fn(() => of(structuredClone(frameworks))),
+  } satisfies ApiStub<TechniqueFrameworkService>;
   const releaseApi = {
     getTechniqueReleases: vi.fn(() => of(structuredClone(releases))),
     importTechniqueCountermeasures: vi.fn(() => of(structuredClone(IMPORT_RESULT))),
+    importTechniqueRelease: vi.fn(() => of(structuredClone(CUSTOM))),
     // the API answers the release as saved: the four notice fields changed, nothing else
     updateTechniqueRelease: vi.fn((id: string, notice: TechniqueReleaseNotice) =>
       of({ ...structuredClone(releases.find(r => r.id === id)), ...notice })),
@@ -85,32 +107,48 @@ async function renderReleases(releases: TechniqueRelease[], canEdit = true) {
     declarations: [AdminTechniqueReleasesComponent],
     providers: [
       { provide: TechniqueReleaseService, useValue: releaseApi },
+      { provide: TechniqueFrameworkService, useValue: frameworkApi },
       { provide: SystemMessageService, useValue: messages },
       unstubbed(CrucibleDialogService),
     ],
     inputs: { canEdit, loggedInUserId: 'user-1' },
   });
-  return { ...rendered, releaseApi, messages };
+  return { ...rendered, releaseApi, frameworkApi, messages };
 }
 
 describe('AdminTechniqueReleasesComponent', () => {
   /**
-   * Verifies: with nothing imported the empty state names the ATT&CK bundle, the ATLAS one and the D3FEND
-   * ontology, the import button takes any of them, and no trademark line is shown, as no release carries one.
-   * Interacts with: TechniqueReleaseService.getTechniqueReleases (stub), TechniqueNoticeComponent.
-   * Data: no releases.
+   * Verifies: with no framework defined the empty state says a framework definition comes first, naming no file
+   * of any framework, since Blueprint ships none.
+   * Interacts with: TechniqueFrameworkService.getTechniqueFrameworks (stub), frameworks.
+   * Data: no frameworks and no releases.
    */
-  it('tells an administrator which files to import when there are none', async () => {
-    const { releaseApi } = await renderReleases([]);
+  it('asks for a framework definition first when none is defined', async () => {
+    const { frameworkApi } = await renderReleases([]);
+
+    expect(frameworkApi.getTechniqueFrameworks).toHaveBeenCalled();
+    expect(screen.getByText(/Add or import a framework definition above first/)).toBeInTheDocument();
+    expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
+    expect(screen.getByText(/No technique frameworks are defined/)).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: with frameworks defined and nothing imported, the empty state lists each framework's own download
+   * hint and link, the import button takes any file, and no trademark line is shown, as no release carries one.
+   * Interacts with: TechniqueReleaseService.getTechniqueReleases (stub), frameworksWithDownloads, TechniqueNoticeComponent.
+   * Data: two frameworks with download hints, no releases.
+   */
+  it('tells an administrator which files to import from the frameworks\' download hints', async () => {
+    const { releaseApi } = await renderReleases([], true, [D3FEND_FRAMEWORK, ATTACK_FRAMEWORK]);
 
     expect(releaseApi.getTechniqueReleases).toHaveBeenCalled();
-    expect(screen.getByText(/enterprise-attack\.json, mobile-attack\.json or ics-attack\.json from/)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'attack-stix-data' })).toHaveAttribute('href', 'https://github.com/mitre-attack/attack-stix-data');
-    expect(screen.getByRole('link', { name: 'atlas-data releases' })).toHaveAttribute('href', 'https://github.com/mitre-atlas/atlas-data/releases');
-    expect(screen.getByRole('link', { name: 'mitre/cti' })).toHaveAttribute('href', 'https://github.com/mitre/cti/tree/master/capec/2.1');
-    expect(screen.getByRole('link', { name: 'D3FEND resources page' })).toHaveAttribute('href', 'https://d3fend.mitre.org/resources/');
+    const items = screen.getAllByRole('listitem').map(li => li.textContent.replace(/\s+/g, ' ').trim());
+    expect(items).toEqual([
+      'D3FEND definition: d3fend.json from the resources page (https://d3fend.mitre.org/resources/)',
+      'Enterprise definition: enterprise-attack.json (https://github.com/mitre-attack/attack-stix-data)',
+    ]);
+    expect(screen.getByRole('link', { name: 'https://d3fend.mitre.org/resources/' })).toHaveAttribute('href', 'https://d3fend.mitre.org/resources/');
     expect(screen.getByTitle('Import a release file')).toBeInTheDocument();
-    expect(screen.getByText(/d3fend-full-mappings\.json from https:\/\/d3fend\.mitre\.org\/ontologies\/d3fend\/<version>\/d3fend-full-mappings\.json \(the unversioned path is not served\)/)).toBeInTheDocument();
     expect(screen.queryByText(TRADEMARKS)).not.toBeInTheDocument();
     expect(screen.queryByText(/© 2026 The MITRE Corporation/)).not.toBeInTheDocument();
     expect(screen.queryByText(ATLAS_TRADEMARK)).not.toBeInTheDocument();
@@ -203,7 +241,7 @@ describe('AdminTechniqueReleasesComponent', () => {
     await renderReleases([ENTERPRISE]);
     const user = userEvent.setup();
 
-    await user.click(screen.getByRole('button', { name: 'Edit notice of Enterprise ATT&CK 17.1' }));
+    await user.click(screen.getByRole('button', { name: 'Edit Enterprise ATT&CK 17.1' }));
     await user.keyboard('{Escape}');
 
     expect(screen.queryByText(TRADEMARKS)).not.toBeInTheDocument();
@@ -220,9 +258,9 @@ describe('AdminTechniqueReleasesComponent', () => {
     const { releaseApi } = await renderReleases([CUSTOM]);
     const user = userEvent.setup();
 
-    await user.click(screen.getByRole('button', { name: 'Edit notice of Acme Techniques 1.0' }));
+    await user.click(screen.getByRole('button', { name: 'Edit Acme Techniques 1.0' }));
 
-    expect(await screen.findByRole('heading', { name: 'Edit Notice: Acme Techniques 1.0' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Edit Release: Acme Techniques 1.0' })).toBeInTheDocument();
     for (const label of ['Source', 'Source URL', 'Notice', 'Terms URL']) {
       expect(screen.getByRole('textbox', { name: label })).toHaveValue('');
     }
@@ -232,7 +270,7 @@ describe('AdminTechniqueReleasesComponent', () => {
     await user.type(screen.getByRole('textbox', { name: 'Terms URL' }), 'https://acme.example/terms');
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
-    const sent: TechniqueReleaseNotice = { source: 'Acme Corp', sourceUrl: '', notice: '© Acme Corp', termsUrl: 'https://acme.example/terms' };
+    const sent: TechniqueReleaseNotice = { techniqueFrameworkId: null, source: 'Acme Corp', sourceUrl: '', notice: '© Acme Corp', termsUrl: 'https://acme.example/terms' };
     expect(releaseApi.updateTechniqueRelease).toHaveBeenCalledWith('rel-5', sent);
     const dialog = await readNotice(user, 'Acme Techniques');
     expect(dialog.getByText('© Acme Corp')).toBeInTheDocument();
@@ -249,7 +287,7 @@ describe('AdminTechniqueReleasesComponent', () => {
     const { releaseApi } = await renderReleases([ENTERPRISE]);
     const user = userEvent.setup();
 
-    await user.click(screen.getByRole('button', { name: 'Edit notice of Enterprise ATT&CK 17.1' }));
+    await user.click(screen.getByRole('button', { name: 'Edit Enterprise ATT&CK 17.1' }));
 
     expect(await screen.findByRole('textbox', { name: 'Source' })).toHaveValue('MITRE ATT&CK');
     expect(screen.getByRole('textbox', { name: 'Terms URL' })).toHaveValue(ATTACK_TERMS);
@@ -270,39 +308,41 @@ describe('AdminTechniqueReleasesComponent', () => {
   it('offers no edit action without edit permission', async () => {
     await renderReleases([CUSTOM], false);
 
-    expect(screen.queryByRole('button', { name: /Edit notice of/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Edit / })).not.toBeInTheDocument();
   });
 
   /**
-   * Verifies: only a D3FEND row offers Import ATT&CK mappings, a release with mappings says how many on its row, and
-   * no hint is given for it.
-   * Interacts with: TechniqueReleaseService.getTechniqueReleases (stub), isDefensive, defensiveReleasesWithoutMappings.
-   * Data: Enterprise ATT&CK 17.1 and MITRE D3FEND 1.6.0 with 4133 mappings.
+   * Verifies: only a release whose framework defines mappings offers Import mappings (a defensive release without
+   * that definition does not), a release with mappings says how many on its row, and no hint is given for it.
+   * Interacts with: TechniqueReleaseService.getTechniqueReleases (stub), takesMappings, releasesWithoutMappings.
+   * Data: Enterprise ATT&CK 17.1, MITRE D3FEND 1.6.0 with 4133 mappings, and a defensive release with no framework.
    */
-  it('offers the mappings import on a D3FEND row and counts its mappings', async () => {
-    await renderReleases([ENTERPRISE, D3FEND_WITH_MAPPINGS]);
+  it('offers the mappings import on a row whose framework defines mappings, and counts them', async () => {
+    const unframed: TechniqueRelease = { ...D3FEND, id: 'rel-9', version: '0.9', techniqueFrameworkId: null, techniqueFrameworkName: null, mappingRelation: null };
+    await renderReleases([ENTERPRISE, D3FEND_WITH_MAPPINGS, unframed]);
 
-    const buttons = screen.getAllByTitle('Import ATT&CK mappings');
+    const buttons = screen.getAllByTitle('Import mappings');
     expect(buttons).toHaveLength(1);
-    expect(buttons[0]).toHaveAttribute('aria-label', 'Import ATT&CK mappings for MITRE D3FEND 1.6.0');
-    expect(screen.getByText('4133 countermeasure mappings')).toBeInTheDocument();
-    expect(screen.queryByText(/has no ATT&CK mappings yet/)).not.toBeInTheDocument();
+    expect(buttons[0]).toHaveAttribute('aria-label', 'Import mappings for MITRE D3FEND 1.6.0');
+    expect(screen.getByText('4133 mappings')).toBeInTheDocument();
+    expect(screen.queryByText(/has no mappings yet/)).not.toBeInTheDocument();
+    expect(screen.getAllByText('No framework')).toHaveLength(2);
+    expect(screen.getByText('D3FEND definition')).toBeInTheDocument();
   });
 
   /**
-   * Verifies: a D3FEND release without mappings gets a hint naming the file, linking the versioned URL and warning
-   * that the unversioned path is not served.
-   * Interacts with: defensiveReleasesWithoutMappings, mappingsUrl.
+   * Verifies: a release that takes mappings but has none gets a hint with its framework's download hint and the
+   * link its framework's template gives for the release's version.
+   * Interacts with: releasesWithoutMappings, mappingsDownloadUrl, mappingsDownloadHint.
    * Data: MITRE D3FEND 1.6.0 with no mappings.
    */
   it('tells an administrator where a release\'s mappings file is', async () => {
     await renderReleases([D3FEND]);
 
-    expect(screen.getByText(/MITRE D3FEND 1\.6\.0 has no ATT&CK mappings yet\. Download d3fend-full-mappings\.json from/)).toBeInTheDocument();
+    expect(screen.getByText(/MITRE D3FEND 1\.6\.0 has no mappings yet\. Download d3fend-full-mappings\.json for the release's version/)).toBeInTheDocument();
     const link = screen.getByRole('link', { name: MAPPINGS_URL });
     expect(link).toHaveAttribute('href', MAPPINGS_URL);
-    expect(screen.getByText(/the unversioned path is not served/)).toBeInTheDocument();
-    expect(screen.queryByText(/countermeasure mappings/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/\d+ mappings$/)).not.toBeInTheDocument();
   });
 
   /**
@@ -316,16 +356,57 @@ describe('AdminTechniqueReleasesComponent', () => {
     const { releaseApi, messages, fixture } = await renderReleases([ENTERPRISE, D3FEND]);
     const file = new File(['{}'], 'd3fend-full-mappings.json', { type: 'application/json' });
 
-    fireEvent.click(screen.getByTitle('Import ATT&CK mappings'));
+    fireEvent.click(screen.getByTitle('Import mappings'));
     fireEvent.change(screen.getByTestId('mappings-file'), { target: { files: [file] } });
     fixture.detectChanges();
 
     expect(releaseApi.importTechniqueCountermeasures).toHaveBeenCalledWith('rel-3', file);
     expect(messages.displayMessage).toHaveBeenCalledWith(
       'Mappings Imported',
-      '9 rows read. 5 countermeasure mappings for 4 techniques stored on MITRE D3FEND 1.6.0; 1 skipped because their D3FEND technique is not in this release.'
+      '9 rows read. 5 mappings for 4 techniques stored on MITRE D3FEND 1.6.0; 1 skipped because their technique is not in this release.'
     );
-    expect(screen.getByText('5 countermeasure mappings')).toBeInTheDocument();
-    expect(screen.queryByText(/has no ATT&CK mappings yet/)).not.toBeInTheDocument();
+    expect(screen.getByText('5 mappings')).toBeInTheDocument();
+    expect(screen.queryByText(/has no mappings yet/)).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: the edit dialog offers only frameworks of the release's domain and family, and saving sends the one
+   * chosen with the notice fields.
+   * Interacts with: editNotice, AdminTechniqueReleaseNoticeDialogComponent.frameworks, updateTechniqueRelease (stub).
+   * Data: MITRE D3FEND 1.6.0 with no framework, and a defensive and an attack framework definition.
+   */
+  it('gives a release a framework of its own domain and family from the edit dialog', async () => {
+    const unframed: TechniqueRelease = { ...D3FEND, techniqueFrameworkId: null, techniqueFrameworkName: null };
+    const { releaseApi, fixture } = await renderReleases([unframed], true, [D3FEND_FRAMEWORK, ATTACK_FRAMEWORK]);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Edit MITRE D3FEND 1.6.0' }));
+    const select = await TestbedHarnessEnvironment.documentRootLoader(fixture).getHarness(MatSelectHarness.with({ selector: '[title="The framework definition the release belongs to"]' }));
+    await select.open();
+    expect(await Promise.all((await select.getOptions()).map(o => o.getText()))).toEqual(['No framework', 'D3FEND definition']);
+    await select.clickOptions({ text: 'D3FEND definition' });
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(releaseApi.updateTechniqueRelease).toHaveBeenCalledWith('rel-3', expect.objectContaining({ techniqueFrameworkId: 'fw-d3' }));
+  });
+
+  /**
+   * Verifies: a file is read as the framework chosen under Read As, for when more than one matches it; with
+   * none chosen it is matched automatically.
+   * Interacts with: frameworkControl, selectFile, TechniqueReleaseService.importTechniqueRelease (stub).
+   * Data: two framework definitions and a file picked twice.
+   */
+  it('imports a file as the framework chosen, or matches it automatically', async () => {
+    const { releaseApi, fixture } = await renderReleases([], true, [D3FEND_FRAMEWORK, ATTACK_FRAMEWORK]);
+    const file = new File(['{}'], 'release.json', { type: 'application/json' });
+    const input = fixture.nativeElement.querySelector('input[type=file]:not([data-testid])') as HTMLInputElement;
+
+    fireEvent.change(input, { target: { files: [file] } });
+    expect(releaseApi.importTechniqueRelease).toHaveBeenLastCalledWith(file, undefined, undefined);
+
+    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness.with({ selector: '[title="The framework to read the next file as"]' }));
+    await select.clickOptions({ text: 'Enterprise definition' });
+    fireEvent.change(input, { target: { files: [file] } });
+    expect(releaseApi.importTechniqueRelease).toHaveBeenLastCalledWith(file, undefined, 'fw-ent');
   });
 });

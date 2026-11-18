@@ -141,7 +141,7 @@
   flex: 0 0 80px;
 }
 
-// the Countered by row belongs to the technique row above it
+// the mappings row belongs to the technique row above it
 .pool-row:has(+ .countermeasures-row) {
   border-bottom: none;
 }

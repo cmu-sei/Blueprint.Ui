@@ -17,26 +17,26 @@ import { Technique } from './technique';
 
 
 /**
- * A D3FEND \"countered by\" mapping: the offensive technique id and the D3FEND technique that counters it.
+ * A mapping: the source technique id and the technique of the release it maps to.
  */
 export interface TechniqueCountermeasure { 
     id?: string;
     /**
-     * The D3FEND release the mapping belongs to.
+     * The defensive release the mapping belongs to.
      */
     techniqueReleaseId?: string;
     /**
-     * The offensive technique\'s id (T1003.005), whichever release of its framework the MSEL uses.
+     * The source technique\'s id, whichever release of its framework the MSEL uses.
      */
     offensiveExternalId?: string | null;
     defensiveTechniqueId?: string;
     defensiveTechnique?: Technique;
     /**
-     * The D3FEND tactic label the mapping is filed under: Model, Harden, Detect, Isolate, Deceive, Evict or Restore.
+     * The tactic label the mapping is filed under, as the file gives it.
      */
     defensiveTactic?: string | null;
     /**
-     * The most common artifact path behind the pair, e.g. \"hardens Credential; T1003.005 accesses Encrypted Credential\".
+     * The most common path behind the pair, as the file words it.
      */
     rationale?: string | null;
     /**

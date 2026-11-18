@@ -23,7 +23,12 @@ export interface TechniqueRelease {
     id?: string;
     domain?: string | null;
     /**
-     * Whether the release\'s techniques are defences (MITRE D3FEND) rather than attacks (ATT&CK, ATLAS).
+     * The framework the release was read as; null for a release that has none.
+     */
+    techniqueFrameworkId?: string | null;
+    techniqueFrameworkName?: string | null;
+    /**
+     * Whether the release\'s techniques are defences rather than attacks.
      */
     isDefensive?: boolean;
     version?: string | null;
@@ -31,7 +36,7 @@ export interface TechniqueRelease {
     description?: string | null;
     releaseDate?: Date | null;
     /**
-     * Who publishes the release (MITRE ATT&CK, MITRE D3FEND); null when it is not known.
+     * Who publishes the release; null when it is not known.
      */
     source?: string | null;
     sourceUrl?: string | null;
@@ -47,8 +52,25 @@ export interface TechniqueRelease {
     tacticCount?: number;
     techniqueCount?: number;
     /**
-     * The D3FEND \"countered by\" mappings imported onto the release; 0 for an attack release.
+     * The mappings imported onto the release.
      */
     countermeasureCount?: number;
+    /**
+     * The framework\'s tactic names in the order they are shown; empty when it gives none.
+     */
+    tacticOrder?: Array<string> | null;
+    /**
+     * A weakness\'s page, with {id} and {fullId}; null when the framework gives none.
+     */
+    weaknessUrlTemplate?: string | null;
+    /**
+     * How the framework\'s mappings read, as its definition words the relation; null when the framework has no mappings to import.
+     */
+    mappingRelation?: string | null;
+    /**
+     * Where the release\'s mappings file is downloaded from; null when the framework does not say.
+     */
+    mappingsDownloadUrl?: string | null;
+    mappingsDownloadHint?: string | null;
 }
 

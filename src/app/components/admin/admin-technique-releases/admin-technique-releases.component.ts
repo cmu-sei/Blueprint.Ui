@@ -15,32 +15,32 @@ import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MatDialog } from '@angular/material/dialog';
-import { TechniqueRelease, TechniqueReleaseNotice } from 'src/app/generated/blueprint.api';
+import { TechniqueFramework, TechniqueRelease, TechniqueReleaseNotice } from 'src/app/generated/blueprint.api';
 import { TechniqueReleaseDataService } from 'src/app/data/technique-release/technique-release-data.service';
 import { TechniqueReleaseQuery } from 'src/app/data/technique-release/technique-release.query';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
+import { TechniqueFrameworkQuery } from 'src/app/data/technique-framework/technique-framework.query';
+import { MatSelect, MatOption } from '@angular/material/select';
+import { AdminTechniqueFrameworksComponent } from '../admin-technique-frameworks/admin-technique-frameworks.component';
 import { AdminTechniqueReleaseNoticeDialogComponent } from '../admin-technique-release-notice-dialog/admin-technique-release-notice-dialog.component';
 import { TechniqueNoticeComponent, hasTechniqueNotice } from '../../technique-notice/technique-notice.component';
 
-/** Where a release's d3fend-full-mappings.json is served; the unversioned "latest" path is not. */
-export function d3fendMappingsUrl(version: string): string {
-  return `https://d3fend.mitre.org/ontologies/d3fend/${version || '<version>'}/d3fend-full-mappings.json`;
-}
-
 /**
- * The technique framework releases planners pick techniques from. An administrator imports a STIX bundle or a
- * defensive ontology, and a defensive release also takes its "countered by" mappings file. A release shows the
- * notice its file carried, which an administrator can edit.
+ * The technique frameworks and the releases planners pick techniques from. An administrator defines the
+ * frameworks, then imports release files, which are read as the framework they match. A release whose framework
+ * defines mappings also takes a mappings file. A release shows the notice its file carried, which an
+ * administrator can edit along with its framework.
  */
 @Component({
   selector: 'app-admin-technique-releases',
   templateUrl: './admin-technique-releases.component.html',
   styleUrls: ['./admin-technique-releases.component.scss'],
-  imports: [MatIcon, MatFormField, MatLabel, MatHint, MatInput, ReactiveFormsModule, MatIconButton, MatSuffix, MatProgressSpinner, MatTable, MatSort, MatSortHeader, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, NgStyle, AsyncPipe, DatePipe, TechniqueNoticeComponent]
+  imports: [MatIcon, MatFormField, MatLabel, MatHint, MatInput, ReactiveFormsModule, MatIconButton, MatSuffix, MatProgressSpinner, MatTable, MatSort, MatSortHeader, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, NgStyle, AsyncPipe, DatePipe, TechniqueNoticeComponent, MatSelect, MatOption, AdminTechniqueFrameworksComponent]
 })
 export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, OnDestroy {
   private techniqueReleaseDataService = inject(TechniqueReleaseDataService);
   private techniqueReleaseQuery = inject(TechniqueReleaseQuery);
+  private techniqueFrameworkQuery = inject(TechniqueFrameworkQuery);
   private messageService = inject(SystemMessageService);
   dialogService = inject(CrucibleDialogService);
   private dialog = inject(MatDialog);
@@ -50,13 +50,16 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
   readonly sort = viewChild(MatSort);
   readonly stixInput = viewChild<ElementRef<HTMLInputElement>>('stixInput');
   readonly mappingsInput = viewChild<ElementRef<HTMLInputElement>>('mappingsInput');
-  /** The defensive release the mappings file picker was opened for. */
+  /** The release the mappings file picker was opened for. */
   private mappingsRelease: TechniqueRelease;
   dataSource = new MatTableDataSource<TechniqueRelease>([]);
   // the release whose notice is open under its row
   expandedId = '';
-  displayedColumns: string[] = ['action', 'name', 'domain', 'version', 'releaseDate', 'tacticCount', 'techniqueCount'];
+  displayedColumns: string[] = ['action', 'name', 'framework', 'domain', 'version', 'releaseDate', 'tacticCount', 'techniqueCount'];
   versionControl = new UntypedFormControl('');
+  /** The framework to read the next file as; empty to match it automatically. */
+  frameworkControl = new UntypedFormControl('');
+  frameworks: TechniqueFramework[] = [];
   filterControl = new UntypedFormControl('');
   filterString = '';
   isLoading$: Observable<boolean>;
@@ -80,6 +83,9 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
     this.techniqueReleaseQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(releases => {
       this.dataSource.data = releases;
     });
+    this.techniqueFrameworkQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(frameworks => {
+      this.frameworks = [...frameworks].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    });
     this.filterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe(term => {
       this.filterString = term;
       this.dataSource.filter = (term || '').trim().toLowerCase();
@@ -91,9 +97,15 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
     this.dataSource.sort = this.sort();
   }
 
-  /** Opens the source, notice and terms of a release for editing. */
+  /** The frameworks whose download hints the empty state lists. */
+  get frameworksWithDownloads(): TechniqueFramework[] {
+    return this.frameworks.filter(f => f.settings?.downloadHint || f.settings?.downloadUrl);
+  }
+
+  /** Opens the framework, source, notice and terms of a release for editing. */
   editNotice(release: TechniqueRelease) {
     const notice: TechniqueReleaseNotice = {
+      techniqueFrameworkId: release.techniqueFrameworkId ?? null,
       source: release.source ?? '',
       sourceUrl: release.sourceUrl ?? '',
       notice: release.notice ?? '',
@@ -103,7 +115,7 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
       minWidth: '500px',
       maxWidth: '90vw',
       width: '700px',
-      data: { release, notice },
+      data: { release, notice, frameworks: this.frameworks },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
       if (result.saveChanges && result.notice) {
@@ -113,18 +125,14 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
     });
   }
 
-  /** A defensive release takes the "countered by" mappings. */
-  isDefensive(release: TechniqueRelease): boolean {
-    return !!release.isDefensive;
+  /** A release whose framework defines mappings takes a mappings file. */
+  takesMappings(release: TechniqueRelease): boolean {
+    return !!release.mappingRelation;
   }
 
-  /** The defensive releases without mappings yet, for the hint. */
-  get defensiveReleasesWithoutMappings(): TechniqueRelease[] {
-    return this.dataSource.data.filter(r => this.isDefensive(r) && !r.countermeasureCount);
-  }
-
-  mappingsUrl(release: TechniqueRelease): string {
-    return d3fendMappingsUrl(release?.version);
+  /** The releases that take mappings but have none yet, for the hint. */
+  get releasesWithoutMappings(): TechniqueRelease[] {
+    return this.dataSource.data.filter(r => this.takesMappings(r) && !r.countermeasureCount);
   }
 
   selectFile(e: Event) {
@@ -133,8 +141,11 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
     if (!file) {
       return;
     }
-    this.techniqueReleaseDataService.import(file, (this.versionControl.value || '').trim())
-      .subscribe(() => this.versionControl.setValue(''));
+    this.techniqueReleaseDataService.import(file, (this.versionControl.value || '').trim(), this.frameworkControl.value || undefined)
+      .subscribe(() => {
+        this.versionControl.setValue('');
+        this.frameworkControl.setValue('');
+      });
     this.stixInput().nativeElement.value = null;
   }
 
@@ -153,9 +164,9 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
     this.techniqueReleaseDataService.importCountermeasures(release.id, file).subscribe(result => {
       this.messageService.displayMessage(
         'Mappings Imported',
-        `${result.rowsRead} rows read. ${result.pairsStored} countermeasure mappings for ${result.offensiveTechniqueCount} ` +
+        `${result.rowsRead} rows read. ${result.pairsStored} mappings for ${result.offensiveTechniqueCount} ` +
           `techniques stored on ${release.name} ${release.version}` +
-          (result.pairsSkipped > 0 ? `; ${result.pairsSkipped} skipped because their D3FEND technique is not in this release.` : '.')
+          (result.pairsSkipped > 0 ? `; ${result.pairsSkipped} skipped because their technique is not in this release.` : '.')
       );
     });
     input.value = null;

@@ -16,7 +16,7 @@
 
 
 /**
- * A link from a technique to the same attack in another catalogue (OWASP Attacks, WASC).
+ * A link from a technique to the same attack in another catalogue.
  */
 export interface TechniqueLink { 
     source?: string | null;

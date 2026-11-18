@@ -112,10 +112,10 @@ export class TechniqueReleaseService extends BaseService {
     }
 
     /**
-     * Gets the D3FEND \&quot;countered by\&quot; mappings of a D3FEND release
-     * With &#x60;offensiveId&#x60;, the countermeasures of that technique (T1003.005) ranked by weight; a sub-technique with none of its own is answered with its parent technique\&#39;s, each flagged &#x60;inheritedFromParent&#x60;. Without it, every mapping of the release.
-     * @param id The id of the D3FEND release
-     * @param offensiveId The offensive technique\&#39;s id, e.g. T1003.005
+     * Gets the mappings imported onto a release
+     * With &#x60;offensiveId&#x60;, the countermeasures of that technique ranked by weight; a sub-technique with none of its own gets its parent\&#39;s, each flagged &#x60;inheritedFromParent&#x60;. Without it, every mapping of the release.
+     * @param id The id of the release
+     * @param offensiveId The source technique\&#39;s id
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
@@ -410,9 +410,9 @@ export class TechniqueReleaseService extends BaseService {
     }
 
     /**
-     * Imports the D3FEND \&quot;countered by\&quot; mappings onto a D3FEND release
-     * Accepts d3fend-full-mappings.json for the release\&#39;s version, from https://d3fend.mitre.org/ontologies/d3fend/&lt;version&gt;/d3fend-full-mappings.json. The file\&#39;s rows are aggregated to one row per (offensive technique id, D3FEND technique), weighted by the number of distinct artifact paths between them; a pair whose D3FEND class is not a technique of this release is skipped and counted. Importing again replaces the release\&#39;s mappings. Refused with a 400 on a release that is not defensive or a file that is not SPARQL results JSON.
-     * @param id The id of the D3FEND release
+     * Imports a mappings file onto a release
+     * The file is read as the release\&#39;s framework defines its mappings. Rows are aggregated to one per (source id, target technique), weighted by distinct paths; a pair whose target is not a technique of this release is skipped and counted. Importing again replaces the release\&#39;s mappings. Refused with a 400 when the release\&#39;s framework defines no mappings or the file is not of their format.
+     * @param id The id of the release
      * @param toUpload 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -497,17 +497,18 @@ export class TechniqueReleaseService extends BaseService {
     }
 
     /**
-     * Imports a release from its STIX 2.x bundle or the D3FEND ontology
-     * Accepts enterprise-attack.json, mobile-attack.json or ics-attack.json from the mitre-attack/attack-stix-data repository, or stix-atlas.json from the mitre-atlas/atlas-data releases, which becomes a release of the ATLAS domain. Revoked and deprecated objects are skipped. Also accepts d3fend.json (JSON-LD) from the D3FEND Ontology Resources page, which becomes a defensive release of the d3fend domain. The version is read from the file; give one only for an older file that does not name it.
+     * Imports a release from a STIX 2.x bundle or a JSON-LD ontology
+     * The file is read as the technique framework whose match conditions it meets; a 400 when none does or more than one does. Give the framework to choose one. The version is read from the file; give one only for a file that does not name it.
      * @param toUpload 
-     * @param version The release version (e.g. \&quot;17.1\&quot;), if the file does not say
+     * @param version The release version, if the file does not say
+     * @param techniqueFrameworkId The framework to read the file as, if more than one matches
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public importTechniqueRelease(toUpload: Blob, version?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<TechniqueRelease>;
-    public importTechniqueRelease(toUpload: Blob, version?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<TechniqueRelease>>;
-    public importTechniqueRelease(toUpload: Blob, version?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<TechniqueRelease>>;
-    public importTechniqueRelease(toUpload: Blob, version?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public importTechniqueRelease(toUpload: Blob, version?: string, techniqueFrameworkId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<TechniqueRelease>;
+    public importTechniqueRelease(toUpload: Blob, version?: string, techniqueFrameworkId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<TechniqueRelease>>;
+    public importTechniqueRelease(toUpload: Blob, version?: string, techniqueFrameworkId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<TechniqueRelease>>;
+    public importTechniqueRelease(toUpload: Blob, version?: string, techniqueFrameworkId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (toUpload === null || toUpload === undefined) {
             throw new Error('Required parameter toUpload was null or undefined when calling importTechniqueRelease.');
         }
@@ -515,6 +516,8 @@ export class TechniqueReleaseService extends BaseService {
         let localVarQueryParameters = new HttpParams({encoder: this.encoder});
         localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
           <any>version, 'version');
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>techniqueFrameworkId, 'techniqueFrameworkId');
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -586,8 +589,8 @@ export class TechniqueReleaseService extends BaseService {
     }
 
     /**
-     * Edits a release\&#39;s publisher and notice fields
-     * Changes the source, source URL, notice and terms URL only; the release\&#39;s id, domain, version, tactics and techniques stay as imported, so no MSEL\&#39;s pool is affected. A blank field is cleared. The URLs must be http or https addresses. A release shows the notice it carries: a custom release has none until it is given one.
+     * Edits a release\&#39;s framework and notice fields
+     * Changes only the framework, source, source URL, notice and terms URL, so no MSEL\&#39;s pool is affected. A blank field is cleared. The framework must be of the release\&#39;s domain and family. The URLs must be http or https addresses.
      * @param id The id of the release
      * @param techniqueReleaseNotice The notice fields
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.

@@ -16,14 +16,14 @@
 
 
 /**
- * What moving a MSEL\'s technique pool to another ATT&CK release kept and dropped.
+ * What moving a MSEL\'s technique pool to another release kept and dropped.
  */
 export interface MselTechniqueUpgrade { 
     mselId?: string;
     techniqueReleaseId?: string;
     kept?: number;
     /**
-     * The technique ids (T1059.001) the new release no longer has, revoked or deprecated.
+     * The technique ids the new release no longer has, revoked or deprecated.
      */
     dropped?: Array<string> | null;
 }
