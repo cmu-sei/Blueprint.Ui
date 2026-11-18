@@ -38,7 +38,7 @@ export class CompetencyFrameworkDataService {
     const activatedRoute = this.activatedRoute;
 
     this.filterTerm = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('competencyFrameworkmask') || '')
+      map((params) => params.get('competencyFrameworkmask') || ''),
     );
     this.filterControl.valueChanges.subscribe((term) => {
       this.router.navigate([], {
@@ -47,16 +47,16 @@ export class CompetencyFrameworkDataService {
       });
     });
     this.sortColumn = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('sorton') || 'name')
+      map((params) => params.get('sorton') || 'name'),
     );
     this.sortIsAscending = activatedRoute.queryParamMap.pipe(
-      map((params) => (params.get('sortdir') || 'asc') === 'asc')
+      map((params) => (params.get('sortdir') || 'asc') === 'asc'),
     );
     this.pageSize = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pagesize') || '20', 10))
+      map((params) => parseInt(params.get('pagesize') || '20', 10)),
     );
     this.pageIndex = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pageindex') || '0', 10))
+      map((params) => parseInt(params.get('pageindex') || '0', 10)),
     );
     this.CompetencyFrameworkList = combineLatest([
       this.competencyFrameworkQuery.selectAll(),
@@ -76,14 +76,14 @@ export class CompetencyFrameworkDataService {
           pageIndex,
         ]) =>
           items
-            ? (items as CompetencyFramework[])
-              .filter(
+            ? (items as CompetencyFramework[]).filter(
                 (cf) =>
                   cf.name?.toLowerCase().includes(filterTerm.toLowerCase()) ||
                   cf.source?.toLowerCase().includes(filterTerm.toLowerCase()) ||
-                  cf.version?.toLowerCase().includes(filterTerm.toLowerCase()))
-            : []
-      )
+                  cf.version?.toLowerCase().includes(filterTerm.toLowerCase()),
+              )
+            : [],
+      ),
     );
   }
 
@@ -95,13 +95,13 @@ export class CompetencyFrameworkDataService {
         tap(() => {
           this.competencyFrameworkStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (templates) => {
           this.competencyFrameworkStore.upsertMany(templates);
         },
-        (error) => { }
+        (error) => {},
       );
   }
 
@@ -113,7 +113,7 @@ export class CompetencyFrameworkDataService {
         tap(() => {
           this.competencyFrameworkStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.competencyFrameworkStore.upsert(s.id, { ...s });
@@ -132,7 +132,7 @@ export class CompetencyFrameworkDataService {
         tap(() => {
           this.competencyFrameworkStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.competencyFrameworkStore.add(s);
@@ -147,7 +147,7 @@ export class CompetencyFrameworkDataService {
         tap(() => {
           this.competencyFrameworkStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((n) => {
         this.updateStore(n);
@@ -172,11 +172,13 @@ export class CompetencyFrameworkDataService {
   }
 
   updateStore(competencyFramework: CompetencyFramework) {
-    this.competencyFrameworkStore.upsert(competencyFramework.id, competencyFramework);
+    this.competencyFrameworkStore.upsert(
+      competencyFramework.id,
+      competencyFramework,
+    );
   }
 
   deleteFromStore(id: string) {
     this.competencyFrameworkStore.remove(id);
   }
-
 }

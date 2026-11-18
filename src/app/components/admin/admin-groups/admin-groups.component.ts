@@ -8,11 +8,30 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnInit, inject, viewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+  viewChild,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MatSort, MatSortHeader } from '@angular/material/sort';
-import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+  MatTableDataSource,
+  MatTable,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 import { forkJoin, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Group, SystemPermission } from 'src/app/generated/blueprint.api';
@@ -31,18 +50,43 @@ import { AsyncPipe } from '@angular/common';
 const NAME_VALUE = 'nameValue';
 
 @Component({
-    selector: 'app-admin-groups',
-    templateUrl: './admin-groups.component.html',
-    styleUrls: ['./admin-groups.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    animations: [
-        trigger('detailExpand', [
-            state('collapsed', style({ height: '0px', minHeight: '0' })),
-            state('expanded', style({ height: '*' })),
-            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-        ]),
-    ],
-    imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatTooltip, MatCellDef, MatCell, MatSortHeader, AdminGroupsDetailComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, AsyncPipe]
+  selector: 'app-admin-groups',
+  templateUrl: './admin-groups.component.html',
+  styleUrls: ['./admin-groups.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({ height: '0px', minHeight: '0' })),
+      state('expanded', style({ height: '*' })),
+      transition(
+        'expanded <=> collapsed',
+        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+      ),
+    ]),
+  ],
+  imports: [
+    MatIcon,
+    MatFormField,
+    MatInput,
+    FormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatTable,
+    MatSort,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatTooltip,
+    MatCellDef,
+    MatCell,
+    MatSortHeader,
+    AdminGroupsDetailComponent,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+    AsyncPipe,
+  ],
 })
 export class AdminGroupsComponent implements OnInit, AfterViewInit {
   private groupDataService = inject(GroupDataService);
@@ -62,11 +106,11 @@ export class AdminGroupsComponent implements OnInit, AfterViewInit {
     map((x) => {
       this.dataSource.data = x;
       return this.dataSource;
-    })
+    }),
   );
 
   canEdit = this.permissionDataService.hasPermission(
-    SystemPermission.ManageGroups
+    SystemPermission.ManageGroups,
   );
 
   ngOnInit() {
@@ -94,19 +138,15 @@ export class AdminGroupsComponent implements OnInit, AfterViewInit {
   }
 
   createGroup() {
-    this.nameDialog('Create New Group?', '', { nameValue: '' }).subscribe(
-      (result) => {
-        if (result) {
-          this.groupDataService
-            .create({ name: result[NAME_VALUE] })
-            .subscribe();
-        }
+    this.nameDialog('Add Group', '', { nameValue: '' }).subscribe((result) => {
+      if (result) {
+        this.groupDataService.create({ name: result[NAME_VALUE] }).subscribe();
       }
-    );
+    });
   }
 
   updateGroup(group: Group) {
-    this.nameDialog('Rename ' + group.name, '', {
+    this.nameDialog('Rename Group', '', {
       nameValue: group.name,
     }).subscribe((result) => {
       if (result) {
@@ -120,9 +160,10 @@ export class AdminGroupsComponent implements OnInit, AfterViewInit {
   deleteGroup(group: Group) {
     this.confirmService
       .confirm({
-        title: 'Delete Group?',
-        message: 'Delete Group ' + group.name + '?',
+        title: 'Delete Group',
+        message: 'Are you sure that you want to delete ' + group.name + '?',
         confirmText: 'Delete',
+        cancelText: 'Cancel',
       })
       .afterClosed()
       .subscribe((result) => {

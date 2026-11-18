@@ -11,56 +11,84 @@ project root for license information.
   (submit)="handleEditComplete(true)"
 >
   @if (data && data.playerApplication) {
-  <div crucibleDialogContent>
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <mat-label>Name</mat-label>
-          <input type="text" matInput [(ngModel)]="data.playerApplication.name" placeholder="Name">
-        </mat-form-field>
+    <div crucibleDialogContent>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <mat-label>Name</mat-label>
+            <input
+              type="text"
+              matInput
+              [(ngModel)]="data.playerApplication.name"
+              placeholder="Name"
+            />
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="add-margin">
+        <b
+          >Parameters can be used in the following URLs (include the braces):</b
+        >
+        <br />
+        {{
+          '{citeUrl}, {galleryUrl}, {steamfitterUrl}, {playerUrl}, {blueprintUrl}, {casterUrl}, {vmUrl}'
+        }}
+        <br />
+        {{
+          '{citeEvaluationId}, {galleryExhibitId}, {steamfitterScenarioId}, {playerViewId}, {casterWorkspaceId}, {blueprintMselId}'
+        }}<br />
+        <b>For example:</b><br />
+        {{ '{galleryUrl}?section=archive&exhibit={galleryExhibitId}{theme}'
+        }}<br />
+        {{ '{galleryUrl}/assets/img/archive-blue.png' }}<br />
+        &nbsp;
+      </div>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <mat-label>URL</mat-label>
+            <input
+              type="text"
+              matInput
+              [(ngModel)]="data.playerApplication.url"
+              placeholder="URL"
+            />
+          </mat-form-field>
+          @if (urlValidationError) {
+            <div class="validation-error">{{ urlValidationError }}</div>
+          }
+        </div>
+      </div>
+      <div class="add-icon-url-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <mat-label>Icon URL</mat-label>
+            <input
+              type="text"
+              matInput
+              [(ngModel)]="data.playerApplication.icon"
+              placeholder="Icon URL"
+            />
+          </mat-form-field>
+          @if (iconValidationError) {
+            <div class="validation-error">{{ iconValidationError }}</div>
+          }
+        </div>
+      </div>
+      <div class="add-margin">
+        <div>
+          <mat-checkbox [(ngModel)]="data.playerApplication.embeddable"
+            >Embeddable</mat-checkbox
+          >
+        </div>
+      </div>
+      <div class="add-margin">
+        <div>
+          <mat-checkbox [(ngModel)]="data.playerApplication.loadInBackground"
+            >Load in Background</mat-checkbox
+          >
+        </div>
       </div>
     </div>
-    <div class="add-margin">
-      <b>Parameters can be used in the following URLs (include the braces):</b> <br />
-      {{ '{citeUrl}, {galleryUrl}, {steamfitterUrl}, {playerUrl}, {blueprintUrl}, {casterUrl}, {vmUrl}' }} <br />
-      {{ '{citeEvaluationId}, {galleryExhibitId}, {steamfitterScenarioId}, {playerViewId}, {casterWorkspaceId}, {blueprintMselId}' }}<br />
-      <b>For example:</b><br />
-      {{ '{galleryUrl}?section=archive&exhibit={galleryExhibitId}{theme}' }}<br />
-      {{ '{galleryUrl}/assets/img/archive-blue.png' }}<br />
-      &nbsp;
-    </div>
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <mat-label>URL</mat-label>
-          <input type="text" matInput [(ngModel)]="data.playerApplication.url" placeholder="URL">
-        </mat-form-field>
-        @if (urlValidationError) {
-        <div class="validation-error">{{ urlValidationError }}</div>
-        }
-      </div>
-    </div>
-    <div class="add-icon-url-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <mat-label>Icon URL</mat-label>
-          <input type="text" matInput [(ngModel)]="data.playerApplication.icon" placeholder="Icon URL">
-        </mat-form-field>
-        @if (iconValidationError) {
-        <div class="validation-error">{{ iconValidationError }}</div>
-        }
-      </div>
-    </div>
-    <div class="add-margin">
-      <div>
-        <mat-checkbox [(ngModel)]="data.playerApplication.embeddable">Embeddable</mat-checkbox>
-      </div>
-    </div>
-    <div class="add-margin">
-      <div>
-        <mat-checkbox [(ngModel)]="data.playerApplication.loadInBackground">Load in Background</mat-checkbox>
-      </div>
-    </div>
-  </div>
   }
 </crucible-dialog>

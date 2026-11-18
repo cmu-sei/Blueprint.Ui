@@ -1,20 +1,41 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, Input, OnDestroy, OnInit, AfterViewInit, inject, input, viewChild } from '@angular/core';
-import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+  Component,
+  ElementRef,
+  Input,
+  OnDestroy,
+  OnInit,
+  AfterViewInit,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
+import {
+  UntypedFormControl,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import {
+  MatTableDataSource,
+  MatTable,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import {
-  ComnSettingsService,
-  ComnAuthQuery,
-} from '@cmusei/crucible-common';
-import {
-  Organization
-} from 'src/app/generated/blueprint.api';
+import { ComnSettingsService, ComnAuthQuery } from '@cmusei/crucible-common';
+import { Organization } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
@@ -30,14 +51,41 @@ import { MatIcon } from '@angular/material/icon';
 
 import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
-    selector: 'app-organization-list',
-    templateUrl: './organization-list.component.html',
-    styleUrls: ['./organization-list.component.scss'],
-    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatMenu, MatMenuItem, MatCellDef, MatCell, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
+  selector: 'app-organization-list',
+  templateUrl: './organization-list.component.html',
+  styleUrls: ['./organization-list.component.scss'],
+  imports: [
+    MatIcon,
+    MatFormField,
+    MatInput,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatPaginator,
+    MatTable,
+    MatSort,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatMenuTrigger,
+    MatMenu,
+    MatMenuItem,
+    MatCellDef,
+    MatCell,
+    MatSortHeader,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+  ],
 })
-export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewInit {
+export class OrganizationListComponent
+  implements OnDestroy, OnInit, AfterViewInit
+{
   private router = inject(Router);
   private settingsService = inject(ComnSettingsService);
   private authQuery = inject(ComnAuthQuery);
@@ -66,24 +114,40 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
   sortedOrganizations: Organization[] = [];
   templateOrganizations: Organization[] = [];
   editingId = '';
-  organizationDataSource = new MatTableDataSource<Organization>(new Array<Organization>());
-  templateDataSource = new MatTableDataSource<Organization>(new Array<Organization>());
+  organizationDataSource = new MatTableDataSource<Organization>(
+    new Array<Organization>(),
+  );
+  templateDataSource = new MatTableDataSource<Organization>(
+    new Array<Organization>(),
+  );
   displayedColumns: string[] = ['action', 'shortname', 'name', 'summary'];
   private unsubscribe$ = new Subject();
 
   constructor() {
-    // subscribe to organizations
-    this.organizationQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(organizations => {
-      this.organizationList = organizations;
-      this.sortChanged(this.sort);
-    });
-    // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel && this.msel.id !== msel.id) {
-        Object.assign(this.msel, msel);
-        this.sortChanged(this.sort);
+    // a new hub connection missed what was broadcast while the old one was down; an MSEL's own
+    // organizations are reloaded by the MSEL page
+    reloadOnReconnect(() => {
+      if (this.showTemplates) {
+        this.organizationDataService.loadTemplates();
       }
     });
+    // subscribe to organizations
+    this.organizationQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((organizations) => {
+        this.organizationList = organizations;
+        this.sortChanged(this.sort);
+      });
+    // subscribe to the active MSEL
+    (this.mselQuery.selectActive() as Observable<MselPlus>)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((msel) => {
+        if (msel && this.msel.id !== msel.id) {
+          Object.assign(this.msel, msel);
+          this.sortChanged(this.sort);
+        }
+      });
     this.filterControl.valueChanges
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((term) => {
@@ -116,7 +180,7 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
         summary: '',
         description: '',
         mselId: makeTemplate ? null : this.msel.id,
-        isTemplate: makeTemplate
+        isTemplate: makeTemplate,
       };
     } else {
       if (makeTemplate === organization.isTemplate) {
@@ -135,7 +199,7 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
         summary: organization.summary,
         description: organization.description,
         mselId: makeTemplate ? null : this.msel.id,
-        isTemplate: makeTemplate
+        isTemplate: makeTemplate,
       };
     }
     if (organization.isTemplate) {
@@ -210,14 +274,21 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
       },
       (err) => {
         window.alert('Error downloading file');
-      }
+      },
     );
   }
 
   deleteOrganization(organization: Organization): void {
     this.dialogService
-      .confirm({ title: 'Delete Organization', message: 'Are you sure that you want to delete ' + organization.name + '?'
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Delete Organization',
+        message:
+          'Are you sure that you want to delete ' + organization.name + '?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.organizationDataService.delete(organization.id);
           this.editingId = '';
@@ -227,13 +298,21 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    const mselData = this.getFilteredAndSortedOrganizations(this.msel.id, this.organizationList);
-    const templateData = this.getFilteredAndSortedOrganizations(null, this.organizationList);
+    const mselData = this.getFilteredAndSortedOrganizations(
+      this.msel.id,
+      this.organizationList,
+    );
+    const templateData = this.getFilteredAndSortedOrganizations(
+      null,
+      this.organizationList,
+    );
     this.organizationDataSource.data = mselData;
     this.templateDataSource.data = templateData;
     const paginator = this.paginator();
     if (paginator) {
-      paginator.length = this.showTemplates ? templateData.length : mselData.length;
+      paginator.length = this.showTemplates
+        ? templateData.length
+        : mselData.length;
     }
   }
 
@@ -242,26 +321,35 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
     this.unsubscribe$.complete();
   }
 
-  getFilteredAndSortedOrganizations(mselId: string, organizations: Organization[]): Organization[] {
+  getFilteredAndSortedOrganizations(
+    mselId: string,
+    organizations: Organization[],
+  ): Organization[] {
     let filteredAndSortedOrganizations: Organization[] = [];
     if (organizations) {
-      organizations.forEach(se => {
+      organizations.forEach((se) => {
         if (se.mselId === mselId) {
           filteredAndSortedOrganizations.push({ ...se });
         }
       });
-      if (filteredAndSortedOrganizations && filteredAndSortedOrganizations.length > 0 && this.filterString) {
+      if (
+        filteredAndSortedOrganizations &&
+        filteredAndSortedOrganizations.length > 0 &&
+        this.filterString
+      ) {
         const filterString = this.filterString?.toLowerCase();
-        filteredAndSortedOrganizations = filteredAndSortedOrganizations
-          .filter((a) =>
+        filteredAndSortedOrganizations = filteredAndSortedOrganizations.filter(
+          (a) =>
             a.summary?.toLowerCase().includes(filterString) ||
             a.shortName?.toLowerCase().includes(filterString) ||
-            a.name?.toLowerCase().includes(filterString)
-          );
+            a.name?.toLowerCase().includes(filterString),
+        );
       }
     }
     if (filteredAndSortedOrganizations) {
-      filteredAndSortedOrganizations.sort((a, b) => this.sortOrganizations(a, b, this.sort.active, this.sort.direction));
+      filteredAndSortedOrganizations.sort((a, b) =>
+        this.sortOrganizations(a, b, this.sort.active, this.sort.direction),
+      );
     }
     return filteredAndSortedOrganizations;
   }
@@ -270,22 +358,33 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
     a: Organization,
     b: Organization,
     column: string,
-    direction: string
+    direction: string,
   ) {
     const isAsc = direction !== 'desc';
     switch (column) {
       case 'name':
-        return (((a.name ?? '').toLowerCase() < (b.name ?? '').toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
+        return (
+          ((a.name ?? '').toLowerCase() < (b.name ?? '').toLowerCase()
+            ? -1
+            : 1) * (isAsc ? 1 : -1)
+        );
         break;
       case 'shortname':
-        return (((a.shortName ?? '').toLowerCase() < (b.shortName ?? '').toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
+        return (
+          ((a.shortName ?? '').toLowerCase() < (b.shortName ?? '').toLowerCase()
+            ? -1
+            : 1) * (isAsc ? 1 : -1)
+        );
         break;
       case 'summary':
-        return (((a.summary ?? '').toLowerCase() < (b.summary ?? '').toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
+        return (
+          ((a.summary ?? '').toLowerCase() < (b.summary ?? '').toLowerCase()
+            ? -1
+            : 1) * (isAsc ? 1 : -1)
+        );
         break;
       default:
         return 0;
     }
   }
-
 }

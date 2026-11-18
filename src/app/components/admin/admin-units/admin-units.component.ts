@@ -2,11 +2,37 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, ElementRef, OnDestroy, ViewChild, inject, input, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  ViewChild,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
-import { MatTable, MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
-import { animate, state, style, transition, trigger } from '@angular/animations';
+import {
+  MatTable,
+  MatTableDataSource,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
+import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
 import { Unit, User } from 'src/app/generated/blueprint.api/model/models';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
@@ -28,17 +54,46 @@ import { MatCard } from '@angular/material/card';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
-    selector: 'app-admin-units',
-    templateUrl: './admin-units.component.html',
-    styleUrls: ['./admin-units.component.scss'],
-    animations: [
-        trigger('detailExpand', [
-            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-            state('expanded', style({ height: '*', visibility: 'visible' })),
-            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-        ]),
-    ],
-    imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatSortHeader, AdminUnitUsersComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatCard, MatProgressSpinner]
+  selector: 'app-admin-units',
+  templateUrl: './admin-units.component.html',
+  styleUrls: ['./admin-units.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state(
+        'collapsed',
+        style({ height: '0px', minHeight: '0', visibility: 'hidden' }),
+      ),
+      state('expanded', style({ height: '*', visibility: 'visible' })),
+      transition(
+        'expanded <=> collapsed',
+        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+      ),
+    ]),
+  ],
+  imports: [
+    MatIcon,
+    MatFormField,
+    MatInput,
+    FormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatPaginator,
+    MatTable,
+    MatSort,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCellDef,
+    MatCell,
+    MatSortHeader,
+    AdminUnitUsersComponent,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+    MatCard,
+    MatProgressSpinner,
+  ],
 })
 export class AdminUnitsComponent implements OnDestroy {
   private settingsService = inject(ComnSettingsService);
@@ -67,21 +122,28 @@ export class AdminUnitsComponent implements OnDestroy {
   unitDataSource = new MatTableDataSource<Unit>(new Array<Unit>());
   displayedColumns: string[] = ['action', 'shortName', 'name'];
   expandedElementId = '';
-  isExpansionDetailRow = (i: number, row: Object) => (row as Unit).id === this.expandedElementId;
+  isExpansionDetailRow = (i: number, row: Object) =>
+    (row as Unit).id === this.expandedElementId;
   private unsubscribe$ = new Subject();
 
   constructor() {
     // subscribe to all units
-    this.unitQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(units => {
-      this.allUnits = units;
-      this.applyFilter(this.filterString);
-    });
+    this.unitQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((units) => {
+        this.allUnits = units;
+        this.applyFilter(this.filterString);
+      });
     // load the units
     this.unitDataService.load();
     // subscribe to all users
-    this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
-      this.userList = users;
-    });
+    this.userQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((users) => {
+        this.userList = users;
+      });
   }
 
   addOrEditUnit(unit: Unit) {
@@ -89,7 +151,7 @@ export class AdminUnitsComponent implements OnDestroy {
       unit = {
         name: '',
         shortName: '',
-        description: ''
+        description: '',
       };
     } else {
       unit = { ...unit };
@@ -100,7 +162,7 @@ export class AdminUnitsComponent implements OnDestroy {
       width: 'auto',
       data: {
         unit: unit,
-        userList: this.userList
+        userList: this.userList,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -162,14 +224,20 @@ export class AdminUnitsComponent implements OnDestroy {
       },
       (err) => {
         window.alert('Error downloading file');
-      }
+      },
     );
   }
 
   deleteUnit(unit: Unit): void {
     this.dialogService
-      .confirm({ title: 'Delete Unit', message: 'Are you sure that you want to delete ' + unit.name + '?'
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Delete Unit',
+        message: 'Are you sure that you want to delete ' + unit.name + '?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.unitDataService.delete(unit.id);
         }
@@ -180,9 +248,11 @@ export class AdminUnitsComponent implements OnDestroy {
     this.filterString = filterValue;
     filterValue = filterValue.toLowerCase();
     this.unitList = this.allUnits
-      .filter(unit =>
-        unit.name.toLowerCase().indexOf(filterValue) >= 0 ||
-        unit.shortName.toLowerCase().indexOf(filterValue) >= 0)
+      .filter(
+        (unit) =>
+          unit.name.toLowerCase().indexOf(filterValue) >= 0 ||
+          unit.shortName.toLowerCase().indexOf(filterValue) >= 0,
+      )
       .sort((a, b) => this.sortUnits(a, b));
     this.unitDataSource.data = this.unitList;
   }
@@ -199,7 +269,9 @@ export class AdminUnitsComponent implements OnDestroy {
         return a.name.toLowerCase() < b.name.toLowerCase() ? -dir : dir;
         break;
       default:
-        return a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -dir : dir;
+        return a.shortName.toLowerCase() < b.shortName.toLowerCase()
+          ? -dir
+          : dir;
         break;
     }
   }
@@ -214,9 +286,10 @@ export class AdminUnitsComponent implements OnDestroy {
   }
 
   getRowClass(id: string) {
-    const rowClass = this.expandedElementId === id
-      ? 'element-row element-row-expanded'
-      : 'element-row element-row-not-expanded';
+    const rowClass =
+      this.expandedElementId === id
+        ? 'element-row element-row-expanded'
+        : 'element-row element-row-not-expanded';
     return rowClass;
   }
 
@@ -224,5 +297,4 @@ export class AdminUnitsComponent implements OnDestroy {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
   }
-
 }

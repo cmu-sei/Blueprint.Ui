@@ -116,13 +116,13 @@ export class MselPlus implements Msel {
       this.createdBy === userId ||
       (this.userMselRoles &&
         this.userMselRoles.some(
-          (umr) => umr.userId === userId && umr.role === MselRole.Owner
+          (umr) => umr.userId === userId && umr.role === MselRole.Owner,
         ));
     mselRole.moveEditor = !this.userMselRoles
       ? false
       : this.userMselRoles.some(
-        (umr) => umr.userId === userId && umr.role === MselRole.MoveEditor
-      );
+          (umr) => umr.userId === userId && umr.role === MselRole.MoveEditor,
+        );
     // owners can do everything
     if (mselRole.owner) {
       mselRole.approver = true;
@@ -137,16 +137,16 @@ export class MselPlus implements Msel {
       scenarioEventId
     ) {
       const scenarioEvent = this.scenarioEvents.find(
-        (se) => se.id === scenarioEventId
+        (se) => se.id === scenarioEventId,
       );
       const assignedToDataField = this.dataFields.find(
-        (df) => df.dataType === DataFieldType.Team
+        (df) => df.dataType === DataFieldType.Team,
       );
       const dataValue =
         assignedToDataField && scenarioEvent
           ? scenarioEvent.dataValues.find(
-            (dv) => dv.dataFieldId === assignedToDataField.id
-          )
+              (dv) => dv.dataFieldId === assignedToDataField.id,
+            )
           : null;
       if (dataValue) {
         const unit = this.units.find((t) => t.shortName === dataValue.value);
@@ -167,15 +167,15 @@ export class MselPlus implements Msel {
   private setMselRoles(userId: string, mselRole: any) {
     if (this.userMselRoles && this.userMselRoles.length > 0) {
       mselRole.approver = this.userMselRoles.some(
-        (umr) => umr.userId === userId && umr.role === MselRole.Approver
+        (umr) => umr.userId === userId && umr.role === MselRole.Approver,
       );
       mselRole.editor =
         mselRole.approver ||
         this.userMselRoles.some(
-          (umr) => umr.userId === userId && umr.role === MselRole.Editor
+          (umr) => umr.userId === userId && umr.role === MselRole.Editor,
         );
       mselRole.evaluator = this.userMselRoles.some(
-        (umr) => umr.userId === userId && umr.role === MselRole.Evaluator
+        (umr) => umr.userId === userId && umr.role === MselRole.Evaluator,
       );
       mselRole.viewer =
         mselRole.approver ||
@@ -183,7 +183,7 @@ export class MselPlus implements Msel {
         mselRole.moveEditor ||
         mselRole.evaluator ||
         this.userMselRoles.some(
-          (umr) => umr.userId === userId && umr.role === MselRole.Viewer
+          (umr) => umr.userId === userId && umr.role === MselRole.Viewer,
         );
     }
     return mselRole;
@@ -205,7 +205,7 @@ export class MselDataService {
   readonly filterControl = new UntypedFormControl();
   private _requestedMselId: string;
   private _requestedMselId$ = this.activatedRoute.queryParamMap.pipe(
-    map((params) => params.get('mselId') || '')
+    map((params) => params.get('mselId') || ''),
   );
   private filterTerm: Observable<string>;
   private sortColumn: Observable<string>;
@@ -220,7 +220,7 @@ export class MselDataService {
     const activatedRoute = this.activatedRoute;
 
     this.filterTerm = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('mselmask') || '')
+      map((params) => params.get('mselmask') || ''),
     );
     this.filterControl.valueChanges.subscribe((term) => {
       this.router.navigate([], {
@@ -229,16 +229,16 @@ export class MselDataService {
       });
     });
     this.sortColumn = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('sorton') || 'name')
+      map((params) => params.get('sorton') || 'name'),
     );
     this.sortIsAscending = activatedRoute.queryParamMap.pipe(
-      map((params) => (params.get('sortdir') || 'asc') === 'asc')
+      map((params) => (params.get('sortdir') || 'asc') === 'asc'),
     );
     this.pageSize = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pagesize') || '20', 10))
+      map((params) => parseInt(params.get('pagesize') || '20', 10)),
     );
     this.pageIndex = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pageindex') || '0', 10))
+      map((params) => parseInt(params.get('pageindex') || '0', 10)),
     );
     this.MselList = combineLatest([
       this.mselQuery.selectAll(),
@@ -259,18 +259,18 @@ export class MselDataService {
         ]) =>
           items
             ? (items as Msel[])
-              .sort((a: Msel, b: Msel) =>
-                this.sortMsels(a, b, sortColumn, sortIsAscending)
-              )
-              .filter(
-                (msel) =>
-                  ('' + msel.description)
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase()) ||
-                  msel.id.toLowerCase().includes(filterTerm.toLowerCase())
-              )
-            : []
-      )
+                .sort((a: Msel, b: Msel) =>
+                  this.sortMsels(a, b, sortColumn, sortIsAscending),
+                )
+                .filter(
+                  (msel) =>
+                    ('' + msel.description)
+                      .toLowerCase()
+                      .includes(filterTerm.toLowerCase()) ||
+                    msel.id.toLowerCase().includes(filterTerm.toLowerCase()),
+                )
+            : [],
+      ),
     );
   }
 
@@ -282,11 +282,11 @@ export class MselDataService {
         tap(() => {
           this.mselStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (msels) => {
-          msels.forEach(a => {
+          msels.forEach((a) => {
             this.setAsDates(a);
           });
           this.mselStore.set(msels);
@@ -294,7 +294,7 @@ export class MselDataService {
         (error) => {
           this.mselStore.set([]);
           this.mselStore.setLoading(false);
-        }
+        },
       );
   }
 
@@ -306,11 +306,11 @@ export class MselDataService {
         tap(() => {
           this.mselStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (msels) => {
-          msels.forEach(a => {
+          msels.forEach((a) => {
             this.setAsDates(a);
           });
           this.mselStore.set(msels);
@@ -318,7 +318,7 @@ export class MselDataService {
         (error) => {
           this.mselStore.set([]);
           this.mselStore.setLoading(false);
-        }
+        },
       );
   }
 
@@ -342,7 +342,7 @@ export class MselDataService {
         tap(() => {
           this.mselStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (s) => {
@@ -351,7 +351,7 @@ export class MselDataService {
         },
         (error) => {
           this.mselStore.setLoading(false);
-        }
+        },
       );
   }
 
@@ -361,21 +361,19 @@ export class MselDataService {
 
   add(msel: Msel): Observable<Msel> {
     this.mselStore.setLoading(true);
-    return this.mselService
-      .createMsel(msel)
-      .pipe(
-        tap(
-          (s) => {
-            this.mselStore.setLoading(false);
-            this.setAsDates(s);
-            this.mselStore.add(s);
-          },
-          (error) => {
-            this.mselStore.setLoading(false);
-          }
-        ),
-        take(1)
-      );
+    return this.mselService.createMsel(msel).pipe(
+      tap(
+        (s) => {
+          this.mselStore.setLoading(false);
+          this.setAsDates(s);
+          this.mselStore.add(s);
+        },
+        (error) => {
+          this.mselStore.setLoading(false);
+        },
+      ),
+      take(1),
+    );
   }
 
   join(mselId: string, teamId: string) {
@@ -394,7 +392,7 @@ export class MselDataService {
         tap(() => {
           this.mselStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (s) => {
@@ -403,7 +401,7 @@ export class MselDataService {
         },
         (error) => {
           this.mselStore.setLoading(false);
-        }
+        },
       );
   }
 
@@ -423,7 +421,7 @@ export class MselDataService {
           this.mselStore.setLoading(false);
         },
       }),
-      shareReplay(1)
+      shareReplay(1),
     );
     // Subscribed here as well as returned, so the store stays updated for the several callers
     // that fire and forget. shareReplay keeps a caller that *does* subscribe from issuing a
@@ -445,7 +443,7 @@ export class MselDataService {
         tap(() => {
           this.mselStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (n) => {
@@ -454,7 +452,7 @@ export class MselDataService {
         (error) => {
           this.mselStore.setLoading(false);
           this.errorService.handleError(error);
-        }
+        },
       );
   }
 
@@ -466,7 +464,7 @@ export class MselDataService {
         tap(() => {
           this.mselStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (n) => {
@@ -475,7 +473,7 @@ export class MselDataService {
         (error) => {
           this.mselStore.setLoading(false);
           this.errorService.handleError(error);
-        }
+        },
       );
   }
 
@@ -494,7 +492,7 @@ export class MselDataService {
           this.mselStore.setLoading(false);
           this.errorService.handleError(error);
         },
-      })
+      }),
     );
   }
 
@@ -506,7 +504,7 @@ export class MselDataService {
         () => {},
         (error) => {
           this.errorService.handleError(error);
-        }
+        },
       );
   }
 
@@ -518,7 +516,7 @@ export class MselDataService {
         tap(() => {
           this.mselStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (n) => {
@@ -526,7 +524,7 @@ export class MselDataService {
         },
         (error) => {
           this.mselStore.setLoading(false);
-        }
+        },
       );
   }
 
@@ -547,7 +545,7 @@ export class MselDataService {
         tap(() => {
           this.mselStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (n) => {
@@ -555,7 +553,7 @@ export class MselDataService {
         },
         (error) => {
           this.mselStore.setLoading(false);
-        }
+        },
       );
   }
 
@@ -567,7 +565,7 @@ export class MselDataService {
         tap(() => {
           this.mselStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (n) => {
@@ -575,7 +573,7 @@ export class MselDataService {
         },
         (error) => {
           this.mselStore.setLoading(false);
-        }
+        },
       );
   }
 
@@ -591,7 +589,7 @@ export class MselDataService {
     mselId: string,
     file: File,
     observe: any,
-    reportProgress: boolean
+    reportProgress: boolean,
   ) {
     this.mselStore.setLoading(true);
     if (mselId) {
@@ -603,7 +601,7 @@ export class MselDataService {
           (event: any) => {
             if (event.type === HttpEventType.UploadProgress) {
               const uploadProgress = Math.round(
-                (100 * event.loaded) / event.total
+                (100 * event.loaded) / event.total,
               );
               this.uploadProgress.next(uploadProgress);
             } else if (event instanceof HttpResponse) {
@@ -619,45 +617,14 @@ export class MselDataService {
             this.mselStore.setLoading(false);
             this.uploadProgress.next(0);
             this.errorService.handleError(error);
-          }
+          },
         );
     } else {
-      this.mselService
-        .uploadXlsx(file, observe, reportProgress)
-        .subscribe(
-          (event) => {
-            if (event.type === HttpEventType.UploadProgress) {
-              const uploadProgress = Math.round(
-                (100 * event.loaded) / event.total
-              );
-              this.uploadProgress.next(uploadProgress);
-            } else if (event instanceof HttpResponse) {
-              this.uploadProgress.next(0);
-              this.mselStore.setLoading(false);
-              if (event.status === 200) {
-                const msel = event.body;
-                this.mselStore.upsert(msel.id, msel);
-              }
-            }
-          },
-          (error) => {
-            this.mselStore.setLoading(false);
-            this.uploadProgress.next(0);
-            this.errorService.handleError(error);
-          }
-        );
-    }
-  }
-
-  uploadJson(file: File, observe: any, reportProgress: boolean) {
-    this.mselStore.setLoading(true);
-    this.mselService
-      .uploadJsonMsel(file, observe, reportProgress)
-      .subscribe(
-        (event: any) => {
+      this.mselService.uploadXlsx(file, observe, reportProgress).subscribe(
+        (event) => {
           if (event.type === HttpEventType.UploadProgress) {
             const uploadProgress = Math.round(
-              (100 * event.loaded) / event.total
+              (100 * event.loaded) / event.total,
             );
             this.uploadProgress.next(uploadProgress);
           } else if (event instanceof HttpResponse) {
@@ -673,8 +640,33 @@ export class MselDataService {
           this.mselStore.setLoading(false);
           this.uploadProgress.next(0);
           this.errorService.handleError(error);
-        }
+        },
       );
+    }
+  }
+
+  uploadJson(file: File, observe: any, reportProgress: boolean) {
+    this.mselStore.setLoading(true);
+    this.mselService.uploadJsonMsel(file, observe, reportProgress).subscribe(
+      (event: any) => {
+        if (event.type === HttpEventType.UploadProgress) {
+          const uploadProgress = Math.round((100 * event.loaded) / event.total);
+          this.uploadProgress.next(uploadProgress);
+        } else if (event instanceof HttpResponse) {
+          this.uploadProgress.next(0);
+          this.mselStore.setLoading(false);
+          if (event.status === 200) {
+            const msel = event.body;
+            this.mselStore.upsert(msel.id, msel);
+          }
+        }
+      },
+      (error) => {
+        this.mselStore.setLoading(false);
+        this.uploadProgress.next(0);
+        this.errorService.handleError(error);
+      },
+    );
   }
 
   // Errors are left to the caller, which shows them in the import dialog
@@ -682,7 +674,7 @@ export class MselDataService {
     return this.mselService
       .importJsonMsel(file)
       .pipe(
-        tap((result) => this.mselStore.upsert(result.msel.id, result.msel))
+        tap((result) => this.mselStore.upsert(result.msel.id, result.msel)),
       );
   }
 
@@ -702,7 +694,11 @@ export class MselDataService {
     this.mselStore.update(mselId, { imageDateModified });
   }
 
-  updateCasterIds(mselId: string, casterWorkspaceId: string, casterRunId: string) {
+  updateCasterIds(
+    mselId: string,
+    casterWorkspaceId: string,
+    casterRunId: string,
+  ) {
     this.mselStore.update(mselId, { casterWorkspaceId, casterRunId });
   }
 

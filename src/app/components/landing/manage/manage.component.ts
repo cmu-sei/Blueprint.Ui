@@ -5,10 +5,7 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import {
-  ComnSettingsService,
-  ComnAuthService,
-} from '@cmusei/crucible-common';
+import { ComnSettingsService, ComnAuthService } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { CurrentUserQuery } from 'src/app/data/user/user.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
@@ -21,20 +18,43 @@ import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { InvitationDataService } from 'src/app/data/invitation/invitation-data.service';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
-import { MselItemStatus, SystemPermission } from 'src/app/generated/blueprint.api';
+import {
+  MselItemStatus,
+  SystemPermission,
+} from 'src/app/generated/blueprint.api';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
-import { MatCard, MatCardHeader, MatCardTitle, MatCardSubtitle, MatCardContent, MatCardActions } from '@angular/material/card';
+import {
+  MatCard,
+  MatCardHeader,
+  MatCardTitle,
+  MatCardSubtitle,
+  MatCardContent,
+  MatCardActions,
+} from '@angular/material/card';
 import { MatFormField, MatInput } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { InvitationListComponent } from '../../invitation-list/invitation-list.component';
 
 @Component({
-    selector: 'app-manage',
-    templateUrl: './manage.component.html',
-    styleUrls: ['./manage.component.scss'],
-    imports: [TopbarComponent, MatCard, MatCardHeader, MatCardTitle, MatCardSubtitle, MatCardContent, MatFormField, MatInput, FormsModule, MatCardActions, MatButton, InvitationListComponent]
+  selector: 'app-manage',
+  templateUrl: './manage.component.html',
+  styleUrls: ['./manage.component.scss'],
+  imports: [
+    TopbarComponent,
+    MatCard,
+    MatCardHeader,
+    MatCardTitle,
+    MatCardSubtitle,
+    MatCardContent,
+    MatFormField,
+    MatInput,
+    FormsModule,
+    MatCardActions,
+    MatButton,
+    InvitationListComponent,
+  ],
 })
 export class ManageComponent implements OnDestroy, OnInit {
   private userDataService = inject(UserDataService);
@@ -75,7 +95,7 @@ export class ManageComponent implements OnDestroy, OnInit {
     // set image
     this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace(
       'white',
-      'blue'
+      'blue',
     );
     this.titleService.setTitle(this.appTitle);
     // Set the display settings from config file
@@ -103,7 +123,7 @@ export class ManageComponent implements OnDestroy, OnInit {
                 this.msel = Object.assign(this.msel, msel);
                 this.startTime = new Date(this.msel.startTime);
                 this.endTime = new Date(
-                  this.startTime.getTime() + this.msel.durationSeconds * 1000
+                  this.startTime.getTime() + this.msel.durationSeconds * 1000,
                 );
                 this.invitationDataService.loadByMsel(msel.id);
                 this.teamDataService.loadByMsel(mselId);
@@ -126,10 +146,13 @@ export class ManageComponent implements OnDestroy, OnInit {
         this.loggedInUserId = cu.id;
       });
     // Load permissions
-    this.permissionDataService.load()
+    this.permissionDataService
+      .load()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
-        this.canEditMsels = this.permissionDataService.hasPermission(SystemPermission.EditMsels);
+        this.canEditMsels = this.permissionDataService.hasPermission(
+          SystemPermission.EditMsels,
+        );
       });
   }
 
@@ -139,7 +162,12 @@ export class ManageComponent implements OnDestroy, OnInit {
 
   endEvent() {
     this.dialogService
-      .confirm({ title: 'End the Event', message: 'Are you sure that you want to end this event?' }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'End the Event',
+        message: 'Are you sure that you want to end this event?',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.mselDataService.archive(this.msel.id);
         }
@@ -153,7 +181,7 @@ export class ManageComponent implements OnDestroy, OnInit {
   updateEndTime() {
     if (this.endTime) {
       this.msel.durationSeconds = Math.round(
-        (this.endTime.getTime() - this.startTime.getTime()) / 1000
+        (this.endTime.getTime() - this.startTime.getTime()) / 1000,
       );
       this.mselDataService.updateMsel(this.msel);
     }

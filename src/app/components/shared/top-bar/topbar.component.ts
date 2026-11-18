@@ -2,7 +2,16 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, inject, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  inject,
+  input,
+  output,
+} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ComnAuthQuery, ComnAuthService, Theme } from '@cmusei/crucible-common';
 import { CurrentUserState } from 'src/app/data/user/user.store';
@@ -21,11 +30,24 @@ import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { AsyncPipe } from '@angular/common';
 
 @Component({
-    selector: 'app-topbar',
-    templateUrl: './topbar.component.html',
-    styleUrls: ['./topbar.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [MatToolbar, MatToolbarRow, MatIconButton, RouterLink, MatIcon, MatButton, MatMenuTrigger, MatMenu, MatMenuItem, PresenceBarComponent, MatSlideToggle, AsyncPipe]
+  selector: 'app-topbar',
+  templateUrl: './topbar.component.html',
+  styleUrls: ['./topbar.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    MatToolbar,
+    MatToolbarRow,
+    MatIconButton,
+    RouterLink,
+    MatIcon,
+    MatButton,
+    MatMenuTrigger,
+    MatMenu,
+    MatMenuItem,
+    PresenceBarComponent,
+    MatSlideToggle,
+    AsyncPipe,
+  ],
 })
 export class TopbarComponent implements OnInit, OnDestroy {
   private authService = inject(ComnAuthService);
@@ -63,15 +85,17 @@ export class TopbarComponent implements OnInit, OnDestroy {
       .subscribe(
         () =>
           (this.canViewAdmin =
-            this.permissionDataService.canViewAdministration())
+            this.permissionDataService.canViewAdministration()),
       );
 
     this.currentUser$ = this.currentUserQuery.select().pipe(
       filter((user) => user !== null),
-      takeUntil(this.unsubscribe$)
+      takeUntil(this.unsubscribe$),
     );
     this.theme$ = this.authQuery.userTheme$;
-    this.authService.setUserTheme(<Theme>this.uiDataService.getTheme() || Theme.LIGHT);
+    this.authService.setUserTheme(
+      <Theme>this.uiDataService.getTheme() || Theme.LIGHT,
+    );
   }
 
   setTeamFn(id: string) {

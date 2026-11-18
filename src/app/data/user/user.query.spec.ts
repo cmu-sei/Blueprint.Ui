@@ -34,8 +34,16 @@ describe('UserQuery', () => {
       user({ id: 'user-2', name: 'Bob' }),
     ]);
 
-    expect(emitted.at(-1).map((u) => u.name)).toEqual(['Alice Analyst', 'Bob', 'Zed']);
-    expect(query.getAll().map((u) => u.id)).toEqual(['user-1', 'user-2', 'user-3']);
+    expect(emitted.at(-1).map((u) => u.name)).toEqual([
+      'Alice Analyst',
+      'Bob',
+      'Zed',
+    ]);
+    expect(query.getAll().map((u) => u.id)).toEqual([
+      'user-1',
+      'user-2',
+      'user-3',
+    ]);
   });
 
   /**
@@ -69,7 +77,11 @@ describe('UserQuery', () => {
     store.update('user-2', { name: 'Robert' });
     store.remove('user-1');
 
-    expect(emitted.map((u) => u?.name)).toEqual(['Alice Analyst', 'Alice Admin', undefined]);
+    expect(emitted.map((u) => u?.name)).toEqual([
+      'Alice Analyst',
+      'Alice Admin',
+      undefined,
+    ]);
   });
 
   /**

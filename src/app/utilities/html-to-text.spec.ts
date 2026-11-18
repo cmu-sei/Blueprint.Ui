@@ -14,7 +14,9 @@ describe('HtmlToText.extractContent', () => {
     { space: false, text: 'Ransomnote arrives' },
     { space: true, text: 'Ransom note arrives ' },
   ])('extracts text with element spacing $space', ({ space, text }) => {
-    expect(HtmlToText.extractContent('<p>Ransom</p><p>note   arrives</p>', space)).toBe(text);
+    expect(
+      HtmlToText.extractContent('<p>Ransom</p><p>note   arrives</p>', space),
+    ).toBe(text);
   });
 
   /**

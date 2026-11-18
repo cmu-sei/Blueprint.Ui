@@ -7,18 +7,33 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By, Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { of, Subject } from 'rxjs';
-import { ComnAuthService, ComnSettingsService, Theme } from '@cmusei/crucible-common';
-import { Msel, SystemPermission, SystemPermissionsService } from 'src/app/generated/blueprint.api';
+import {
+  ComnAuthService,
+  ComnSettingsService,
+  Theme,
+} from '@cmusei/crucible-common';
+import {
+  Msel,
+  SystemPermission,
+  SystemPermissionsService,
+} from 'src/app/generated/blueprint.api';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
-import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
+import {
+  ApplicationArea,
+  SignalRService,
+} from 'src/app/services/signalr.service';
 import { StarterComponent } from './starter.component';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
-import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-load-api-stubs';
+import {
+  mselLoadApiProviders,
+  mselLoadApiStubs,
+} from 'src/app/test-utils/msel-load-api-stubs';
 import { TopbarComponent } from '../shared/top-bar/topbar.component';
 import { ScenarioEventListComponent } from '../scenario-event-list/scenario-event-list.component';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
 
 @Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
@@ -34,10 +49,19 @@ class ScenarioEventListStub {
   readonly isStarterMsel = input<boolean>(undefined);
 }
 
-const MSEL: Msel = { id: 'msel-1', name: 'Starter Exercise', createdBy: 'someone-else', userMselRoles: [] };
-const ALL_BUT_CREATE_MSELS = Object.values(SystemPermission).filter((p) => p !== SystemPermission.CreateMsels);
+const MSEL: Msel = {
+  id: 'msel-1',
+  name: 'Starter Exercise',
+  createdBy: 'someone-else',
+  userMselRoles: [],
+};
+const ALL_BUT_CREATE_MSELS = Object.values(SystemPermission).filter(
+  (p) => p !== SystemPermission.CreateMsels,
+);
 
-async function renderStarter(overrides: { permissions?: SystemPermission[]; mselId?: string } = {}) {
+async function renderStarter(
+  overrides: { permissions?: SystemPermission[]; mselId?: string } = {},
+) {
   const { permissions = [], mselId } = overrides;
   const apis = mselLoadApiStubs({ msel: MSEL });
   // The MSEL answers after the component has initialized, as HTTP does.
@@ -59,17 +83,28 @@ async function renderStarter(overrides: { permissions?: SystemPermission[]; msel
     ],
     providers: [
       ...mselLoadApiProviders(apis),
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: SignalRService, useValue: signalR },
       { provide: ActivatedRoute, useValue: route },
       {
         provide: ComnSettingsService,
-        useValue: { settings: { AppTitle: 'Blueprint', AppTopBarText: 'Blueprint Starter', AppTopBarImage: '' } } satisfies Pick<ComnSettingsService, 'settings'>,
+        useValue: {
+          settings: {
+            AppTitle: 'Blueprint',
+            AppTopBarText: 'Blueprint Starter',
+            AppTopBarImage: '',
+          },
+        } satisfies Pick<ComnSettingsService, 'settings'>,
       },
       {
         provide: ComnAuthService,
-        useValue: { user$: of({ profile: { sub: 'user-me', name: 'Me' } }) } as Pick<ComnAuthService, 'user$'>,
+        useValue: {
+          user$: of({ profile: { sub: 'user-me', name: 'Me' } }),
+        } as Pick<ComnAuthService, 'user$'>,
       },
     ],
   });
@@ -79,7 +114,10 @@ async function renderStarter(overrides: { permissions?: SystemPermission[]; msel
   return { ...rendered, apis, signalR, permissionApis };
 }
 
-function child<T>(fixture: ComponentFixture<unknown>, stub: new (...args: never[]) => T): T | undefined {
+function child<T>(
+  fixture: ComponentFixture<unknown>,
+  stub: new (...args: never[]) => T,
+): T | undefined {
   return fixture.debugElement.query(By.directive(stub))?.componentInstance;
 }
 
@@ -96,12 +134,17 @@ describe('StarterComponent', () => {
   it.each([
     { permissions: [SystemPermission.CreateMsels], expected: true },
     { permissions: ALL_BUT_CREATE_MSELS, expected: false },
-  ])('sets isContentDeveloper $expected from CreateMsels', async ({ permissions, expected }) => {
-    const { fixture, permissionApis } = await renderStarter({ permissions });
+  ])(
+    'sets isContentDeveloper $expected from CreateMsels',
+    async ({ permissions, expected }) => {
+      const { fixture, permissionApis } = await renderStarter({ permissions });
 
-    expect(permissionApis.systemPermissions.getMySystemPermissions).toHaveBeenCalledTimes(1);
-    expect(fixture.componentInstance.isContentDeveloper).toBe(expected);
-  });
+      expect(
+        permissionApis.systemPermissions.getMySystemPermissions,
+      ).toHaveBeenCalledTimes(1);
+      expect(fixture.componentInstance.isContentDeveloper).toBe(expected);
+    },
+  );
 
   /**
    * Verifies: without an msel parameter the page loads the units and organization templates, joins the home hub, shows the configured title and no event list.
@@ -126,17 +169,60 @@ describe('StarterComponent', () => {
    * Data: msel=msel-1, "Starter Exercise".
    */
   it('opens the MSEL named in the route', async () => {
-    const { fixture, apis, signalR } = await renderStarter({ mselId: 'msel-1' });
+    const { fixture, apis, signalR } = await renderStarter({
+      mselId: 'msel-1',
+    });
 
     expect(apis.msel.getMsel).toHaveBeenCalledWith('msel-1');
-    expect(apis.scenarioEvent.getScenarioEventsByMsel).toHaveBeenCalledWith('msel-1');
+    expect(apis.scenarioEvent.getScenarioEventsByMsel).toHaveBeenCalledWith(
+      'msel-1',
+    );
     expect(apis.user.getMselUsers).toHaveBeenCalledWith('msel-1');
     expect(TestBed.inject(MselQuery).getActiveId()).toBe('msel-1');
-    expect(TestBed.inject(Title).getTitle()).toBe('Blueprint - Starter Exercise');
-    expect(child(fixture, TopbarStub)?.title()).toBe('Blueprint - Starter Exercise');
+    expect(TestBed.inject(Title).getTitle()).toBe(
+      'Blueprint - Starter Exercise',
+    );
+    expect(child(fixture, TopbarStub)?.title()).toBe(
+      'Blueprint - Starter Exercise',
+    );
     expect(signalR.selectMsel).toHaveBeenCalledWith('msel-1');
     const events = child(fixture, ScenarioEventListStub);
     expect(events?.isStarterMsel()).toBe(true);
     expect(events?.loggedInUserId()).toBe('user-me');
+  });
+
+  /**
+   * Verifies: when the hub connection is replaced, the open MSEL and its data load again.
+   * Interacts with: HubReconnectService.announceReconnected, the MSEL endpoints (stubs).
+   * Data: msel=msel-1.
+   */
+  it('reloads the MSEL when the hub connection is replaced', async () => {
+    const { apis } = await renderStarter({ mselId: 'msel-1' });
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    for (const endpoint of [
+      apis.msel.getMsel,
+      apis.scenarioEvent.getScenarioEventsByMsel,
+      apis.dataValue.getDataValuesByMsel,
+      apis.user.getMselUsers,
+    ]) {
+      expect(endpoint).toHaveBeenCalledTimes(2);
+      expect(endpoint).toHaveBeenLastCalledWith('msel-1');
+    }
+  });
+
+  /**
+   * Verifies: without an MSEL a replaced connection loads no MSEL.
+   * Interacts with: HubReconnectService.announceReconnected, MselService.getMsel (stub).
+   * Data: no msel parameter.
+   */
+  it('loads no MSEL on reconnect without one', async () => {
+    const { apis } = await renderStarter();
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    expect(apis.msel.getMsel).not.toHaveBeenCalled();
+    expect(apis.unit.getUnits).toHaveBeenCalledTimes(2);
   });
 });

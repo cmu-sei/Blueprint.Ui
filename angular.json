@@ -17,9 +17,7 @@
               "base": "dist"
             },
             "index": "src/index.html",
-            "polyfills": [
-              "zone.js"
-            ],
+            "polyfills": ["zone.js"],
             "tsConfig": "src/tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
@@ -117,22 +115,14 @@
           "options": {
             "runnerConfig": "vitest.config.ts",
             "tsConfig": "tsconfig.spec.json",
-            "setupFiles": [
-              "src/test-setup.ts"
-            ],
-            "coverageInclude": [
-              "src/app/**/*.ts"
-            ],
+            "setupFiles": ["src/test-setup.ts"],
+            "coverageInclude": ["src/app/**/*.ts"],
             "coverageExclude": [
               "**/generated/**",
               "**/*.spec.ts",
               "src/app/test-utils/**"
             ],
-            "coverageReporters": [
-              "text",
-              "json",
-              "html"
-            ],
+            "coverageReporters": ["text", "json", "html"],
             "coverageThresholds": {
               "statements": 66,
               "branches": 47,

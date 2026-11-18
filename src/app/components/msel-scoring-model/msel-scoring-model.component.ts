@@ -2,7 +2,14 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, computed, effect, inject, input, output } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +35,10 @@ import {
   normalizeScoringModel,
   scoringModelCounts,
 } from 'src/app/utilities/scoring-model';
-import { MselScoringModelEditorComponent, ScoringModelMove } from '../msel-scoring-model-editor/msel-scoring-model-editor.component';
+import {
+  MselScoringModelEditorComponent,
+  ScoringModelMove,
+} from '../msel-scoring-model-editor/msel-scoring-model-editor.component';
 
 /**
  * The scoring model a MSEL authors itself: start one from a preset or a copy of a CITE model, then edit it in place
@@ -38,7 +48,17 @@ import { MselScoringModelEditorComponent, ScoringModelMove } from '../msel-scori
   selector: 'app-msel-scoring-model',
   templateUrl: './msel-scoring-model.component.html',
   styleUrls: ['./msel-scoring-model.component.scss'],
-  imports: [FormsModule, MatFormField, MatLabel, MatHint, MatSelect, MatOption, MatOptgroup, MatButton, MselScoringModelEditorComponent],
+  imports: [
+    FormsModule,
+    MatFormField,
+    MatLabel,
+    MatHint,
+    MatSelect,
+    MatOption,
+    MatOptgroup,
+    MatButton,
+    MselScoringModelEditorComponent,
+  ],
 })
 export class MselScoringModelComponent {
   private mselScoringModelService = inject(MselScoringModelService);
@@ -62,7 +82,9 @@ export class MselScoringModelComponent {
   saved: MselScoringModel | null = null;
   working: MselScoringModel | null = null;
   private savedSnapshot = '';
-  private readonly moves = toSignal(this.moveQuery.selectAll(), { initialValue: [] as Move[] });
+  private readonly moves = toSignal(this.moveQuery.selectAll(), {
+    initialValue: [] as Move[],
+  });
   // computed, so the editor's moves input changes only when the moves do, not on every change detection
   readonly mselMoves = computed<ScoringModelMove[]>(() =>
     this.moves()
@@ -86,7 +108,10 @@ export class MselScoringModelComponent {
     if (this.startFrom.startsWith('cite:')) {
       return 'A copy to edit here. The CITE scoring model itself is not changed.';
     }
-    return this.presets.find((p) => 'preset:' + p.preset === this.startFrom)?.hint ?? '';
+    return (
+      this.presets.find((p) => 'preset:' + p.preset === this.startFrom)?.hint ??
+      ''
+    );
   }
 
   summary(): string {
@@ -104,7 +129,9 @@ export class MselScoringModelComponent {
   }
 
   isDirty(): boolean {
-    return !!this.working && JSON.stringify(this.working) !== this.savedSnapshot;
+    return (
+      !!this.working && JSON.stringify(this.working) !== this.savedSnapshot
+    );
   }
 
   isValid(): boolean {
@@ -137,18 +164,29 @@ export class MselScoringModelComponent {
 
   private startFromLabel(): string {
     if (this.startFrom.startsWith('cite:')) {
-      const model = this.citeScoringModels().find((m) => 'cite:' + m.id === this.startFrom);
+      const model = this.citeScoringModels().find(
+        (m) => 'cite:' + m.id === this.startFrom,
+      );
       return `a copy of "${model?.description ?? 'the CITE scoring model'}"`;
     }
-    return this.presets.find((p) => 'preset:' + p.preset === this.startFrom)?.label ?? 'the preset';
+    return (
+      this.presets.find((p) => 'preset:' + p.preset === this.startFrom)
+        ?.label ?? 'the preset'
+    );
   }
 
   private apply() {
     const [kind, value] = this.startFrom.split(':');
     const request: Observable<MselScoringModel> =
       kind === 'cite'
-        ? this.mselScoringModelService.copyMselScoringModelFromCite(this.mselId(), value)
-        : this.mselScoringModelService.createMselScoringModelFromPreset(this.mselId(), value as ScoringModelPreset);
+        ? this.mselScoringModelService.copyMselScoringModelFromCite(
+            this.mselId(),
+            value,
+          )
+        : this.mselScoringModelService.createMselScoringModelFromPreset(
+            this.mselId(),
+            value as ScoringModelPreset,
+          );
     this.isBusy = true;
     request.subscribe({
       next: (model) => {
@@ -173,16 +211,21 @@ export class MselScoringModelComponent {
     this.isSaving = true;
     this.errorMessage = '';
     // the API numbers the categories and options in the order they are sent
-    this.mselScoringModelService.replaceMselScoringModel(this.mselId(), this.working).subscribe({
-      next: (saved) => {
-        this.isSaving = false;
-        this.took(saved);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.isSaving = false;
-        this.errorMessage = err?.error?.title || err?.message || 'The scoring model could not be saved.';
-      },
-    });
+    this.mselScoringModelService
+      .replaceMselScoringModel(this.mselId(), this.working)
+      .subscribe({
+        next: (saved) => {
+          this.isSaving = false;
+          this.took(saved);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.isSaving = false;
+          this.errorMessage =
+            err?.error?.title ||
+            err?.message ||
+            'The scoring model could not be saved.';
+        },
+      });
   }
 
   discard() {

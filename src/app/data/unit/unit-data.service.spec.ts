@@ -18,7 +18,10 @@ import { UnitQuery } from './unit.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function unit(overrides: Partial<Unit> = {}): Unit {
   return { id: 'id-red', name: 'Red Cell', shortName: 'RED', ...overrides };
@@ -41,7 +44,10 @@ function setup(queryParams: Record<string, string> = {}) {
   TestBed.configureTestingModule({
     providers: [
       { provide: UnitService, useValue: unitApi },
-      { provide: Router, useValue: { navigate } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -89,9 +95,15 @@ describe('UnitDataService', () => {
    */
   it('loaders replace the units, or empty them on failure', () => {
     const { service, query, unitApi } = setup();
-    unitApi.getUnits.mockReturnValueOnce(of([unit(), unit({ id: 'id-blue', name: 'Blue Team' })]));
-    unitApi.getMyUnits.mockReturnValueOnce(of([unit({ id: 'id-mine', name: 'My Unit' })]));
-    unitApi.getUnitsByUser.mockReturnValueOnce(of([unit({ id: 'id-user', name: 'User Unit' })]));
+    unitApi.getUnits.mockReturnValueOnce(
+      of([unit(), unit({ id: 'id-blue', name: 'Blue Team' })]),
+    );
+    unitApi.getMyUnits.mockReturnValueOnce(
+      of([unit({ id: 'id-mine', name: 'My Unit' })]),
+    );
+    unitApi.getUnitsByUser.mockReturnValueOnce(
+      of([unit({ id: 'id-user', name: 'User Unit' })]),
+    );
 
     service.load();
     expect(names(query.getAll())).toEqual(['Blue Team', 'Red Cell']);
@@ -124,9 +136,15 @@ describe('UnitDataService', () => {
    */
   it('single-unit calls keep the store and active unit in step', () => {
     const { service, query, unitApi } = setup();
-    unitApi.getUnit.mockReturnValue(of(unit({ id: 'id-blue', name: 'Blue Team' })));
-    unitApi.createUnit.mockReturnValue(of(unit({ id: 'id-grn', name: 'Green Team' })));
-    unitApi.updateUnit.mockReturnValue(of(unit({ id: 'id-blue', name: 'Blue Cell' })));
+    unitApi.getUnit.mockReturnValue(
+      of(unit({ id: 'id-blue', name: 'Blue Team' })),
+    );
+    unitApi.createUnit.mockReturnValue(
+      of(unit({ id: 'id-grn', name: 'Green Team' })),
+    );
+    unitApi.updateUnit.mockReturnValue(
+      of(unit({ id: 'id-blue', name: 'Blue Cell' })),
+    );
     unitApi.deleteUnit.mockReturnValue(of(null));
 
     service.loadById('id-blue');
@@ -160,11 +178,20 @@ describe('UnitDataService', () => {
     const progress = recordEmissions(service.uploadProgress);
     unitApi.uploadJsonUnits.mockReturnValueOnce(
       of(
-        { type: HttpEventType.UploadProgress, loaded: 1, total: 2 } satisfies HttpUploadProgressEvent,
-        new HttpResponse({ status: 200, body: [unit(), unit({ id: 'id-blue', name: 'Blue Team' })] }),
+        {
+          type: HttpEventType.UploadProgress,
+          loaded: 1,
+          total: 2,
+        } satisfies HttpUploadProgressEvent,
+        new HttpResponse({
+          status: 200,
+          body: [unit(), unit({ id: 'id-blue', name: 'Blue Team' })],
+        }),
       ),
     );
-    unitApi.uploadJsonUnits.mockReturnValueOnce(throwError(() => new Error('bad')));
+    unitApi.uploadJsonUnits.mockReturnValueOnce(
+      throwError(() => new Error('bad')),
+    );
 
     service.uploadJson(new File(['[]'], 'units.json'), 'events', true);
     service.uploadJson(new File(['[]'], 'units.json'), 'events', true);
@@ -207,8 +234,12 @@ describe('UnitDataService', () => {
   it('unitList filters and sorts from the query params', () => {
     const { service, route } = setup();
     service.updateStore(unit());
-    service.updateStore(unit({ id: 'id-blue', name: 'Blue Team', shortName: 'BLUE' }));
-    service.updateStore(unit({ id: 'id-grn', name: 'Green Team', shortName: 'GRN' }));
+    service.updateStore(
+      unit({ id: 'id-blue', name: 'Blue Team', shortName: 'BLUE' }),
+    );
+    service.updateStore(
+      unit({ id: 'id-grn', name: 'Green Team', shortName: 'GRN' }),
+    );
     const emissions = recordEmissions(service.unitList);
 
     route.setQueryParams({ filter: 'team' });
@@ -218,7 +249,11 @@ describe('UnitDataService', () => {
     route.setQueryParams({ filter: 'id-r' });
     expect(names(emissions.at(-1))).toEqual(['Red Cell']);
     route.setQueryParams({ sorton: 'shortName', sortdir: 'desc' });
-    expect(names(emissions.at(-1))).toEqual(['Red Cell', 'Green Team', 'Blue Team']);
+    expect(names(emissions.at(-1))).toEqual([
+      'Red Cell',
+      'Green Team',
+      'Blue Team',
+    ]);
   });
 
   /**
@@ -227,24 +262,42 @@ describe('UnitDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'loadById', endpoint: 'getUnit', escapes: true, call: (s: UnitDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createUnit', escapes: true, call: (s: UnitDataService) => s.add({ id: 'x-1' }) },
-    { method: 'updateUnit', endpoint: 'updateUnit', escapes: true, call: (s: UnitDataService) => s.updateUnit({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, unitApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(UnitStore).setLoading(false);
-    unitApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'loadById',
+      endpoint: 'getUnit',
+      escapes: true,
+      call: (s: UnitDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createUnit',
+      escapes: true,
+      call: (s: UnitDataService) => s.add({ id: 'x-1' }),
+    },
+    {
+      method: 'updateUnit',
+      endpoint: 'updateUnit',
+      escapes: true,
+      call: (s: UnitDataService) => s.updateUnit({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, unitApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(UnitStore).setLoading(false);
+      unitApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(UnitQuery).getValue().loading).toBe(true);
-    // With no error callback the error escapes to ErrorService, the ErrorHandler
-    // app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(UnitQuery).getValue().loading).toBe(true);
+      // With no error callback the error escapes to ErrorService, the ErrorHandler
+      // app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete escapes to the app's global ErrorHandler.
@@ -252,19 +305,26 @@ describe('UnitDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteUnit', call: (s: UnitDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, unitApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    unitApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteUnit',
+      call: (s: UnitDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, unitApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      unitApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

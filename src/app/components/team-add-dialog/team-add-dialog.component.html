@@ -9,38 +9,54 @@ project root for license information or contact permission@sei.cmu.edu for full 
   [hideDefaultActions]="true"
   [guardUnsavedWork]="true"
 >
-@if (!!data && !!data.unitList) {
-  <div crucibleDialogContent>
-    <div class="all-content">
-      <mat-form-field class="search-control">
-        <mat-label>Search</mat-label>
-        <input
-          matInput
-          [(ngModel)]="filterString"
-          (ngModelChange)="applyFilter($event)"
-          placeholder="Search"
+  @if (!!data && !!data.unitList) {
+    <div crucibleDialogContent>
+      <div class="all-content">
+        <mat-form-field class="search-control">
+          <mat-label>Search</mat-label>
+          <input
+            matInput
+            [(ngModel)]="filterString"
+            (ngModelChange)="applyFilter($event)"
+            placeholder="Search"
           />
-        @if (filterString) {
-        <button mat-icon-button matSuffix (click)="applyFilter('')" title="Clear Search">
-          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
-        </button>
-        }
-      </mat-form-field>
-      <div class="unit-list-div">
-        @for (unit of filteredList(); track unit) {
-          <div class="unit-div">
-            <button mat-stroked-button class="unit-button" (click)="handleEditComplete(unit.id)">
-              {{ unit.shortName }} - {{ unit.name }}
+          @if (filterString) {
+            <button
+              mat-icon-button
+              matSuffix
+              (click)="applyFilter('')"
+              title="Clear Search"
+            >
+              <mat-icon
+                style="transform: scale(0.85)"
+                fontIcon="mdi-close-circle-outline"
+              />
             </button>
-          </div>
-        }
+          }
+        </mat-form-field>
+        <div class="unit-list-div">
+          @for (unit of filteredList(); track unit) {
+            <div class="unit-div">
+              <button
+                mat-stroked-button
+                class="unit-button"
+                (click)="handleEditComplete(unit.id)"
+              >
+                {{ unit.shortName }} - {{ unit.name }}
+              </button>
+            </div>
+          }
+        </div>
       </div>
     </div>
-  </div>
-}
-<ng-container crucibleDialogActions>
-  <button matButton="outlined" type="button" (click)="handleEditComplete(null)">
-    Cancel
-  </button>
-</ng-container>
+  }
+  <ng-container crucibleDialogActions>
+    <button
+      matButton="outlined"
+      type="button"
+      (click)="handleEditComplete(null)"
+    >
+      Cancel
+    </button>
+  </ng-container>
 </crucible-dialog>

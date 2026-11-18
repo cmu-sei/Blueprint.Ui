@@ -16,7 +16,12 @@ import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { CiteDuty, CiteDutyService, Msel, MselRole } from 'src/app/generated/blueprint.api';
+import {
+  CiteDuty,
+  CiteDutyService,
+  Msel,
+  MselRole,
+} from 'src/app/generated/blueprint.api';
 import { CiteDutyStore } from 'src/app/data/cite-duty/cite-duty.store';
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { CiteDutyListComponent } from './cite-duty-list.component';
@@ -24,19 +29,45 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
+import { TestBed } from '@angular/core/testing';
 
 const ME = 'user-me';
-const TEMPLATE: CiteDuty = { id: 'cd-t', name: 'Template duty', isTemplate: true, mselId: null };
-const MSEL_DUTY: CiteDuty = { id: 'cd-1', name: 'Incident commander', mselId: 'msel-1', teamId: '' };
+const TEMPLATE: CiteDuty = {
+  id: 'cd-t',
+  name: 'Template duty',
+  isTemplate: true,
+  mselId: null,
+};
+const MSEL_DUTY: CiteDuty = {
+  id: 'cd-1',
+  name: 'Incident commander',
+  mselId: 'msel-1',
+  teamId: '',
+};
 
 function msel(overrides: Partial<Msel> = {}): Msel {
-  return { id: 'msel-1', name: 'Exercise Alpha', createdBy: 'someone-else', userMselRoles: [], ...overrides };
+  return {
+    id: 'msel-1',
+    name: 'Exercise Alpha',
+    createdBy: 'someone-else',
+    userMselRoles: [],
+    ...overrides,
+  };
 }
 
 async function renderCiteDuties(
-  overrides: { canEdit?: boolean; showTemplates?: boolean; activeMsel?: Msel | null } = {},
+  overrides: {
+    canEdit?: boolean;
+    showTemplates?: boolean;
+    activeMsel?: Msel | null;
+  } = {},
 ) {
-  const { canEdit = true, showTemplates = false, activeMsel = msel() } = overrides;
+  const {
+    canEdit = true,
+    showTemplates = false,
+    activeMsel = msel(),
+  } = overrides;
   const citeDutyApi = {
     getCiteDutyTemplates: vi.fn(() => of([structuredClone(TEMPLATE)])),
     deleteCiteDuty: vi.fn(() => of<unknown>(null)),
@@ -94,7 +125,11 @@ const TEMPLATE_HEADER = [
   'Upload CITE Duty templates from JSON',
   'Download CITE Duty templates as JSON',
 ];
-const MSEL_ROW = ['Edit this duty', 'Delete Incident commander', 'Make Incident commander a template'];
+const MSEL_ROW = [
+  'Edit this duty',
+  'Delete Incident commander',
+  'Make Incident commander a template',
+];
 
 describe('CiteDutyListComponent', () => {
   describe('templates (admin)', () => {
@@ -104,15 +139,25 @@ describe('CiteDutyListComponent', () => {
      * Data: showTemplates true; canEdit true; no active MSEL; one template and one MSEL duty.
      */
     it('offers template actions with canEdit', async () => {
-      const { citeDutyApi } = await renderCiteDuties({ showTemplates: true, canEdit: true, activeMsel: null });
+      const { citeDutyApi } = await renderCiteDuties({
+        showTemplates: true,
+        canEdit: true,
+        activeMsel: null,
+      });
 
       expect(citeDutyApi.getCiteDutyTemplates).toHaveBeenCalledTimes(1);
       for (const title of TEMPLATE_HEADER) {
         expect(within(table()).getByTitle(title)).toBeInTheDocument();
       }
-      expect(within(table()).getByRole('button', { name: 'Edit this duty' })).toBeInTheDocument();
-      expect(within(table()).getByRole('button', { name: 'Delete Template duty' })).toBeInTheDocument();
-      expect(within(table()).queryByText('Incident commander')).not.toBeInTheDocument();
+      expect(
+        within(table()).getByRole('button', { name: 'Edit this duty' }),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).getByRole('button', { name: 'Delete Template duty' }),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).queryByText('Incident commander'),
+      ).not.toBeInTheDocument();
     });
 
     /**
@@ -121,14 +166,22 @@ describe('CiteDutyListComponent', () => {
      * Data: showTemplates true; canEdit false; no active MSEL.
      */
     it('hides template actions without canEdit', async () => {
-      await renderCiteDuties({ showTemplates: true, canEdit: false, activeMsel: null });
+      await renderCiteDuties({
+        showTemplates: true,
+        canEdit: false,
+        activeMsel: null,
+      });
 
       expect(within(table()).getByText('Template duty')).toBeInTheDocument();
       for (const title of TEMPLATE_HEADER) {
         expect(within(table()).queryByTitle(title)).not.toBeInTheDocument();
       }
-      expect(within(table()).queryByRole('button', { name: 'Edit this duty' })).not.toBeInTheDocument();
-      expect(within(table()).queryByRole('button', { name: 'Delete Template duty' })).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByRole('button', { name: 'Edit this duty' }),
+      ).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByRole('button', { name: 'Delete Template duty' }),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -143,7 +196,9 @@ describe('CiteDutyListComponent', () => {
 
       expect(within(table()).getByTitle('Add CITE Duty')).toBeInTheDocument();
       for (const name of MSEL_ROW) {
-        expect(within(table()).getByRole('button', { name })).toBeInTheDocument();
+        expect(
+          within(table()).getByRole('button', { name }),
+        ).toBeInTheDocument();
       }
     });
 
@@ -153,12 +208,25 @@ describe('CiteDutyListComponent', () => {
      * Data: showTemplates false; canEdit false; the MSEL was created by the user.
      */
     it('lets the MSEL owner edit duties without canEdit, but not make templates', async () => {
-      await renderCiteDuties({ canEdit: false, activeMsel: msel({ createdBy: ME }) });
+      await renderCiteDuties({
+        canEdit: false,
+        activeMsel: msel({ createdBy: ME }),
+      });
 
       expect(within(table()).getByTitle('Add CITE Duty')).toBeInTheDocument();
-      expect(within(table()).getByRole('button', { name: 'Edit this duty' })).toBeInTheDocument();
-      expect(within(table()).getByRole('button', { name: 'Delete Incident commander' })).toBeInTheDocument();
-      expect(within(table()).queryByRole('button', { name: 'Make Incident commander a template' })).not.toBeInTheDocument();
+      expect(
+        within(table()).getByRole('button', { name: 'Edit this duty' }),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).getByRole('button', {
+          name: 'Delete Incident commander',
+        }),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).queryByRole('button', {
+          name: 'Make Incident commander a template',
+        }),
+      ).not.toBeInTheDocument();
     });
 
     /**
@@ -169,13 +237,28 @@ describe('CiteDutyListComponent', () => {
     it('hides duty buttons without canEdit for a non-owner', async () => {
       await renderCiteDuties({
         canEdit: false,
-        activeMsel: msel({ userMselRoles: [{ id: 'umr-1', userId: ME, mselId: 'msel-1', role: MselRole.Editor }] }),
+        activeMsel: msel({
+          userMselRoles: [
+            {
+              id: 'umr-1',
+              userId: ME,
+              mselId: 'msel-1',
+              role: MselRole.Editor,
+            },
+          ],
+        }),
       });
 
-      expect(within(table()).getByText('Incident commander')).toBeInTheDocument();
-      expect(within(table()).queryByTitle('Add CITE Duty')).not.toBeInTheDocument();
+      expect(
+        within(table()).getByText('Incident commander'),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).queryByTitle('Add CITE Duty'),
+      ).not.toBeInTheDocument();
       for (const name of MSEL_ROW) {
-        expect(within(table()).queryByRole('button', { name })).not.toBeInTheDocument();
+        expect(
+          within(table()).queryByRole('button', { name }),
+        ).not.toBeInTheDocument();
       }
     });
 
@@ -185,14 +268,44 @@ describe('CiteDutyListComponent', () => {
      * Data: showTemplates false; canEdit true.
      */
     it('deletes a duty after confirmation', async () => {
-      const { citeDutyApi, confirm } = await renderCiteDuties({ canEdit: true });
+      const { citeDutyApi, confirm } = await renderCiteDuties({
+        canEdit: true,
+      });
       const user = userEvent.setup();
 
-      await user.click(within(table()).getByRole('button', { name: 'Delete Incident commander' }));
+      await user.click(
+        within(table()).getByRole('button', {
+          name: 'Delete Incident commander',
+        }),
+      );
 
       expect(confirm).toHaveBeenCalledTimes(1);
+      expect(confirm).toHaveBeenCalledWith({
+        title: 'Delete CITE Duty',
+        message: 'Are you sure that you want to delete Incident commander?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      });
       expect(citeDutyApi.deleteCiteDuty).toHaveBeenCalledWith('cd-1');
-      expect(within(table()).queryByText('Incident commander')).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByText('Incident commander'),
+      ).not.toBeInTheDocument();
     });
+  });
+
+  /**
+   * Verifies: when the hub connection is replaced, the CITE duty templates load again.
+   * Interacts with: HubReconnectService.announceReconnected, CiteDutyService.getCiteDutyTemplates (stub).
+   * Data: showTemplates true; no active MSEL.
+   */
+  it('reloads the templates when the hub connection is replaced', async () => {
+    const { citeDutyApi } = await renderCiteDuties({
+      showTemplates: true,
+      activeMsel: null,
+    });
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    expect(citeDutyApi.getCiteDutyTemplates).toHaveBeenCalledTimes(2);
   });
 });

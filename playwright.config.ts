@@ -9,7 +9,10 @@ import path from 'path';
 
 export const ADMIN_STORAGE_STATE = path.join(__dirname, 'e2e/.auth/admin.json');
 export const USER_STORAGE_STATE = path.join(__dirname, 'e2e/.auth/user.json');
-export const CONTENT_DEV_STORAGE_STATE = path.join(__dirname, 'e2e/.auth/contentdev.json');
+export const CONTENT_DEV_STORAGE_STATE = path.join(
+  __dirname,
+  'e2e/.auth/contentdev.json',
+);
 
 export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -28,7 +31,7 @@ export default defineConfig({
   /* Opt out of parallel tests. */
   workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [['html', {outputFolder: 'e2e/test-results'}]],
+  reporter: [['html', { outputFolder: 'e2e/test-results' }]],
   /* Set timeout for a test in millisecands */
   timeout: 90000,
   /* Configure projects based on user permissions */
@@ -85,5 +88,5 @@ export default defineConfig({
         storageState: ADMIN_STORAGE_STATE,
       },
     },
-  ]
+  ],
 });

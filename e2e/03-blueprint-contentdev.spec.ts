@@ -11,7 +11,7 @@ const fs = require('fs');
 const testPushMsel = extraConfig.testPushMsel;
 const testPushMselName = Date.now() + ' Test Push MSEL';
 const testMselTemplate = extraConfig.testMselTemplate;
-const testMselName =  Date.now() + ' Test MSEL';
+const testMselName = Date.now() + ' Test MSEL';
 const testMselDescription = testMselName + ' used for e2e and load testing';
 let mselDownloadPath = extraConfig.dataPath + testMselName + '.xlsx';
 const temporaryTestMsel = 'Temporary Test MSEL (delete me)';
@@ -19,7 +19,15 @@ console.log('Using ' + testMselTemplate + ' as the base MSEL for testing.');
 
 // pull proxy from settings file
 if (extraConfig.proxySettings.port) {
-  test.use({proxy: {server: 'http:// ' + extraConfig.proxySettings.host + ':' + extraConfig.proxySettings.port}});
+  test.use({
+    proxy: {
+      server:
+        'http:// ' +
+        extraConfig.proxySettings.host +
+        ':' +
+        extraConfig.proxySettings.port,
+    },
+  });
 }
 
 // ===================== Blueprint Access Check ======================
@@ -65,7 +73,7 @@ test('copy MSEL', async ({ page }) => {
 
   // Verify gone
   try {
-    await page.waitForSelector('text=' + testMselName, {timeout: 500});
+    await page.waitForSelector('text=' + testMselName, { timeout: 500 });
   } catch (error) {
     console.log('Specified MSEL has been removed.');
   }
@@ -83,8 +91,13 @@ test('download MSEL xlsx file', async ({ page }) => {
   // Download MSEL
   const [download] = await Promise.all([
     page.waitForEvent('download'),
-    await page.getByRole('button', { name: 'Download ' + testMselTemplate, exact: true }).click(),
-    await page.getByRole('menuitem', { name: 'Download xlsx file' }).click()
+    await page
+      .getByRole('button', {
+        name: 'Download ' + testMselTemplate,
+        exact: true,
+      })
+      .click(),
+    await page.getByRole('menuitem', { name: 'Download xlsx file' }).click(),
   ]);
 
   // branch for local vs environment
@@ -124,8 +137,13 @@ test('download MSEL json file', async ({ page }) => {
   mselDownloadPath = extraConfig.dataPath + testMselName + '.json';
   const [download] = await Promise.all([
     page.waitForEvent('download'),
-    await page.getByRole('button', { name: 'Download ' + testMselTemplate, exact: true }).click(),
-    await page.getByRole('menuitem', { name: 'Download json file' }).click()
+    await page
+      .getByRole('button', {
+        name: 'Download ' + testMselTemplate,
+        exact: true,
+      })
+      .click(),
+    await page.getByRole('menuitem', { name: 'Download json file' }).click(),
   ]);
 
   // branch for local vs environment
@@ -165,7 +183,7 @@ test('upload MSEL', async ({ page }) => {
   const [fileChooser] = await Promise.all([
     page.waitForEvent('filechooser'),
     page.locator('button:has-text("Upload")').click(),
-    await page.getByRole('menuitem', { name: 'Upload xlsx file' }).click()
+    await page.getByRole('menuitem', { name: 'Upload xlsx file' }).click(),
   ]);
 
   // Be sure to change the file path to your own
@@ -191,7 +209,6 @@ test('upload MSEL', async ({ page }) => {
 
   // Return to Dashboard
   await page.click('img[title="Home"]');
-
 });
 
 // ===================== Replace and Delete MSEL ======================
@@ -204,7 +221,12 @@ test('replace and delete MSEL', async ({ page }) => {
   // Upload MSEL
   const [fileChooser] = await Promise.all([
     page.waitForEvent('filechooser'),
-    page.getByRole('button', { name: 'Upload .xlsx file to ' + temporaryTestMsel, exact: true }).click(),
+    page
+      .getByRole('button', {
+        name: 'Upload .xlsx file to ' + temporaryTestMsel,
+        exact: true,
+      })
+      .click(),
   ]);
 
   // Be sure to change the file path to your own
@@ -219,7 +241,7 @@ test('replace and delete MSEL', async ({ page }) => {
 
   // Verify gone
   try {
-    await page.waitForSelector('text=' + temporaryTestMsel, {timeout: 500});
+    await page.waitForSelector('text=' + temporaryTestMsel, { timeout: 500 });
   } catch (error) {
     console.log('Specified MSEL has been removed.');
   }
@@ -251,11 +273,15 @@ test('push gallery cite', async ({ page }) => {
 
   // Push to CITE & Gallery
   await page.getByRole('button', { name: 'Info' }).click();
-  await expect(page.getByRole('button', { 'name': 'Push to Gallery'})).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Push to Gallery' }),
+  ).toBeEnabled();
   await page.click('button:has-text("Push to Gallery")');
   await page.click('text=Yes');
   await page.waitForTimeout(5 * 1000);
-  await expect(page.getByRole('button', { 'name': 'Push to CITE'})).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Push to CITE' }),
+  ).toBeEnabled();
   await page.click('button:has-text("Push to CITE")');
   await page.click('text=Yes');
   await page.waitForTimeout(5 * 1000);
@@ -277,7 +303,7 @@ test('push gallery cite', async ({ page }) => {
 
   // Verify gone
   try {
-    await page.waitForSelector('text=' + testPushMselName, {timeout: 500});
+    await page.waitForSelector('text=' + testPushMselName, { timeout: 500 });
   } catch (error) {
     console.log('Test Push MSEL has been removed.');
   }

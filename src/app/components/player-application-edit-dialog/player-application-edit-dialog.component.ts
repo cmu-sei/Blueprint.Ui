@@ -5,17 +5,27 @@
 import { Component, inject, output } from '@angular/core';
 import { UntypedFormControl, FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
 import { MatFormField, MatLabel, MatInput } from '@angular/material/input';
 import { MatCheckbox } from '@angular/material/checkbox';
 
 @Component({
-    selector: 'app-player-applicationedit-dialog',
-    templateUrl: './player-application-edit-dialog.component.html',
-    styleUrls: ['./player-application-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, MatCheckbox]
+  selector: 'app-player-applicationedit-dialog',
+  templateUrl: './player-application-edit-dialog.component.html',
+  styleUrls: ['./player-application-edit-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    FormsModule,
+    MatCheckbox,
+  ],
 })
-
 export class PlayerApplicationEditDialogComponent {
   data = inject(MAT_DIALOG_DATA);
 
@@ -23,15 +33,15 @@ export class PlayerApplicationEditDialogComponent {
 
   public situationDateFormControl = new UntypedFormControl(
     this.data.playerApplication.situationTime,
-    []
+    [],
   );
   public playerApplicationStartTimeFormControl = new UntypedFormControl(
     this.data.playerApplication.playerApplicationStartTime,
-    []
+    [],
   );
   public playerApplicationStopTimeFormControl = new UntypedFormControl(
     this.data.playerApplication.playerApplicationStopTime,
-    []
+    [],
   );
 
   public urlValidationError: string = '';
@@ -51,7 +61,7 @@ export class PlayerApplicationEditDialogComponent {
     'playerViewId',
     'casterWorkspaceId',
     'blueprintMselId',
-    'theme'
+    'theme',
   ];
 
   savePlayerApplication(which: string) {
@@ -61,12 +71,16 @@ export class PlayerApplicationEditDialogComponent {
         this.data.playerApplication.situationTime = newPosted;
         break;
       case 'playerApplicationStartTime':
-        const playerApplicationStartTime = this.playerApplicationStartTimeFormControl.value;
-        this.data.playerApplication.playerApplicationStartTime = playerApplicationStartTime;
+        const playerApplicationStartTime =
+          this.playerApplicationStartTimeFormControl.value;
+        this.data.playerApplication.playerApplicationStartTime =
+          playerApplicationStartTime;
         break;
       case 'playerApplicationStopTime':
-        const playerApplicationStopTime = this.playerApplicationStopTimeFormControl.value;
-        this.data.playerApplication.playerApplicationStopTime = playerApplicationStopTime;
+        const playerApplicationStopTime =
+          this.playerApplicationStopTimeFormControl.value;
+        this.data.playerApplication.playerApplicationStopTime =
+          playerApplicationStopTime;
         break;
       default:
         break;
@@ -84,7 +98,7 @@ export class PlayerApplicationEditDialogComponent {
     const unknownVars: string[] = [];
 
     // Check for unknown variables in complete {var} patterns
-    matches.forEach(match => {
+    matches.forEach((match) => {
       const varName = match[1];
       if (!this.allowedVariables.includes(varName)) {
         unknownVars.push(varName);
@@ -97,7 +111,7 @@ export class PlayerApplicationEditDialogComponent {
 
     // Remove all valid variable patterns
     let cleanedUrl = url;
-    this.allowedVariables.forEach(varName => {
+    this.allowedVariables.forEach((varName) => {
       cleanedUrl = cleanedUrl.replace(new RegExp(`\\{${varName}\\}`, 'g'), '');
     });
 
@@ -116,7 +130,9 @@ export class PlayerApplicationEditDialogComponent {
     this.urlValidationError = this.data.playerApplication.url?.trim()
       ? this.validateUrl(this.data.playerApplication.url)
       : 'A URL is required';
-    this.iconValidationError = this.validateUrl(this.data.playerApplication.icon);
+    this.iconValidationError = this.validateUrl(
+      this.data.playerApplication.icon,
+    );
 
     return !this.urlValidationError && !this.iconValidationError;
   }
@@ -137,5 +153,4 @@ export class PlayerApplicationEditDialogComponent {
       });
     }
   }
-
 }

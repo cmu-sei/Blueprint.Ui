@@ -50,13 +50,26 @@ const ME = 'user-me';
 const AUTHORED: MselScoringModel = {
   mselId: 'msel-1',
   description: 'Harbor Questions',
-  categories: [{ id: 'cat-1', displayOrder: '1' as unknown as number, description: 'Move 1', moveNumberFirstDisplay: 1, moveNumberLastDisplay: 1, options: [] }],
+  categories: [
+    {
+      id: 'cat-1',
+      displayOrder: '1' as unknown as number,
+      description: 'Move 1',
+      moveNumberFirstDisplay: 1,
+      moveNumberLastDisplay: 1,
+      options: [],
+    },
+  ],
 };
 // the CITE templates, and a model that belongs to an evaluation and so cannot be linked
 const CITE_MODELS: ScoringModel[] = [
   { id: 'cite-1', description: 'Project Lagoon Questions by Move' },
   { id: 'cite-2', description: 'NCISS' },
-  { id: 'cite-eval', description: 'Harbor Questions (evaluation)', evaluationId: 'eval-9' },
+  {
+    id: 'cite-eval',
+    description: 'Harbor Questions (evaluation)',
+    evaluationId: 'eval-9',
+  },
 ];
 
 function msel(myRoles: MselRole[] = [], extra: Partial<Msel> = {}): Msel {
@@ -68,37 +81,70 @@ function msel(myRoles: MselRole[] = [], extra: Partial<Msel> = {}): Msel {
     createdBy: 'user-creator',
     teams: [],
     units: [],
-    userMselRoles: myRoles.map((role, i) => ({ id: `umr-${i}`, userId: ME, mselId: 'msel-1', role })),
+    userMselRoles: myRoles.map((role, i) => ({
+      id: `umr-${i}`,
+      userId: ME,
+      mselId: 'msel-1',
+      role,
+    })),
     ...extra,
   };
 }
 
 async function renderTab(
-  overrides: { permissions?: SystemPermission[]; myRoles?: MselRole[]; mselExtra?: Partial<Msel>; authored?: MselScoringModel | null; citeModels?: ScoringModel[] } = {},
+  overrides: {
+    permissions?: SystemPermission[];
+    myRoles?: MselRole[];
+    mselExtra?: Partial<Msel>;
+    authored?: MselScoringModel | null;
+    citeModels?: ScoringModel[];
+  } = {},
 ) {
-  const { permissions = [], myRoles = [MselRole.Owner], mselExtra = {}, authored = null, citeModels = CITE_MODELS } = overrides;
-  const citeApi = { getScoringModels: vi.fn(() => of(structuredClone(citeModels))) } satisfies ApiStub<CiteService>;
+  const {
+    permissions = [],
+    myRoles = [MselRole.Owner],
+    mselExtra = {},
+    authored = null,
+    citeModels = CITE_MODELS,
+  } = overrides;
+  const citeApi = {
+    getScoringModels: vi.fn(() => of(structuredClone(citeModels))),
+  } satisfies ApiStub<CiteService>;
   const scoringModelApi = {
     getMselScoringModel: vi.fn(() => of(structuredClone(authored))),
     deleteMselScoringModel: vi.fn(() => of<unknown>(null)),
     // the API answers the MSEL as the link left it
     linkMselScoringModel: vi.fn((_id: string, body: MselScoringModelLink) =>
-      of<Msel>({ ...msel(myRoles, mselExtra), citeScoringModelId: body.citeScoringModelId })),
+      of<Msel>({
+        ...msel(myRoles, mselExtra),
+        citeScoringModelId: body.citeScoringModelId,
+      }),
+    ),
   } satisfies ApiStub<MselScoringModelService>;
   // the Config tab's save; the link is not saved through it
-  const mselApi = { updateMsel: vi.fn((_id: string, body: Msel) => of(structuredClone(body))) } satisfies ApiStub<MselService>;
+  const mselApi = {
+    updateMsel: vi.fn((_id: string, body: Msel) => of(structuredClone(body))),
+  } satisfies ApiStub<MselService>;
   // The user confirms every dialog.
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
   const permissionApis = permissionApiStubs({ system: permissions });
   const rendered = await renderComponent(MselScoringModelTabComponent, {
-    childStubs: [{ replace: MselScoringModelComponent, with: MselScoringModelStub }],
+    childStubs: [
+      { replace: MselScoringModelComponent, with: MselScoringModelStub },
+    ],
     providers: [
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: CiteService, useValue: citeApi },
       { provide: MselScoringModelService, useValue: scoringModelApi },
       { provide: MselService, useValue: mselApi },
-      { provide: CrucibleDialogService, useValue: { confirm } satisfies Pick<CrucibleDialogService, 'confirm'> },
+      {
+        provide: CrucibleDialogService,
+        useValue: { confirm } satisfies Pick<CrucibleDialogService, 'confirm'>,
+      },
       {
         provide: MselStore,
         useFactory: () => {
@@ -118,11 +164,16 @@ async function renderTab(
 }
 
 const authoredChild = (fixture: ComponentFixture<unknown>) =>
-  fixture.debugElement.query(By.directive(MselScoringModelStub))?.componentInstance as MselScoringModelStub;
-const linkRadio = () => screen.getByRole('radio', { name: 'Link a CITE scoring model' });
-const authorRadio = () => screen.getByRole('radio', { name: 'Author it in Blueprint' });
+  fixture.debugElement.query(By.directive(MselScoringModelStub))
+    ?.componentInstance as MselScoringModelStub;
+const linkRadio = () =>
+  screen.getByRole('radio', { name: 'Link a CITE scoring model' });
+const authorRadio = () =>
+  screen.getByRole('radio', { name: 'Author it in Blueprint' });
 const linkSelect = (fixture: ComponentFixture<unknown>) =>
-  TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness.with({ ancestor: '.link-select' }));
+  TestbedHarnessEnvironment.loader(fixture).getHarness(
+    MatSelectHarness.with({ ancestor: '.link-select' }),
+  );
 
 describe('MselScoringModelTabComponent', () => {
   /**
@@ -131,7 +182,9 @@ describe('MselScoringModelTabComponent', () => {
    * Data: MSEL role Owner; a pending MSEL with the authored model Harbor Questions; CITE_MODELS, one of which belongs to an evaluation.
    */
   it('opens an authored model in the editor', async () => {
-    const { fixture, scoringModelApi } = await renderTab({ authored: AUTHORED });
+    const { fixture, scoringModelApi } = await renderTab({
+      authored: AUTHORED,
+    });
 
     expect(scoringModelApi.getMselScoringModel).toHaveBeenCalledWith('msel-1');
     expect(authorRadio()).toBeChecked();
@@ -140,8 +193,13 @@ describe('MselScoringModelTabComponent', () => {
     expect(child.scoringModel().description).toBe('Harbor Questions');
     expect(child.scoringModel().categories[0].displayOrder).toBe(1);
     expect(child.canEdit()).toBe(true);
-    expect(child.citeScoringModels().map((m) => m.id)).toEqual(['cite-1', 'cite-2']);
-    expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument();
+    expect(child.citeScoringModels().map((m) => m.id)).toEqual([
+      'cite-1',
+      'cite-2',
+    ]);
+    expect(
+      screen.queryByRole('button', { name: 'Save Changes' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -156,7 +214,9 @@ describe('MselScoringModelTabComponent', () => {
     expect(authoredChild(fixture)).toBeUndefined();
     const select = await linkSelect(fixture);
     await select.open();
-    expect(await Promise.all((await select.getOptions()).map((o) => o.getText()))).toEqual(['-- None --', 'Project Lagoon Questions by Move', 'NCISS']);
+    expect(
+      await Promise.all((await select.getOptions()).map((o) => o.getText())),
+    ).toEqual(['-- None --', 'Project Lagoon Questions by Move', 'NCISS']);
   });
 
   /**
@@ -173,15 +233,26 @@ describe('MselScoringModelTabComponent', () => {
     await select.open();
     await select.clickOptions({ text: 'NCISS' });
     fixture.detectChanges();
-    expect(screen.getByText('Changes have not been saved!')).toBeInTheDocument();
+    expect(
+      screen.getByText('Changes have not been saved!'),
+    ).toBeInTheDocument();
     expect(scoringModelApi.linkMselScoringModel).not.toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: 'Save Changes' }));
     fixture.detectChanges();
 
-    expect(scoringModelApi.linkMselScoringModel).toHaveBeenCalledExactlyOnceWith('msel-1', { citeScoringModelId: 'cite-2' });
+    expect(
+      scoringModelApi.linkMselScoringModel,
+    ).toHaveBeenCalledExactlyOnceWith('msel-1', {
+      citeScoringModelId: 'cite-2',
+    });
     expect(mselApi.updateMsel).not.toHaveBeenCalled();
-    expect(TestBed.inject(MselStore).getValue().entities['msel-1'].citeScoringModelId).toBe('cite-2');
-    expect(screen.queryByText('Changes have not been saved!')).not.toBeInTheDocument();
+    expect(
+      TestBed.inject(MselStore).getValue().entities['msel-1']
+        .citeScoringModelId,
+    ).toBe('cite-2');
+    expect(
+      screen.queryByText('Changes have not been saved!'),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -190,15 +261,21 @@ describe('MselScoringModelTabComponent', () => {
    * Data: MSEL role Owner; a pending MSEL linked to cite-1; -- None -- chosen.
    */
   it('clears the link', async () => {
-    const { fixture, scoringModelApi } = await renderTab({ mselExtra: { citeScoringModelId: 'cite-1' } });
+    const { fixture, scoringModelApi } = await renderTab({
+      mselExtra: { citeScoringModelId: 'cite-1' },
+    });
 
     const select = await linkSelect(fixture);
     await select.open();
     await select.clickOptions({ text: '-- None --' });
     fixture.detectChanges();
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Save Changes' }));
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Save Changes' }));
 
-    expect(scoringModelApi.linkMselScoringModel).toHaveBeenCalledExactlyOnceWith('msel-1', { citeScoringModelId: null });
+    expect(
+      scoringModelApi.linkMselScoringModel,
+    ).toHaveBeenCalledExactlyOnceWith('msel-1', { citeScoringModelId: null });
   });
 
   /**
@@ -208,20 +285,37 @@ describe('MselScoringModelTabComponent', () => {
    */
   it('explains in a dialog when CITE refuses the link', async () => {
     const { fixture, scoringModelApi, confirm } = await renderTab();
-    const reason = 'You can view the CITE scoring model "NCISS" only as a participant, without its equations and weights.';
+    const reason =
+      'You can view the CITE scoring model "NCISS" only as a participant, without its equations and weights.';
     scoringModelApi.linkMselScoringModel.mockReturnValueOnce(
-      throwError(() => new HttpErrorResponse({ status: 403, error: { type: CITE_ACCESS_DENIED, title: reason } })));
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 403,
+            error: { type: CITE_ACCESS_DENIED, title: reason },
+          }),
+      ),
+    );
 
     const select = await linkSelect(fixture);
     await select.open();
     await select.clickOptions({ text: 'NCISS' });
     fixture.detectChanges();
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Save Changes' }));
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Save Changes' }));
     fixture.detectChanges();
 
-    expect(confirm).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ title: 'CITE Access Denied', message: reason }));
-    expect(screen.getByText('Changes have not been saved!')).toBeInTheDocument();
-    expect(TestBed.inject(MselStore).getValue().entities['msel-1'].citeScoringModelId).toBeUndefined();
+    expect(confirm).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ title: 'CITE Access Denied', message: reason }),
+    );
+    expect(
+      screen.getByText('Changes have not been saved!'),
+    ).toBeInTheDocument();
+    expect(
+      TestBed.inject(MselStore).getValue().entities['msel-1']
+        .citeScoringModelId,
+    ).toBeUndefined();
   });
 
   /**
@@ -230,7 +324,9 @@ describe('MselScoringModelTabComponent', () => {
    * Data: MSEL role Owner; a pending MSEL linked to cite-1; NCISS chosen, then Author it in Blueprint.
    */
   it('drops an unsaved link when the planner chooses to author', async () => {
-    const { fixture, scoringModelApi } = await renderTab({ mselExtra: { citeScoringModelId: 'cite-1' } });
+    const { fixture, scoringModelApi } = await renderTab({
+      mselExtra: { citeScoringModelId: 'cite-1' },
+    });
 
     const select = await linkSelect(fixture);
     await select.open();
@@ -251,18 +347,26 @@ describe('MselScoringModelTabComponent', () => {
    * Data: MSEL role Owner; a pending MSEL linked to cite-1; NCISS chosen, then cancelled.
    */
   it('cancels an unsaved link', async () => {
-    const { fixture, mselApi } = await renderTab({ mselExtra: { citeScoringModelId: 'cite-1' } });
+    const { fixture, mselApi } = await renderTab({
+      mselExtra: { citeScoringModelId: 'cite-1' },
+    });
 
     const select = await linkSelect(fixture);
-    expect(await select.getValueText()).toBe('Project Lagoon Questions by Move');
+    expect(await select.getValueText()).toBe(
+      'Project Lagoon Questions by Move',
+    );
     await select.open();
     await select.clickOptions({ text: 'NCISS' });
     fixture.detectChanges();
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Cancel Changes' }));
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Cancel Changes' }));
     fixture.detectChanges();
 
     expect(mselApi.updateMsel).not.toHaveBeenCalled();
-    expect(await select.getValueText()).toBe('Project Lagoon Questions by Move');
+    expect(await select.getValueText()).toBe(
+      'Project Lagoon Questions by Move',
+    );
     expect(fixture.componentInstance.hasPendingChanges()).toBe(false);
   });
 
@@ -279,7 +383,9 @@ describe('MselScoringModelTabComponent', () => {
 
     expect(authoredChild(fixture).scoringModel()).toBeNull();
     expect(authoredChild(fixture).canEdit()).toBe(true);
-    expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Save Changes' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -288,17 +394,24 @@ describe('MselScoringModelTabComponent', () => {
    * Data: MSEL role Owner; a pending MSEL with the authored model Harbor Questions.
    */
   it('deletes the authored model when the planner links a CITE model instead', async () => {
-    const { fixture, confirm, scoringModelApi } = await renderTab({ authored: AUTHORED });
+    const { fixture, confirm, scoringModelApi } = await renderTab({
+      authored: AUTHORED,
+    });
 
     await userEvent.setup().click(linkRadio());
     fixture.detectChanges();
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({
-      title: 'Link a CITE Scoring Model',
-      message: 'Linking a CITE scoring model deletes "Harbor Questions", the scoring model authored in Blueprint. Delete it?',
-      confirmText: 'Delete',
-    }));
-    expect(scoringModelApi.deleteMselScoringModel).toHaveBeenCalledWith('msel-1');
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Link a CITE Scoring Model',
+        message:
+          'Linking a CITE scoring model deletes "Harbor Questions", the scoring model authored in Blueprint. Delete it?',
+        confirmText: 'Delete',
+      }),
+    );
+    expect(scoringModelApi.deleteMselScoringModel).toHaveBeenCalledWith(
+      'msel-1',
+    );
     expect(authoredChild(fixture)).toBeUndefined();
     expect(linkRadio()).toBeChecked();
   });
@@ -309,10 +422,14 @@ describe('MselScoringModelTabComponent', () => {
    * Data: MSEL role Owner; a pending MSEL with the authored model Harbor Questions.
    */
   it('keeps the authored model when the planner declines', async () => {
-    const { fixture, confirm, scoringModelApi } = await renderTab({ authored: AUTHORED });
+    const { fixture, confirm, scoringModelApi } = await renderTab({
+      authored: AUTHORED,
+    });
     // a real confirmation answers after the click has been rendered
     const declined = new Subject<boolean>();
-    confirm.mockReturnValueOnce({ afterClosed: () => declined.asObservable() } as MatDialogRef<unknown, boolean>);
+    confirm.mockReturnValueOnce({
+      afterClosed: () => declined.asObservable(),
+    } as MatDialogRef<unknown, boolean>);
 
     await userEvent.setup().click(linkRadio());
     fixture.detectChanges();
@@ -321,7 +438,9 @@ describe('MselScoringModelTabComponent', () => {
 
     expect(scoringModelApi.deleteMselScoringModel).not.toHaveBeenCalled();
     expect(authorRadio()).toBeChecked();
-    expect(authoredChild(fixture).scoringModel().description).toBe('Harbor Questions');
+    expect(authoredChild(fixture).scoringModel().description).toBe(
+      'Harbor Questions',
+    );
   });
 
   /**
@@ -330,11 +449,19 @@ describe('MselScoringModelTabComponent', () => {
    * Data: MSEL role Owner; a deployed MSEL with an evaluation and the authored model Harbor Questions.
    */
   it('locks the authored model while the MSEL is pushed', async () => {
-    const { fixture } = await renderTab({ mselExtra: { status: MselItemStatus.Deployed, citeEvaluationId: 'eval-1' }, authored: AUTHORED });
+    const { fixture } = await renderTab({
+      mselExtra: {
+        status: MselItemStatus.Deployed,
+        citeEvaluationId: 'eval-1',
+      },
+      authored: AUTHORED,
+    });
 
     expect(linkRadio()).toBeDisabled();
     expect(authoredChild(fixture).canEdit()).toBe(false);
-    expect(screen.getByText(/locked while the integrations are deployed/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/locked while the integrations are deployed/),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -343,13 +470,23 @@ describe('MselScoringModelTabComponent', () => {
    * Data: MSEL role Owner; a deployed MSEL with an evaluation, linked to cite-1.
    */
   it('shows the linked model read-only while the MSEL is pushed', async () => {
-    const { fixture } = await renderTab({ mselExtra: { status: MselItemStatus.Deployed, citeEvaluationId: 'eval-1', citeScoringModelId: 'cite-1' } });
+    const { fixture } = await renderTab({
+      mselExtra: {
+        status: MselItemStatus.Deployed,
+        citeEvaluationId: 'eval-1',
+        citeScoringModelId: 'cite-1',
+      },
+    });
 
     expect(linkRadio()).toBeDisabled();
     expect(fixture.debugElement.query(By.css('.link-select'))).toBeNull();
     expect(screen.getByText('cite-1')).toBeInTheDocument();
-    expect(screen.getByText('Project Lagoon Questions by Move')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument();
+    expect(
+      screen.getByText('Project Lagoon Questions by Move'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Save Changes' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -358,7 +495,10 @@ describe('MselScoringModelTabComponent', () => {
    * Data: the Editor role with no permission; a pending MSEL linked to cite-1.
    */
   it('lets an Editor link and author', async () => {
-    const { fixture } = await renderTab({ myRoles: [MselRole.Editor], mselExtra: { citeScoringModelId: 'cite-1' } });
+    const { fixture } = await renderTab({
+      myRoles: [MselRole.Editor],
+      mselExtra: { citeScoringModelId: 'cite-1' },
+    });
 
     expect(linkRadio()).toBeEnabled();
     expect(authorRadio()).toBeEnabled();
@@ -371,7 +511,10 @@ describe('MselScoringModelTabComponent', () => {
    * Data: the Approver role (near miss: not Owner or Editor); a pending MSEL linked to cite-1.
    */
   it('lets an Approver only look', async () => {
-    const { fixture } = await renderTab({ myRoles: [MselRole.Approver], mselExtra: { citeScoringModelId: 'cite-1' } });
+    const { fixture } = await renderTab({
+      myRoles: [MselRole.Approver],
+      mselExtra: { citeScoringModelId: 'cite-1' },
+    });
 
     expect(linkRadio()).toBeDisabled();
     expect(fixture.debugElement.query(By.css('.link-select'))).toBeNull();
@@ -383,11 +526,16 @@ describe('MselScoringModelTabComponent', () => {
    * Data: no role; a pending MSEL linked to cite-1.
    */
   it('lets a viewer only look', async () => {
-    const { fixture } = await renderTab({ myRoles: [], mselExtra: { citeScoringModelId: 'cite-1' } });
+    const { fixture } = await renderTab({
+      myRoles: [],
+      mselExtra: { citeScoringModelId: 'cite-1' },
+    });
 
     expect(linkRadio()).toBeDisabled();
     expect(fixture.debugElement.query(By.css('.link-select'))).toBeNull();
-    expect(screen.getByText('Project Lagoon Questions by Move')).toBeInTheDocument();
+    expect(
+      screen.getByText('Project Lagoon Questions by Move'),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -401,7 +549,9 @@ describe('MselScoringModelTabComponent', () => {
     expect(linkRadio().closest('mat-radio-button')).toHaveAccessibleDescription(
       'Build the CITE evaluation from a scoring model that already exists in CITE and is maintained there.',
     );
-    expect(authorRadio().closest('mat-radio-button')).toHaveAccessibleDescription(
+    expect(
+      authorRadio().closest('mat-radio-button'),
+    ).toHaveAccessibleDescription(
       'Write the scoring model here with the MSEL; Blueprint creates it in CITE when the integrations are pushed.',
     );
   });

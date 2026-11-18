@@ -10,12 +10,10 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({ name: 'plainText' })
-export class PlainTextPipe implements PipeTransform{
+export class PlainTextPipe implements PipeTransform {
+  constructor() {}
 
-  constructor() { }
-
-  transform(text: string ) {
-
+  transform(text: string) {
     if (!text) {
       return text;
     }
@@ -24,5 +22,4 @@ export class PlainTextPipe implements PipeTransform{
 
     return plainText;
   }
-
 }

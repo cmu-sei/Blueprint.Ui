@@ -10,7 +10,12 @@ import { MatTableModule } from '@angular/material/table';
 import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
-import { Catalog, CatalogUnit, CatalogUnitService, Unit } from 'src/app/generated/blueprint.api';
+import {
+  Catalog,
+  CatalogUnit,
+  CatalogUnitService,
+  Unit,
+} from 'src/app/generated/blueprint.api';
 import { CatalogUnitDataService } from 'src/app/data/catalog-unit/catalog-unit-data.service';
 import { UnitStore } from 'src/app/data/unit/unit.store';
 import { CatalogUnitsComponent } from './catalog-units.component';
@@ -20,21 +25,42 @@ import { renderComponent } from 'src/app/test-utils/render-component';
 const BLUE: Unit = { id: 'unit-blue', name: 'Blue Team', shortName: 'BLUE' };
 const RED: Unit = { id: 'unit-red', name: 'Red Team', shortName: 'RED' };
 const CATALOG: Catalog = { id: 'cat-1', name: 'Ransomware Catalog' };
-const BLUE_ACCESS: CatalogUnit = { id: 'cu-1', catalogId: 'cat-1', unitId: 'unit-blue', unit: BLUE };
+const BLUE_ACCESS: CatalogUnit = {
+  id: 'cu-1',
+  catalogId: 'cat-1',
+  unitId: 'unit-blue',
+  unit: BLUE,
+};
 // Another catalog's access row, as its own CatalogUnitsComponent loads it.
-const RED_ACCESS_OTHER: CatalogUnit = { id: 'cu-9', catalogId: 'cat-2', unitId: 'unit-red', unit: RED };
+const RED_ACCESS_OTHER: CatalogUnit = {
+  id: 'cu-9',
+  catalogId: 'cat-2',
+  unitId: 'unit-red',
+  unit: RED,
+};
 
 async function renderCatalogUnits(overrides: { canEdit?: boolean } = {}) {
   const { canEdit = true } = overrides;
   const catalogUnitApi = {
     getCatalogUnits: vi.fn((catalogId: string) =>
-      of(structuredClone(catalogId === 'cat-1' ? [BLUE_ACCESS] : [RED_ACCESS_OTHER])),
+      of(
+        structuredClone(
+          catalogId === 'cat-1' ? [BLUE_ACCESS] : [RED_ACCESS_OTHER],
+        ),
+      ),
     ),
-    createCatalogUnit: vi.fn((cu: CatalogUnit) => of<CatalogUnit>({ ...cu, id: 'cu-2', unit: RED })),
+    createCatalogUnit: vi.fn((cu: CatalogUnit) =>
+      of<CatalogUnit>({ ...cu, id: 'cu-2', unit: RED }),
+    ),
     deleteCatalogUnit: vi.fn(() => of<unknown>(null)),
   } satisfies ApiStub<CatalogUnitService>;
   const rendered = await renderComponent(CatalogUnitsComponent, {
-    imports: [MatButtonModule, MatExpansionModule, MatIconModule, MatTableModule],
+    imports: [
+      MatButtonModule,
+      MatExpansionModule,
+      MatIconModule,
+      MatTableModule,
+    ],
     declarations: [CatalogUnitsComponent],
     providers: [
       { provide: CatalogUnitService, useValue: catalogUnitApi },
@@ -79,11 +105,22 @@ describe('CatalogUnitsComponent', () => {
     const user = userEvent.setup();
 
     await user.click(screen.getByText('Add a Unit'));
-    expect(screen.queryByRole('button', { name: 'Add BLUE to this catalog' })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Add RED to this catalog' }));
-    expect(catalogUnitApi.createCatalogUnit).toHaveBeenCalledWith({ catalogId: 'cat-1', unitId: 'unit-red' });
+    expect(
+      screen.queryByRole('button', { name: 'Add BLUE to this catalog' }),
+    ).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole('button', { name: 'Add RED to this catalog' }),
+    );
+    expect(catalogUnitApi.createCatalogUnit).toHaveBeenCalledWith({
+      catalogId: 'cat-1',
+      unitId: 'unit-red',
+    });
 
-    await user.click(within(table()).getByRole('button', { name: 'Remove BLUE from this catalog' }));
+    await user.click(
+      within(table()).getByRole('button', {
+        name: 'Remove BLUE from this catalog',
+      }),
+    );
     expect(catalogUnitApi.deleteCatalogUnit).toHaveBeenCalledWith('cu-1');
   });
 
@@ -96,7 +133,11 @@ describe('CatalogUnitsComponent', () => {
     await renderCatalogUnits({ canEdit: false });
 
     expect(within(table()).getByText('BLUE')).toBeInTheDocument();
-    expect(within(table()).queryByRole('button', { name: 'Remove BLUE from this catalog' })).not.toBeInTheDocument();
+    expect(
+      within(table()).queryByRole('button', {
+        name: 'Remove BLUE from this catalog',
+      }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText('Add a Unit')).not.toBeInTheDocument();
   });
 

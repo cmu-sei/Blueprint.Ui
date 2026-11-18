@@ -11,14 +11,20 @@ import {
 } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EMPTY, Observable, of, throwError } from 'rxjs';
-import { Organization, OrganizationService } from 'src/app/generated/blueprint.api';
+import {
+  Organization,
+  OrganizationService,
+} from 'src/app/generated/blueprint.api';
 import { OrganizationStore } from './organization.store';
 import { OrganizationDataService } from './organization-data.service';
 import { OrganizationQuery } from './organization.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function org(overrides: Partial<Organization> = {}): Organization {
   return {
@@ -41,14 +47,19 @@ function setup(queryParams: Record<string, string> = {}) {
     updateOrganization: vi.fn(() => of<Organization>({})),
     deleteOrganization: vi.fn(() => of<unknown>(null)),
     downloadJsonOrganizations: vi.fn(() => of(new Blob())),
-    uploadJsonOrganizations: vi.fn((): Observable<HttpEvent<Organization[]>> => EMPTY),
+    uploadJsonOrganizations: vi.fn(
+      (): Observable<HttpEvent<Organization[]>> => EMPTY,
+    ),
   } satisfies ApiStub<OrganizationService>;
   const navigate = vi.fn();
   const route = activatedRouteStub(queryParams);
   TestBed.configureTestingModule({
     providers: [
       { provide: OrganizationService, useValue: orgApi },
-      { provide: Router, useValue: { navigate } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -95,8 +106,12 @@ describe('OrganizationDataService', () => {
    */
   it('loadById, add and updateOrganization store the API result', () => {
     const { service, query, orgApi } = setup();
-    orgApi.getOrganization.mockReturnValue(of(org({ id: 'org-2', name: 'Fire Dept' })));
-    orgApi.createOrganization.mockReturnValue(of(org({ id: 'org-3', name: 'Police' })));
+    orgApi.getOrganization.mockReturnValue(
+      of(org({ id: 'org-2', name: 'Fire Dept' })),
+    );
+    orgApi.createOrganization.mockReturnValue(
+      of(org({ id: 'org-3', name: 'Police' })),
+    );
     orgApi.updateOrganization.mockReturnValue(
       of(org({ id: 'org-2', name: 'Fire & Rescue' })),
     );
@@ -142,7 +157,11 @@ describe('OrganizationDataService', () => {
     const upload = new File(['[]'], 'orgs.json');
     orgApi.uploadJsonOrganizations.mockReturnValueOnce(
       of(
-        { type: HttpEventType.UploadProgress, loaded: 30, total: 60 } satisfies HttpUploadProgressEvent,
+        {
+          type: HttpEventType.UploadProgress,
+          loaded: 30,
+          total: 60,
+        } satisfies HttpUploadProgressEvent,
         new HttpResponse({
           status: 200,
           body: [org(), org({ id: 'org-2', name: 'Fire Dept' })],
@@ -154,7 +173,11 @@ describe('OrganizationDataService', () => {
     );
 
     service.uploadJson(upload, 'events', true);
-    expect(orgApi.uploadJsonOrganizations).toHaveBeenCalledWith(upload, 'events', true);
+    expect(orgApi.uploadJsonOrganizations).toHaveBeenCalledWith(
+      upload,
+      'events',
+      true,
+    );
     expect(names(query.getAll())).toEqual(['City Hospital', 'Fire Dept']);
 
     service.uploadJson(upload, 'events', true);
@@ -171,7 +194,10 @@ describe('OrganizationDataService', () => {
     const { service, orgApi } = setup();
 
     service.downloadJson(['org-1', 'org-2']);
-    expect(orgApi.downloadJsonOrganizations).toHaveBeenCalledWith(['org-1', 'org-2']);
+    expect(orgApi.downloadJsonOrganizations).toHaveBeenCalledWith([
+      'org-1',
+      'org-2',
+    ]);
   });
 
   /**
@@ -205,7 +231,9 @@ describe('OrganizationDataService', () => {
   it('OrganizationList filters on the organizationmask query param', () => {
     const { service, route } = setup({ organizationmask: 'trauma' });
     service.updateStore(org());
-    service.updateStore(org({ id: 'org-2', name: 'Fire Dept', description: 'Volunteer fire' }));
+    service.updateStore(
+      org({ id: 'org-2', name: 'Fire Dept', description: 'Volunteer fire' }),
+    );
     const emissions = recordEmissions(service.OrganizationList);
 
     expect(names(emissions.at(-1))).toEqual(['City Hospital']);
@@ -220,26 +248,54 @@ describe('OrganizationDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'loadTemplates', endpoint: 'getOrganizationTemplates', escapes: false, call: (s: OrganizationDataService) => s.loadTemplates() },
-    { method: 'loadByMsel', endpoint: 'getOrganizationsByMsel', escapes: false, call: (s: OrganizationDataService) => s.loadByMsel('x-1') },
-    { method: 'loadById', endpoint: 'getOrganization', escapes: true, call: (s: OrganizationDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createOrganization', escapes: true, call: (s: OrganizationDataService) => s.add({ id: 'x-1' }) },
-    { method: 'updateOrganization', endpoint: 'updateOrganization', escapes: true, call: (s: OrganizationDataService) => s.updateOrganization({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, orgApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(OrganizationStore).setLoading(false);
-    orgApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'loadTemplates',
+      endpoint: 'getOrganizationTemplates',
+      escapes: false,
+      call: (s: OrganizationDataService) => s.loadTemplates(),
+    },
+    {
+      method: 'loadByMsel',
+      endpoint: 'getOrganizationsByMsel',
+      escapes: false,
+      call: (s: OrganizationDataService) => s.loadByMsel('x-1'),
+    },
+    {
+      method: 'loadById',
+      endpoint: 'getOrganization',
+      escapes: true,
+      call: (s: OrganizationDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createOrganization',
+      escapes: true,
+      call: (s: OrganizationDataService) => s.add({ id: 'x-1' }),
+    },
+    {
+      method: 'updateOrganization',
+      endpoint: 'updateOrganization',
+      escapes: true,
+      call: (s: OrganizationDataService) => s.updateOrganization({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, orgApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(OrganizationStore).setLoading(false);
+      orgApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(OrganizationQuery).getValue().loading).toBe(true);
-    // An empty error callback swallows the error; with no callback it escapes to
-    // ErrorService, the ErrorHandler app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(OrganizationQuery).getValue().loading).toBe(true);
+      // An empty error callback swallows the error; with no callback it escapes to
+      // ErrorService, the ErrorHandler app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete escapes to the app's global ErrorHandler.
@@ -247,19 +303,26 @@ describe('OrganizationDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteOrganization', call: (s: OrganizationDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, orgApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    orgApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteOrganization',
+      call: (s: OrganizationDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, orgApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      orgApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

@@ -11,7 +11,7 @@ import { Pipe, PipeTransform } from '@angular/core';
  */
 export function getTimezoneAbbr(
   value: Date | string | number,
-  timeZone?: string
+  timeZone?: string,
 ): string {
   const date = new Date(value);
   if (isNaN(date.getTime())) {
@@ -33,7 +33,7 @@ export function getTimezoneAbbr(
 /*
  {{ value | date: 'dd MMM yyyy HH:mm' }} {{ value | timezoneAbbr }}
 */
-@Pipe({ name: 'timezoneAbbr', })
+@Pipe({ name: 'timezoneAbbr' })
 export class TimezoneAbbrPipe implements PipeTransform {
   transform(value: Date | string | number): string {
     if (value === null || value === undefined || value === '') {

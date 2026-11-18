@@ -5,190 +5,313 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 
 <div class="elevate msel-list-container">
-    <div class="buttons-container">
-      <div class="app-icon">
-        <div class="msels-title">
-          @if (canViewMsel(null)) {
+  <div class="buttons-container">
+    <div class="app-icon">
+      <div class="msels-title">
+        @if (canViewMsel(null)) {
           @if (!allMselsAreLoaded) {
-          <button mat-icon-button style="outline: none;" (click)="adminLoadAllMsels()"
-            title="Show all MSELs from all users">
-            <mat-icon fontIcon="mdi-filter-off-outline" />
-          </button>
+            <button
+              mat-icon-button
+              style="outline: none"
+              (click)="adminLoadAllMsels()"
+              title="Show all MSELs from all users"
+            >
+              <mat-icon fontIcon="mdi-filter-off-outline" />
+            </button>
           }
           @if (allMselsAreLoaded) {
-          <button mat-icon-button style="outline: none;" (click)="adminLoadMyMsels()"
-            title="Show only MSELs I own or have access to">
-            <mat-icon fontIcon="mdi-filter-outline" />
-          </button>
+            <button
+              mat-icon-button
+              style="outline: none"
+              (click)="adminLoadMyMsels()"
+              title="Show only MSELs I own or have access to"
+            >
+              <mat-icon fontIcon="mdi-filter-outline" />
+            </button>
           }
-          }
-          <div class="center-self">
-            @if(allMselsAreLoaded) {
+        }
+        <div class="center-self">
+          @if (allMselsAreLoaded) {
             All MSELs
-            } @else {
+          } @else {
             My MSELs
-            }
-          </div>
+          }
         </div>
       </div>
-      <div class="button-items">
-        <mat-select [(ngModel)]="selectedMselType" (selectionChange)="filterMsels()">
-          <mat-option value="all">All Types</mat-option>
-          <mat-option value="is">Templates</mat-option>
-          <mat-option value="is not">Not Templates</mat-option>
-        </mat-select>
-      </div>
-      <div class="button-items">
-        <mat-select [(ngModel)]="selectedMselStatus" (selectionChange)="filterMsels()">
-          <mat-option value="all">All Statuses</mat-option>
-          <mat-option value="Pending">Pending</mat-option>
-          <mat-option value="Entered">Entered</mat-option>
-          <mat-option value="Approved">Approved</mat-option>
-          <mat-option value="Deployed">Deployed</mat-option>
-          <mat-option value="Completed">Completed</mat-option>
-        </mat-select>
-      </div>
-      <div class="searchBox">
-        <mat-form-field class="search-field">
-          <!-- A placeholder alone leaves the field unlabelled for assistive technology, so the
-               name is stated with aria-label rather than a visible mat-label. -->
-          <input matInput aria-label="Search" [formControl]="filterControl" placeholder="Search" />
-          @if (filterString !== '') {
-          <button mat-icon-button matSuffix (click)="filterControl.setValue('')" title="Clear Search">
-            <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
-          </button>
-          }
-        </mat-form-field>
-      </div>
     </div>
-    <div class="mat-table">
-      <mat-table #table [dataSource]="mselDataSource" matSort>
-        <!-- action column -->
-        <ng-container matColumnDef="action">
-          <mat-header-cell *matHeaderCellDef>
-            <button mat-icon-button (click)="addMsel()" title="Add blank MSEL" [disabled]="!canCreateMsels()">
-              <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle" />
+    <div class="button-items">
+      <mat-select
+        [(ngModel)]="selectedMselType"
+        (selectionChange)="filterMsels()"
+      >
+        <mat-option value="all">All Types</mat-option>
+        <mat-option value="is">Templates</mat-option>
+        <mat-option value="is not">Not Templates</mat-option>
+      </mat-select>
+    </div>
+    <div class="button-items">
+      <mat-select
+        [(ngModel)]="selectedMselStatus"
+        (selectionChange)="filterMsels()"
+      >
+        <mat-option value="all">All Statuses</mat-option>
+        <mat-option value="Pending">Pending</mat-option>
+        <mat-option value="Entered">Entered</mat-option>
+        <mat-option value="Approved">Approved</mat-option>
+        <mat-option value="Deployed">Deployed</mat-option>
+        <mat-option value="Completed">Completed</mat-option>
+      </mat-select>
+    </div>
+    <div class="searchBox">
+      <mat-form-field class="search-field">
+        <!-- A placeholder alone leaves the field unlabelled for assistive technology, so the
+               name is stated with aria-label rather than a visible mat-label. -->
+        <input
+          matInput
+          aria-label="Search"
+          [formControl]="filterControl"
+          placeholder="Search"
+        />
+        @if (filterString !== '') {
+          <button
+            mat-icon-button
+            matSuffix
+            (click)="filterControl.setValue('')"
+            title="Clear Search"
+          >
+            <mat-icon
+              style="transform: scale(0.85)"
+              fontIcon="mdi-close-circle-outline"
+            />
+          </button>
+        }
+      </mat-form-field>
+    </div>
+  </div>
+  <div class="mat-table">
+    <mat-table #table [dataSource]="mselDataSource" matSort>
+      <!-- action column -->
+      <ng-container matColumnDef="action">
+        <mat-header-cell *matHeaderCellDef>
+          <button
+            mat-icon-button
+            (click)="addMsel()"
+            title="Add blank MSEL"
+            [disabled]="!canCreateMsels()"
+          >
+            <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle" />
+          </button>
+          <button
+            mat-icon-button
+            [matMenuTriggerFor]="upload"
+            title="Upload a new MSEL from a file"
+            [disabled]="!canCreateMsels()"
+          >
+            <mat-icon class="mdi-24px" fontIcon="mdi-upload" />
+          </button>
+          <mat-menu #upload="matMenu" [overlapTrigger]="false">
+            <button
+              mat-menu-item
+              (click)="uploadFile('json', ''); jsonInput.click()"
+              title="Upload json file"
+            >
+              Upload json file
             </button>
-            <button mat-icon-button [matMenuTriggerFor]="upload" title="Upload a new MSEL from a file"
-              [disabled]="!canCreateMsels()">
-              <mat-icon class="mdi-24px" fontIcon="mdi-upload" />
+            <button
+              mat-menu-item
+              (click)="uploadFile('xlsx', ''); xlsxInput.click()"
+              title="Upload xlsx file"
+            >
+              Upload xlsx file
             </button>
-            <mat-menu #upload="matMenu" [overlapTrigger]="false">
-              <button mat-menu-item (click)="uploadFile('json', ''); jsonInput.click()"
-                title="Upload json file">Upload
-                json file</button>
-              <button mat-menu-item (click)="uploadFile('xlsx', ''); xlsxInput.click()"
-                title="Upload xlsx file">Upload
-                xlsx file</button>
-            </mat-menu>
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            <div class="action-div">
-              <button mat-icon-button class="msel-action" [matMenuTriggerFor]="download"
-                title="Download {{ element.name }}" [disabled]="!isReady || !canViewMsel(element)">
-                <mat-icon class="mdi-18px" fontIcon="mdi-download" alt="Download .xlsx file" />
+          </mat-menu>
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <div class="action-div">
+            <button
+              mat-icon-button
+              class="msel-action"
+              [matMenuTriggerFor]="download"
+              title="Download {{ element.name }}"
+              [disabled]="!isReady || !canViewMsel(element)"
+            >
+              <mat-icon
+                class="mdi-18px"
+                fontIcon="mdi-download"
+                alt="Download .xlsx file"
+              />
+            </button>
+            <mat-menu #download="matMenu" [overlapTrigger]="false">
+              <button
+                mat-menu-item
+                (click)="downloadJsonFile(element)"
+                title="Download json file"
+              >
+                Download json file
               </button>
-              <mat-menu #download="matMenu" [overlapTrigger]="false">
-                <button mat-menu-item (click)="downloadJsonFile(element);" title="Download json file">Download json
-                  file</button>
-                <button mat-menu-item (click)="downloadXlsxFile(element);" title="Download xlsx file">Download xlsx
-                  file</button>
-              </mat-menu>
-              <!--
+              <button
+                mat-menu-item
+                (click)="downloadXlsxFile(element)"
+                title="Download xlsx file"
+              >
+                Download xlsx file
+              </button>
+            </mat-menu>
+            <!--
                 The tooltip is on the span because a disabled button does not fire hover events;
                 the button still needs its own accessible name, which a title on the parent does
                 not provide.
               -->
-              <span [title]="getDeleteTooltip(element)">
-                <button mat-icon-button class="msel-action" [attr.aria-label]="getDeleteTooltip(element)"
-                  (click)="delete(element); $event.stopPropagation();"
-                  [disabled]="!isReady || !canManageMsel(element) || element.status === 'Deployed' || element.isTemplate">
-                  <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" alt="Delete" />
-                </button>
-              </span>
-              <button mat-icon-button class="msel-action" (click)="copyMsel(element.id); $event.stopPropagation();"
-                title="Copy {{ element.name }}" [disabled]="!isReady || !canCreateMsels()">
-                <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" alt="Copy" />
+            <span [title]="getDeleteTooltip(element)">
+              <button
+                mat-icon-button
+                class="msel-action"
+                [attr.aria-label]="getDeleteTooltip(element)"
+                (click)="delete(element); $event.stopPropagation()"
+                [disabled]="
+                  !isReady ||
+                  !canManageMsel(element) ||
+                  element.status === 'Deployed' ||
+                  element.isTemplate
+                "
+              >
+                <mat-icon
+                  class="mdi-18px"
+                  fontIcon="mdi-trash-can-outline"
+                  alt="Delete"
+                />
               </button>
-            </div>
-          </mat-cell>
-        </ng-container>
-        <!-- name Column -->
-        <ng-container matColumnDef="name">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>
-            Name
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            @if (canViewMsel(element)) {
-            <a [routerLink]="['/build']" [queryParams]="{ msel: element.id }" (click)="openMsel(element.id)">
-              {{element.name }}
+            </span>
+            <button
+              mat-icon-button
+              class="msel-action"
+              (click)="copyMsel(element.id); $event.stopPropagation()"
+              title="Copy {{ element.name }}"
+              [disabled]="!isReady || !canCreateMsels()"
+            >
+              <mat-icon
+                class="mdi-18px"
+                fontIcon="mdi-content-copy"
+                alt="Copy"
+              />
+            </button>
+          </div>
+        </mat-cell>
+      </ng-container>
+      <!-- name Column -->
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          Name
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          @if (canViewMsel(element)) {
+            <a
+              [routerLink]="['/build']"
+              [queryParams]="{ msel: element.id }"
+              (click)="openMsel(element.id)"
+            >
+              {{ element.name }}
             </a>
-            }
-            @if (!canViewMsel(element)) {
+          }
+          @if (!canViewMsel(element)) {
             {{ element.name }}
+          }
+        </mat-cell>
+      </ng-container>
+      <!-- isTemplate Column -->
+      <ng-container matColumnDef="isTemplate">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          Template
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <div class="is-template-checkbox">
+            <mat-checkbox [(ngModel)]="element.isTemplate" disabled />
+          </div>
+        </mat-cell>
+      </ng-container>
+      <!-- status Column -->
+      <ng-container matColumnDef="status">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          Status
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <div class="description-text">{{ element.status }}</div>
+        </mat-cell>
+      </ng-container>
+      <!-- dateCreated Column -->
+      <ng-container matColumnDef="dateCreated">
+        <mat-header-cell *matHeaderCellDef mat-sort-header start="desc">
+          Created
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <div class="description-text">
+            {{ element.dateCreated | date: 'yyyy-MM-dd HH:mm' }}
+          </div>
+        </mat-cell>
+      </ng-container>
+      <!-- dateModified Column -->
+      <ng-container matColumnDef="dateModified">
+        <mat-header-cell *matHeaderCellDef mat-sort-header start="desc">
+          Modified
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <div class="description-text">
+            @if (isValidDate(element.dateModified)) {
+              {{ element.dateModified | date: 'yyyy-MM-dd HH:mm' }}
             }
-          </mat-cell>
-        </ng-container>
-        <!-- isTemplate Column -->
-        <ng-container matColumnDef="isTemplate">
-          <mat-header-cell *matHeaderCellDef mat-sort-header> Template </mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            <div class="is-template-checkbox">
-              <mat-checkbox [(ngModel)]="element.isTemplate" disabled />
-            </div>
-          </mat-cell>
-        </ng-container>
-        <!-- status Column -->
-        <ng-container matColumnDef="status">
-          <mat-header-cell *matHeaderCellDef mat-sort-header> Status </mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            <div class="description-text">{{ element.status }}</div>
-          </mat-cell>
-        </ng-container>
-        <!-- dateCreated Column -->
-        <ng-container matColumnDef="dateCreated">
-          <mat-header-cell *matHeaderCellDef mat-sort-header start="desc"> Created </mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            <div class="description-text">{{ element.dateCreated | date: 'yyyy-MM-dd HH:mm' }}</div>
-          </mat-cell>
-        </ng-container>
-        <!-- dateModified Column -->
-        <ng-container matColumnDef="dateModified">
-          <mat-header-cell *matHeaderCellDef mat-sort-header start="desc"> Modified </mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            <div class="description-text">
-              @if (isValidDate(element.dateModified)) {
-                {{ element.dateModified | date: 'yyyy-MM-dd HH:mm' }}
-              }
-            </div>
-          </mat-cell>
-        </ng-container>
-        <!-- Description Column -->
-        <ng-container matColumnDef="description">
-          <mat-header-cell *matHeaderCellDef mat-sort-header> Description </mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            <div class="description-text truncated-description" [appOverflowTooltip]="element.description">{{ element.description }}</div>
-          </mat-cell>
-        </ng-container>
-        <!-- row definitions -->
-        <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" />
-        <mat-row *matRowDef="let row; columns: displayedColumns" />
-      </mat-table>
-      <!-- No Results Message -->
-      @if (mselDataSource.filteredData.length === 0) {
+          </div>
+        </mat-cell>
+      </ng-container>
+      <!-- Description Column -->
+      <ng-container matColumnDef="description">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          Description
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <div
+            class="description-text truncated-description"
+            [appOverflowTooltip]="element.description"
+          >
+            {{ element.description }}
+          </div>
+        </mat-cell>
+      </ng-container>
+      <!-- row definitions -->
+      <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" />
+      <mat-row *matRowDef="let row; columns: displayedColumns" />
+    </mat-table>
+    <!-- No Results Message -->
+    @if (mselDataSource.filteredData.length === 0) {
       <div class="text no-results">No results found</div>
-      }
-      <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]"
-        showFirstLastButtons
-        aria-label="Select page of MSELs" />
-    </div>
-    @if (isLoading) {
-    <mat-card appearance="outlined" style="display: flex; justify-content: center; align-items: center">
+    }
+    <mat-paginator
+      [pageSizeOptions]="[10, 25, 50, 100]"
+      showFirstLastButtons
+      aria-label="Select page of MSELs"
+    />
+  </div>
+  @if (isLoading) {
+    <mat-card
+      appearance="outlined"
+      style="display: flex; justify-content: center; align-items: center"
+    >
       <mat-progress-spinner color="primary" mode="indeterminate" />
     </mat-card>
-    }
-  </div>
+  }
+</div>
 
-<input hidden (change)="selectFile($event)" #xlsxInput type="file" accept=".xlsx" />
+<input
+  hidden
+  (change)="selectFile($event)"
+  #xlsxInput
+  type="file"
+  accept=".xlsx"
+/>
 
-<input hidden (change)="selectFile($event)" #jsonInput type="file" accept=".json" />
+<input
+  hidden
+  (change)="selectFile($event)"
+  #jsonInput
+  type="file"
+  accept=".json"
+/>

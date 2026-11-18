@@ -26,7 +26,7 @@ export class UserTeamRoleDataService {
 
   private _requestedUserTeamRoleId: string;
   private _requestedUserTeamRoleId$ = this.activatedRoute.queryParamMap.pipe(
-    map((params) => params.get('userTeamRoleId') || '')
+    map((params) => params.get('userTeamRoleId') || ''),
   );
   readonly UserTeamRoleList: Observable<UserTeamRole[]>;
   readonly filterControl = new UntypedFormControl();
@@ -42,7 +42,7 @@ export class UserTeamRoleDataService {
     a: UserTeamRole,
     b: UserTeamRole,
     column: string,
-    isAsc: boolean
+    isAsc: boolean,
   ) {
     switch (column) {
       case 'dateCreated':
@@ -63,18 +63,18 @@ export class UserTeamRoleDataService {
         tap(() => {
           this.userTeamRoleStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (userTeamRoles) => {
-          userTeamRoles.forEach(a => {
+          userTeamRoles.forEach((a) => {
             this.setAsDates(a);
           });
           this.userTeamRoleStore.set(userTeamRoles);
         },
         (error) => {
           this.userTeamRoleStore.set([]);
-        }
+        },
       );
   }
 
@@ -86,7 +86,7 @@ export class UserTeamRoleDataService {
         tap(() => {
           this.userTeamRoleStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.setAsDates(s);
@@ -106,7 +106,7 @@ export class UserTeamRoleDataService {
         tap(() => {
           this.userTeamRoleStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.setAsDates(s);
@@ -144,5 +144,4 @@ export class UserTeamRoleDataService {
     userTeamRole.dateCreated = new Date(userTeamRole.dateCreated);
     userTeamRole.dateModified = new Date(userTeamRole.dateModified);
   }
-
 }

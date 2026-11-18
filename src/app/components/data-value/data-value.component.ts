@@ -16,11 +16,23 @@ import { dataValueError } from 'src/app/utilities/ip-address';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatTooltip } from '@angular/material/tooltip';
-import { MatFormField, MatLabel, MatInput, MatError, MatSuffix } from '@angular/material/input';
+import {
+  MatFormField,
+  MatLabel,
+  MatInput,
+  MatError,
+  MatSuffix,
+} from '@angular/material/input';
 import { MatSelect, MatSelectTrigger } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { MatOption } from '@angular/material/autocomplete';
-import { NgxMatDatepickerInput, NgxMatDatetimepicker, NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel } from '@ngxmc/datetime-picker';
+import {
+  NgxMatDatepickerInput,
+  NgxMatDatetimepicker,
+  NgxMatDatepickerActions,
+  NgxMatDatepickerApply,
+  NgxMatDatepickerCancel,
+} from '@ngxmc/datetime-picker';
 import { MatDatepickerToggle } from '@angular/material/datepicker';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatChipSet, MatChip, MatChipRemove } from '@angular/material/chips';
@@ -30,10 +42,39 @@ import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
 import { IsDateTimeValuePipe } from '../../utilities/date-time-value';
 
 @Component({
-    selector: 'app-data-value',
-    templateUrl: './data-value.component.html',
-    styleUrls: ['./data-value.component.scss'],
-    imports: [AngularEditorModule, MatCheckbox, MatTooltip, MatFormField, MatLabel, MatSelect, FormsModule, MatSelectTrigger, MatOption, MatInput, MatError, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, MatChipSet, MatChip, MatChipRemove, MatIcon, MatIconButton, DatePipe, TimezoneAbbrPipe, NgTemplateOutlet, IsDateTimeValuePipe]
+  selector: 'app-data-value',
+  templateUrl: './data-value.component.html',
+  styleUrls: ['./data-value.component.scss'],
+  imports: [
+    AngularEditorModule,
+    MatCheckbox,
+    MatTooltip,
+    MatFormField,
+    MatLabel,
+    MatSelect,
+    FormsModule,
+    MatSelectTrigger,
+    MatOption,
+    MatInput,
+    MatError,
+    NgxMatDatepickerInput,
+    MatDatepickerToggle,
+    MatSuffix,
+    NgxMatDatetimepicker,
+    NgxMatDatepickerActions,
+    MatButton,
+    NgxMatDatepickerApply,
+    NgxMatDatepickerCancel,
+    MatChipSet,
+    MatChip,
+    MatChipRemove,
+    MatIcon,
+    MatIconButton,
+    DatePipe,
+    TimezoneAbbrPipe,
+    NgTemplateOutlet,
+    IsDateTimeValuePipe,
+  ],
 })
 export class DataValueComponent {
   @Input() value: any;
@@ -99,31 +140,32 @@ export class DataValueComponent {
   competencyFilter = '';
 
   get selectedCompetencies(): string[] {
-    return this.value ? this.value.split(', ').filter(v => v) : [];
+    return this.value ? this.value.split(', ').filter((v) => v) : [];
   }
 
   get filteredCompetencyOptions() {
     const options = this.dataField?.dataOptions || [];
     if (!this.competencyFilter) return options;
     const s = this.competencyFilter.toLowerCase();
-    return options.filter(o =>
-      o.optionName?.toLowerCase().includes(s) ||
-      o.optionValue?.toLowerCase().includes(s) ||
-      o.optionDescription?.toLowerCase().includes(s)
+    return options.filter(
+      (o) =>
+        o.optionName?.toLowerCase().includes(s) ||
+        o.optionValue?.toLowerCase().includes(s) ||
+        o.optionDescription?.toLowerCase().includes(s),
     );
   }
 
   displayCompetency = (val: string): string => {
     if (!val || !this.dataField?.dataOptions) return val || '';
-    const opt = this.dataField.dataOptions.find(o => o.optionName === val);
+    const opt = this.dataField.dataOptions.find((o) => o.optionName === val);
     return opt ? opt.optionName : val;
-  }
+  };
 
   getCompetencyTooltip = (val: string): string => {
     if (!val || !this.dataField?.dataOptions) return '';
-    const opt = this.dataField.dataOptions.find(o => o.optionName === val);
+    const opt = this.dataField.dataOptions.find((o) => o.optionName === val);
     return opt?.optionValue || '';
-  }
+  };
 
   isCompetencySelected(optionName: string): boolean {
     return this.selectedCompetencies.includes(optionName);
@@ -142,7 +184,7 @@ export class DataValueComponent {
   }
 
   removeCompetency(id: string) {
-    const current = this.selectedCompetencies.filter(v => v !== id);
+    const current = this.selectedCompetencies.filter((v) => v !== id);
     this.value = current.join(', ');
     this.valueChangeHandler();
   }
@@ -191,9 +233,11 @@ export class DataValueComponent {
   getGalleryItemStatus(value: string): string {
     const status = value?.trim() || '';
     const color = Object.keys(this.galleryItemStatusColors).find(
-      (c) => c.toLowerCase() === status.toLowerCase()
+      (c) => c.toLowerCase() === status.toLowerCase(),
     );
-    return color || this.legacyGalleryItemStatuses[status.toLowerCase()] || value;
+    return (
+      color || this.legacyGalleryItemStatuses[status.toLowerCase()] || value
+    );
   }
 
   galleryItemStatusChange(status: string) {

@@ -27,7 +27,7 @@ export class DataFieldTemplateQuery extends QueryEntity<DataFieldTemplateState> 
     const store = inject(DataFieldTemplateStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

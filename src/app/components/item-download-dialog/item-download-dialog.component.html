@@ -10,24 +10,28 @@ project root for license information or contact permission@sei.cmu.edu for full 
   [submitDisabled]="selected.size === 0"
   (submit)="download()"
 >
-<div crucibleDialogContent>
-  @if (data.items.length === 0) {
-    <div class="empty-message">No items available to download.</div>
-  } @else {
-    <mat-checkbox class="select-all"
-                  [checked]="isAllSelected()"
-                  [indeterminate]="isIndeterminate()"
-                  (change)="toggleAll($event.checked)">
-      Select all ({{ selected.size }}/{{ data.items.length }})
-    </mat-checkbox>
-    <div class="item-list">
-      @for (item of data.items; track item.id) {
-        <mat-checkbox [checked]="selected.has(item.id)"
-                      (change)="toggle(item.id, $event.checked)">
-          {{ item.label }}
-        </mat-checkbox>
-      }
-    </div>
-  }
-</div>
+  <div crucibleDialogContent>
+    @if (data.items.length === 0) {
+      <div class="empty-message">No items available to download.</div>
+    } @else {
+      <mat-checkbox
+        class="select-all"
+        [checked]="isAllSelected()"
+        [indeterminate]="isIndeterminate()"
+        (change)="toggleAll($event.checked)"
+      >
+        Select all ({{ selected.size }}/{{ data.items.length }})
+      </mat-checkbox>
+      <div class="item-list">
+        @for (item of data.items; track item.id) {
+          <mat-checkbox
+            [checked]="selected.has(item.id)"
+            (change)="toggle(item.id, $event.checked)"
+          >
+            {{ item.label }}
+          </mat-checkbox>
+        }
+      </div>
+    }
+  </div>
 </crucible-dialog>

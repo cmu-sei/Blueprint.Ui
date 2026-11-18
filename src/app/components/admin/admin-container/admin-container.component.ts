@@ -18,17 +18,28 @@ import {
   ComnAuthService,
   Theme,
 } from '@cmusei/crucible-common';
-import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
+import {
+  ApplicationArea,
+  SignalRService,
+} from 'src/app/services/signalr.service';
 import { environment } from 'src/environments/environment';
-import { HealthCheckService, SystemPermission, User } from 'src/app/generated/blueprint.api';
+import {
+  HealthCheckService,
+  SystemPermission,
+  User,
+} from 'src/app/generated/blueprint.api';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
 import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
-import { MatSidenavContainer, MatSidenav, MatSidenavContent } from '@angular/material/sidenav';
+import {
+  MatSidenavContainer,
+  MatSidenav,
+  MatSidenavContent,
+} from '@angular/material/sidenav';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatIcon } from '@angular/material/icon';
 import { MatList, MatListItem, MatListItemIcon } from '@angular/material/list';
-import { NgClass, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { MatIconButton } from '@angular/material/button';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 import { AdminUnitsComponent } from '../admin-units/admin-units.component';
@@ -45,12 +56,39 @@ import { CardListComponent } from '../../card-list/card-list.component';
 import { CiteActionListComponent } from '../../cite-action-list/cite-action-list.component';
 import { CiteDutyListComponent } from '../../cite-duty-list/cite-duty-list.component';
 import { PlayerApplicationListComponent } from '../../player-application-list/player-application-list.component';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
-    selector: 'app-admin-container',
-    templateUrl: './admin-container.component.html',
-    styleUrls: ['./admin-container.component.scss'],
-    imports: [MatSidenavContainer, MatSidenav, MatToolbar, MatIcon, MatList, MatListItem, NgClass, MatListItemIcon, MatIconButton, MatSidenavContent, TopbarComponent, AdminUnitsComponent, AdminUsersComponent, AdminRolesComponent, AdminGroupsComponent, DataFieldListComponent, AdminInjectTypesComponent, AdminCompetencyFrameworksComponent, AdminProficiencyScalesComponent, AdminCatalogListComponent, OrganizationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, PlayerApplicationListComponent, AsyncPipe]
+  selector: 'app-admin-container',
+  templateUrl: './admin-container.component.html',
+  styleUrls: ['./admin-container.component.scss'],
+  imports: [
+    MatSidenavContainer,
+    MatSidenav,
+    MatToolbar,
+    MatIcon,
+    MatList,
+    MatListItem,
+    MatListItemIcon,
+    MatIconButton,
+    MatSidenavContent,
+    TopbarComponent,
+    AdminUnitsComponent,
+    AdminUsersComponent,
+    AdminRolesComponent,
+    AdminGroupsComponent,
+    DataFieldListComponent,
+    AdminInjectTypesComponent,
+    AdminCompetencyFrameworksComponent,
+    AdminProficiencyScalesComponent,
+    AdminCatalogListComponent,
+    OrganizationListComponent,
+    CardListComponent,
+    CiteActionListComponent,
+    CiteDutyListComponent,
+    PlayerApplicationListComponent,
+    AsyncPipe,
+  ],
 })
 export class AdminContainerComponent implements OnDestroy, OnInit {
   private router = inject(Router);
@@ -67,7 +105,9 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   private signalRService = inject(SignalRService);
   private uiDataService = inject(UIDataService);
   private injectTypeDataService = inject(InjectTypeDataService);
-  private competencyFrameworkDataService = inject(CompetencyFrameworkDataService);
+  private competencyFrameworkDataService = inject(
+    CompetencyFrameworkDataService,
+  );
   private breakpointObserver = inject(BreakpointObserver);
 
   usersText = 'Users';
@@ -148,13 +188,24 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   private unsubscribe$ = new Subject();
 
   constructor() {
+    // a new hub connection missed what was broadcast while the old one was down; the sections reload
+    // their own lists
+    reloadOnReconnect(() => {
+      this.userDataService.load().pipe(take(1)).subscribe();
+      if (this.canAccessAdminSection) {
+        this.unitDataService.load();
+      }
+      this.injectTypeDataService.load();
+    });
     const titleService = inject(Title);
 
     this.theme$ = this.authQuery.userTheme$;
     this.hideTopbar = this.uiDataService.inIframe();
-    this.returnUrl = this.activatedRoute.snapshot.queryParamMap.get('returnUrl') || '/';
+    this.returnUrl =
+      this.activatedRoute.snapshot.queryParamMap.get('returnUrl') || '/';
     // Set the display settings from config file
-    const appTitle = this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
+    const appTitle =
+      this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
     titleService.setTitle(appTitle + ' Admin');
     this.getApiVersion();
     // set the selected tab
@@ -191,37 +242,106 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
         this.loggedInUserId = cu.id;
       });
     // Load permissions
-    this.permissionDataService.load()
+    this.permissionDataService
+      .load()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
-        this.canViewUsers = this.permissionDataService.hasPermission(SystemPermission.ViewUsers);
-        this.canManageUsers = this.permissionDataService.hasPermission(SystemPermission.ManageUsers);
-        this.canViewRoles = this.permissionDataService.hasPermission(SystemPermission.ViewRoles);
-        this.canManageRoles = this.permissionDataService.hasPermission(SystemPermission.ManageRoles);
-        this.canViewGroups = this.permissionDataService.hasPermission(SystemPermission.ViewGroups);
-        this.canManageGroups = this.permissionDataService.hasPermission(SystemPermission.ManageGroups);
-        this.canViewUnits = this.permissionDataService.hasPermission(SystemPermission.ViewUnits);
-        this.canManageUnits = this.permissionDataService.hasPermission(SystemPermission.ManageUnits);
-        this.canViewInjectTypes = this.permissionDataService.hasPermission(SystemPermission.ViewInjectTypes);
-        this.canManageInjectTypes = this.permissionDataService.hasPermission(SystemPermission.ManageInjectTypes);
-        this.canViewCatalogs = this.permissionDataService.hasPermission(SystemPermission.ViewCatalogs);
-        this.canManageCatalogs = this.permissionDataService.hasPermission(SystemPermission.ManageCatalogs);
-        this.canViewOrganizations = this.permissionDataService.hasPermission(SystemPermission.ViewOrganizations);
-        this.canManageOrganizations = this.permissionDataService.hasPermission(SystemPermission.ManageOrganizations);
-        this.canViewGalleryCards = this.permissionDataService.hasPermission(SystemPermission.ViewGalleryCards);
-        this.canManageGalleryCards = this.permissionDataService.hasPermission(SystemPermission.ManageGalleryCards);
-        this.canViewCiteActions = this.permissionDataService.hasPermission(SystemPermission.ViewCiteActions);
-        this.canManageCiteActions = this.permissionDataService.hasPermission(SystemPermission.ManageCiteActions);
-        this.canViewCiteDuties = this.permissionDataService.hasPermission(SystemPermission.ViewCiteDuties);
-        this.canManageCiteDuties = this.permissionDataService.hasPermission(SystemPermission.ManageCiteDuties);
-        this.canViewPlayerApplications = this.permissionDataService.hasPermission(SystemPermission.ViewPlayerApplications);
-        this.canManagePlayerApplications = this.permissionDataService.hasPermission(SystemPermission.ManagePlayerApplications);
-        this.canViewDataFields = this.permissionDataService.hasPermission(SystemPermission.ViewDataFields);
-        this.canManageDataFields = this.permissionDataService.hasPermission(SystemPermission.ManageDataFields);
-        this.canViewCompetencyFrameworks = this.permissionDataService.hasPermission(SystemPermission.ViewCompetencyFrameworks);
-        this.canManageCompetencyFrameworks = this.permissionDataService.hasPermission(SystemPermission.ManageCompetencyFrameworks);
+        this.canViewUsers = this.permissionDataService.hasPermission(
+          SystemPermission.ViewUsers,
+        );
+        this.canManageUsers = this.permissionDataService.hasPermission(
+          SystemPermission.ManageUsers,
+        );
+        this.canViewRoles = this.permissionDataService.hasPermission(
+          SystemPermission.ViewRoles,
+        );
+        this.canManageRoles = this.permissionDataService.hasPermission(
+          SystemPermission.ManageRoles,
+        );
+        this.canViewGroups = this.permissionDataService.hasPermission(
+          SystemPermission.ViewGroups,
+        );
+        this.canManageGroups = this.permissionDataService.hasPermission(
+          SystemPermission.ManageGroups,
+        );
+        this.canViewUnits = this.permissionDataService.hasPermission(
+          SystemPermission.ViewUnits,
+        );
+        this.canManageUnits = this.permissionDataService.hasPermission(
+          SystemPermission.ManageUnits,
+        );
+        this.canViewInjectTypes = this.permissionDataService.hasPermission(
+          SystemPermission.ViewInjectTypes,
+        );
+        this.canManageInjectTypes = this.permissionDataService.hasPermission(
+          SystemPermission.ManageInjectTypes,
+        );
+        this.canViewCatalogs = this.permissionDataService.hasPermission(
+          SystemPermission.ViewCatalogs,
+        );
+        this.canManageCatalogs = this.permissionDataService.hasPermission(
+          SystemPermission.ManageCatalogs,
+        );
+        this.canViewOrganizations = this.permissionDataService.hasPermission(
+          SystemPermission.ViewOrganizations,
+        );
+        this.canManageOrganizations = this.permissionDataService.hasPermission(
+          SystemPermission.ManageOrganizations,
+        );
+        this.canViewGalleryCards = this.permissionDataService.hasPermission(
+          SystemPermission.ViewGalleryCards,
+        );
+        this.canManageGalleryCards = this.permissionDataService.hasPermission(
+          SystemPermission.ManageGalleryCards,
+        );
+        this.canViewCiteActions = this.permissionDataService.hasPermission(
+          SystemPermission.ViewCiteActions,
+        );
+        this.canManageCiteActions = this.permissionDataService.hasPermission(
+          SystemPermission.ManageCiteActions,
+        );
+        this.canViewCiteDuties = this.permissionDataService.hasPermission(
+          SystemPermission.ViewCiteDuties,
+        );
+        this.canManageCiteDuties = this.permissionDataService.hasPermission(
+          SystemPermission.ManageCiteDuties,
+        );
+        this.canViewPlayerApplications =
+          this.permissionDataService.hasPermission(
+            SystemPermission.ViewPlayerApplications,
+          );
+        this.canManagePlayerApplications =
+          this.permissionDataService.hasPermission(
+            SystemPermission.ManagePlayerApplications,
+          );
+        this.canViewDataFields = this.permissionDataService.hasPermission(
+          SystemPermission.ViewDataFields,
+        );
+        this.canManageDataFields = this.permissionDataService.hasPermission(
+          SystemPermission.ManageDataFields,
+        );
+        this.canViewCompetencyFrameworks =
+          this.permissionDataService.hasPermission(
+            SystemPermission.ViewCompetencyFrameworks,
+          );
+        this.canManageCompetencyFrameworks =
+          this.permissionDataService.hasPermission(
+            SystemPermission.ManageCompetencyFrameworks,
+          );
         // Update canAccessAdminSection based on having any admin permission
-        this.canAccessAdminSection = this.canViewUsers || this.canViewRoles || this.canViewGroups || this.canViewUnits || this.canViewInjectTypes || this.canViewCatalogs || this.canViewOrganizations || this.canViewCiteActions || this.canViewCiteDuties || this.canViewPlayerApplications || this.canViewDataFields || this.canViewCompetencyFrameworks;
+        this.canAccessAdminSection =
+          this.canViewUsers ||
+          this.canViewRoles ||
+          this.canViewGroups ||
+          this.canViewUnits ||
+          this.canViewInjectTypes ||
+          this.canViewCatalogs ||
+          this.canViewOrganizations ||
+          this.canViewCiteActions ||
+          this.canViewCiteDuties ||
+          this.canViewPlayerApplications ||
+          this.canViewDataFields ||
+          this.canViewCompetencyFrameworks;
         // Load additional data if user has permissions
         if (this.canAccessAdminSection) {
           this.unitDataService.load();
@@ -270,7 +390,8 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   }
 
   getSidebarLabel(section: string): string {
-    if (section === this.competencyFrameworksText) return this.competencyFrameworksSidebarText;
+    if (section === this.competencyFrameworksText)
+      return this.competencyFrameworksSidebarText;
     return section;
   }
 
@@ -289,7 +410,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
         },
         (error) => {
           this.apiVersion = 'API ERROR!';
-        }
+        },
       );
   }
 

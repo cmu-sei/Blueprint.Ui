@@ -24,7 +24,7 @@ export class MselCompetencyQuery extends QueryEntity<MselCompetencyState> {
     const store = inject(MselCompetencyStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

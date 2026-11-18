@@ -33,7 +33,7 @@ export class TeamCompetencyDataService {
         tap(() => {
           this.teamCompetencyStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (teamCompetencies) => {
@@ -41,7 +41,7 @@ export class TeamCompetencyDataService {
         },
         (error) => {
           this.teamCompetencyStore.set([]);
-        }
+        },
       );
   }
 
@@ -53,7 +53,7 @@ export class TeamCompetencyDataService {
         tap(() => {
           this.teamCompetencyStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (teamCompetencies) => {
@@ -61,7 +61,7 @@ export class TeamCompetencyDataService {
         },
         (error) => {
           this.teamCompetencyStore.set([]);
-        }
+        },
       );
   }
 
@@ -77,7 +77,7 @@ export class TeamCompetencyDataService {
         tap(() => {
           this.teamCompetencyStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.teamCompetencyStore.add(s);

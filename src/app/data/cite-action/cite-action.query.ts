@@ -3,10 +3,7 @@
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
 import { Order, Query, QueryConfig, QueryEntity } from '@datorama/akita';
-import {
-  CiteActionState,
-  CiteActionStore,
-} from './cite-action.store';
+import { CiteActionState, CiteActionStore } from './cite-action.store';
 import { CiteAction } from 'src/app/generated/blueprint.api';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -25,7 +22,7 @@ export class CiteActionQuery extends QueryEntity<CiteActionState> {
     const store = inject(CiteActionStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

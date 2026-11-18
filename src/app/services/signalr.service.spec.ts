@@ -9,7 +9,12 @@ import { Subject, of } from 'rxjs';
 import * as signalR from '@microsoft/signalr';
 import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
 import { MselUnit, MselUnitService } from 'src/app/generated/blueprint.api';
-import { ApplicationArea, PresenceActor, SignalRService } from './signalr.service';
+import {
+  ApplicationArea,
+  PresenceActor,
+  SignalRService,
+} from './signalr.service';
+import { HubReconnectService } from './hub-reconnect.service';
 import { CardQuery } from '../data/card/card.query';
 import { CatalogQuery } from '../data/catalog/catalog.query';
 import { CiteActionQuery } from '../data/cite-action/cite-action.query';
@@ -36,8 +41,14 @@ import { PlayerApplicationTeamDataService } from '../data/team/player-applicatio
 import { ApiStub } from '../test-utils/api-stub';
 import { getDefaultProviders } from '../test-utils/default-test-providers';
 import { recordEmissions } from '../test-utils/record-emissions';
-import { mockHubConnectionBuilder, rejectInvokes } from '../test-utils/fake-hub-connection';
-import { captureUnhandledRejections, flush } from '../test-utils/unhandled-rx-errors';
+import {
+  mockHubConnectionBuilder,
+  rejectInvokes,
+} from '../test-utils/fake-hub-connection';
+import {
+  captureUnhandledRejections,
+  flush,
+} from '../test-utils/unhandled-rx-errors';
 
 // Set in beforeEach: every HubConnectionBuilder.build() returns a FakeHubConnection.
 let hubs: ReturnType<typeof mockHubConnectionBuilder>;
@@ -64,7 +75,9 @@ function setup() {
         },
         {
           provide: ComnSettingsService,
-          useValue: { settings: { ApiUrl: 'https://blueprint.test' } } satisfies Pick<ComnSettingsService, 'settings'>,
+          useValue: {
+            settings: { ApiUrl: 'https://blueprint.test' },
+          } satisfies Pick<ComnSettingsService, 'settings'>,
         },
         { provide: MselUnitService, useValue: mselUnitApi },
       ]),
@@ -90,7 +103,9 @@ interface EntityLookup {
 }
 
 function ids(token: ProviderToken<EntityLookup>) {
-  return TestBed.inject(token).getAll().map((e) => e.id);
+  return TestBed.inject(token)
+    .getAll()
+    .map((e) => e.id);
 }
 
 describe('SignalRService', () => {
@@ -109,7 +124,9 @@ describe('SignalRService', () => {
       const { hub } = await connect();
 
       expect(hubs.connections).toHaveLength(1);
-      expect(builtUrls()).toEqual(['https://blueprint.test/hubs/main?bearer=tok-123']);
+      expect(builtUrls()).toEqual([
+        'https://blueprint.test/hubs/main?bearer=tok-123',
+      ]);
       expect(hub.start).toHaveBeenCalledTimes(1);
       expect(hub.invoke).toHaveBeenCalledWith('Join');
     });
@@ -157,8 +174,73 @@ describe('SignalRService', () => {
 
       expect(hub.stop).toHaveBeenCalledTimes(1);
       expect(hub.start).toHaveBeenCalledTimes(2);
-      expect(hub.baseUrl).toBe('https://blueprint.test/hubs/main?bearer=tok-123');
+      expect(hub.baseUrl).toBe(
+        'https://blueprint.test/hubs/main?bearer=tok-123',
+      );
       expect(hub.invoke).toHaveBeenCalledWith('Join');
+    });
+
+    /**
+     * Verifies: after an automatic reconnect the pages are told to reload, but only once the new connection has
+     * rejoined its groups, so nothing broadcast after their reload starts is missed.
+     * Interacts with: FakeHubConnection.reconnect() and invoke (Join held open), HubReconnectService.reconnected$.
+     * Data: the home area; Join resolves only when the test releases it.
+     */
+    it('announces a reconnect once the new connection has rejoined', async () => {
+      const { hub } = await connect();
+      const reconnected = recordEmissions(
+        TestBed.inject(HubReconnectService).reconnected$,
+      );
+      let rejoin: () => void = () => {};
+      hub.invoke.mockImplementation((method) =>
+        method === 'Join'
+          ? new Promise<unknown>(
+              (resolve) => (rejoin = () => resolve(undefined)),
+            )
+          : Promise.resolve(),
+      );
+
+      hub.reconnect();
+      await flush();
+      expect(reconnected).toHaveLength(0);
+
+      rejoin();
+      await flush();
+      expect(reconnected).toHaveLength(1);
+    });
+
+    /**
+     * Verifies: the first connection is not announced as a reconnect, since the pages are loading anyway.
+     * Interacts with: SignalRService.startConnection, HubReconnectService.reconnected$.
+     * Data: the home area.
+     */
+    it('does not announce the first connection', async () => {
+      const { service } = setup();
+      const reconnected = recordEmissions(
+        TestBed.inject(HubReconnectService).reconnected$,
+      );
+
+      await service.startConnection(ApplicationArea.home);
+      await flush();
+
+      expect(reconnected).toHaveLength(0);
+    });
+
+    /**
+     * Verifies: the restart for a new signed-in user is announced, since it replaced the connection too.
+     * Interacts with: ComnAuthService.user$ (stub subject), HubReconnectService.reconnected$.
+     * Data: a user$ emission after the connection is up.
+     */
+    it('announces the restart for a new signed-in user', async () => {
+      const { user$ } = await connect();
+      const reconnected = recordEmissions(
+        TestBed.inject(HubReconnectService).reconnected$,
+      );
+
+      user$.next({ profile: { sub: 'user-2' } });
+      await flush();
+
+      expect(reconnected).toHaveLength(1);
     });
 
     /**
@@ -201,7 +283,9 @@ describe('SignalRService', () => {
       const rejections = captureUnhandledRejections();
       const { service } = setup();
 
-      await expect(service.startConnection(ApplicationArea.home)).rejects.toThrow('connection refused');
+      await expect(
+        service.startConnection(ApplicationArea.home),
+      ).rejects.toThrow('connection refused');
       await flush();
 
       expect(hubs.connections[0].invoke).not.toHaveBeenCalled();
@@ -217,7 +301,9 @@ describe('SignalRService', () => {
       failEveryStart();
       const rejections = captureUnhandledRejections();
       const { service } = setup();
-      await service.startConnection(ApplicationArea.home).catch(() => undefined);
+      await service
+        .startConnection(ApplicationArea.home)
+        .catch(() => undefined);
 
       const again = service.startConnection(ApplicationArea.home);
       await expect(again).rejects.toThrow('connection refused');
@@ -237,23 +323,26 @@ describe('SignalRService', () => {
     it.each([
       { phase: 'stop', starts: 1 },
       { phase: 'restart', starts: 2 },
-    ])('reconnect leaves a failed $phase unhandled and does not retry', async ({ phase, starts }) => {
-      const { hub, user$ } = await connect();
-      if (phase === 'stop') {
-        hub.stop.mockRejectedValue(refused);
-      } else {
-        hub.start.mockRejectedValue(refused);
-      }
-      const rejections = captureUnhandledRejections();
-      vi.useFakeTimers();
+    ])(
+      'reconnect leaves a failed $phase unhandled and does not retry',
+      async ({ phase, starts }) => {
+        const { hub, user$ } = await connect();
+        if (phase === 'stop') {
+          hub.stop.mockRejectedValue(refused);
+        } else {
+          hub.start.mockRejectedValue(refused);
+        }
+        const rejections = captureUnhandledRejections();
+        vi.useFakeTimers();
 
-      user$.next({ profile: { sub: 'user-2' } });
-      await vi.advanceTimersByTimeAsync(2000);
+        user$.next({ profile: { sub: 'user-2' } });
+        await vi.advanceTimersByTimeAsync(2000);
 
-      expect(rejections).toEqual([refused]);
-      expect(hub.stop).toHaveBeenCalledTimes(1);
-      expect(hub.start).toHaveBeenCalledTimes(starts);
-    });
+        expect(rejections).toEqual([refused]);
+        expect(hub.stop).toHaveBeenCalledTimes(1);
+        expect(hub.start).toHaveBeenCalledTimes(starts);
+      },
+    );
   });
 
   describe('hub calls', () => {
@@ -270,7 +359,9 @@ describe('SignalRService', () => {
         hubMethod: 'Join',
         act: async () => {
           let calls: Array<[string, ...unknown[]]> = [];
-          hubs = mockHubConnectionBuilder({ onBuild: (c) => (calls = rejectInvokes(c, failure, ['Join'])) });
+          hubs = mockHubConnectionBuilder({
+            onBuild: (c) => (calls = rejectInvokes(c, failure, ['Join'])),
+          });
           await setup().service.startConnection(ApplicationArea.home);
           return calls;
         },
@@ -297,15 +388,18 @@ describe('SignalRService', () => {
           return calls;
         },
       },
-    ])('$method leaves a rejected $hubMethod unhandled', async ({ hubMethod, act }) => {
-      const rejections = captureUnhandledRejections();
+    ])(
+      '$method leaves a rejected $hubMethod unhandled',
+      async ({ hubMethod, act }) => {
+        const rejections = captureUnhandledRejections();
 
-      const calls = await act();
-      await flush();
+        const calls = await act();
+        await flush();
 
-      expect(calls.map(([m]) => m)).toContain(hubMethod);
-      expect(rejections).toEqual([failure]);
-    });
+        expect(calls.map(([m]) => m)).toContain(hubMethod);
+        expect(rejections).toEqual([failure]);
+      },
+    );
   });
 
   describe('entity events', () => {
@@ -315,7 +409,9 @@ describe('SignalRService', () => {
     // Deleted sends the bare id (TeamUser and UnitUser send the entity). The
     // API has no DataOption or MselUnit handler, so those two rows exercise UI
     // handlers that nothing triggers today (DataField events carry options).
-    const cases: Array<[string, ProviderToken<EntityLookup>, Record<string, unknown>]> = [
+    const cases: Array<
+      [string, ProviderToken<EntityLookup>, Record<string, unknown>]
+    > = [
       ['Card', CardQuery, { name: 'Breach Card', mselId: 'msel-1' }],
       ['Catalog', CatalogQuery, { name: 'Ransomware Catalog' }],
       ['CiteAction', CiteActionQuery, { description: 'Isolate the host' }],
@@ -339,20 +435,25 @@ describe('SignalRService', () => {
      * Interacts with: FakeHubConnection.trigger, the real data services, stores and queries.
      * Data: one entity per type with id "<prefix>-1"; the update adds an "edited" flag.
      */
-    it.each(cases)('%sCreated/Updated/Deleted keep the store in step', async (prefix, token, payload) => {
-      const { hub } = await connect();
-      const query = TestBed.inject(token);
-      const id = `${prefix}-1`;
+    it.each(cases)(
+      '%sCreated/Updated/Deleted keep the store in step',
+      async (prefix, token, payload) => {
+        const { hub } = await connect();
+        const query = TestBed.inject(token);
+        const id = `${prefix}-1`;
 
-      hub.trigger(`${prefix}Created`, { id, ...payload }, null);
-      expect(query.getEntity(id)).toMatchObject(payload);
+        hub.trigger(`${prefix}Created`, { id, ...payload }, null);
+        expect(query.getEntity(id)).toMatchObject(payload);
 
-      hub.trigger(`${prefix}Updated`, { id, ...payload, edited: true }, ['edited']);
-      expect(query.getEntity(id)).toMatchObject({ ...payload, edited: true });
+        hub.trigger(`${prefix}Updated`, { id, ...payload, edited: true }, [
+          'edited',
+        ]);
+        expect(query.getEntity(id)).toMatchObject({ ...payload, edited: true });
 
-      hub.trigger(`${prefix}Deleted`, id);
-      expect(query.hasEntity(id)).toBe(false);
-    });
+        hub.trigger(`${prefix}Deleted`, id);
+        expect(query.hasEntity(id)).toBe(false);
+      },
+    );
 
     /**
      * Verifies: DataField events route templates and MSEL fields to their own stores, and DataFieldDeleted removes from both.
@@ -362,8 +463,16 @@ describe('SignalRService', () => {
     it('DataField events split templates from MSEL fields', async () => {
       const { hub } = await connect();
 
-      hub.trigger('DataFieldCreated', { id: 'df-1', name: 'Title', isTemplate: false }, null);
-      hub.trigger('DataFieldUpdated', { id: 'tmpl-1', name: 'Template', isTemplate: true }, ['name', 'isTemplate']);
+      hub.trigger(
+        'DataFieldCreated',
+        { id: 'df-1', name: 'Title', isTemplate: false },
+        null,
+      );
+      hub.trigger(
+        'DataFieldUpdated',
+        { id: 'tmpl-1', name: 'Template', isTemplate: true },
+        ['name', 'isTemplate'],
+      );
       expect(ids(DataFieldQuery)).toEqual(['df-1']);
       expect(ids(DataFieldTemplateQuery)).toEqual(['tmpl-1']);
 
@@ -381,11 +490,23 @@ describe('SignalRService', () => {
     it('TeamUser events add and remove team users', async () => {
       const { hub } = await connect();
 
-      hub.trigger('TeamUserCreated', { id: 'tu-1', teamId: 'team-red', userId: 'user-1' }, null);
-      hub.trigger('TeamUserUpdated', { id: 'tu-2', teamId: 'team-red', userId: 'user-2' }, ['teamId']);
+      hub.trigger(
+        'TeamUserCreated',
+        { id: 'tu-1', teamId: 'team-red', userId: 'user-1' },
+        null,
+      );
+      hub.trigger(
+        'TeamUserUpdated',
+        { id: 'tu-2', teamId: 'team-red', userId: 'user-2' },
+        ['teamId'],
+      );
       expect(ids(TeamUserQuery)).toEqual(['tu-1', 'tu-2']);
 
-      hub.trigger('TeamUserDeleted', { id: 'tu-1', teamId: 'team-red', userId: 'user-1' });
+      hub.trigger('TeamUserDeleted', {
+        id: 'tu-1',
+        teamId: 'team-red',
+        userId: 'user-1',
+      });
       expect(ids(TeamUserQuery)).toEqual(['tu-2']);
     });
 
@@ -399,7 +520,9 @@ describe('SignalRService', () => {
       const users = TestBed.inject(UserQuery);
 
       hub.trigger('UserCreated', { id: 'user-1', name: 'Alice' }, null);
-      hub.trigger('UserUpdated', { id: 'user-1', name: 'Alice Admin' }, ['name']);
+      hub.trigger('UserUpdated', { id: 'user-1', name: 'Alice Admin' }, [
+        'name',
+      ]);
       // Current behaviour: updateStore uses add(), so the update is dropped (see
       // user-data.service.spec.ts, 'update does not replace a user that is already stored').
       expect(users.getEntity('user-1').name).toBe('Alice');
@@ -415,16 +538,36 @@ describe('SignalRService', () => {
      */
     it('CardTeam and PlayerApplicationTeam events update their lists', async () => {
       const { hub } = await connect();
-      const cardTeams = recordEmissions(TestBed.inject(CardTeamDataService).cardTeams);
+      const cardTeams = recordEmissions(
+        TestBed.inject(CardTeamDataService).cardTeams,
+      );
       const appTeams = recordEmissions(
         TestBed.inject(PlayerApplicationTeamDataService).playerApplicationTeams,
       );
 
-      hub.trigger('CardTeamCreated', { id: 'ct-1', cardId: 'card-1', teamId: 'team-red' }, null);
-      hub.trigger('CardTeamUpdated', { id: 'ct-1', cardId: 'card-1', teamId: 'team-blue' }, ['teamId']);
-      hub.trigger('PlayerApplicationTeamCreated', { id: 'pat-1', teamId: 'team-red' }, null);
-      hub.trigger('PlayerApplicationTeamUpdated', { id: 'pat-1', teamId: 'team-blue' }, ['teamId']);
-      expect(cardTeams.at(-1)).toEqual([{ id: 'ct-1', cardId: 'card-1', teamId: 'team-blue' }]);
+      hub.trigger(
+        'CardTeamCreated',
+        { id: 'ct-1', cardId: 'card-1', teamId: 'team-red' },
+        null,
+      );
+      hub.trigger(
+        'CardTeamUpdated',
+        { id: 'ct-1', cardId: 'card-1', teamId: 'team-blue' },
+        ['teamId'],
+      );
+      hub.trigger(
+        'PlayerApplicationTeamCreated',
+        { id: 'pat-1', teamId: 'team-red' },
+        null,
+      );
+      hub.trigger(
+        'PlayerApplicationTeamUpdated',
+        { id: 'pat-1', teamId: 'team-blue' },
+        ['teamId'],
+      );
+      expect(cardTeams.at(-1)).toEqual([
+        { id: 'ct-1', cardId: 'card-1', teamId: 'team-blue' },
+      ]);
       expect(appTeams.at(-1)).toEqual([{ id: 'pat-1', teamId: 'team-blue' }]);
 
       hub.trigger('CardTeamDeleted', 'ct-1');
@@ -440,7 +583,11 @@ describe('SignalRService', () => {
      */
     it('IntegrationStatusUpdated patches the MSEL status', async () => {
       const { hub } = await connect();
-      hub.trigger('MselCreated', { id: 'msel-1', name: 'Exercise Alpha' }, null);
+      hub.trigger(
+        'MselCreated',
+        { id: 'msel-1', name: 'Exercise Alpha' },
+        null,
+      );
 
       hub.trigger('IntegrationStatusUpdated', 'msel-1', 'Pushing to CITE');
 
@@ -459,15 +606,29 @@ describe('SignalRService', () => {
       const { service, hub, mselUnitApi } = await connect();
 
       hub.trigger('UnitCreated', { id: 'unit-red', name: 'Red Cell' }, null);
-      hub.trigger('UnitUpdated', { id: 'unit-red', name: 'Red Team' }, ['name']);
-      hub.trigger('UnitUserCreated', { unitId: 'unit-red', userId: 'user-1' }, null);
-      expect(TestBed.inject(UnitQuery).getEntity('unit-red').name).toBe('Red Team');
+      hub.trigger('UnitUpdated', { id: 'unit-red', name: 'Red Team' }, [
+        'name',
+      ]);
+      hub.trigger(
+        'UnitUserCreated',
+        { unitId: 'unit-red', userId: 'user-1' },
+        null,
+      );
+      expect(TestBed.inject(UnitQuery).getEntity('unit-red').name).toBe(
+        'Red Team',
+      );
       expect(mselUnitApi.getMselUnits).not.toHaveBeenCalled();
 
       service.selectMsel('msel-1');
-      hub.trigger('UnitUpdated', { id: 'unit-red', name: 'Red Cell' }, ['name']);
+      hub.trigger('UnitUpdated', { id: 'unit-red', name: 'Red Cell' }, [
+        'name',
+      ]);
       hub.trigger('UnitDeleted', 'unit-red');
-      hub.trigger('UnitUserCreated', { unitId: 'unit-blue', userId: 'user-1' }, null);
+      hub.trigger(
+        'UnitUserCreated',
+        { unitId: 'unit-blue', userId: 'user-1' },
+        null,
+      );
       hub.trigger('UnitUserDeleted', { unitId: 'unit-blue', userId: 'user-1' });
 
       expect(TestBed.inject(UnitQuery).getAll()).toEqual([]);
@@ -481,7 +642,8 @@ describe('SignalRService', () => {
   });
 
   describe('presence', () => {
-    const colorsOf = (list: PresenceActor[]) => list.map((a) => `${a.name}:${a.color}`);
+    const colorsOf = (list: PresenceActor[]) =>
+      list.map((a) => `${a.name}:${a.color}`);
 
     /**
      * Verifies: selecting an MSEL tells the hub, then seeds presence from GetPresence with colors assigned in arrival order.
@@ -524,7 +686,10 @@ describe('SignalRService', () => {
 
       hub.trigger('PresenceGreeted', { id: 'user-3', name: 'Carol D.' });
       hub.trigger('PresenceGreeted', { id: 'user-4', name: 'Dave' });
-      expect(colorsOf(actors.at(-1))).toEqual(['Carol D.:primary', 'Dave:accent']);
+      expect(colorsOf(actors.at(-1))).toEqual([
+        'Carol D.:primary',
+        'Dave:accent',
+      ]);
 
       hub.trigger('PresenceDeparted', { id: 'user-3', name: 'Carol D.' });
       expect(colorsOf(actors.at(-1))).toEqual(['Dave:accent']);

@@ -5,14 +5,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, firstValueFrom, of, throwError } from 'rxjs';
-import { MselUnit, MselUnitService, Unit } from 'src/app/generated/blueprint.api';
+import {
+  MselUnit,
+  MselUnitService,
+  Unit,
+} from 'src/app/generated/blueprint.api';
 import { MselUnitStore } from './msel-unit.store';
 import { MselUnitDataService } from './msel-unit-data.service';
 import { MselUnitQuery } from './msel-unit.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function mselUnit(overrides: Partial<MselUnit> = {}): MselUnit {
   return { id: 'mu-1', mselId: 'msel-1', unitId: 'unit-red', ...overrides };
@@ -31,7 +38,10 @@ function setup(queryParams: Record<string, string> = {}) {
   TestBed.configureTestingModule({
     providers: [
       { provide: MselUnitService, useValue: mselUnitApi },
-      { provide: Router, useValue: { navigate } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -59,7 +69,9 @@ describe('MselUnitDataService', () => {
     mselUnitApi.getMselUnits.mockReturnValueOnce(
       of([mselUnit(), mselUnit({ id: 'mu-2', unitId: 'unit-blue' })]),
     );
-    mselUnitApi.getMselUnits.mockReturnValueOnce(throwError(() => new Error('boom')));
+    mselUnitApi.getMselUnits.mockReturnValueOnce(
+      throwError(() => new Error('boom')),
+    );
 
     service.loadByMsel('msel-1');
     expect(mselUnitApi.getMselUnits).toHaveBeenCalledWith('msel-1');
@@ -77,9 +89,15 @@ describe('MselUnitDataService', () => {
    */
   it('single-link calls keep the store in step with the API', () => {
     const { service, query, mselUnitApi } = setup();
-    mselUnitApi.getMselUnit.mockReturnValue(of(mselUnit({ id: 'mu-2', unitId: 'unit-blue' })));
-    mselUnitApi.createMselUnit.mockReturnValue(of(mselUnit({ id: 'mu-3', unitId: 'unit-grn' })));
-    mselUnitApi.updateMselUnit.mockReturnValue(of(mselUnit({ id: 'mu-2', unitId: 'unit-gold' })));
+    mselUnitApi.getMselUnit.mockReturnValue(
+      of(mselUnit({ id: 'mu-2', unitId: 'unit-blue' })),
+    );
+    mselUnitApi.createMselUnit.mockReturnValue(
+      of(mselUnit({ id: 'mu-3', unitId: 'unit-grn' })),
+    );
+    mselUnitApi.updateMselUnit.mockReturnValue(
+      of(mselUnit({ id: 'mu-2', unitId: 'unit-gold' })),
+    );
     mselUnitApi.deleteMselUnit.mockReturnValue(of(null));
 
     service.loadById('mu-2');
@@ -132,7 +150,9 @@ describe('MselUnitDataService', () => {
     service.updateStore(mselUnit());
     service.updateStore(mselUnit({ id: 'mu-2', unitId: 'unit-blue' }));
 
-    expect(unitIds(recordEmissions(service.MselUnitList).at(-1))).toEqual(['unit-blue']);
+    expect(unitIds(recordEmissions(service.MselUnitList).at(-1))).toEqual([
+      'unit-blue',
+    ]);
   });
 
   /**
@@ -141,24 +161,42 @@ describe('MselUnitDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'loadById', endpoint: 'getMselUnit', escapes: true, call: (s: MselUnitDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createMselUnit', escapes: true, call: (s: MselUnitDataService) => s.add({ id: 'x-1' }) },
-    { method: 'updateMselUnit', endpoint: 'updateMselUnit', escapes: true, call: (s: MselUnitDataService) => s.updateMselUnit({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, mselUnitApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(MselUnitStore).setLoading(false);
-    mselUnitApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'loadById',
+      endpoint: 'getMselUnit',
+      escapes: true,
+      call: (s: MselUnitDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createMselUnit',
+      escapes: true,
+      call: (s: MselUnitDataService) => s.add({ id: 'x-1' }),
+    },
+    {
+      method: 'updateMselUnit',
+      endpoint: 'updateMselUnit',
+      escapes: true,
+      call: (s: MselUnitDataService) => s.updateMselUnit({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, mselUnitApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(MselUnitStore).setLoading(false);
+      mselUnitApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(MselUnitQuery).getValue().loading).toBe(true);
-    // With no error callback the error escapes to ErrorService, the ErrorHandler
-    // app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(MselUnitQuery).getValue().loading).toBe(true);
+      // With no error callback the error escapes to ErrorService, the ErrorHandler
+      // app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete escapes to the app's global ErrorHandler.
@@ -166,19 +204,26 @@ describe('MselUnitDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteMselUnit', call: (s: MselUnitDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, mselUnitApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    mselUnitApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteMselUnit',
+      call: (s: MselUnitDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, mselUnitApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      mselUnitApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

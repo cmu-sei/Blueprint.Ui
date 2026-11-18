@@ -4,50 +4,71 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<div class="background text app-content-container landing-background"
-  [class.has-background]="backgroundImage && !selectedMselId" [style.--landing-background]="backgroundImage">
+<div
+  class="background text app-content-container"
+  [crucibleLandingBackground]="!selectedMselId"
+>
   @if (!hideTopbar) {
-  <app-topbar [title]="topbarText" [topbarView]="TopbarView.BLUEPRINT_HOME" [imageFilePath]="topbarImage"
-    (urlNavigate)="topBarNavigate($event)" />
+    <app-topbar
+      [title]="topbarText"
+      [topbarView]="TopbarView.BLUEPRINT_HOME"
+      [imageFilePath]="topbarImage"
+      (urlNavigate)="topBarNavigate($event)"
+    />
   }
 
   @if (apiIsSick) {
-  <div autosize>
-    <!-- h2, not h1: the top bar's title is the page's single h1. -->
-    <h2>{{ apiMessage }}</h2>
-    <h2>Please refresh this page.</h2>
-    <h2>If the problem persists, please contact the site administrator.</h2>
-  </div>
+    <div autosize>
+      <!-- h2, not h1: the top bar's title is the page's single h1. -->
+      <h2>{{ apiMessage }}</h2>
+      <h2>Please refresh this page.</h2>
+      <h2>If the problem persists, please contact the site administrator.</h2>
+    </div>
   }
 
   <div class="main-area">
-
     @if (!apiIsSick && !selectedMselId) {
-    <div class="top-row">
-      <div class="one-cell last-cell">
-        @if (canAccessAdminSection) {
-        <button mat-icon-button style="outline: none;" (click)="topBarNavigate('/admin')" title="Administration">
-          <mat-icon class="mdi-24px center-self" fontIcon="mdi-cog" />
-        </button>
-        }
+      <div class="top-row">
+        <div class="one-cell last-cell">
+          @if (canAccessAdminSection) {
+            <button
+              mat-icon-button
+              style="outline: none"
+              (click)="topBarNavigate('/admin')"
+              title="Administration"
+            >
+              <mat-icon class="mdi-24px center-self" fontIcon="mdi-cog" />
+            </button>
+          }
+        </div>
       </div>
-    </div>
-    <app-msel-list [loggedInUserId]="loggedInUserId" [canAccessAdminSection]="canAccessAdminSection" />
+      <app-msel-list
+        [loggedInUserId]="loggedInUserId"
+        [canAccessAdminSection]="canAccessAdminSection"
+      />
     }
 
     @if (!apiIsSick && selectedMselId) {
-    <div class="content-under-topbar">
-      <app-msel [loggedInUserId]="loggedInUserId" [canEditMsel]="canEditMsels"
-        [canAccessAdminSection]="canAccessAdminSection" [canEditCheckboxes]="canEditCheckboxes"
-        [userTheme$]="theme$"
-        (deleteThisMsel)="deleteMsel($event)" />
-    </div>
+      <div class="content-under-topbar">
+        <app-msel
+          [loggedInUserId]="loggedInUserId"
+          [canEditMsel]="canEditMsels"
+          [canAccessAdminSection]="canAccessAdminSection"
+          [canEditCheckboxes]="canEditCheckboxes"
+          [userTheme$]="theme$"
+          (deleteThisMsel)="deleteMsel($event)"
+        />
+      </div>
     }
 
     @if (isLoading$ | async) {
-    <div>
-      <mat-progress-bar color="primary" mode="indeterminate" style="width: 90%; margin: 20px;" />
-    </div>
+      <div>
+        <mat-progress-bar
+          color="primary"
+          mode="indeterminate"
+          style="width: 90%; margin: 20px"
+        />
+      </div>
     }
   </div>
 </div>

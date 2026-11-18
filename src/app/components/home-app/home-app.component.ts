@@ -12,6 +12,7 @@ import {
   Theme,
   ComnAuthQuery,
   ComnAuthService,
+  CrucibleLandingBackgroundDirective,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { CurrentUserQuery } from 'src/app/data/user/user.query';
@@ -21,13 +22,15 @@ import {
   HealthCheckService,
   Msel,
   SystemPermission,
-  Team
+  Team,
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
+import {
+  ApplicationArea,
+  SignalRService,
+} from 'src/app/services/signalr.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
-import { landingBackground } from 'src/app/utilities/landing-background';
 import { TopbarComponent } from '../shared/top-bar/topbar.component';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
@@ -43,10 +46,19 @@ export enum Section {
 }
 
 @Component({
-    selector: 'app-home-app',
-    templateUrl: './home-app.component.html',
-    styleUrls: ['./home-app.component.scss'],
-    imports: [TopbarComponent, MatIconButton, MatIcon, MselListComponent, MselComponent, MatProgressBar, AsyncPipe]
+  selector: 'app-home-app',
+  templateUrl: './home-app.component.html',
+  styleUrls: ['./home-app.component.scss'],
+  imports: [
+    CrucibleLandingBackgroundDirective,
+    TopbarComponent,
+    MatIconButton,
+    MatIcon,
+    MselListComponent,
+    MselComponent,
+    MatProgressBar,
+    AsyncPipe,
+  ],
 })
 export class HomeAppComponent implements OnDestroy, OnInit {
   private router = inject(Router);
@@ -80,7 +92,6 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   private unsubscribe$ = new Subject();
   hideTopbar = false;
   topbarImage = this.settingsService.settings.AppTopBarImage;
-  backgroundImage = landingBackground(this.settingsService.settings);
   TopbarView = TopbarView;
   theme$: Observable<Theme>;
   teamList: Team[] = [];
@@ -151,17 +162,18 @@ export class HomeAppComponent implements OnDestroy, OnInit {
       });
     this.userDataService.setCurrentUser();
     // Load permissions
-    this.permissionDataService
-      .load()
-      .subscribe(
-        (x) => {
-          this.permissions = this.permissionDataService.permissions;
-          this.canAccessAdminSection = this.permissions.filter(p => !p.endsWith('Msels')).length > 0;
-          this.canEditMsels = this.permissionDataService.hasPermission(SystemPermission.EditMsels);
-          // Admins (ContentDevelopers/SystemAdmins) can edit checkboxes
-          this.canEditCheckboxes = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
-        }
+    this.permissionDataService.load().subscribe((x) => {
+      this.permissions = this.permissionDataService.permissions;
+      this.canAccessAdminSection =
+        this.permissions.filter((p) => !p.endsWith('Msels')).length > 0;
+      this.canEditMsels = this.permissionDataService.hasPermission(
+        SystemPermission.EditMsels,
       );
+      // Admins (ContentDevelopers/SystemAdmins) can edit checkboxes
+      this.canEditCheckboxes = this.permissionDataService.hasPermission(
+        SystemPermission.CreateMsels,
+      );
+    });
     // Start SignalR connection
     this.signalRService
       .startConnection(ApplicationArea.home)
@@ -171,7 +183,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
           // join signalR for this MSEL
           setTimeout(
             () => this.signalRService.selectMsel(this.selectedMselId),
-            1000
+            1000,
           );
         }
       })
@@ -208,7 +220,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
         (error) => {
           this.apiIsSick = true;
           this.apiMessage = 'The API web service is not responding.';
-        }
+        },
       );
   }
 

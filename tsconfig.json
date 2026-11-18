@@ -11,26 +11,17 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
-    "typeRoots": [
-      "node_modules/@types"
-    ],
+    "typeRoots": ["node_modules/@types"],
     "useDefineForClassFields": false,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "paths": {}
   },
-  "exclude": [
-    "../../libraries/**/node_modules"
-  ],
+  "exclude": ["../../libraries/**/node_modules"],
   "angularCompilerOptions": {
     "strictTemplates": true,
     "strictInputAccessModifiers": true,
     "strictInjectionParameters": true,
-    "_enabledBlockTypes": [
-      "if",
-      "for",
-      "switch",
-      "defer"
-    ]
+    "_enabledBlockTypes": ["if", "for", "switch", "defer"]
   }
 }
