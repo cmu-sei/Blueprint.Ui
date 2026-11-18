@@ -767,6 +767,30 @@ describe('MselInfoComponent', () => {
     });
 
     /**
+     * Verifies: a template with only a copy of a directory says it must be imported before it can be launched, since a launch never imports a copy.
+     * Interacts with: casterSummary, casterWarningMessage, MselCasterExportService.getMselCasterExport (stub).
+     * Data: MSEL role Owner; a template using Player and Caster with no directory, carrying a copy of Topology / Root / Range.
+     */
+    it('warns that a template with only a copy needs importing before launch', async () => {
+      await renderInfo({
+        myRoles: [MselRole.Owner],
+        mselExtra: { isTemplate: true, usePlayer: true, useCaster: true },
+        casterCopy: COPY,
+      });
+
+      expect(
+        screen.getByText(
+          'a copy of Topology / Root / Range, which must be imported into Caster before the template can be launched',
+        ),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Import the copy into Caster on the Caster tab before this template can be launched.',
+        ),
+      ).toBeInTheDocument();
+    });
+
+    /**
      * Verifies: Open the Caster tab asks the MSEL page to open that rail tab.
      * Interacts with: openTab.
      * Data: MSEL role Owner; a pending MSEL using Caster.

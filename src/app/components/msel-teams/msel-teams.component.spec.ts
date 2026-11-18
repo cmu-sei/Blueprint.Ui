@@ -25,6 +25,7 @@ import {
   CasterTeamVariable,
   CiteService,
   Msel,
+  MselCasterExportService,
   MselRole,
   SystemPermission,
   SystemPermissionsService,
@@ -106,6 +107,7 @@ async function renderMselTeams(
     mselExtra?: Partial<Msel>;
     teams?: Team[];
     teamVariables?: (id: string) => Observable<CasterTeamVariable[]>;
+    copyVariables?: () => Observable<CasterTeamVariable[]>;
     dialogOpen?: Pick<MatDialog, 'open'>['open'];
   } = {},
 ) {
@@ -115,6 +117,7 @@ async function renderMselTeams(
     mselExtra = {},
     teams = [BLUE],
     teamVariables = () => of<CasterTeamVariable[]>([]),
+    copyVariables = () => of<CasterTeamVariable[]>([]),
     dialogOpen,
   } = overrides;
   const citeApi = {
@@ -123,6 +126,10 @@ async function renderMselTeams(
   const casterApi = {
     getCasterTeamVariables: vi.fn((id: string) => teamVariables(id)),
   } satisfies ApiStub<CasterService>;
+  // with no directory linked, the variables come from the copy of one the MSEL carries
+  const copyApi = {
+    getMselCasterTeamVariables: vi.fn(() => copyVariables()),
+  } satisfies ApiStub<MselCasterExportService>;
   const teamApi = {
     deleteTeam: vi.fn(() => of<unknown>(null)),
   } satisfies ApiStub<TeamService>;
@@ -158,6 +165,7 @@ async function renderMselTeams(
       PermissionDataService,
       { provide: CiteService, useValue: citeApi },
       { provide: CasterService, useValue: casterApi },
+      { provide: MselCasterExportService, useValue: copyApi },
       { provide: TeamService, useValue: teamApi },
       { provide: UnitService, useValue: unitApi },
       { provide: CrucibleDialogService, useValue: dialog },
@@ -188,7 +196,7 @@ async function renderMselTeams(
     ],
     inputs: { loggedInUserId: ME },
   });
-  return { ...rendered, teamApi, casterApi, confirm };
+  return { ...rendered, teamApi, casterApi, copyApi, confirm };
 }
 
 const table = () => screen.getByRole('table');
@@ -387,26 +395,56 @@ describe('MselTeamsComponent', () => {
     });
 
     /**
-     * Verifies: without Caster, or without a Caster directory, no team variables are requested and there is no Topology Team column or topology warning.
-     * Interacts with: loadCasterTeamVariables, setDisplayedColumns.
-     * Data: ManageMsels; Caster off with directory dir-1; Caster on with no directory; two teams mapped to the same variable.
+     * Verifies: without Caster no team variables are requested; with Caster but neither a directory nor a copy, the copy's variables are asked for and come back empty. Either way there is no Topology Team column or topology warning.
+     * Interacts with: loadCasterTeamVariables, setDisplayedColumns, MselCasterExportService.getMselCasterTeamVariables (stub, empty).
+     * Data: ManageMsels; Caster off with directory dir-1; Caster on with no directory and no copy; two teams mapped to the same variable.
      */
     it.each([
-      { label: 'without Caster', mselExtra: { ...CASTER, useCaster: false } },
       {
-        label: 'without a Caster directory',
-        mselExtra: { ...CASTER, casterDirectoryId: null },
+        label: 'without Caster',
+        mselExtra: { ...CASTER, useCaster: false },
+        asksTheCopy: false,
       },
-    ])('has no topology teams $label', async ({ mselExtra }) => {
-      const { casterApi } = await renderMselTeams({
+      {
+        label: 'without a Caster directory or a copy of one',
+        mselExtra: { ...CASTER, casterDirectoryId: null },
+        asksTheCopy: true,
+      },
+    ])('has no topology teams $label', async ({ mselExtra, asksTheCopy }) => {
+      const { casterApi, copyApi } = await renderMselTeams({
         permissions: [SystemPermission.ManageMsels],
         mselExtra,
         teams: [team('Blue Team', 'blue_cell'), team('Cyan Team', 'blue_cell')],
       });
 
       expect(casterApi.getCasterTeamVariables).not.toHaveBeenCalled();
+      expect(copyApi.getMselCasterTeamVariables.mock.calls.length > 0).toBe(
+        asksTheCopy,
+      );
       expect(headers()).not.toContain('Topology Team');
       expect(warnings()).toEqual([]);
+    });
+
+    /**
+     * Verifies: a MSEL with no directory but a copy of one shows the copy's topology teams, and warns when two teams would write the same variable, as for a linked directory.
+     * Interacts with: MselCasterExportService.getMselCasterTeamVariables (stub), hasTopology, setDisplayedColumns, getDuplicateTeamVariableWarnings.
+     * Data: ManageMsels; Caster on with no directory; the copy declares blue_cell; Blue Team and Cyan Team both mapped to blue_cell.
+     */
+    it('shows the topology teams of the copy when no directory is linked', async () => {
+      const { casterApi, copyApi } = await renderMselTeams({
+        permissions: [SystemPermission.ManageMsels],
+        mselExtra: { ...CASTER, casterDirectoryId: null },
+        teams: [team('Blue Team', 'blue_cell'), team('Cyan Team', 'blue_cell')],
+        copyVariables: () => of([{ name: 'blue_cell', required: true }]),
+      });
+
+      expect(casterApi.getCasterTeamVariables).not.toHaveBeenCalled();
+      expect(copyApi.getMselCasterTeamVariables).toHaveBeenCalledWith('msel-1');
+      expect(headers()).toContain('Topology Team');
+      expect(cellOf('Blue Team', 'Topology Team')).toBe('blue_cell');
+      expect(warnings().some((w) => w.includes('all become "blue_cell"'))).toBe(
+        true,
+      );
     });
 
     /**

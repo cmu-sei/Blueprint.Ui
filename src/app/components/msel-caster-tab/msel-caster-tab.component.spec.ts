@@ -8,7 +8,7 @@ import { MatSelectHarness } from '@angular/material/select/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { of } from 'rxjs';
+import { NEVER, Observable, of, throwError } from 'rxjs';
 import {
   ComnSettingsService,
   CrucibleDialogService,
@@ -100,6 +100,8 @@ async function renderTab(
     myRoles?: MselRole[];
     mselExtra?: Partial<Msel>;
     copy?: MselCasterExport | null;
+    copyAnswer?: () => Observable<MselCasterExport | null>;
+    directories?: CasterDirectory[];
   } = {},
 ) {
   const {
@@ -107,12 +109,14 @@ async function renderTab(
     myRoles = [MselRole.Owner],
     mselExtra = {},
     copy = null,
+    copyAnswer = () => of(structuredClone(copy)),
+    directories = [BASE, EXTENDED],
   } = overrides;
   const casterApi = {
-    getCasterDirectories: vi.fn(() => of([BASE, EXTENDED])),
+    getCasterDirectories: vi.fn(() => of(structuredClone(directories))),
   } satisfies ApiStub<CasterService>;
   const copyApi = {
-    getMselCasterExport: vi.fn(() => of(structuredClone(copy))),
+    getMselCasterExport: vi.fn(() => copyAnswer()),
     captureMselCasterExport: vi.fn(() =>
       of<MselCasterExport>({
         ...structuredClone(COPY),
@@ -243,6 +247,87 @@ describe('MselCasterTabComponent', () => {
   });
 
   /**
+   * Verifies: a copy that could not be loaded is reported, not shown as absent, and linking another directory still asks first, since the API deletes any stored copy.
+   * Interacts with: copyError, Save Changes, CrucibleDialogService.confirm (stub, confirms), MselService.updateMsel (stub).
+   * Data: MSEL role Owner; a pending MSEL linked to dir-1 whose copy fails to load with a 502; Range / Extended chosen.
+   */
+  it('reports a copy it could not load and still asks before linking another directory', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { fixture, confirm, mselApi } = await renderTab({
+      mselExtra: { casterDirectoryId: 'dir-1' },
+      copyAnswer: () => throwError(() => ({ status: 502 })),
+    });
+
+    expect(
+      screen.getByText('The stored copy could not be loaded.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('No copy is stored.')).not.toBeInTheDocument();
+
+    const [select] = await directorySelects(fixture);
+    await select.clickOptions({ text: 'Range / Extended' });
+    fixture.detectChanges();
+    await userEvent.setup().click(button('Save Changes'));
+
+    expect(confirm).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ title: 'Link Another Directory' }),
+    );
+    expect(mselApi.updateMsel).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * Verifies: until the copy has loaded, a chosen directory cannot be saved, so the deletion question is never skipped.
+   * Interacts with: copyLoaded, Save Changes.
+   * Data: MSEL role Owner; a pending MSEL whose copy request never answers; Range / Extended chosen.
+   */
+  it('holds Save Changes until the copy has loaded', async () => {
+    const { fixture } = await renderTab({ copyAnswer: () => NEVER });
+
+    const [select] = await directorySelects(fixture);
+    await select.clickOptions({ text: 'Range / Extended' });
+    fixture.detectChanges();
+
+    expect(button('Save Changes')).toBeDisabled();
+  });
+
+  /**
+   * Verifies: a linked directory Caster no longer lists can still be cleared, so the copy can then be imported.
+   * Interacts with: unlistedDirectoryId, the Caster Directory select, Save Changes, MselService.updateMsel (stub).
+   * Data: MSEL role Owner; a pending MSEL linked to dir-gone with no copy; Caster lists no directories.
+   */
+  it('lets a directory Caster no longer lists be cleared', async () => {
+    const { fixture, mselApi } = await renderTab({
+      mselExtra: { casterDirectoryId: 'dir-gone' },
+      directories: [],
+    });
+    const [select] = await directorySelects(fixture);
+
+    expect(await select.getValueText()).toBe('dir-gone (not listed by Caster)');
+    await select.clickOptions({ text: '-- None --' });
+    fixture.detectChanges();
+    await userEvent.setup().click(button('Save Changes'));
+
+    expect(mselApi.updateMsel).toHaveBeenCalledExactlyOnceWith(
+      'msel-1',
+      expect.objectContaining({ casterDirectoryId: null }),
+    );
+  });
+
+  /**
+   * Verifies: a template with only a copy says it must be imported before it can be launched, since a launch never imports a copy.
+   * Interacts with: pushPlan.
+   * Data: MSEL role Owner; a template with no directory and a copy.
+   */
+  it('tells a template with only a copy to import it before launch', async () => {
+    await renderTab({ copy: COPY, mselExtra: { isTemplate: true } });
+
+    expect(
+      screen.getByText(
+        /Import the copy into Caster before this template can be launched/,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  /**
    * Verifies: Cancel Changes puts the saved directory back, and nothing is saved.
    * Interacts with: the Caster Directory select, Cancel Changes, MselService.updateMsel (stub).
    * Data: MSEL role Owner; a pending MSEL linked to dir-1; Range / Extended chosen.
@@ -348,7 +433,7 @@ describe('MselCasterTabComponent', () => {
 
     expect(
       screen.getByText(
-        "File contents are shown to the MSEL's owners and editors.",
+        /File contents are shown only to the MSEL's owners and editors/,
       ),
     ).toBeInTheDocument();
     expect(

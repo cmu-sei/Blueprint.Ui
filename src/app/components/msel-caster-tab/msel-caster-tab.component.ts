@@ -98,6 +98,8 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
   directoryError = '';
   copy: MselCasterExport | null = null;
   copyLoaded = false;
+  // a copy that could not be read is unknown, not absent: saving another directory may delete it
+  copyError = false;
   busy = false;
   private unsubscribe$ = new Subject();
 
@@ -153,6 +155,7 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
   private loadCopy(mselId: string) {
     this.copy = null;
     this.copyLoaded = false;
+    this.copyError = false;
     this.mselCasterExportService
       .getMselCasterExport(mselId)
       .pipe(takeUntil(this.unsubscribe$))
@@ -170,7 +173,9 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
             'Failed to load the MSEL copy of its Caster directory:',
             error,
           );
-          this.copyLoaded = true;
+          if (this.msel.id === mselId) {
+            this.copyError = true;
+          }
         },
       });
   }
@@ -254,10 +259,19 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
     return [...above, ...own];
   }
 
+  // the linked directory when Caster does not list it (deleted, or not visible to this user), so it can be cleared
+  unlistedDirectoryId(): string | null {
+    const id = this.msel.casterDirectoryId;
+    return id && !this.directoryList.some((d) => d.id === id) ? id : null;
+  }
+
   // what a push does with the MSEL's Caster settings as they are now
   pushPlan(): string {
     if (this.msel.casterDirectoryId) {
       return 'The push creates a workspace in the linked directory.';
+    }
+    if (this.copy && this.msel.isTemplate) {
+      return 'No directory is linked. Import the copy into Caster before this template can be launched: a launch deploys the linked directory and never imports a copy.';
     }
     if (this.copy) {
       return "No directory is linked, so the push imports the copy into Caster as a new project, as you, links the MSEL to it, and creates a workspace there. You need Caster's Create Projects permission.";
@@ -266,11 +280,12 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
   }
 
   saveChanges() {
-    // the API deletes the copy of a directory when the MSEL links another one
-    const replacesCopy =
-      !!this.copy &&
+    // The API deletes the copy of a directory when the MSEL links another one. A copy that could not be read may
+    // exist, so it is asked about too.
+    const linksAnother =
       !!this.casterDirectoryId &&
       this.casterDirectoryId !== this.msel.casterDirectoryId;
+    const replacesCopy = linksAnother && (!!this.copy || this.copyError);
     if (!replacesCopy) {
       this.doSave(false);
       return;
@@ -278,7 +293,9 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
     this.dialogService
       .confirm({
         title: 'Link Another Directory',
-        message: `Linking another directory deletes the stored copy of "${this.copyPath()}" from ${this.copy?.projectName}. Link it?`,
+        message: this.copy
+          ? `Linking another directory deletes the stored copy of "${this.copyPath()}" from ${this.copy.projectName}. Link it?`
+          : 'The stored copy of a Caster directory could not be read. Linking another directory deletes any stored copy. Link it?',
         confirmText: 'Link',
         cancelText: 'Cancel',
       })

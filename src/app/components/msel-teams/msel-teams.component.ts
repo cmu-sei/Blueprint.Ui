@@ -362,12 +362,20 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
       this.getDuplicateTeamVariableWarnings();
   }
 
+  // a linked directory, or the copy of one the MSEL carries once its variables are read
+  private hasTopology(): boolean {
+    return (
+      !!this.msel.useCaster &&
+      (!!this.msel.casterDirectoryId || this.casterTeamVariables !== null)
+    );
+  }
+
   setDisplayedColumns() {
     // Team Type is the CITE team type, so it only matters when CITE is in use
     const columns = this.msel.useCite
       ? ['action', 'shortName', 'name', 'email', 'teamType', 'invitation']
       : ['action', 'shortName', 'name', 'email', 'invitation'];
-    if (this.msel.useCaster && this.msel.casterDirectoryId) {
+    if (this.hasTopology()) {
       columns.splice(columns.indexOf('invitation'), 0, 'topologyTeam');
     }
     this.displayedColumns = columns;
@@ -446,7 +454,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
 
   // variables more than one team would write, counting Player's own Admin team; the API refuses those
   getDuplicateTeamVariableWarnings(): string[] {
-    if (!this.msel.useCaster || !this.msel.casterDirectoryId) {
+    if (!this.hasTopology()) {
       return [];
     }
     const writers = this.mselTeams.map((t) => this.toTeamVariableWriter(t));

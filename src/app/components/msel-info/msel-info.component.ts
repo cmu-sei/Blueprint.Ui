@@ -1342,6 +1342,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       return 'Caster requires Player: the VMs are added to the Player view and its teams.';
     if (!this.msel.casterDirectoryId && !this.casterCopy)
       return 'Select the Caster directory to deploy on the Caster tab.';
+    // a launch deploys the template's directory and never imports a copy
+    if (!this.msel.casterDirectoryId && this.msel.isTemplate)
+      return 'Import the copy into Caster on the Caster tab before this template can be launched.';
     return '';
   }
 
@@ -1357,7 +1360,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       const path = (this.casterCopy.directories || [])
         .map((d) => d.name)
         .join(' / ');
-      return `a copy of ${this.casterCopy.projectName} / ${path}, which the push imports as a new Caster project`;
+      return this.msel.isTemplate
+        ? `a copy of ${this.casterCopy.projectName} / ${path}, which must be imported into Caster before the template can be launched`
+        : `a copy of ${this.casterCopy.projectName} / ${path}, which the push imports as a new Caster project`;
     }
     return 'not set';
   }

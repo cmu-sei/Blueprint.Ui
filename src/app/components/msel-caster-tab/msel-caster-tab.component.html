@@ -19,7 +19,7 @@ project root for license information.
         (click)="saveChanges()"
         style="outline: none"
         title="Save Changes"
-        [disabled]="!isChanged || busy"
+        [disabled]="!isChanged || busy || !(copyLoaded || copyError)"
       >
         <mat-icon
           class="mdi-24px self-center"
@@ -58,7 +58,7 @@ project root for license information.
 
     <h3 class="section-title">Caster Directory</h3>
     <div class="link-row">
-      @if (directoryList.length > 0 && canEditDirectory()) {
+      @if (canEditDirectory()) {
         <mat-form-field class="link-select" subscriptSizing="dynamic">
           <mat-label>Caster Directory</mat-label>
           <mat-select
@@ -67,6 +67,11 @@ project root for license information.
             [disabled]="busy"
           >
             <mat-option [value]="null">-- None --</mat-option>
+            @if (unlistedDirectoryId()) {
+              <mat-option [value]="unlistedDirectoryId()"
+                >{{ unlistedDirectoryId() }} (not listed by Caster)</mat-option
+              >
+            }
             @for (directory of directoryList; track directory.id) {
               <mat-option [value]="directory.id">{{
                 directoryLabel(directory)
@@ -155,7 +160,8 @@ project root for license information.
       }
       @if (!contentsIncluded()) {
         <p class="help">
-          File contents are shown to the MSEL's owners and editors.
+          File contents are shown only to the MSEL's owners and editors, and to
+          users who can edit all MSELs.
         </p>
       }
       <mat-accordion class="copy-files" multi>
@@ -177,6 +183,8 @@ project root for license information.
           <span class="link-none">The copy holds no files.</span>
         }
       </mat-accordion>
+    } @else if (copyError) {
+      <span class="warning">The stored copy could not be loaded.</span>
     } @else if (copyLoaded) {
       <span class="link-none">No copy is stored.</span>
     }
