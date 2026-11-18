@@ -4,6 +4,7 @@
 import { TechniqueReleaseStore } from './technique-release.store';
 import { TechniqueReleaseQuery } from './technique-release.query';
 import { TechniqueFrameworkStore } from 'src/app/data/technique-framework/technique-framework.store';
+import { MselCountermeasureDataService } from 'src/app/data/msel-technique/msel-countermeasure-data.service';
 import { Injectable, inject } from '@angular/core';
 import {
   TechniqueRelease,
@@ -25,6 +26,7 @@ export class TechniqueReleaseDataService {
   private techniqueReleaseService = inject(TechniqueReleaseService);
   private techniqueReleaseQuery = inject(TechniqueReleaseQuery);
   private techniqueFrameworkStore = inject(TechniqueFrameworkStore);
+  private mselCountermeasureDataService = inject(MselCountermeasureDataService);
 
   /** Keeps a framework's release count right as its releases are imported, relinked and deleted. */
   private countRelease(frameworkId: string | null | undefined, change: number) {
@@ -81,7 +83,10 @@ export class TechniqueReleaseDataService {
       );
   }
 
-  /** Imports a mappings file onto a release and shows the stored count on its row. */
+  /**
+   * Imports a mappings file onto a release and shows the stored count on its row. A MSEL's countermeasures already
+   * read are read again, as its pool has not changed to prompt it.
+   */
   importCountermeasures(
     releaseId: string,
     file: Blob,
@@ -97,6 +102,7 @@ export class TechniqueReleaseDataService {
             this.techniqueReleaseStore.update(releaseId, {
               countermeasureCount: result.pairsStored,
             });
+            this.mselCountermeasureDataService.refresh();
           },
           error: () => this.techniqueReleaseStore.setLoading(false),
         }),

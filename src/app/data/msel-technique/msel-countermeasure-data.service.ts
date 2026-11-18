@@ -27,6 +27,8 @@ export class MselCountermeasureDataService {
   readonly countermeasures$: Observable<MselCountermeasures | undefined> =
     this.subject.asObservable();
   private loadedMselId = '';
+  // the latest load; a response to an earlier one, or one made before unload, is dropped
+  private request = 0;
   private loadedPoolKey = '';
   loading = false;
 
@@ -55,6 +57,7 @@ export class MselCountermeasureDataService {
 
   load(mselId: string) {
     this.loadedMselId = mselId;
+    const request = ++this.request;
     this.loadedPoolKey = this.poolKey();
     this.loading = true;
     this.mselTechniqueService
@@ -62,10 +65,12 @@ export class MselCountermeasureDataService {
       .pipe(take(1))
       .subscribe({
         next: (result) => {
+          if (request !== this.request) return;
           this.loading = false;
           this.subject.next(result);
         },
         error: () => {
+          if (request !== this.request) return;
           this.loading = false;
           this.subject.next({
             mselId,
@@ -77,6 +82,13 @@ export class MselCountermeasureDataService {
       });
   }
 
+  /** Reloads the loaded MSEL's countermeasures, as after mappings are imported: its pool has not changed. */
+  refresh() {
+    if (this.loadedMselId) {
+      this.load(this.loadedMselId);
+    }
+  }
+
   /** Loads the countermeasures unless they are already the given MSEL's. */
   ensureLoaded(mselId: string) {
     if (mselId && mselId !== this.loadedMselId) {
@@ -86,6 +98,7 @@ export class MselCountermeasureDataService {
 
   unload() {
     this.loadedMselId = '';
+    this.request++;
     this.loadedPoolKey = '';
     this.subject.next(undefined);
   }

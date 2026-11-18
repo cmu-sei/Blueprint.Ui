@@ -22,23 +22,27 @@ export class MselTechniqueDataService {
   readonly MselTechniqueList: Observable<MselTechnique[]> =
     this.mselTechniqueQuery.selectAll();
   private loadedMselId = '';
+  // the latest load; a response to an earlier one, or one made before unload, is dropped
+  private request = 0;
 
   loadByMsel(mselId: string) {
     this.loadedMselId = mselId;
+    const request = ++this.request;
     this.mselTechniqueStore.setLoading(true);
     this.mselTechniqueService
       .getMselTechniques(mselId)
-      .pipe(
-        tap(() => {
-          this.mselTechniqueStore.setLoading(false);
-        }),
-        take(1),
-      )
+      .pipe(take(1))
       .subscribe({
         next: (items) => {
+          if (request !== this.request) return;
+          // loading ends before the pool changes, so the countermeasures reload for it
+          this.mselTechniqueStore.setLoading(false);
           this.mselTechniqueStore.set(items);
         },
         error: () => {
+          if (request !== this.request) return;
+          // loading ends before the pool changes, so the countermeasures reload for it
+          this.mselTechniqueStore.setLoading(false);
           this.mselTechniqueStore.set([]);
         },
       });
@@ -53,6 +57,8 @@ export class MselTechniqueDataService {
 
   unload() {
     this.loadedMselId = '';
+    this.request++;
+    this.mselTechniqueStore.setLoading(false);
     this.mselTechniqueStore.set([]);
   }
 
