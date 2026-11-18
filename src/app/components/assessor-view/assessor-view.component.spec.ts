@@ -1271,18 +1271,83 @@ describe('AssessorViewComponent', () => {
     });
 
     /**
-     * Verifies: while the MSEL hides names the cover names no assessors, even from statements that carry names.
-     * Interacts with: buildAssessmentReport (assessors), hidesNames.
-     * Data: the MSEL hiding names; statements with J. Doe's name.
+     * Verifies: when the MSEL starts hiding names after the report is drawn but before it prints, the print waits for
+     * the statements read for the change and prints from them, so the names drawn before are not printed.
+     * Interacts with: printReport (restart), MselStore update (as a MselUpdated broadcast does), reloadStatements,
+     * HttpClient GET api/xapi/statements (HttpTestingController), printDocument (spy).
+     * Data: the report exercise; the first read answers with J. Doe's ratings, then the MSEL hides names, and every
+     * read after that answers without the actor's name.
      */
-    it('names no assessors while the MSEL hides names', async () => {
+    it('prints from the masked statements when names are hidden before it prints', async () => {
+      vi.stubEnv('TZ', 'America/New_York');
+      const { fixture } = await renderAssessorView({
+        msel: REPORT_MSEL,
+        moves: REPORT_MOVES,
+        fields: REPORT_FIELDS,
+        events: REPORT_EVENTS,
+        values: REPORT_VALUES,
+        mselCompetencies: REPORT_COMPETENCIES,
+        proficiencyLevels: LEVELS,
+      });
+      const printDocument = vi
+        .spyOn(
+          fixture.componentInstance as unknown as { printDocument(): void },
+          'printDocument',
+        )
+        .mockImplementation(() => undefined);
+      const http = TestBed.inject(HttpTestingController);
+      const isRead = (req: {
+        url: string;
+        params: { get(name: string): string | null };
+      }) =>
+        req.url === '/api/xapi/statements' &&
+        req.params.get('mselId') === 'msel-1';
+      const masked = STATEMENTS.map((stmt) => ({
+        ...stmt,
+        actor: { objectType: 'Agent' },
+      }));
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      );
+      http.expectOne(isRead).flush({ statements: STATEMENTS });
+      fixture.detectChanges();
+      // the report is drawn and waiting to print when the MSEL starts hiding names
+      TestBed.inject(MselStore).update('msel-1', {
+        hideNamesOnAssessorView: true,
+      });
+      fixture.detectChanges();
+      // the read for the change is still under way when the print's wait ends
+      const reload = http.expectOne(isRead);
+      await new Promise((r) => setTimeout(r, 400));
+      expect(printDocument).not.toHaveBeenCalled();
+      reload.flush({ statements: masked });
+      await vi.waitFor(() => {
+        for (const read of http.match(isRead))
+          read.flush({ statements: masked });
+        fixture.detectChanges();
+        expect(printDocument).toHaveBeenCalledTimes(1);
+      });
+      fixture.detectChanges();
+
+      const facts = section('Cover').querySelector('.cover-facts');
+      expect(texts(facts, 'dt')).not.toContain('Assessors');
+      expect(section('Cover')).not.toHaveTextContent('J. Doe');
+    });
+
+    /**
+     * Verifies: the cover names the assessors the statements name, as the rest of the view does: the API leaves names
+     * out for whoever the MSEL hides them from, and not for an owner.
+     * Interacts with: buildAssessmentReport (assessors).
+     * Data: the MSEL hiding names; statements with J. Doe's name, as an owner reads them.
+     */
+    it("names the assessors the statements name while the MSEL hides names, as an owner's are", async () => {
       await printReport(STATEMENTS, {
         msel: { ...REPORT_MSEL, hideNamesOnAssessorView: true },
       });
 
       const facts = section('Cover').querySelector('.cover-facts');
-      expect(texts(facts, 'dt')).not.toContain('Assessors');
-      expect(section('Cover')).not.toHaveTextContent('J. Doe');
+      expect(texts(facts, 'dd')).toContain('J. Doe');
     });
 
     /**

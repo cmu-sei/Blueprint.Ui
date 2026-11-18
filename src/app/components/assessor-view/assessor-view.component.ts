@@ -2979,10 +2979,15 @@ export class AssessorViewComponent
           const hidingNames = this.hidesNames;
           // a short wait so Angular draws the report before it is copied
           setTimeout(() => {
-            // names hidden or shown meanwhile: the report was drawn the other way, so start again
+            // names hidden or shown meanwhile: the report was drawn the other way, so start again once the
+            // statements read for the change are in
             if (this.hidesNames !== hidingNames) {
               this.printing = false;
-              this.printReport();
+              const restart = () =>
+                this.statementsLoading
+                  ? setTimeout(restart, 100)
+                  : this.printReport();
+              restart();
               return;
             }
             this.printDocument();
@@ -3213,12 +3218,10 @@ export class AssessorViewComponent
       competencies: competencyRows,
       levels,
       teams: reportTeams,
-      // none while the MSEL hides names, whatever the statements read before it did carry
-      assessors: this.hidesNames
-        ? []
-        : [
-            ...new Set(assertions.map((a) => a.assessor).filter((a) => a)),
-          ].sort(),
+      // as the statements name them: the API leaves names out for whoever the MSEL hides them from
+      assessors: [
+        ...new Set(assertions.map((a) => a.assessor).filter((a) => a)),
+      ].sort(),
       injectCount: events.length,
       statementsUnavailable: this.statementsFailed,
     };
