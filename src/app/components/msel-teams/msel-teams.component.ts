@@ -20,7 +20,7 @@ import { PermissionDataService } from 'src/app/data/permission/permission-data.s
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
-import { CasterService, CiteService } from 'src/app/generated/blueprint.api';
+import { CasterService, CiteService, MselCasterExportService } from 'src/app/generated/blueprint.api';
 import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { TeamAddDialogComponent } from '../team-add-dialog/team-add-dialog.component';
@@ -72,6 +72,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   private mselQuery = inject(MselQuery);
   private citeService = inject(CiteService);
   private casterService = inject(CasterService);
+  private mselCasterExportService = inject(MselCasterExportService);
   private unitDataService = inject(UnitDataService);
   private unitQuery = inject(UnitQuery);
   private dialog = inject(MatDialog);
@@ -215,13 +216,22 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
     this.requiredCasterTeamVariables = [];
     this.casterTeamVariablesError = '';
     this.updateCasterWarnings();
-    if (!this.msel.useCaster || !this.msel.casterDirectoryId) {
+    if (!this.msel.useCaster) {
       this.setDisplayedColumns();
       return;
     }
+    // with no directory linked, the template is the copy of one the MSEL carries, which the push imports; a MSEL
+    // with neither answers no variables, and has no topology teams to show
     const directoryId = this.msel.casterDirectoryId;
-    this.casterService.getCasterTeamVariables(directoryId).subscribe(
+    const variables$ = directoryId
+      ? this.casterService.getCasterTeamVariables(directoryId)
+      : this.mselCasterExportService.getMselCasterTeamVariables(this.msel.id);
+    variables$.subscribe(
       (variables) => {
+        if (!directoryId && !variables?.length) {
+          this.setDisplayedColumns();
+          return;
+        }
         if (this.msel.useCaster && this.msel.casterDirectoryId === directoryId) {
           this.casterTeamVariables = variables.map(v => v.name);
           this.requiredCasterTeamVariables = variables.filter(v => v.required).map(v => v.name);
