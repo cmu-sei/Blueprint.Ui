@@ -171,6 +171,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                               (msel.useCite && !hasCiteScoringModel()) ||
                               (msel.useCite && hasCiteTeamsWithoutType()) ||
                               !!casterWarningMessage() ||
+                              (!msel.playerViewId && moveProblems().length > 0) ||
                               isBusy || isChanged || (!!pushStatus && pushStatus.startsWith('ERROR'))">@if (pushStatus &&
                   !pushStatus.startsWith('ERROR')) {
                   <span>{{ pushStatus }} ...</span>
@@ -197,6 +198,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
               }
               }
             </div>
+
+            @if (!pushStatus && !msel.playerViewId && moveProblems().length) {
+            <div class="warning-message" role="status" aria-label="Moves to fix before pushing">
+              @for (problem of moveProblems(); track problem) {
+              <div>** {{ problem }}</div>
+              }
+              <div>Fix these on the Moves and Events tabs before {{ msel.isTemplate ? 'anyone launches this template' : 'pushing integrations' }}.</div>
+            </div>
+            }
 
             <!-- Player Integration -->
             <div class="integration-row">
@@ -373,7 +383,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   }
                   @if (getCasterDirectoryUrl()) {
                   <a [href]="getCasterDirectoryUrl()" target="_blank" class="integration-link" title="Open directory in Caster">
-                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new"></mat-icon>
+                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new" />
                   </a>
                   }
                 </div>

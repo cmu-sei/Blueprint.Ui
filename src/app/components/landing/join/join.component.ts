@@ -5,9 +5,7 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
-import {
-  ComnSettingsService,
-} from '@cmusei/crucible-common';
+import { ComnSettingsService, CrucibleLandingBackgroundDirective } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { UserQuery } from 'src/app/data/user/user.query';
 import {
@@ -21,7 +19,6 @@ import { Title } from '@angular/platform-browser';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { XApiService } from 'src/app/services/xapi/xapi.service';
-import { landingBackground } from 'src/app/utilities/landing-background';
 import { cardImage } from 'src/app/utilities/card-image';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 import { OverflowTooltipDirective } from '../../shared/overflow-tooltip/overflow-tooltip.directive';
@@ -33,7 +30,7 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
     selector: 'app-join',
     templateUrl: './join.component.html',
     styleUrls: ['./join.component.scss'],
-    imports: [TopbarComponent, MatButton, MatIcon, MatProgressSpinner, RouterLink, OverflowTooltipDirective]
+    imports: [CrucibleLandingBackgroundDirective, TopbarComponent, MatButton, MatIcon, MatProgressSpinner, RouterLink, OverflowTooltipDirective]
 })
 export class JoinComponent implements OnDestroy, OnInit {
   private userDataService = inject(UserDataService);
@@ -57,7 +54,6 @@ export class JoinComponent implements OnDestroy, OnInit {
   topbarColor = '#ef3a47';
   topbarTextColor = '#FFFFFF';
   topbarImage = this.settingsService.settings.AppTopBarImage;
-  backgroundImage = landingBackground(this.settingsService.settings);
   TopbarView = TopbarView;
   appTitle = 'Join Event';
   joinStatus: { [id: string]: string } = {};

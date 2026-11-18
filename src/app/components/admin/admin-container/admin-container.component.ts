@@ -28,7 +28,7 @@ import { MatSidenavContainer, MatSidenav, MatSidenavContent } from '@angular/mat
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatIcon } from '@angular/material/icon';
 import { MatList, MatListItem, MatListItemIcon } from '@angular/material/list';
-import { NgClass, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { MatIconButton } from '@angular/material/button';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 import { AdminUnitsComponent } from '../admin-units/admin-units.component';
@@ -46,12 +46,13 @@ import { CardListComponent } from '../../card-list/card-list.component';
 import { CiteActionListComponent } from '../../cite-action-list/cite-action-list.component';
 import { CiteDutyListComponent } from '../../cite-duty-list/cite-duty-list.component';
 import { PlayerApplicationListComponent } from '../../player-application-list/player-application-list.component';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
     selector: 'app-admin-container',
     templateUrl: './admin-container.component.html',
     styleUrls: ['./admin-container.component.scss'],
-    imports: [MatSidenavContainer, MatSidenav, MatToolbar, MatIcon, MatList, MatListItem, NgClass, MatListItemIcon, MatIconButton, MatSidenavContent, TopbarComponent, AdminUnitsComponent, AdminUsersComponent, AdminRolesComponent, AdminGroupsComponent, DataFieldListComponent, AdminInjectTypesComponent, AdminCompetencyFrameworksComponent, AdminProficiencyScalesComponent, AdminTechniqueReleasesComponent, AdminCatalogListComponent, OrganizationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, PlayerApplicationListComponent, AsyncPipe]
+    imports: [MatSidenavContainer, MatSidenav, MatToolbar, MatIcon, MatList, MatListItem, MatListItemIcon, MatIconButton, MatSidenavContent, TopbarComponent, AdminUnitsComponent, AdminUsersComponent, AdminRolesComponent, AdminGroupsComponent, DataFieldListComponent, AdminInjectTypesComponent, AdminCompetencyFrameworksComponent, AdminProficiencyScalesComponent, AdminTechniqueReleasesComponent, AdminCatalogListComponent, OrganizationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, PlayerApplicationListComponent, AsyncPipe]
 })
 export class AdminContainerComponent implements OnDestroy, OnInit {
   private router = inject(Router);
@@ -152,6 +153,15 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   private unsubscribe$ = new Subject();
 
   constructor() {
+    // a new hub connection missed what was broadcast while the old one was down; the sections reload
+    // their own lists
+    reloadOnReconnect(() => {
+      this.userDataService.load().pipe(take(1)).subscribe();
+      if (this.canAccessAdminSection) {
+        this.unitDataService.load();
+      }
+      this.injectTypeDataService.load();
+    });
     const titleService = inject(Title);
 
     this.theme$ = this.authQuery.userTheme$;

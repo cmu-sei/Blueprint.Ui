@@ -5,6 +5,8 @@
 @use "./theme-colors" as theme;
 @use "./dark-theme-colors" as dark-theme;
 @use '@mdi/font/scss/materialdesignicons.scss';
+// Declares the Open Sans family the theme typography and the classification banner use.
+@use '@cmusei/crucible-common/fonts';
 
 @import '@fortawesome/fontawesome-free/css/all.css';
 @include mat.core();
@@ -240,22 +242,4 @@ mat-paginator {
     font-size: 13px;
     color: var(--mat-sys-on-surface-variant);
   }
-}
-
-// The optional AppLandingBackgroundImage behind the dashboard, join and build
-// pages. Matches the Moodle site background: the image as-is in light mode,
-// and in dark mode a near-black tint over it, so the page stays dark. The
-// body and .darkMode prefixes outrank the background colors of the pages.
-body .landing-background.has-background {
-  background-image: var(--landing-background);
-  background-size: cover;
-  background-position: center;
-  // Pinned to the window, so the image sits in the same place in every app
-  // whatever the height of its top bar or page.
-  background-attachment: fixed;
-}
-
-.darkMode .landing-background.has-background {
-  background-color: #101215;
-  background-image: linear-gradient(rgba(7, 9, 12, 0.52), rgba(7, 9, 12, 0.44)), var(--landing-background);
 }

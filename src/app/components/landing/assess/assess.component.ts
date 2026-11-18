@@ -4,7 +4,7 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { Subject, combineLatest, of } from 'rxjs';
 import { catchError, filter, take, takeUntil } from 'rxjs/operators';
-import { ComnSettingsService } from '@cmusei/crucible-common';
+import { ComnSettingsService, CrucibleLandingBackgroundDirective } from '@cmusei/crucible-common';
 import { Msel, MselCompetencyService, SystemPermission } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
@@ -16,7 +16,6 @@ import { ErrorService } from 'src/app/services/error/error.service';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 import { OverflowTooltipDirective } from '../../shared/overflow-tooltip/overflow-tooltip.directive';
-import { landingBackground } from 'src/app/utilities/landing-background';
 import { cardImage } from 'src/app/utilities/card-image';
 import { assessableMsels } from 'src/app/utilities/assessable-msels';
 import { MatButton } from '@angular/material/button';
@@ -29,7 +28,7 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
     selector: 'app-assess',
     templateUrl: './assess.component.html',
     styleUrls: ['../join/join.component.scss', './assess.component.scss'],
-    imports: [TopbarComponent, MatButton, MatIcon, MatProgressSpinner, RouterLink, OverflowTooltipDirective]
+    imports: [CrucibleLandingBackgroundDirective, TopbarComponent, MatButton, MatIcon, MatProgressSpinner, RouterLink, OverflowTooltipDirective]
 })
 export class AssessComponent implements OnDestroy, OnInit {
   private settingsService = inject(ComnSettingsService);
@@ -52,7 +51,6 @@ export class AssessComponent implements OnDestroy, OnInit {
   hideTopbar = this.uiDataService.inIframe();
   topbarText = 'Assess Events';
   topbarImage = this.settingsService.settings.AppTopBarImage;
-  backgroundImage = landingBackground(this.settingsService.settings);
   TopbarView = TopbarView;
   readonly cardImage = cardImage;
   private unsubscribe$ = new Subject();

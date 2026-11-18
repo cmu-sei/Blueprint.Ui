@@ -43,6 +43,7 @@ import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
 import { PlayerApplicationTeamsComponent } from '../player-application-teams/player-application-teams.component';
 import { PlayerTeamAppOrderComponent } from '../player-team-app-order/player-team-app-order.component';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
 
 @Component({ selector: 'app-player-application-teams', template: '' })
 class AppTeamsStub {
@@ -603,5 +604,24 @@ describe('PlayerApplicationListComponent', () => {
       expect(appApi.deletePlayerApplication).toHaveBeenCalledWith('tpl-map');
       expect(within(table()).queryByText('Map')).not.toBeInTheDocument();
     });
+  });
+
+  /**
+   * Verifies: when the hub connection is replaced, the MSEL's applications, their teams and the templates load again.
+   * Interacts with: HubReconnectService.announceReconnected, PlayerApplicationService and
+   * PlayerApplicationTeamService (stubs).
+   * Data: the default MSEL.
+   */
+  it('reloads the applications when the hub connection is replaced', async () => {
+    const { appApi, appTeamApi } = await renderAppList();
+    const apps = appApi.getApplicationsByMsel.mock.calls.length;
+    const teams = appTeamApi.getMselPlayerApplicationTeams.mock.calls.length;
+    const templates = appApi.getPlayerApplicationTemplates.mock.calls.length;
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    expect(appApi.getApplicationsByMsel).toHaveBeenCalledTimes(apps + 1);
+    expect(appTeamApi.getMselPlayerApplicationTeams).toHaveBeenCalledTimes(teams + 1);
+    expect(appApi.getPlayerApplicationTemplates).toHaveBeenCalledTimes(templates + 1);
   });
 });

@@ -104,9 +104,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
   </div>
-  @if (badMoveTimeOrder()) {
-  <div class="warning-message">
-    ** The moves are not in ascending start time order!
+  @if (moveOrderProblems().length) {
+  <div class="warning-message" role="status" aria-label="Move start times">
+    @for (problem of moveOrderProblems(); track problem) {
+    <div>** {{ problem }}</div>
+    }
+    <div>{{ moveOrderRule }} Change the start times so each event is in the right move.</div>
   </div>
   }
 </div>

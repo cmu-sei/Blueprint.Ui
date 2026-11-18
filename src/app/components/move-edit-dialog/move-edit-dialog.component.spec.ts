@@ -51,7 +51,11 @@ const MOVE: Move = {
 };
 
 async function renderMoveEdit(move: Move = MOVE) {
-  const data = { move: structuredClone(move), mselStartTime: START, title: 'Edit Move' };
+  const data = {
+    move: structuredClone(move),
+    mselStartTime: START,
+    title: 'Edit Move',
+  };
   const rendered = await renderComponent(MoveEditDialogComponent, {
     imports: [
       ...CRUCIBLE_DIALOG_IMPORTS,
@@ -126,6 +130,38 @@ describe('MoveEditDialogComponent', () => {
       { saveChanges: true, move: data.move },
       { saveChanges: false, move: null },
     ]);
+  });
+
+  /**
+   * Verifies: the Move Number takes only a whole number: a cleared field or a fraction is refused before the API
+   * sees it, and Save stays disabled until it is fixed.
+   * Interacts with: the number input's ngModel, numberError, crucible-dialog submitDisabled and errorMessage.
+   * Data: Move 1; the number cleared, then 1.5, then 2.
+   */
+  it('refuses a move number that is not a whole number', async () => {
+    const { fixture } = await renderMoveEdit();
+    const user = userEvent.setup();
+    const number = screen.getByPlaceholderText('Move Number');
+    const save = actions().getByRole('button', { name: 'Save' });
+
+    await user.clear(number);
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Move Number must be a whole number.',
+    );
+    expect(save).toBeDisabled();
+
+    await user.type(number, '1.5');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Move Number must be a whole number.',
+    );
+    expect(save).toBeDisabled();
+
+    await user.clear(number);
+    await user.type(number, '2');
+    fixture.detectChanges();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(save).toBeEnabled();
+    expect(fixture.componentInstance.data.move.moveNumber).toBe(2);
   });
 
   /**

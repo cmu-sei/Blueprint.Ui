@@ -3,7 +3,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Component, input, output } from '@angular/core';
-import { ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { outputToObservable } from '@angular/core/rxjs-interop';
 import { CdkTextareaAutosize } from '@angular/cdk/text-field';
@@ -60,6 +60,7 @@ import {
   UserService,
 } from 'src/app/generated/blueprint.api';
 import { MselStore } from 'src/app/data/msel/msel.store';
+import { MoveStore } from 'src/app/data/move/move.store';
 import { UserStore } from 'src/app/data/user/user.store';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
@@ -73,6 +74,7 @@ import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.serv
 import { unstubbed } from 'src/app/test-utils/unstubbed';
 import { IntegrationStatusComponent } from '../integration-status/integration-status.component';
 import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
 
 @Component({ selector: 'app-integration-status', template: '' })
 class IntegrationStatusStub {
@@ -138,6 +140,7 @@ async function renderInfo(
     authored?: MselScoringModel | null;
     citeModels?: ScoringModel[];
     confirms?: boolean;
+    moves?: { moveNumber: number; deltaSeconds: number }[];
     updateMsel?: (id: string, edit: MselEdit) => Observable<Msel>;
   } = {},
 ) {
@@ -153,6 +156,7 @@ async function renderInfo(
     authored = null,
     citeModels = [],
     confirms = true,
+    moves = [],
     // the API answers with the saved MSEL, which always has its created and modified dates
     updateMsel = (id: string, edit: MselEdit) =>
       of<Msel>({ ...msel(myRoles, startTime, mselExtra), ...edit, id, dateCreated: new Date('2026-10-01T12:00:00Z'), dateModified: new Date() }),
@@ -249,6 +253,14 @@ async function renderInfo(
       // angular-editor injects HttpClient for its image upload.
       provideHttpClient(),
       provideHttpClientTesting(),
+      {
+        provide: MoveStore,
+        useFactory: () => {
+          const store = new MoveStore();
+          store.set(moves.map((m) => ({ id: `move-${m.moveNumber}`, mselId: 'msel-1', ...m })));
+          return store;
+        },
+      },
       // The MSEL page loads the MSEL; the store is seeded instead.
       {
         provide: MselStore,
@@ -361,6 +373,45 @@ describe('MselInfoComponent', () => {
   });
 
   /**
+   * Verifies: Push Integrations is disabled while the MSEL's moves share a start time or are out of order, and the tab says
+   * which; moves in order leave it enabled with no warning.
+   * Interacts with: MselInfoComponent.moveProblems, real MoveStore (seeded), the Push Integrations button.
+   * Data: an owner; Move 0 and Move 1 both at +0s, or Move 1 at +600s.
+   */
+  it.each([
+    { label: 'share a start time', moves: [{ moveNumber: 0, deltaSeconds: 0 }, { moveNumber: 1, deltaSeconds: 0 }], warning: '** Move 0 and Move 1 start at the same time.' },
+    { label: 'are in order', moves: [{ moveNumber: 0, deltaSeconds: 0 }, { moveNumber: 1, deltaSeconds: 600 }], warning: '' },
+  ])('blocks Push Integrations when the moves $label', async ({ moves, warning }) => {
+    await renderInfo({ myRoles: [MselRole.Owner], moves });
+
+    if (warning) {
+      expect(screen.getByTitle('Push Integrations')).toBeDisabled();
+      expect(screen.getByText(warning)).toBeInTheDocument();
+    } else {
+      expect(screen.getByTitle('Push Integrations')).toBeEnabled();
+      expect(screen.queryByRole('status', { name: 'Moves to fix before pushing' })).not.toBeInTheDocument();
+    }
+  });
+
+  /**
+   * Verifies: a template, which has no Push Integrations button, still lists the moves to fix, because launching by
+   * invitation pushes and the API refuses an invalid template.
+   * Interacts with: MselInfoComponent.moveProblems, real MoveStore (seeded).
+   * Data: a template whose Move 0 and Move 1 both start at +0s.
+   */
+  it('lists the moves to fix on a template', async () => {
+    await renderInfo({
+      myRoles: [MselRole.Owner],
+      mselExtra: { isTemplate: true },
+      moves: [{ moveNumber: 0, deltaSeconds: 0 }, { moveNumber: 1, deltaSeconds: 0 }],
+    });
+
+    expect(screen.queryByTitle('Push Integrations')).not.toBeInTheDocument();
+    expect(screen.getByText('** Move 0 and Move 1 start at the same time.')).toBeInTheDocument();
+    expect(screen.getByText(/before anyone launches this template/)).toBeInTheDocument();
+  });
+
+  /**
    * Verifies: without ManageMsels and not the owner there is no Delete, Add Page, Edit Page or header metadata, and Push Integrations is disabled, even with EditMsels as an Editor.
    * Interacts with: real PermissionDataService (stubbed grants), MselInfoComponent.canManageMsel.
    * Data: every permission but ManageMsels (near miss: EditMsels); MSEL roles Editor and Approver.
@@ -404,7 +455,7 @@ describe('MselInfoComponent', () => {
     const user = await openPage();
     await user.click(screen.getByTitle('Delete Read Ahead'));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Page' }));
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Page', confirmText: 'Delete', cancelText: 'Cancel' }));
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
     expect(pageApi.deleteMselPage).toHaveBeenCalledWith('page-1');
   });
@@ -1154,5 +1205,20 @@ describe('MselInfoComponent', () => {
       expect(screen.getByText('Harbor Evaluation')).toBeInTheDocument();
       expect(screen.getByTitle('Open in CITE')).toHaveAttribute('href', expect.stringContaining('evaluation=eval-1'));
     });
+  });
+
+  /**
+   * Verifies: when the hub connection is replaced, the MSEL's applications behind the Caster warning load again.
+   * Interacts with: HubReconnectService.announceReconnected, PlayerApplicationService.getApplicationsByMsel (stub).
+   * Data: msel-1.
+   */
+  it('reloads the applications when the hub connection is replaced', async () => {
+    const { appApi } = await renderInfo();
+    const before = appApi.getApplicationsByMsel.mock.calls.length;
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    expect(appApi.getApplicationsByMsel).toHaveBeenCalledTimes(before + 1);
+    expect(appApi.getApplicationsByMsel).toHaveBeenLastCalledWith('msel-1');
   });
 });

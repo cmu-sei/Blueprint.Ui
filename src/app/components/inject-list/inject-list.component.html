@@ -7,7 +7,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <table mat-table #injectTable [dataSource]="injectDataSource" matSort multiTemplateDataRows>
     <!-- action column -->
     <ng-container matColumnDef="action">
-      <mat-header-cell *matHeaderCellDef [ngClass]="isEditMode() ? 'mat-column-action' : 'mat-column-select'">
+      <mat-header-cell *matHeaderCellDef [class]="isEditMode() ? 'mat-column-action' : 'mat-column-select'">
         <!-- In Catalog -->
         @if (canEdit() && catalog().id) {
         <button mat-icon-button [matMenuTriggerFor]="addMenu" style="outline: none;" title="Add Inject">
@@ -31,7 +31,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
         </mat-menu>
       </mat-header-cell>
-      <mat-cell *matCellDef="let element" [ngClass]="isEditMode() ? 'mat-column-action' : 'mat-column-select'">
+      <mat-cell *matCellDef="let element" [class]="isEditMode() ? 'mat-column-action' : 'mat-column-select'">
         @if (isEditMode()) {
         <div>
           @if (canEdit()) {

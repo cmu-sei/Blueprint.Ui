@@ -1,14 +1,15 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Component, input, output } from '@angular/core';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { Component, input, output, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { screen } from '@testing-library/angular';
 import { Observable, of, throwError } from 'rxjs';
-import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
+import { ComnAuthService, ComnSettingsService, CrucibleThemeService } from '@cmusei/crucible-common';
+import { FakeImage } from 'src/app/test-utils/fake-image';
 import {
   Msel,
   MselCompetency,
@@ -58,6 +59,7 @@ async function renderAssess(
     permissionsFail?: boolean;
     permissions?: SystemPermission[];
     competencies?: (mselId: string) => Observable<MselCompetency[]>;
+    background?: string;
   } = {},
 ) {
   const { msels = [ALPHA, BRAVO, CHARLIE, DELTA], permissions = [] } = overrides;
@@ -83,6 +85,7 @@ async function renderAssess(
     imports: [MatButtonModule, MatIconModule, MatProgressSpinnerModule],
     childStubs: [{ replace: TopbarComponent, with: TopbarStub }],
     providers: [
+      { provide: CrucibleThemeService, useValue: { isDarkMode: signal(false) } },
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
       PermissionDataService,
       { provide: MselService, useValue: mselApi },
@@ -91,7 +94,9 @@ async function renderAssess(
       { provide: UserService, useValue: userApi },
       {
         provide: ComnSettingsService,
-        useValue: { settings: { AppTopBarImage: '/assets/img/logo-white.png' } } satisfies Pick<ComnSettingsService, 'settings'>,
+        useValue: {
+          settings: { AppTopBarImage: '/assets/img/logo-white.png', AppLandingBackgroundImage: overrides.background },
+        } satisfies Pick<ComnSettingsService, 'settings'>,
       },
       {
         provide: ComnAuthService,
@@ -208,5 +213,46 @@ describe('AssessComponent', () => {
 
     expect(screen.getByText('No running events available to assess')).toBeInTheDocument();
     expect(competencyApi.getMselCompetencies).not.toHaveBeenCalled();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    FakeImage.last = undefined;
+  });
+
+  // crucible-common remembers loaded images, so each test uses its own URL.
+
+  /**
+   * Verifies: the page shows the background image named in settings once it loads.
+   * Interacts with: ComnSettingsService.settings (stub), a stubbed Image, crucibleLandingBackground.
+   * Data: AppLandingBackgroundImage set to a relative asset URL; the image load event fires.
+   */
+  it('shows the landing background once the image loads', async () => {
+    vi.stubGlobal('Image', FakeImage);
+    const { fixture, container } = await renderAssess({ background: '/assets/local/assess-loads.jpg' });
+
+    const page = container.querySelector('.join-page') as HTMLElement;
+    expect(FakeImage.last?.src).toBe('/assets/local/assess-loads.jpg');
+    expect(page.classList.contains('crucible-landing-background')).toBe(false);
+
+    FakeImage.last!.onload!();
+    fixture.detectChanges();
+
+    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe('url("/assets/local/assess-loads.jpg")');
+    expect(page.classList.contains('crucible-landing-background')).toBe(true);
+  });
+
+  /**
+   * Verifies: without the setting, no image is requested and the normal page background is kept.
+   * Interacts with: ComnSettingsService.settings (stub), a stubbed Image, crucibleLandingBackground.
+   * Data: AppLandingBackgroundImage unset.
+   */
+  it('keeps the normal background without the setting', async () => {
+    vi.stubGlobal('Image', FakeImage);
+    const { container } = await renderAssess();
+
+    expect(FakeImage.last).toBeUndefined();
+    const page = container.querySelector('.join-page') as HTMLElement;
+    expect(page.classList.contains('crucible-landing-background')).toBe(false);
   });
 });

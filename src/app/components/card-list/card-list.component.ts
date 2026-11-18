@@ -30,6 +30,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
 import { CardTeamsComponent } from '../card-teams/card-teams.component';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
     selector: 'app-card-list',
@@ -111,6 +112,8 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
       });
     // load card templates
     this.cardDataService.loadTemplates();
+    // a new hub connection missed what was broadcast while the old one was down
+    reloadOnReconnect(() => this.cardDataService.loadTemplates());
   }
 
   ngAfterViewInit() {
@@ -246,7 +249,7 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
 
   deleteCard(card: Card): void {
     this.dialogService
-      .confirm({ title: 'Delete Card', message: 'Are you sure that you want to delete ' + card.name + '?'
+      .confirm({ title: 'Delete Card', message: 'Are you sure that you want to delete ' + card.name + '?', confirmText: 'Delete', cancelText: 'Cancel'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.cardDataService.delete(card.id);

@@ -37,6 +37,7 @@ import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-r
 import { TopbarComponent } from '../shared/top-bar/topbar.component';
 import { ScenarioEventListComponent } from '../scenario-event-list/scenario-event-list.component';
 import { AsyncPipe } from '@angular/common';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
     selector: 'app-starter',
@@ -97,31 +98,9 @@ export class StarterComponent implements OnDestroy, OnInit {
         // load the selected MSEL data
         const mselId = params.get('msel');
         if (mselId && this.selectedMselId !== mselId) {
-          // load the selected MSEL and make it active
-          this.mselDataService.loadById(mselId);
+          // make the selected MSEL active and load it
           this.mselDataService.setActive(mselId);
-          // load the MSELs moves
-          this.moveDataService.loadByMsel(mselId);
-          // load the MSEL Teams
-          this.teamDataService.loadByMsel(mselId);
-          // load the MSEL organizations and templates
-          this.organizationDataService.loadByMsel(mselId);
-          // load data fields, options, and values
-          this.dataFieldDataService.loadByMsel(mselId);
-          this.dataOptionDataService.loadByMsel(mselId);
-          this.dataValueDataService.loadByMsel(mselId);
-          // load scenario events
-          this.scenarioEventDataService.loadByMsel(mselId);
-          // load user msel roles
-          this.userMselRoleDataService.loadByMsel(mselId);
-          // load user team roles
-          this.userTeamRoleDataService.loadByMsel(mselId);
-          // load the Msel TeamUsers
-          this.teamUserDataService.loadByMsel(mselId);
-          // load the Catalogs
-          this.catalogDataService.loadMine();
-          // load the users
-          this.userDataService.loadByMsel(mselId).subscribe();
+          this.loadMsel(mselId);
           // set the selected MSEL
           this.selectedMselId = mselId;
           this.mselDataService.setActive(mselId);
@@ -145,6 +124,14 @@ export class StarterComponent implements OnDestroy, OnInit {
     this.unitDataService.load();
     // load the organization templates
     this.organizationDataService.loadTemplates();
+    // a new hub connection missed what was broadcast while the old one was down
+    reloadOnReconnect(() => {
+      if (this.selectedMselId) {
+        this.loadMsel(this.selectedMselId);
+      }
+      this.unitDataService.load();
+      this.organizationDataService.loadTemplates();
+    });
     // Set the display settings from config file
     this.appTitle =
       this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
@@ -152,6 +139,33 @@ export class StarterComponent implements OnDestroy, OnInit {
     this.topbarTextBase =
       this.settingsService.settings.AppTopBarText || this.topbarTextBase;
     this.topbarText = this.topbarTextBase;
+  }
+
+  /** Loads the MSEL and everything the starter view shows. */
+  private loadMsel(mselId: string) {
+    this.mselDataService.loadById(mselId);
+    // load the MSELs moves
+    this.moveDataService.loadByMsel(mselId);
+    // load the MSEL Teams
+    this.teamDataService.loadByMsel(mselId);
+    // load the MSEL organizations and templates
+    this.organizationDataService.loadByMsel(mselId);
+    // load data fields, options, and values
+    this.dataFieldDataService.loadByMsel(mselId);
+    this.dataOptionDataService.loadByMsel(mselId);
+    this.dataValueDataService.loadByMsel(mselId);
+    // load scenario events
+    this.scenarioEventDataService.loadByMsel(mselId);
+    // load user msel roles
+    this.userMselRoleDataService.loadByMsel(mselId);
+    // load user team roles
+    this.userTeamRoleDataService.loadByMsel(mselId);
+    // load the Msel TeamUsers
+    this.teamUserDataService.loadByMsel(mselId);
+    // load the Catalogs
+    this.catalogDataService.loadMine();
+    // load the users
+    this.userDataService.loadByMsel(mselId).subscribe();
   }
 
   ngOnInit() {

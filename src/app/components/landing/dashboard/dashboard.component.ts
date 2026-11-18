@@ -5,9 +5,7 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, combineLatest, of } from 'rxjs';
 import { take, takeUntil, catchError } from 'rxjs/operators';
-import {
-  ComnSettingsService,
-} from '@cmusei/crucible-common';
+import { ComnSettingsService, CrucibleLandingBackgroundDirective } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { UserQuery } from 'src/app/data/user/user.query';
 import { CurrentUserQuery } from 'src/app/data/user/user.query';
@@ -23,7 +21,6 @@ import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MatDialog } from '@angular/material/dialog';
 import { CapabilityDialogComponent, CapabilityData } from '../../capability-dialog/capability-dialog.component';
-import { landingBackground } from 'src/app/utilities/landing-background';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { assessableMsels, canAssess } from 'src/app/utilities/assessable-msels';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
@@ -105,7 +102,7 @@ export const CAPABILITY_CARDS: CapabilityCard[] = [
     selector: 'app-dashboard',
     templateUrl: './dashboard.component.html',
     styleUrls: ['./dashboard.component.scss'],
-    imports: [TopbarComponent, MatButton, MatIcon, MatProgressSpinner]
+    imports: [CrucibleLandingBackgroundDirective, TopbarComponent, MatButton, MatIcon, MatProgressSpinner]
 })
 export class DashboardComponent implements OnDestroy, OnInit {
   private userDataService = inject(UserDataService);
@@ -131,7 +128,6 @@ export class DashboardComponent implements OnDestroy, OnInit {
   topbarColor = '#ef3a47';
   topbarTextColor = '#FFFFFF';
   topbarImage = this.settingsService.settings.AppTopBarImage;
-  backgroundImage = landingBackground(this.settingsService.settings);
   TopbarView = TopbarView;
   appTitle = 'Event Dashboard';
   joinClass = 'base-card';

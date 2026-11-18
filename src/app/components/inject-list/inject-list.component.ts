@@ -40,11 +40,11 @@ import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { UserQuery } from 'src/app/data/user/user.query';
 import { InjectSelectDialogComponent } from '../inject-select-dialog/inject-select-dialog.component';
-import { NgClass } from '@angular/common';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { DataValueComponent } from '../data-value/data-value.component';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
     selector: 'app-inject-list',
@@ -57,7 +57,7 @@ import { DataValueComponent } from '../data-value/data-value.component';
             transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
         ]),
     ],
-    imports: [MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, NgClass, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, MatMenuItem, MatCellDef, MatCell, MatCheckbox, DataValueComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
+    imports: [MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, MatMenuItem, MatCellDef, MatCell, MatCheckbox, DataValueComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class InjectListComponent implements OnDestroy, OnInit {
   private catalogQuery = inject_1(CatalogQuery);
@@ -105,6 +105,8 @@ export class InjectListComponent implements OnDestroy, OnInit {
   catalogList: Catalog[] = [];
 
   constructor() {
+    // a new hub connection missed what was broadcast while the old one was down
+    reloadOnReconnect(() => this.loadInjects());
     // subscribe to injects
     this.injectmQuery
       .selectAll()
@@ -189,6 +191,10 @@ export class InjectListComponent implements OnDestroy, OnInit {
   }
 
   ngOnInit() {
+    this.loadInjects();
+  }
+
+  private loadInjects() {
     // load injects
     const catalog = this.catalog();
     const injectType = this.injectType();
@@ -278,7 +284,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
       this.catalogInjectDataService.deleteByIds(catalog.id, injectm.id);
     } else {
       this.dialogService
-        .confirm({ title: 'Delete Inject', message: 'Are you sure that you want to delete ' + injectm.name + '?'
+        .confirm({ title: 'Delete Inject', message: 'Are you sure that you want to delete ' + injectm.name + '?', confirmText: 'Delete', cancelText: 'Cancel'
          }).afterClosed().subscribe((result) => {
           if (result) {
             this.injectmDataService.delete(injectm.id);
