@@ -18,6 +18,7 @@ import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { ScenarioEventDataService } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
+import { MselTechniqueDataService } from 'src/app/data/msel-technique/msel-technique-data.service';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { MselAssistantComponent } from './msel-assistant.component';
 
@@ -35,7 +36,7 @@ async function renderAssistant(answer: () => any = () => of(PROPOSAL), applied: 
   const applyAssistantChanges = vi.fn(applied);
   const loaders = {
     teams: vi.fn(), organizations: vi.fn(), cards: vi.fn(), cardTeams: vi.fn(), mselCompetencies: vi.fn(), teamCompetencies: vi.fn(),
-    moves: vi.fn(), scenarioEvents: vi.fn(), dataValues: vi.fn(), dataFields: vi.fn(), msel: vi.fn(),
+    moves: vi.fn(), scenarioEvents: vi.fn(), dataValues: vi.fn(), dataFields: vi.fn(), msel: vi.fn(), mselTechniques: vi.fn(),
   };
   const rendered = await renderComponent(MselAssistantComponent, {
     inputs: { mselId: 'msel-1' },
@@ -51,6 +52,7 @@ async function renderAssistant(answer: () => any = () => of(PROPOSAL), applied: 
       { provide: ScenarioEventDataService, useValue: { loadByMsel: loaders.scenarioEvents } },
       { provide: DataValueDataService, useValue: { loadByMsel: loaders.dataValues } },
       { provide: DataFieldDataService, useValue: { loadByMsel: loaders.dataFields } },
+      { provide: MselTechniqueDataService, useValue: { loadByMsel: loaders.mselTechniques } },
     ],
   });
   return { ...rendered, askAssistant, applyAssistantChanges, loaders, user: userEvent.setup() };
@@ -97,7 +99,7 @@ describe('MselAssistantComponent', () => {
 
   /**
    * Verifies: only the ticked changes are applied, each result is shown, and the lists the changes touch are reloaded.
-   * Interacts with: the checkboxes, Apply, MselDataService.applyAssistantChanges, the team/organization/card/competency/move/event loaders.
+   * Interacts with: the checkboxes, Apply, MselDataService.applyAssistantChanges, the team/organization/card/competency/move/event/technique loaders.
    * Data: the competency unticked; the team applied; the apply reports it with a refused one alongside.
    */
   it('applies the ticked changes and shows how each went', async () => {

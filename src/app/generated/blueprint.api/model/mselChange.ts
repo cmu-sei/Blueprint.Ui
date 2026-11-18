@@ -20,7 +20,7 @@
  */
 export interface MselChange { 
     /**
-     * team.add, team.update, organization.add, organization.update, card.add, card.update, competency.add, competency.remove, move.add, move.update, inject.add or inject.update
+     * team.add, team.update, organization.add, organization.update, card.add, card.update, competency.add, competency.remove, move.add, move.update, inject.add, inject.update, column.add, column.update, integration.add, page.add, page.update or technique.add
      */
     op?: string | null;
     target?: string | null;
@@ -51,6 +51,54 @@ export interface MselChange {
      * An inject\'s values by column name; for an edit, only the columns that change
      */
     values?: { [key: string]: string; } | null;
+    /**
+     * A column\'s type: String, Html, Integer, Double, Boolean, DateTime, Url, Organization, Team, TeamsMultiple, SourceType, IpAddress, Network, AttackTechnique or DefensiveTechnique; a list is a String with options
+     */
+    dataType?: string | null;
+    /**
+     * A column\'s choices, in order; a column with options is chosen from a list. For an edit, the whole new list.
+     */
+    options?: Array<string> | null;
+    /**
+     * The Gallery article parameter a column fills, such as Summary or FromOrg
+     */
+    galleryParameter?: string | null;
+    /**
+     * Whether a column shows on the participants\' Exercise View
+     */
+    onExerciseView?: boolean | null;
+    /**
+     * Whether a column shows on the scenario event list
+     */
+    onEventList?: boolean | null;
+    /**
+     * The integration to turn on: Player, Gallery, Cite, Steamfitter or Caster
+     */
+    integration?: string | null;
+    /**
+     * For CITE, the scoring model to author: MissionImpact, Likelihood or Nciss; none leaves it to the planner
+     */
+    preset?: string | null;
+    /**
+     * A page\'s whole content, in HTML
+     */
+    content?: string | null;
+    /**
+     * Whether every MSEL user, participants too, may see a page
+     */
+    allCanView?: boolean | null;
+    /**
+     * A technique\'s id, as its release lists it
+     */
+    technique?: string | null;
+    /**
+     * The domain of the release a technique is from
+     */
+    domain?: string | null;
+    /**
+     * The technique an add puts in the MSEL\'s techniques, set by the server from Technique and Domain
+     */
+    techniqueId?: string | null;
     /**
      * The inject an edit changes, set by the server from Target so a later apply finds the same one
      */

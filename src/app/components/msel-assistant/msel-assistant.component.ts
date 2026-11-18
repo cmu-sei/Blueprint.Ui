@@ -24,6 +24,7 @@ import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { ScenarioEventDataService } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
+import { MselTechniqueDataService } from 'src/app/data/msel-technique/msel-technique-data.service';
 import { MselAssistMessage, MselChange, MselChangeResult } from 'src/app/generated/blueprint.api';
 
 /** One turn of the conversation, with what the assistant proposed and what came of applying it. */
@@ -55,6 +56,7 @@ export interface AssistTurn {
 })
 export class MselAssistantComponent {
   private mselDataService = inject(MselDataService);
+  private mselTechniqueDataService = inject(MselTechniqueDataService);
   private teamDataService = inject(TeamDataService);
   private organizationDataService = inject(OrganizationDataService);
   private cardDataService = inject(CardDataService);
@@ -170,6 +172,8 @@ export class MselAssistantComponent {
     this.dataValueDataService.loadByMsel(mselId);
     this.mselCompetencyDataService.loadByMsel(mselId);
     this.teamCompetencyDataService.loadByMsel(mselId);
+    // techniques added, or a column turned into a technique column, show on the Techniques tab
+    this.mselTechniqueDataService.loadByMsel(mselId);
   }
 
   onKeydown(event: KeyboardEvent) {
