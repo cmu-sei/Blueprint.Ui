@@ -113,6 +113,15 @@
   flex: 0 0 120px;
 }
 
+.col-id a {
+  white-space: nowrap;
+}
+
+// room for the id and its domain tag when the pool holds more than one domain
+.col-id.with-domain {
+  flex: 0 0 250px;
+}
+
 .col-id.sub-technique {
   padding-left: 16px;
 }
