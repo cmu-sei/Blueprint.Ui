@@ -9,7 +9,7 @@ import { MatFormField, MatLabel, MatInput, MatHint } from '@angular/material/inp
 import { FormsModule } from '@angular/forms';
 import { TechniqueRelease, TechniqueReleaseNotice } from 'src/app/generated/blueprint.api';
 
-/** Whether a link is blank or an http or https address, the only kind the API accepts and a page can safely link to. */
+/** Whether a link is blank or an http or https address, the only kind the API accepts. */
 export function isWebAddress(url: string | null | undefined): boolean {
   const value = (url || '').trim();
   if (!value) return true;
@@ -22,9 +22,7 @@ export function isWebAddress(url: string | null | undefined): boolean {
 }
 
 /**
- * Edits the publisher and notice fields of a technique framework release: where it comes from, the notice its
- * publisher asks to be shown with its content, and the publisher's terms of use. A custom release starts with all four
- * empty and shows no notice until it is given one. Nothing else about a release can be edited.
+ * Edits a release's source, source URL, notice and terms URL. A custom release starts with all four empty.
  */
 @Component({
   selector: 'app-admin-technique-release-notice-dialog',

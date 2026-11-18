@@ -10,8 +10,8 @@ import { MselTechniqueDataService } from 'src/app/data/msel-technique/msel-techn
 import { TechniquePoolComponent } from './technique-pool/technique-pool.component';
 
 /**
- * A MSEL's Techniques tab: its attack techniques (ATT&CK, ATLAS, CAPEC) and its defensive techniques (D3FEND), each a
- * pool of its own with every domain pinned to its own release, each release's own notice shown under its pinned row.
+ * A MSEL's Techniques tab: a pool of attack techniques and one of defensive techniques, each domain pinned to a
+ * release whose notice shows under its row.
  */
 @Component({
   selector: 'app-msel-techniques',
@@ -28,7 +28,7 @@ export class MselTechniquesComponent implements OnDestroy {
   private unsubscribe$ = new Subject();
 
   constructor() {
-    // the pool holds both families, so it is loaded once here rather than by each section
+    // loaded once here for both sections
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel && msel.id !== this.mselId) {
         this.mselId = msel.id;

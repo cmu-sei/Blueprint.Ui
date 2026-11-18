@@ -8,10 +8,8 @@ import { MselTechniqueService, MselCountermeasures } from 'src/app/generated/blu
 import { MselTechniqueQuery } from './msel-technique.query';
 
 /**
- * The D3FEND countermeasures of a MSEL's attack techniques, as the API answers them for the whole pool: from the
- * D3FEND release the defensive techniques are pinned to, else the newest with mappings. Loaded once per MSEL and
- * again whenever the pool changes, since adding an attack technique adds a group and adding the first defensive
- * technique may pin a different release.
+ * The countermeasures of a MSEL's attack techniques, for the whole pool, from the defensive release it is
+ * pinned to, else the newest with mappings. Reloaded whenever the pool changes.
  */
 @Injectable({
   providedIn: 'root',

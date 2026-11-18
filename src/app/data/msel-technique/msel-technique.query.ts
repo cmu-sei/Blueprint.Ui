@@ -25,8 +25,7 @@ export class MselTechniqueQuery extends QueryEntity<MselTechniqueState> {
   }
 
   /**
-   * The pool's techniques, in id order (T1003 before T1059, T1059 before T1059.001), or only the ones of one
-   * family: the attack techniques (ATT&CK, ATLAS) or the defensive ones (D3FEND).
+   * The pool's techniques in id order, or only those of one family.
    */
   selectTechniques(family?: TechniqueFamily): Observable<Technique[]> {
     return this.selectAll().pipe(
@@ -38,7 +37,7 @@ export class MselTechniqueQuery extends QueryEntity<MselTechniqueState> {
   }
 }
 
-/** Orders ATT&CK ids numerically, so T1059.010 follows T1059.009 and a parent precedes its sub-techniques. */
+/** Orders technique ids numerically, with a parent before its sub-techniques. */
 export function compareAttackIds(a: string, b: string): number {
   return (a || '').localeCompare(b || '', undefined, { numeric: true });
 }

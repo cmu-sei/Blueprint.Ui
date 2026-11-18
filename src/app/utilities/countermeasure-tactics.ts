@@ -4,18 +4,18 @@
 
 import { TechniqueCountermeasure } from 'src/app/generated/blueprint.api';
 
-/** MITRE D3FEND's tactics in the order its matrix shows them, which the "Countered by" groups follow. */
+/** The defensive tactics in the order the matrix shows them, which the "Countered by" groups follow. */
 export const D3FEND_TACTIC_ORDER = ['Model', 'Harden', 'Detect', 'Isolate', 'Deceive', 'Evict', 'Restore'];
 
-/** One D3FEND tactic's share of a technique's countermeasures, strongest first. */
+/** One defensive tactic's share of a technique's countermeasures, strongest first. */
 export interface CountermeasureTacticGroup {
   tactic: string;
   countermeasures: TechniqueCountermeasure[];
 }
 
 /**
- * Groups countermeasures by their D3FEND tactic in the matrix's order (a tactic the matrix does not name goes
- * last, alphabetically) and ranks each group by weight, then by id so equals keep a stable order.
+ * Groups countermeasures by defensive tactic in the matrix's order (an unnamed tactic goes last) and ranks
+ * each group by weight, then by id.
  */
 export function groupByTactic(countermeasures: TechniqueCountermeasure[] | null | undefined): CountermeasureTacticGroup[] {
   const groups = new Map<string, TechniqueCountermeasure[]>();
