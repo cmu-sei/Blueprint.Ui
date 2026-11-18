@@ -52,16 +52,13 @@ export interface PinnedDomain {
   domain: string;
   release: TechniqueRelease;
   count: number;
-  /** The browsed release is another release of this domain, so the domain can be upgraded to it. */
+  /** The browsed release is another release of this domain. */
   upgradeTo: TechniqueRelease | null;
 }
 
 /**
- * One family of a MSEL's technique pool: the attack techniques (ATT&CK, ATLAS, CAPEC) its Attack Technique data
- * fields offer, or the defensive techniques (D3FEND) its Defensive Technique fields offer. Each domain in the pool
- * (enterprise-attack, capec, ...) is pinned to one release; picking another release of a domain shows its techniques
- * and offers to upgrade that domain to it, while the family's other domains stay. Under each pooled attack technique
- * a "Countered by" row lists the D3FEND techniques MITRE maps against it.
+ * One family (attack or defensive) of a MSEL's technique pool. Each domain in the pool is pinned to one release;
+ * picking another release of a domain offers to upgrade it. Each pooled attack technique has a "Countered by" row.
  */
 @Component({
   selector: 'app-technique-pool',
@@ -85,7 +82,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
 
   readonly family = input<TechniqueFamily>('attack');
   readonly loggedInUserId = input<string>(undefined);
-  /** The releases whose content the section has on screen, for the notice their publishers ask for. */
+  /** The releases whose content the section shows, for their notices. */
   readonly browserPaginator = viewChild<MatPaginator>('browserPaginator');
   msel = new MselPlus();
   releases: TechniqueRelease[] = [];
@@ -107,8 +104,8 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
   showSubTechniques = true;
   browserDataSource = new MatTableDataSource<Technique>([]);
   /**
-   * D3FEND techniques have no platforms, so the defensive table does without the column. A CAPEC release adds the
-   * weaknesses its patterns exploit and its links to OWASP and WASC.
+   * The defensive table has no platforms column. A release whose techniques cite weaknesses adds them and their
+   * links.
    */
   get browserColumns(): string[] {
     if (this.isDefensive) {
@@ -142,9 +139,9 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
     this.browserDataSource.filterPredicate = (t: Technique, filter: string) => this.matchesBrowserFilter(t, filter);
   }
 
-  // the subscriptions wait for ngOnInit, which is when the family input is known
+  // subscribed in ngOnInit, when the family input is known
   ngOnInit() {
-    // the Techniques tab loads the MSEL's pool once for both families; this section only reads its own half
+    // the tab loads the pool; this section reads its half
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
         const isNewMsel = this.msel.id !== msel.id;
@@ -175,7 +172,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
           this.pinnedByDomain.set(m.technique.domain, m.technique.techniqueReleaseId);
         }
       }
-      // open Add Techniques once the pool has loaded empty, but never close it while techniques are being added
+      // open Add Techniques once the pool loads empty, but never close it while adding
       if (!this.panelInitialized && !this.mselTechniqueQuery.getValue().loading) {
         this.panelInitialized = true;
         this.addPanelExpanded = pool.length === 0;
@@ -242,13 +239,13 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
     return this.pinnedByDomain.get(release.domain) === release.id;
   }
 
-  /** The browsed release is another release of a domain the pool already holds, so its techniques can't be added yet. */
+  /** The browsed release is another release of a domain the pool holds, so its techniques can't be added yet. */
   get needsUpgrade(): boolean {
     const pinnedId = this.pinnedByDomain.get(this.selectedRelease?.domain);
     return !!pinnedId && pinnedId !== this.selectedReleaseId;
   }
 
-  /** One row per domain the pool holds techniques of: its pinned release, how many techniques, and its own upgrade. */
+  /** One row per domain in the pool: its pinned release, technique count and upgrade. */
   get pinnedDomains(): PinnedDomain[] {
     const counts = new Map<string, number>();
     for (const m of this.pool) {
@@ -269,12 +266,12 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
       .sort((a, b) => a.domain.localeCompare(b.domain));
   }
 
-  /** The pool holds more than one domain, so a technique's id alone (T1059 in enterprise and mobile) doesn't say where it is from. */
+  /** The pool holds several domains, so an id alone doesn't say which release a technique is from. */
   get showsDomainLabels(): boolean {
     return this.pinnedByDomain.size > 1;
   }
 
-  /** The browsed release when its techniques are listed but the MSEL's pool is not pinned to it: those techniques carry its notice. */
+  /** The browsed release when the pool is not pinned to it, whose notice shows with its techniques. */
   get browsedUnpinnedRelease(): TechniqueRelease | null {
     const browsed = this.selectedRelease;
     return browsed && this.techniques.length > 0 && !this.isPinned(browsed) ? browsed : null;
@@ -329,7 +326,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
     });
   }
 
-  /** Moves one domain of the pool to the browsed release of that domain; the pool's other domains stay where they are. */
+  /** Moves one domain of the pool to the browsed release. */
   upgradePool(domain: PinnedDomain) {
     const from = domain.release;
     const to = domain.upgradeTo;
@@ -345,7 +342,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
       .afterClosed()
       .subscribe(result => {
         if (!result) return;
-        // after the upgrade the domain is pinned to the browsed release, so stop treating it as the planner's pick
+        // the domain is now pinned to the browsed release, so it is no longer a pick
         this.userChoseRelease = false;
         this.mselTechniqueDataService.upgrade(this.msel.id, to.id).subscribe(upgrade => {
           const dropped = upgrade.dropped || [];
@@ -427,7 +424,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
       });
   }
 
-  /** Whether any defensive release is imported, which tells the Countered by row's empty states apart. */
+  /** Whether any defensive release is imported, for the Countered by row's empty states. */
   get hasDefensiveRelease(): boolean {
     return this.allReleases.some(r => techniqueFamily(r) === 'defensive');
   }
@@ -436,42 +433,42 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
     return this.countermeasuresByTechniqueId.get(item.techniqueId);
   }
 
-  /** D3FEND tactics have no id of their own (the class id stands in), so only ATT&CK's are worth showing. */
+  /** Defensive tactics have no useful id, so only the attack ones show it. */
   tacticLabel(tactic: TechniqueTactic): string {
     return this.isDefensive ? tactic.name : `${tactic.externalId} ${tactic.name}`;
   }
 
   /**
-   * The browsed release's techniques cite the weaknesses they exploit (CAPEC): the table adds a Weaknesses column and
-   * its links to other catalogues, and calls its platforms domains, as the release itself does.
+   * The browsed release's techniques cite weaknesses: the table adds Weaknesses and links columns and calls
+   * platforms domains.
    */
   get browsesWeaknesses(): boolean {
     return this.techniques.some(t => (t.weaknesses || []).length > 0);
   }
 
-  /** What the browsed release calls one group of its techniques: Tactic, or Category. */
+  /** One group's name in the browsed release: Tactic or Category. */
   get groupLabel(): string {
     return singular(groupLabel(this.selectedRelease));
   }
 
-  /** What the browsed release calls its groups, for the browser's column. */
+  /** The browsed release's name for its groups. */
   get browserGroupsLabel(): string {
     return groupLabel(this.selectedRelease);
   }
 
-  /** The pool's groups column: the one name the pinned releases share, else the neutral "Groups". */
+  /** The pool's groups column name: the one the pinned releases share, else "Groups". */
   get poolGroupsLabel(): string {
     const labels = new Set(this.pinnedDomains.map(p => groupLabel(p.release)));
     if (labels.size === 1) return [...labels][0];
     return labels.size === 0 ? groupLabel(this.selectedRelease) : 'Groups';
   }
 
-  /** Platforms are called domains by a release whose techniques cite weaknesses (CAPEC names Software, Hardware). */
+  /** A release whose techniques cite weaknesses calls platforms domains. */
   get platformsLabel(): string {
     return this.browsesWeaknesses ? 'Domains' : 'Platforms';
   }
 
-  /** The page MITRE's CWE list keeps for a weakness such as CWE-89. */
+  /** The CWE list's page for a weakness. */
   weaknessUrl(weakness: string): string {
     return `https://cwe.mitre.org/data/definitions/${(weakness || '').replace(/^CWE-/i, '')}.html`;
   }
@@ -480,7 +477,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
     return (technique?.tactics || []).map(t => this.tacticNames.get(t) || t).join(', ');
   }
 
-  /** The site a technique's link opens (attack.mitre.org, atlas.mitre.org, d3fend.mitre.org), for its link title. */
+  /** The site a technique's link opens, for its link title. */
   linkHost(technique: Technique): string {
     const url = technique?.url || '';
     try {
@@ -490,7 +487,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
     }
   }
 
-  /** How many of this MSEL's scenario events name the technique in a field of this family's type. */
+  /** How many of this MSEL's scenario events name the technique. */
   getEventCount(item: MselTechnique): number {
     const externalId = item.technique?.externalId;
     if (!externalId) return 0;

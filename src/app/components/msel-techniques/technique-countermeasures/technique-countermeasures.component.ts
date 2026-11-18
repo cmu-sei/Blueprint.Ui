@@ -18,9 +18,8 @@ import { CountermeasureTacticGroup, groupByTactic } from 'src/app/utilities/coun
 export const TOP_COUNTERMEASURES = 3;
 
 /**
- * The "Countered by" row under a pooled attack technique: the D3FEND techniques MITRE maps against it, grouped by
- * tactic in the matrix's order and ranked by weight, each addable to the MSEL's defensive techniques. Collapsed to
- * a one-line summary until opened.
+ * The "Countered by" row under a pooled attack technique: the defensive techniques mapped against it, grouped by
+ * tactic and ranked by weight, each addable to the MSEL's defensive techniques. Collapsed until opened.
  */
 @Component({
   selector: 'app-technique-countermeasures',
@@ -34,14 +33,14 @@ export class TechniqueCountermeasuresComponent implements OnDestroy {
   private techniqueReleaseQuery = inject(TechniqueReleaseQuery);
 
   readonly mselId = input<string>('');
-  /** The attack technique's id (T1003.005), for the per-technique empty state. */
+  /** The attack technique's id, for the empty state. */
   readonly externalId = input<string>('');
-  /** The technique's group of the MSEL's countermeasures; undefined while they load or when the MSEL has none. */
+  /** The technique's countermeasures; undefined while they load or when the MSEL has none. */
   readonly group = input<MselTechniqueCountermeasures>(undefined);
-  /** The whole MSEL answer, for the release it came from and whether it has mappings at all. */
+  /** The whole answer, for the release it came from and whether it has mappings. */
   readonly countermeasures = input<MselCountermeasures>(undefined);
   readonly canEdit = input<boolean>(false);
-  /** Whether any defensive release is imported, to tell "none imported" from "no mappings imported". */
+  /** Whether any defensive release is imported. */
   readonly hasDefensiveRelease = input<boolean>(false);
 
   expanded = false;
@@ -63,12 +62,12 @@ export class TechniqueCountermeasuresComponent implements OnDestroy {
     return this.group()?.countermeasures?.length || 0;
   }
 
-  /** The parent technique these were inherited from, when the technique has no mappings of its own. */
+  /** The parent these were inherited from, when the technique has none of its own. */
   get inheritedFrom(): string {
     return this.group()?.inheritedFrom || '';
   }
 
-  /** Why there is nothing to list, or empty when there is. */
+  /** Why there is nothing to list; empty when there is. */
   get emptyMessage(): string {
     const all = this.countermeasures();
     if (!all) {

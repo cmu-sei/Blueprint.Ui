@@ -22,20 +22,15 @@ import { SystemMessageService } from 'src/app/services/system-message/system-mes
 import { AdminTechniqueReleaseNoticeDialogComponent } from '../admin-technique-release-notice-dialog/admin-technique-release-notice-dialog.component';
 import { TechniqueNoticeComponent, hasTechniqueNotice } from '../../technique-notice/technique-notice.component';
 
-/** Where MITRE serves a release's d3fend-full-mappings.json; the unversioned "latest" path is not served. */
+/** Where a release's d3fend-full-mappings.json is served; the unversioned "latest" path is not. */
 export function d3fendMappingsUrl(version: string): string {
   return `https://d3fend.mitre.org/ontologies/d3fend/${version || '<version>'}/d3fend-full-mappings.json`;
 }
 
 /**
- * The technique framework releases planners pick techniques from. An administrator uploads a STIX bundle
- * (enterprise-attack.json, ics-attack.json, mobile-attack.json) from mitre-attack/attack-stix-data, or
- * stix-atlas.json from mitre-atlas/atlas-data, which imports as a release of the ATLAS domain, or stix-capec.json
- * from mitre/cti, which imports as a release of the capec domain, or the MITRE
- * D3FEND ontology (d3fend.json), which imports as a release of the d3fend domain whose techniques are defensive.
- * A D3FEND release also takes its d3fend-full-mappings.json, the "countered by" mappings from ATT&CK techniques to
- * its own. A release shows the notice it carries (the parsers fill it for MITRE's frameworks); an administrator can
- * edit a release's source, notice and terms, which is how a custom release is given one.
+ * The technique framework releases planners pick techniques from. An administrator imports a STIX bundle or a
+ * defensive ontology, and a defensive release also takes its "countered by" mappings file. A release shows the
+ * notice its file carried, which an administrator can edit.
  */
 @Component({
   selector: 'app-admin-technique-releases',
@@ -55,7 +50,7 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
   readonly sort = viewChild(MatSort);
   readonly stixInput = viewChild<ElementRef<HTMLInputElement>>('stixInput');
   readonly mappingsInput = viewChild<ElementRef<HTMLInputElement>>('mappingsInput');
-  /** The D3FEND release the mappings file picker was opened for. */
+  /** The defensive release the mappings file picker was opened for. */
   private mappingsRelease: TechniqueRelease;
   dataSource = new MatTableDataSource<TechniqueRelease>([]);
   // the release whose notice is open under its row
@@ -73,7 +68,7 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
 
   hasNotice = hasTechniqueNotice;
 
-  /** Opens or closes the notice under a row; a click on one of the row's own buttons does neither. */
+  /** Opens or closes the notice under a row; a click on a button or link in it does neither. */
   rowClicked(release: TechniqueRelease, event: Event) {
     if ((event.target as HTMLElement)?.closest('button, a')) {
       return;
@@ -96,7 +91,7 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
     this.dataSource.sort = this.sort();
   }
 
-  /** Opens the notice fields of a release for editing: its publisher, notice and terms, and nothing else about it. */
+  /** Opens the source, notice and terms of a release for editing. */
   editNotice(release: TechniqueRelease) {
     const notice: TechniqueReleaseNotice = {
       source: release.source ?? '',
@@ -118,12 +113,12 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
     });
   }
 
-  /** A defensive release takes the "countered by" mappings; the API flags it, whatever its domain. */
+  /** A defensive release takes the "countered by" mappings. */
   isDefensive(release: TechniqueRelease): boolean {
     return !!release.isDefensive;
   }
 
-  /** The defensive releases still without their "countered by" mappings, for the hint that says where to get them. */
+  /** The defensive releases without mappings yet, for the hint. */
   get defensiveReleasesWithoutMappings(): TechniqueRelease[] {
     return this.dataSource.data.filter(r => this.isDefensive(r) && !r.countermeasureCount);
   }

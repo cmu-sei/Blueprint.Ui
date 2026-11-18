@@ -4,12 +4,12 @@
 
 import { TechniqueRelease } from 'src/app/generated/blueprint.api';
 
-/** What a release calls the groups its techniques sit in: tactics unless it says otherwise. */
+/** What a release calls its groups of techniques: tactics unless it says otherwise. */
 export function groupLabel(release: TechniqueRelease | null | undefined): string {
   return release?.groupLabel || 'Tactics';
 }
 
-/** Releases newest first, then by name: a neutral order for a release picker that names no domain. */
+/** Releases newest first, then by name. */
 export function compareReleases(a: TechniqueRelease, b: TechniqueRelease): number {
   const time = (r: TechniqueRelease) => (r.releaseDate ? new Date(r.releaseDate).getTime() : 0);
   return time(b) - time(a) || (a.name || '').localeCompare(b.name || '') || (b.version || '').localeCompare(a.version || '', undefined, { numeric: true });

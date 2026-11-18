@@ -8,8 +8,7 @@ import { take, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 /**
- * The technique framework releases an administrator has imported. A release's techniques are read-only: import a new
- * release, never edit one. Only its publisher and notice fields can be changed.
+ * The releases an administrator has imported. Techniques are read-only; only the publisher and notice fields change.
  */
 @Injectable({
   providedIn: 'root',
@@ -56,7 +55,7 @@ export class TechniqueReleaseDataService {
       );
   }
 
-  /** Imports d3fend-full-mappings.json onto a D3FEND release and shows the stored count on its row. */
+  /** Imports a mappings file onto a defensive release and shows the stored count on its row. */
   importCountermeasures(releaseId: string, file: Blob): Observable<TechniqueCountermeasureImport> {
     this.techniqueReleaseStore.setLoading(true);
     return this.techniqueReleaseService
@@ -73,7 +72,7 @@ export class TechniqueReleaseDataService {
       );
   }
 
-  /** Saves a release's source, source URL, notice and terms URL; nothing else about it changes. */
+  /** Saves a release's source, source URL, notice and terms URL. */
   updateNotice(id: string, notice: TechniqueReleaseNotice): Observable<TechniqueRelease> {
     return this.techniqueReleaseService
       .updateTechniqueRelease(id, notice)

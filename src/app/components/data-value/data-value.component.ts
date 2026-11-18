@@ -50,7 +50,7 @@ export class DataValueComponent implements OnChanges, OnDestroy {
 
   @Input() value: any;
   @Input() dataField: DataField;
-  /** The event's Attack Technique value(s), comma-separated: a Defensive Technique field suggests their countermeasures first. */
+  /** The event's Attack Technique values, comma-separated, so a Defensive Technique field can suggest countermeasures first. */
   readonly techniques = input<string>(undefined);
   readonly canEdit = input<boolean>(undefined); // enables editing of values
   readonly canApprove = input<boolean>(undefined); // enables editing of status value
@@ -163,11 +163,10 @@ export class DataValueComponent implements OnChanges, OnDestroy {
     this.valueChangeHandler();
   }
 
-  // --- technique chips + search list, offered from the MSEL's technique pool: an Attack Technique field offers
-  // the attack half (ATT&CK, ATLAS), a Defensive Technique field the defensive half (D3FEND) ---
+  // --- technique chips + search list, offered from the MSEL's technique pool ---
   techniqueFilter = '';
   techniqueOptions: Technique[] = [];
-  /** The pool holds more than one domain of this field's techniques, so each option names the one it is from. */
+  /** The pool holds several domains of this field's techniques, so each option names its domain. */
   showsTechniqueDomains = false;
   private techniquesById = new Map<string, Technique>();
   private wholePool: Technique[] = [];
@@ -194,7 +193,7 @@ export class DataValueComponent implements OnChanges, OnDestroy {
     }
   }
 
-  /** A Defensive Technique field on an event that names attack techniques: their countermeasures are offered first. */
+  /** A Defensive Technique field on an event with attack techniques offers their countermeasures first. */
   get suggestsCountermeasures(): boolean {
     return this.dataField?.dataType === DataFieldType.DefensiveTechnique && this.eventTechniqueIds.length > 0;
   }
@@ -204,8 +203,7 @@ export class DataValueComponent implements OnChanges, OnDestroy {
   }
 
   /**
-   * The pooled defensive techniques D3FEND maps against the event's attack techniques, strongest first. Only pooled
-   * ones: a cell can only name what the MSEL's Defensive Techniques offer.
+   * The pooled defensive techniques mapped against the event's attack techniques, strongest first.
    */
   get suggestedTechniqueOptions(): Technique[] {
     if (!this.suggestsCountermeasures || !this.mselCountermeasures?.techniques) return [];
@@ -238,7 +236,7 @@ export class DataValueComponent implements OnChanges, OnDestroy {
     return this.suggestedTechniqueOptions.length > 0;
   }
 
-  /** An Attack Technique or Defensive Technique field: both pick from the pool, each from its own half. */
+  /** An Attack Technique or Defensive Technique field. */
   get isTechniqueField(): boolean {
     return this.dataField?.dataType === DataFieldType.AttackTechnique || this.dataField?.dataType === DataFieldType.DefensiveTechnique;
   }
@@ -248,8 +246,7 @@ export class DataValueComponent implements OnChanges, OnDestroy {
   }
 
   /**
-   * A cell stores a technique's id and nothing else, so an id the pool holds in two domains (T1404 in enterprise and
-   * mobile ATT&CK) is one choice: the first is offered, and the other cannot be told apart in a cell.
+   * A cell stores only a technique's id, so an id the pool holds in two domains is offered once.
    */
   private offerTechniques() {
     const techniques = this.wholePool.filter(t => techniqueFamily(t) === this.techniqueFamily);
