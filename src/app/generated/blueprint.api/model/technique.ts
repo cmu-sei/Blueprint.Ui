@@ -20,7 +20,7 @@ export interface Technique {
     id?: string;
     techniqueReleaseId?: string;
     /**
-     * The release\'s domain (enterprise-attack, ATLAS, d3fend).
+     * The release\'s domain.
      */
     domain?: string | null;
     /**
@@ -39,11 +39,11 @@ export interface Technique {
     tactics?: Array<string> | null;
     platforms?: Array<string> | null;
     /**
-     * The CWE ids a CAPEC pattern exploits, e.g. \"CWE-89\"; empty for the other frameworks.
+     * The ids of the weaknesses the technique exploits; empty when the framework gives none.
      */
     weaknesses?: Array<string> | null;
     /**
-     * A CAPEC pattern\'s links to OWASP and WASC; empty for the other frameworks.
+     * The technique\'s links to other catalogues; empty when the framework gives none.
      */
     referenceLinks?: Array<TechniqueLink> | null;
 }

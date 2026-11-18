@@ -13,18 +13,16 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-
-
 import { MselTechniqueCountermeasures } from './mselTechniqueCountermeasures';
 
 
 /**
- * The countermeasures of every attack technique in a MSEL\'s pool, from one D3FEND release.
+ * The countermeasures of every attack technique in a MSEL\'s pool, from one defensive release.
  */
 export interface MselCountermeasures { 
     mselId?: string;
     /**
-     * The D3FEND release the mappings come from: the one the MSEL\'s defensive techniques are pinned to, else the newest with mappings imported. Null when no D3FEND release has mappings.
+     * The defensive release the mappings come from: the one the MSEL is pinned to, else the newest with mappings. Null when none has mappings.
      */
     techniqueReleaseId?: string | null;
     /**

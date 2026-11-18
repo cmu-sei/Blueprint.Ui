@@ -49,7 +49,7 @@ export class MselTechniqueService extends BaseService {
 
     /**
      * Adds a technique to a MSEL\&#39;s pool
-     * Refused with a 409 when the MSEL\&#39;s pool already holds techniques of the same family (attack: ATT&amp;CK and ATLAS; defensive: D3FEND) from another release.
+     * Refused with a 409 when the MSEL\&#39;s pool already holds techniques of the same domain from another release. Techniques of different domains sit side by side.
      * @param mselTechnique The MSEL and the technique
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -235,8 +235,8 @@ export class MselTechniqueService extends BaseService {
     }
 
     /**
-     * Gets the D3FEND countermeasures of every attack technique in a MSEL\&#39;s pool
-     * From the D3FEND release the MSEL\&#39;s defensive techniques are pinned to, else the newest D3FEND release with mappings imported; &#x60;techniqueReleaseId&#x60; names it and &#x60;hasMappings&#x60; says whether it has any. Each pooled attack technique gets a group ranked by weight, empty when nothing counters it; a sub-technique with no mappings of its own gets its parent\&#39;s, with &#x60;inheritedFrom&#x60; naming the parent.
+     * Gets the countermeasures of every attack technique in a MSEL\&#39;s pool
+     * From the defensive release the MSEL is pinned to, else the newest with mappings; &#x60;techniqueReleaseId&#x60; names it and &#x60;hasMappings&#x60; says whether it has any. Each pooled attack technique gets a group ranked by weight, empty when nothing counters it; a sub-technique with none of its own gets its parent\&#39;s, with &#x60;inheritedFrom&#x60; naming the parent.
      * @param mselId The id of the Msel
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -413,8 +413,8 @@ export class MselTechniqueService extends BaseService {
     }
 
     /**
-     * Moves one family of a MSEL\&#39;s technique pool to another release
-     * The release\&#39;s family (attack: ATT&amp;CK and ATLAS; defensive: D3FEND) says which techniques move; the other family stays. Techniques are matched by their external id (T1059, AML.T0051, D3-CH). Ones the new release no longer has are dropped and listed in the response; inject cells that name them keep their text.
+     * Moves one domain of a MSEL\&#39;s technique pool to another release
+     * The release\&#39;s domain says which techniques move; the other domains stay. Techniques are matched by external id. Ones the new release lacks are dropped and listed in the response; inject cells that name them keep their text.
      * @param mselId ID of a msel.
      * @param techniqueReleaseId ID of the release to move to.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.

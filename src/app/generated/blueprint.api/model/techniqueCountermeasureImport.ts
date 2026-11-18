@@ -16,7 +16,7 @@
 
 
 /**
- * What importing a d3fend-full-mappings.json onto a D3FEND release read and kept.
+ * What importing a mappings file onto a defensive release read and kept.
  */
 export interface TechniqueCountermeasureImport { 
     techniqueReleaseId?: string;
@@ -25,11 +25,11 @@ export interface TechniqueCountermeasureImport {
      */
     rowsRead?: number;
     /**
-     * The distinct (offensive id, D3FEND technique) pairs stored.
+     * The distinct (offensive id, defensive technique) pairs stored.
      */
     pairsStored?: number;
     /**
-     * Pairs whose D3FEND class is not a defensive technique in this release, so they were left out.
+     * Pairs whose defensive class is not a defensive technique in this release, so they were left out.
      */
     pairsSkipped?: number;
     /**
