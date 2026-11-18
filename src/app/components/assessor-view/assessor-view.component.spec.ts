@@ -975,7 +975,8 @@ describe('AssessorViewComponent', () => {
 
     /**
      * Verifies: when the MSEL has a data field named for objectives, results are rolled up by its values too, before
-     * the competencies, and the report names the field.
+     * the competencies, and the report names the field. A rating of a whole move counts for the objectives of the
+     * injects in it, as it does for the competency and team results.
      * Interacts with: buildAssessmentReport (objective field found by name).
      * Data: an Objectives field, not assessor-visible: "Detect intrusion" on the first two injects, "Contain
      * ransomware" on "Ransom note".
@@ -1016,7 +1017,8 @@ describe('AssessorViewComponent', () => {
         tableRows(within(results).getByLabelText('Results by objective')),
       ).toEqual([
         ['Detect intrusion', '2', '1', '0', '0', '1'],
-        ['Contain ransomware', '1', '1', '1', '0', '0'],
+        // Ransom note's own rating, and its move's
+        ['Contain ransomware', '1', '1', '1', '1', '0'],
       ]);
     });
 

@@ -3111,7 +3111,16 @@ export class AssessorViewComponent
           ]);
       }
       for (const [objective, ids] of byObjective) {
-        const rated = assertions.filter((a) => ids.includes(a.contextKey));
+        // a rating of a whole move or group counts for the objectives of the injects in it
+        const keys = new Set(ids);
+        for (const id of ids) {
+          const nums = this.eventMoveAndGroup[id];
+          if (nums) {
+            keys.add(`move-${+nums[0]}`);
+            keys.add(`group-${+nums[0]}-${+nums[1]}`);
+          }
+        }
+        const rated = assertions.filter((a) => keys.has(a.contextKey));
         objectiveRows.push({
           code: '',
           name: objective,
