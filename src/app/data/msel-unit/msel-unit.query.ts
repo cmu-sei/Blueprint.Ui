@@ -2,10 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { Order, Query, QueryConfig, QueryEntity } from '@datorama/akita';
-import {
-  MselUnitState,
-  MselUnitStore,
-} from './msel-unit.store';
+import { MselUnitState, MselUnitStore } from './msel-unit.store';
 import { MselUnit } from 'src/app/generated/blueprint.api';
 import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
@@ -25,7 +22,7 @@ export class MselUnitQuery extends QueryEntity<MselUnitState> {
     const store = inject(MselUnitStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

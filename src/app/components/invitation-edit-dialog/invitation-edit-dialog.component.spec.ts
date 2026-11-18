@@ -9,7 +9,13 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
-import { NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel, NgxMatDatepickerInput, NgxMatDatetimepicker } from '@ngxmc/datetime-picker';
+import {
+  NgxMatDatepickerActions,
+  NgxMatDatepickerApply,
+  NgxMatDatepickerCancel,
+  NgxMatDatepickerInput,
+  NgxMatDatetimepicker,
+} from '@ngxmc/datetime-picker';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
@@ -18,12 +24,26 @@ import { InvitationEditDialogComponent } from './invitation-edit-dialog.componen
 import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const INVITATION = { id: 'inv-1', mselId: 'msel-1', teamId: 'team-1', emailDomain: '@example.com', expirationDateTime: new Date('2026-12-31T12:00:00Z'), maxUsersAllowed: 5, userCount: 0, isTeamLeader: false } as Invitation;
+const INVITATION = {
+  id: 'inv-1',
+  mselId: 'msel-1',
+  teamId: 'team-1',
+  emailDomain: '@example.com',
+  expirationDateTime: new Date('2026-12-31T12:00:00Z'),
+  maxUsersAllowed: 5,
+  userCount: 0,
+  isTeamLeader: false,
+} as Invitation;
 
-function dialogData(overrides: Partial<typeof INVITATION> = {}, cite: { useCite?: boolean; citeTeamRoles?: string[] } = {}) {
+function dialogData(
+  overrides: Partial<typeof INVITATION> = {},
+  cite: { useCite?: boolean; citeTeamRoles?: string[] } = {},
+) {
   return {
     invitation: { ...structuredClone(INVITATION), ...overrides },
-    teamList: [{ id: 'team-1', mselId: 'msel-1', name: 'Blue Team', shortName: 'BLUE' }],
+    teamList: [
+      { id: 'team-1', mselId: 'msel-1', name: 'Blue Team', shortName: 'BLUE' },
+    ],
     useCite: cite.useCite ?? false,
     citeTeamRoles: cite.citeTeamRoles ?? [],
   };
@@ -31,7 +51,20 @@ function dialogData(overrides: Partial<typeof INVITATION> = {}, cite: { useCite?
 
 async function renderInvitationEditDialog(data = dialogData()) {
   const rendered = await renderComponent(InvitationEditDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, MatCheckboxModule, MatDatepickerModule, MatFormFieldModule, MatInputModule, MatNativeDateModule, MatSelectModule, NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel, NgxMatDatepickerInput, NgxMatDatetimepicker],
+    imports: [
+      ...CRUCIBLE_DIALOG_IMPORTS,
+      MatCheckboxModule,
+      MatDatepickerModule,
+      MatFormFieldModule,
+      MatInputModule,
+      MatNativeDateModule,
+      MatSelectModule,
+      NgxMatDatepickerActions,
+      NgxMatDatepickerApply,
+      NgxMatDatepickerCancel,
+      NgxMatDatepickerInput,
+      NgxMatDatetimepicker,
+    ],
     declarations: [InvitationEditDialogComponent, TimezoneAbbrPipe],
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
   });
@@ -39,7 +72,9 @@ async function renderInvitationEditDialog(data = dialogData()) {
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
   const results: unknown[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results };
 }
 
@@ -56,7 +91,10 @@ describe('InvitationEditDialogComponent', () => {
    */
   it('saves the CITE team role chosen for the invitation', async () => {
     const { results } = await renderInvitationEditDialog(
-      dialogData({ citeTeamRole: 'Member' }, { useCite: true, citeTeamRoles: ['Member', 'Contributor'] })
+      dialogData(
+        { citeTeamRole: 'Member' },
+        { useCite: true, citeTeamRoles: ['Member', 'Contributor'] },
+      ),
     );
     const user = userEvent.setup();
 
@@ -66,7 +104,12 @@ describe('InvitationEditDialogComponent', () => {
     await user.click(screen.getByRole('option', { name: 'Contributor' }));
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
-    expect(results).toEqual([expect.objectContaining({ saveChanges: true, invitation: expect.objectContaining({ citeTeamRole: 'Contributor' }) })]);
+    expect(results).toEqual([
+      expect.objectContaining({
+        saveChanges: true,
+        invitation: expect.objectContaining({ citeTeamRole: 'Contributor' }),
+      }),
+    ]);
   });
 
   /**
@@ -77,7 +120,9 @@ describe('InvitationEditDialogComponent', () => {
   it('hides the CITE team role without CITE', async () => {
     await renderInvitationEditDialog();
 
-    expect(screen.queryByRole('combobox', { name: 'CITE Team Role' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('combobox', { name: 'CITE Team Role' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -88,8 +133,12 @@ describe('InvitationEditDialogComponent', () => {
   it('renders with the default test providers', async () => {
     const { fixture } = await renderInvitationEditDialog();
 
-    expect(fixture.componentInstance).toBeInstanceOf(InvitationEditDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Edit an Invitation to this MSEL' })).toBeInTheDocument();
+    expect(fixture.componentInstance).toBeInstanceOf(
+      InvitationEditDialogComponent,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Edit an Invitation to this MSEL' }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/BLUE - Blue Team/)).toBeInTheDocument();
   });
 
@@ -128,12 +177,16 @@ describe('InvitationEditDialogComponent', () => {
    * Data: an email domain without an @.
    */
   it('saves an incomplete invitation when handleEditComplete is called', async () => {
-    const { fixture, data, results } = await renderInvitationEditDialog(dialogData({ emailDomain: 'abc' }));
+    const { fixture, data, results } = await renderInvitationEditDialog(
+      dialogData({ emailDomain: 'abc' }),
+    );
 
     fixture.componentInstance.handleEditComplete(true);
 
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
-    expect(results).toEqual([{ saveChanges: true, invitation: data.invitation }]);
+    expect(results).toEqual([
+      { saveChanges: true, invitation: data.invitation },
+    ]);
   });
 
   /**
@@ -144,11 +197,16 @@ describe('InvitationEditDialogComponent', () => {
   it.each([
     { date: '2026-10-20T16:00:00Z', label: '20 Oct 2026 12:00 EDT' },
     { date: '2026-11-20T17:00:00Z', label: '20 Nov 2026 12:00 EST' },
-  ])('labels the expiration time with the zone in effect on that date ($label)', async ({ date, label }) => {
-    vi.stubEnv('TZ', 'America/New_York');
+  ])(
+    'labels the expiration time with the zone in effect on that date ($label)',
+    async ({ date, label }) => {
+      vi.stubEnv('TZ', 'America/New_York');
 
-    await renderInvitationEditDialog(dialogData({ expirationDateTime: new Date(date) }));
+      await renderInvitationEditDialog(
+        dialogData({ expirationDateTime: new Date(date) }),
+      );
 
-    expect(screen.getByText(label)).toBeInTheDocument();
-  });
+      expect(screen.getByText(label)).toBeInTheDocument();
+    },
+  );
 });

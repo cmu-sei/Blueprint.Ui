@@ -31,7 +31,13 @@ const SCALE: ProficiencyScale = {
   name: 'Five Point',
   description: 'Novice to expert',
   proficiencyLevels: [
-    { id: 'level-1', proficiencyScaleId: 'scale-1', name: 'Novice', value: 1, displayOrder: 1 },
+    {
+      id: 'level-1',
+      proficiencyScaleId: 'scale-1',
+      name: 'Novice',
+      value: 1,
+      displayOrder: 1,
+    },
   ],
 };
 
@@ -81,7 +87,9 @@ const HEADER_ACTIONS = [
 async function expandScale() {
   const user = userEvent.setup();
   await user.click(within(scales()).getByText('Five Point'));
-  return within(screen.getByText('Levels for "Five Point"').parentElement as HTMLElement);
+  return within(
+    screen.getByText('Levels for "Five Point"').parentElement as HTMLElement,
+  );
 }
 
 describe('AdminProficiencyScalesComponent', () => {
@@ -98,7 +106,9 @@ describe('AdminProficiencyScalesComponent', () => {
       expect(within(scales()).getByTitle(title)).toBeInTheDocument();
     }
     expect(within(scales()).getByTitle('Edit Five Point')).toBeInTheDocument();
-    expect(within(scales()).getByTitle('Delete Five Point')).toBeInTheDocument();
+    expect(
+      within(scales()).getByTitle('Delete Five Point'),
+    ).toBeInTheDocument();
 
     const levels = await expandScale();
     expect(levels.getByText('Novice')).toBeInTheDocument();
@@ -118,8 +128,12 @@ describe('AdminProficiencyScalesComponent', () => {
     for (const title of HEADER_ACTIONS) {
       expect(within(scales()).queryByTitle(title)).not.toBeInTheDocument();
     }
-    expect(within(scales()).queryByTitle('Edit Five Point')).not.toBeInTheDocument();
-    expect(within(scales()).queryByTitle('Delete Five Point')).not.toBeInTheDocument();
+    expect(
+      within(scales()).queryByTitle('Edit Five Point'),
+    ).not.toBeInTheDocument();
+    expect(
+      within(scales()).queryByTitle('Delete Five Point'),
+    ).not.toBeInTheDocument();
 
     const levels = await expandScale();
     expect(levels.getByText('Novice')).toBeInTheDocument();
@@ -139,8 +153,17 @@ describe('AdminProficiencyScalesComponent', () => {
 
     await user.click(within(scales()).getByTitle('Delete Five Point'));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Scale' }));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Delete Proficiency Scale',
+        message: 'Are you sure that you want to delete Five Point?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      }),
+    );
     expect(scaleApi.deleteProficiencyScale).toHaveBeenCalledWith('scale-1');
-    expect(screen.getByText('No proficiency scales defined')).toBeInTheDocument();
+    expect(
+      screen.getByText('No proficiency scales defined'),
+    ).toBeInTheDocument();
   });
 });

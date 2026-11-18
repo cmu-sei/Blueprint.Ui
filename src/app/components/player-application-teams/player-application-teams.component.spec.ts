@@ -32,25 +32,53 @@ import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
 
 const ME = 'user-me';
-const BLUE: Team = { id: 'team-1', mselId: 'msel-1', name: 'Blue Team', shortName: 'BLUE' };
-const RED: Team = { id: 'team-2', mselId: 'msel-1', name: 'Red Team', shortName: 'RED' };
-const BLUE_ON_APP: PlayerApplicationTeam = { id: 'pat-1', playerApplicationId: 'app-1', teamId: 'team-1', displayOrder: 1 };
-const ALL_BUT_EDIT_MSELS = Object.values(SystemPermission).filter((p) => p !== SystemPermission.EditMsels);
+const BLUE: Team = {
+  id: 'team-1',
+  mselId: 'msel-1',
+  name: 'Blue Team',
+  shortName: 'BLUE',
+};
+const RED: Team = {
+  id: 'team-2',
+  mselId: 'msel-1',
+  name: 'Red Team',
+  shortName: 'RED',
+};
+const BLUE_ON_APP: PlayerApplicationTeam = {
+  id: 'pat-1',
+  playerApplicationId: 'app-1',
+  teamId: 'team-1',
+  displayOrder: 1,
+};
+const ALL_BUT_EDIT_MSELS = Object.values(SystemPermission).filter(
+  (p) => p !== SystemPermission.EditMsels,
+);
 
 function msel(roles: MselRole[] = []): Msel {
   return {
     id: 'msel-1',
     name: 'Exercise Alpha',
     createdBy: 'someone-else',
-    userMselRoles: roles.map((role, i) => ({ id: `umr-${i}`, userId: ME, mselId: 'msel-1', role })),
+    userMselRoles: roles.map((role, i) => ({
+      id: `umr-${i}`,
+      userId: ME,
+      mselId: 'msel-1',
+      role,
+    })),
   };
 }
 
-async function renderAppTeams(overrides: { permissions?: SystemPermission[]; roles?: MselRole[] } = {}) {
+async function renderAppTeams(
+  overrides: { permissions?: SystemPermission[]; roles?: MselRole[] } = {},
+) {
   const { permissions = [], roles = [] } = overrides;
   const appTeamApi = {
-    getMselPlayerApplicationTeams: vi.fn(() => of(structuredClone([BLUE_ON_APP]))),
-    createPlayerApplicationTeam: vi.fn((pat: PlayerApplicationTeam) => of<PlayerApplicationTeam>({ ...pat, id: 'pat-2' })),
+    getMselPlayerApplicationTeams: vi.fn(() =>
+      of(structuredClone([BLUE_ON_APP])),
+    ),
+    createPlayerApplicationTeam: vi.fn((pat: PlayerApplicationTeam) =>
+      of<PlayerApplicationTeam>({ ...pat, id: 'pat-2' }),
+    ),
     deletePlayerApplicationTeam: vi.fn(() => of<unknown>(null)),
   } satisfies ApiStub<PlayerApplicationTeamService>;
   // PlayerApplicationTeamsComponent loads the permissions itself in ngOnInit,
@@ -69,7 +97,10 @@ async function renderAppTeams(overrides: { permissions?: SystemPermission[]; rol
     ],
     declarations: [PlayerApplicationTeamsComponent],
     providers: [
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: PlayerApplicationTeamService, useValue: appTeamApi },
       {
@@ -82,17 +113,24 @@ async function renderAppTeams(overrides: { permissions?: SystemPermission[]; rol
         },
       },
     ],
-    inputs: { loggedInUserId: ME, playerApplicationId: 'app-1', mselTeamList: [BLUE, RED] },
+    inputs: {
+      loggedInUserId: ME,
+      playerApplicationId: 'app-1',
+      mselTeamList: [BLUE, RED],
+    },
   });
   // The player application list loads the MSEL's application teams.
-  TestBed.inject(PlayerApplicationTeamDataService).getPlayerApplicationTeamsFromApi('msel-1');
+  TestBed.inject(
+    PlayerApplicationTeamDataService,
+  ).getPlayerApplicationTeamsFromApi('msel-1');
   rendered.fixture.detectChanges();
   return { ...rendered, appTeamApi };
 }
 
 // One table lists the MSEL teams to add (rendered only while there are any),
 // the other the application's teams.
-const region = (selector: string) => document.querySelector(selector) as HTMLElement;
+const region = (selector: string) =>
+  document.querySelector(selector) as HTMLElement;
 const mselTeams = () => region('.team-list-container');
 const appTeams = () => region('.mat-table-player-application-teams');
 
@@ -103,21 +141,38 @@ describe('PlayerApplicationTeamsComponent', () => {
    * Data: EditMsels with no role; or the Editor role. BLUE is on the application, RED is not.
    */
   it.each([
-    { label: 'with EditMsels', permissions: [SystemPermission.EditMsels], roles: [] },
+    {
+      label: 'with EditMsels',
+      permissions: [SystemPermission.EditMsels],
+      roles: [],
+    },
     { label: 'as an MSEL Editor', permissions: [], roles: [MselRole.Editor] },
-  ])('adds and removes application teams $label', async ({ permissions, roles }) => {
-    const { appTeamApi } = await renderAppTeams({ permissions, roles });
-    const user = userEvent.setup();
+  ])(
+    'adds and removes application teams $label',
+    async ({ permissions, roles }) => {
+      const { appTeamApi } = await renderAppTeams({ permissions, roles });
+      const user = userEvent.setup();
 
-    expect(within(appTeams()).getByText('BLUE')).toBeInTheDocument();
-    await user.click(within(mselTeams()).getByRole('button', { name: 'Add Red Team' }));
-    expect(appTeamApi.createPlayerApplicationTeam).toHaveBeenCalledWith({ playerApplicationId: 'app-1', teamId: 'team-2', displayOrder: 2 });
+      expect(within(appTeams()).getByText('BLUE')).toBeInTheDocument();
+      await user.click(
+        within(mselTeams()).getByRole('button', { name: 'Add Red Team' }),
+      );
+      expect(appTeamApi.createPlayerApplicationTeam).toHaveBeenCalledWith({
+        playerApplicationId: 'app-1',
+        teamId: 'team-2',
+        displayOrder: 2,
+      });
 
-    // Same case as 'labels the Remove button without the team name'.
-    const blueRow = within(appTeams()).getByText('BLUE').closest('mat-row') as HTMLElement;
-    await user.click(within(blueRow).getByRole('button', { name: 'Remove' }));
-    expect(appTeamApi.deletePlayerApplicationTeam).toHaveBeenCalledWith('pat-1');
-  });
+      // Same case as 'labels the Remove button without the team name'.
+      const blueRow = within(appTeams())
+        .getByText('BLUE')
+        .closest('mat-row') as HTMLElement;
+      await user.click(within(blueRow).getByRole('button', { name: 'Remove' }));
+      expect(appTeamApi.deletePlayerApplicationTeam).toHaveBeenCalledWith(
+        'pat-1',
+      );
+    },
+  );
 
   /**
    * Verifies: without EditMsels and the Editor role the teams are listed with no Add or Remove.
@@ -125,12 +180,19 @@ describe('PlayerApplicationTeamsComponent', () => {
    * Data: every permission but EditMsels (near miss: ManageMsels); MSEL roles Viewer, Evaluator and MoveEditor.
    */
   it('lists application teams read-only without EditMsels or the Editor role', async () => {
-    await renderAppTeams({ permissions: ALL_BUT_EDIT_MSELS, roles: [MselRole.Viewer, MselRole.Evaluator, MselRole.MoveEditor] });
+    await renderAppTeams({
+      permissions: ALL_BUT_EDIT_MSELS,
+      roles: [MselRole.Viewer, MselRole.Evaluator, MselRole.MoveEditor],
+    });
 
     expect(within(mselTeams()).getByText('RED')).toBeInTheDocument();
     expect(within(appTeams()).getByText('BLUE')).toBeInTheDocument();
-    expect(within(mselTeams()).queryByRole('button', { name: 'Add Red Team' })).not.toBeInTheDocument();
-    expect(within(appTeams()).queryByRole('button', { name: /^Remove/ })).not.toBeInTheDocument();
+    expect(
+      within(mselTeams()).queryByRole('button', { name: 'Add Red Team' }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(appTeams()).queryByRole('button', { name: /^Remove/ }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -142,7 +204,9 @@ describe('PlayerApplicationTeamsComponent', () => {
     await renderAppTeams({ permissions: [SystemPermission.EditMsels] });
 
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
-    expect(within(appTeams()).getByRole('button', { name: /^Remove/ })).toHaveAccessibleName('Remove');
+    expect(
+      within(appTeams()).getByRole('button', { name: /^Remove/ }),
+    ).toHaveAccessibleName('Remove');
   });
 
   /**
@@ -151,15 +215,30 @@ describe('PlayerApplicationTeamsComponent', () => {
    * Data: EditMsels; BLUE on the application, RED not; then the list gains Green Team (GREEN).
    */
   it('offers a team added to the MSEL while the application is open', async () => {
-    const { fixture } = await renderAppTeams({ permissions: [SystemPermission.EditMsels] });
-    const green: Team = { id: 'team-3', mselId: 'msel-1', name: 'Green Team', shortName: 'GREEN' };
-    expect(within(mselTeams()).queryByRole('button', { name: 'Add Green Team' })).not.toBeInTheDocument();
+    const { fixture } = await renderAppTeams({
+      permissions: [SystemPermission.EditMsels],
+    });
+    const green: Team = {
+      id: 'team-3',
+      mselId: 'msel-1',
+      name: 'Green Team',
+      shortName: 'GREEN',
+    };
+    expect(
+      within(mselTeams()).queryByRole('button', { name: 'Add Green Team' }),
+    ).not.toBeInTheDocument();
 
     fixture.componentRef.setInput('mselTeamList', [BLUE, RED, green]);
     fixture.detectChanges();
 
-    expect(within(mselTeams()).getByRole('button', { name: 'Add Red Team' })).toBeInTheDocument();
-    expect(within(mselTeams()).getByRole('button', { name: 'Add Green Team' })).toBeInTheDocument();
-    expect(within(mselTeams()).queryByRole('button', { name: 'Add Blue Team' })).not.toBeInTheDocument();
+    expect(
+      within(mselTeams()).getByRole('button', { name: 'Add Red Team' }),
+    ).toBeInTheDocument();
+    expect(
+      within(mselTeams()).getByRole('button', { name: 'Add Green Team' }),
+    ).toBeInTheDocument();
+    expect(
+      within(mselTeams()).queryByRole('button', { name: 'Add Blue Team' }),
+    ).not.toBeInTheDocument();
   });
 });

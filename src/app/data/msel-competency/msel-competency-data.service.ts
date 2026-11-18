@@ -33,7 +33,7 @@ export class MselCompetencyDataService {
         tap(() => {
           this.mselCompetencyStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (mselCompetencies) => {
@@ -41,7 +41,7 @@ export class MselCompetencyDataService {
         },
         (error) => {
           this.mselCompetencyStore.set([]);
-        }
+        },
       );
   }
 
@@ -57,7 +57,7 @@ export class MselCompetencyDataService {
         tap(() => {
           this.mselCompetencyStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.mselCompetencyStore.add(s);

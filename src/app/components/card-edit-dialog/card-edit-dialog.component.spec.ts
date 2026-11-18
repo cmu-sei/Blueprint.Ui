@@ -13,15 +13,37 @@ import { Card } from 'src/app/generated/blueprint.api';
 import { CardEditDialogComponent } from './card-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const CARD = { id: 'card-1', mselId: 'msel-1', name: 'Situation Card', description: 'Move 1 situation', move: 1, isTemplate: false } as Card;
+const CARD = {
+  id: 'card-1',
+  mselId: 'msel-1',
+  name: 'Situation Card',
+  description: 'Move 1 situation',
+  move: 1,
+  isTemplate: false,
+} as Card;
 
 function dialogData(overrides: Partial<typeof CARD> = {}) {
-  return { card: { ...structuredClone(CARD), ...overrides }, moveList: [{ id: 'move-1', mselId: 'msel-1', moveNumber: 1, description: 'Initial access' }] };
+  return {
+    card: { ...structuredClone(CARD), ...overrides },
+    moveList: [
+      {
+        id: 'move-1',
+        mselId: 'msel-1',
+        moveNumber: 1,
+        description: 'Initial access',
+      },
+    ],
+  };
 }
 
 async function renderCardEditDialog(data = dialogData()) {
   const rendered = await renderComponent(CardEditDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, MatFormFieldModule, MatInputModule, MatSelectModule],
+    imports: [
+      ...CRUCIBLE_DIALOG_IMPORTS,
+      MatFormFieldModule,
+      MatInputModule,
+      MatSelectModule,
+    ],
     declarations: [CardEditDialogComponent],
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
   });
@@ -29,7 +51,9 @@ async function renderCardEditDialog(data = dialogData()) {
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
   const results: unknown[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results };
 }
 
@@ -43,7 +67,9 @@ describe('CardEditDialogComponent', () => {
     const { fixture } = await renderCardEditDialog();
 
     expect(fixture.componentInstance).toBeInstanceOf(CardEditDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Edit Card' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Edit Card' }),
+    ).toBeInTheDocument();
   });
 
   /**

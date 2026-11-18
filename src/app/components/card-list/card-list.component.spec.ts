@@ -17,7 +17,12 @@ import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { Card, CardService, Msel, MselRole } from 'src/app/generated/blueprint.api';
+import {
+  Card,
+  CardService,
+  Msel,
+  MselRole,
+} from 'src/app/generated/blueprint.api';
 import { CardStore } from 'src/app/data/card/card.store';
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { CardListComponent } from './card-list.component';
@@ -26,6 +31,8 @@ import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
 import { CardTeamsComponent } from '../card-teams/card-teams.component';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
+import { TestBed } from '@angular/core/testing';
 
 @Component({ selector: 'app-card-teams', template: '' })
 class CardTeamsStub {
@@ -34,17 +41,46 @@ class CardTeamsStub {
 }
 
 const ME = 'user-me';
-const TEMPLATE: Card = { id: 'card-t', name: 'Template Card', description: 'A template', isTemplate: true, mselId: null, move: 0, inject: 0 };
-const MSEL_CARD: Card = { id: 'card-1', name: 'Situation Card', description: 'Move 1 situation', mselId: 'msel-1', move: 1, inject: 0 };
+const TEMPLATE: Card = {
+  id: 'card-t',
+  name: 'Template Card',
+  description: 'A template',
+  isTemplate: true,
+  mselId: null,
+  move: 0,
+  inject: 0,
+};
+const MSEL_CARD: Card = {
+  id: 'card-1',
+  name: 'Situation Card',
+  description: 'Move 1 situation',
+  mselId: 'msel-1',
+  move: 1,
+  inject: 0,
+};
 
 function msel(overrides: Partial<Msel> = {}): Msel {
-  return { id: 'msel-1', name: 'Exercise Alpha', createdBy: 'someone-else', userMselRoles: [], ...overrides };
+  return {
+    id: 'msel-1',
+    name: 'Exercise Alpha',
+    createdBy: 'someone-else',
+    userMselRoles: [],
+    ...overrides,
+  };
 }
 
 async function renderCardList(
-  overrides: { canEdit?: boolean; showTemplates?: boolean; activeMsel?: Msel | null } = {},
+  overrides: {
+    canEdit?: boolean;
+    showTemplates?: boolean;
+    activeMsel?: Msel | null;
+  } = {},
 ) {
-  const { canEdit = true, showTemplates = false, activeMsel = msel() } = overrides;
+  const {
+    canEdit = true,
+    showTemplates = false,
+    activeMsel = msel(),
+  } = overrides;
   const cardApi = {
     getCardTemplates: vi.fn(() => of([structuredClone(TEMPLATE)])),
     deleteCard: vi.fn(() => of<unknown>(null)),
@@ -63,9 +99,7 @@ async function renderCardList(
       MatSortModule,
       MatTableModule,
     ],
-    childStubs: [
-      { replace: CardTeamsComponent, with: CardTeamsStub },
-    ],
+    childStubs: [{ replace: CardTeamsComponent, with: CardTeamsStub }],
     providers: [
       { provide: CardService, useValue: cardApi },
       { provide: CrucibleDialogService, useValue: dialog },
@@ -98,7 +132,11 @@ async function renderCardList(
 }
 
 const table = () => screen.getByRole('table');
-const TEMPLATE_HEADER = ['Add a template card', 'Upload Card templates from JSON', 'Download Card templates as JSON'];
+const TEMPLATE_HEADER = [
+  'Add a template card',
+  'Upload Card templates from JSON',
+  'Download Card templates as JSON',
+];
 
 describe('CardListComponent', () => {
   describe('templates (admin)', () => {
@@ -108,15 +146,25 @@ describe('CardListComponent', () => {
      * Data: showTemplates true; canEdit true; no active MSEL; one template card and one MSEL card.
      */
     it('offers template actions with canEdit', async () => {
-      const { cardApi } = await renderCardList({ showTemplates: true, canEdit: true, activeMsel: null });
+      const { cardApi } = await renderCardList({
+        showTemplates: true,
+        canEdit: true,
+        activeMsel: null,
+      });
 
       expect(cardApi.getCardTemplates).toHaveBeenCalledTimes(1);
       for (const title of TEMPLATE_HEADER) {
         expect(within(table()).getByTitle(title)).toBeInTheDocument();
       }
-      expect(within(table()).getByRole('button', { name: 'Edit Template Card' })).toBeInTheDocument();
-      expect(within(table()).getByRole('button', { name: 'Delete Template Card' })).toBeInTheDocument();
-      expect(within(table()).queryByText('Situation Card')).not.toBeInTheDocument();
+      expect(
+        within(table()).getByRole('button', { name: 'Edit Template Card' }),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).getByRole('button', { name: 'Delete Template Card' }),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).queryByText('Situation Card'),
+      ).not.toBeInTheDocument();
     });
 
     /**
@@ -125,14 +173,22 @@ describe('CardListComponent', () => {
      * Data: showTemplates true; canEdit false; no active MSEL; one template card.
      */
     it('hides template actions without canEdit', async () => {
-      await renderCardList({ showTemplates: true, canEdit: false, activeMsel: null });
+      await renderCardList({
+        showTemplates: true,
+        canEdit: false,
+        activeMsel: null,
+      });
 
       expect(within(table()).getByText('Template Card')).toBeInTheDocument();
       for (const title of TEMPLATE_HEADER) {
         expect(within(table()).queryByTitle(title)).not.toBeInTheDocument();
       }
-      expect(within(table()).queryByRole('button', { name: 'Edit Template Card' })).not.toBeInTheDocument();
-      expect(within(table()).queryByRole('button', { name: 'Delete Template Card' })).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByRole('button', { name: 'Edit Template Card' }),
+      ).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByRole('button', { name: 'Delete Template Card' }),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -146,10 +202,18 @@ describe('CardListComponent', () => {
       await renderCardList({ canEdit: true });
 
       expect(within(table()).getByTitle('Add card')).toBeInTheDocument();
-      for (const name of ['Edit Situation Card', 'Delete Situation Card', 'Make Situation Card a template']) {
-        expect(within(table()).getByRole('button', { name })).toBeInTheDocument();
+      for (const name of [
+        'Edit Situation Card',
+        'Delete Situation Card',
+        'Make Situation Card a template',
+      ]) {
+        expect(
+          within(table()).getByRole('button', { name }),
+        ).toBeInTheDocument();
       }
-      expect(within(table()).queryByText('Template Card')).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByText('Template Card'),
+      ).not.toBeInTheDocument();
     });
 
     /**
@@ -158,12 +222,23 @@ describe('CardListComponent', () => {
      * Data: showTemplates false; canEdit false; the MSEL was created by the user.
      */
     it('lets the MSEL owner edit cards without canEdit, but not make templates', async () => {
-      await renderCardList({ canEdit: false, activeMsel: msel({ createdBy: ME }) });
+      await renderCardList({
+        canEdit: false,
+        activeMsel: msel({ createdBy: ME }),
+      });
 
       expect(within(table()).getByTitle('Add card')).toBeInTheDocument();
-      expect(within(table()).getByRole('button', { name: 'Edit Situation Card' })).toBeInTheDocument();
-      expect(within(table()).getByRole('button', { name: 'Delete Situation Card' })).toBeInTheDocument();
-      expect(within(table()).queryByRole('button', { name: 'Make Situation Card a template' })).not.toBeInTheDocument();
+      expect(
+        within(table()).getByRole('button', { name: 'Edit Situation Card' }),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).getByRole('button', { name: 'Delete Situation Card' }),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).queryByRole('button', {
+          name: 'Make Situation Card a template',
+        }),
+      ).not.toBeInTheDocument();
     });
 
     /**
@@ -174,13 +249,28 @@ describe('CardListComponent', () => {
     it('hides card actions without canEdit for a non-owner', async () => {
       await renderCardList({
         canEdit: false,
-        activeMsel: msel({ userMselRoles: [{ id: 'umr-1', userId: ME, mselId: 'msel-1', role: MselRole.Editor }] }),
+        activeMsel: msel({
+          userMselRoles: [
+            {
+              id: 'umr-1',
+              userId: ME,
+              mselId: 'msel-1',
+              role: MselRole.Editor,
+            },
+          ],
+        }),
       });
 
       expect(within(table()).getByText('Situation Card')).toBeInTheDocument();
       expect(within(table()).queryByTitle('Add card')).not.toBeInTheDocument();
-      for (const name of ['Edit Situation Card', 'Delete Situation Card', 'Make Situation Card a template']) {
-        expect(within(table()).queryByRole('button', { name })).not.toBeInTheDocument();
+      for (const name of [
+        'Edit Situation Card',
+        'Delete Situation Card',
+        'Make Situation Card a template',
+      ]) {
+        expect(
+          within(table()).queryByRole('button', { name }),
+        ).not.toBeInTheDocument();
       }
     });
 
@@ -195,7 +285,8 @@ describe('CardListComponent', () => {
 
       await user.click(within(table()).getByText('Situation Card'));
 
-      const teams = fixture.debugElement.query(By.directive(CardTeamsStub)).componentInstance as CardTeamsStub;
+      const teams = fixture.debugElement.query(By.directive(CardTeamsStub))
+        .componentInstance as CardTeamsStub;
       expect(teams.cardId()).toBe('card-1');
       expect(teams.loggedInUserId()).toBe(ME);
     });
@@ -209,11 +300,37 @@ describe('CardListComponent', () => {
       const { cardApi, confirm } = await renderCardList({ canEdit: true });
       const user = userEvent.setup();
 
-      await user.click(within(table()).getByRole('button', { name: 'Delete Situation Card' }));
+      await user.click(
+        within(table()).getByRole('button', { name: 'Delete Situation Card' }),
+      );
 
-      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Card' }));
+      expect(confirm).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Delete Card',
+          confirmText: 'Delete',
+          cancelText: 'Cancel',
+        }),
+      );
       expect(cardApi.deleteCard).toHaveBeenCalledWith('card-1');
-      expect(within(table()).queryByText('Situation Card')).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByText('Situation Card'),
+      ).not.toBeInTheDocument();
     });
+  });
+
+  /**
+   * Verifies: when the hub connection is replaced, the card templates load again.
+   * Interacts with: HubReconnectService.announceReconnected, CardService.getCardTemplates (stub).
+   * Data: showTemplates true; no active MSEL.
+   */
+  it('reloads the templates when the hub connection is replaced', async () => {
+    const { cardApi } = await renderCardList({
+      showTemplates: true,
+      activeMsel: null,
+    });
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    expect(cardApi.getCardTemplates).toHaveBeenCalledTimes(2);
   });
 });

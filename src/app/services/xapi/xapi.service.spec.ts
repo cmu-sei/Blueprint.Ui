@@ -17,7 +17,13 @@ function setup(XApiEnabled?: boolean) {
   TestBed.configureTestingModule({
     providers: [
       { provide: GeneratedXApiService, useValue: xApi },
-      { provide: ComnSettingsService, useValue: { settings: { XApiEnabled } } satisfies Pick<ComnSettingsService, 'settings'> },
+      {
+        provide: ComnSettingsService,
+        useValue: { settings: { XApiEnabled } } satisfies Pick<
+          ComnSettingsService,
+          'settings'
+        >,
+      },
     ],
   });
   return { service: TestBed.inject(XApiService), xApi };
@@ -52,9 +58,13 @@ describe('XApiService', () => {
     xApi.viewedMsel.mockReturnValue(of({ ok: true }));
     xApi.viewedJoinPage.mockReturnValue(of({ ok: 'join' }));
 
-    expect(await firstValueFrom(service.viewedMsel('msel-1'))).toEqual({ ok: true });
+    expect(await firstValueFrom(service.viewedMsel('msel-1'))).toEqual({
+      ok: true,
+    });
     expect(xApi.viewedMsel).toHaveBeenCalledWith('msel-1');
-    expect(await firstValueFrom(service.viewedJoinPage())).toEqual({ ok: 'join' });
+    expect(await firstValueFrom(service.viewedJoinPage())).toEqual({
+      ok: 'join',
+    });
   });
 
   /**
@@ -63,15 +73,30 @@ describe('XApiService', () => {
    * Data: XApiEnabled true; the endpoint fails with "LRS down".
    */
   it.each([
-    { method: 'viewedMsel', endpoint: 'viewedMsel', call: (s: XApiService) => s.viewedMsel('msel-1') },
-    { method: 'viewedJoinPage', endpoint: 'viewedJoinPage', call: (s: XApiService) => s.viewedJoinPage() },
-  ] as const)('$method logs and swallows a tracking failure', async ({ endpoint, call }) => {
-    const { service, xApi } = setup(true);
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    const failure = new Error('LRS down');
-    xApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'viewedMsel',
+      endpoint: 'viewedMsel',
+      call: (s: XApiService) => s.viewedMsel('msel-1'),
+    },
+    {
+      method: 'viewedJoinPage',
+      endpoint: 'viewedJoinPage',
+      call: (s: XApiService) => s.viewedJoinPage(),
+    },
+  ] as const)(
+    '$method logs and swallows a tracking failure',
+    async ({ endpoint, call }) => {
+      const { service, xApi } = setup(true);
+      const consoleError = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+      const failure = new Error('LRS down');
+      xApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    expect(await firstValueFrom(call(service))).toBeNull();
-    expect(consoleError.mock.calls).toEqual([['xAPI tracking error:', failure]]);
-  });
+      expect(await firstValueFrom(call(service))).toBeNull();
+      expect(consoleError.mock.calls).toEqual([
+        ['xAPI tracking error:', failure],
+      ]);
+    },
+  );
 });

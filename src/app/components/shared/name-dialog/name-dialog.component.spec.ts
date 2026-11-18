@@ -37,8 +37,12 @@ describe('NameDialogComponent', () => {
     const { fixture } = await renderNameDialog();
 
     expect(fixture.componentInstance).toBeInstanceOf(NameDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Rename Analysts' })).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('Analysts');
+    expect(
+      screen.getByRole('heading', { name: 'Rename Analysts' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue(
+      'Analysts',
+    );
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
   });
 
@@ -52,9 +56,17 @@ describe('NameDialogComponent', () => {
     const user = userEvent.setup();
 
     await user.clear(screen.getByRole('textbox', { name: 'Name' }));
-    await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Senior Analysts');
+    await user.type(
+      screen.getByRole('textbox', { name: 'Name' }),
+      'Senior Analysts',
+    );
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
-    expect(close).toHaveBeenCalledWith(expect.objectContaining({ nameValue: 'Senior Analysts', removeArtifacts: false }));
+    expect(close).toHaveBeenCalledWith(
+      expect.objectContaining({
+        nameValue: 'Senior Analysts',
+        removeArtifacts: false,
+      }),
+    );
   });
 });

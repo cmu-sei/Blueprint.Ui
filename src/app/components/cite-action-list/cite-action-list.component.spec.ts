@@ -16,7 +16,12 @@ import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { CiteAction, CiteActionService, Msel, MselRole } from 'src/app/generated/blueprint.api';
+import {
+  CiteAction,
+  CiteActionService,
+  Msel,
+  MselRole,
+} from 'src/app/generated/blueprint.api';
 import { CiteActionStore } from 'src/app/data/cite-action/cite-action.store';
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { CiteActionListComponent } from './cite-action-list.component';
@@ -24,19 +29,49 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
+import { TestBed } from '@angular/core/testing';
 
 const ME = 'user-me';
-const TEMPLATE: CiteAction = { id: 'ca-t', description: 'Template action', isTemplate: true, mselId: null, moveNumber: 0, actionNumber: 0 };
-const MSEL_ACTION: CiteAction = { id: 'ca-1', description: 'Isolate the host', mselId: 'msel-1', moveNumber: 1, actionNumber: 1, teamId: '' };
+const TEMPLATE: CiteAction = {
+  id: 'ca-t',
+  description: 'Template action',
+  isTemplate: true,
+  mselId: null,
+  moveNumber: 0,
+  actionNumber: 0,
+};
+const MSEL_ACTION: CiteAction = {
+  id: 'ca-1',
+  description: 'Isolate the host',
+  mselId: 'msel-1',
+  moveNumber: 1,
+  actionNumber: 1,
+  teamId: '',
+};
 
 function msel(overrides: Partial<Msel> = {}): Msel {
-  return { id: 'msel-1', name: 'Exercise Alpha', createdBy: 'someone-else', userMselRoles: [], ...overrides };
+  return {
+    id: 'msel-1',
+    name: 'Exercise Alpha',
+    createdBy: 'someone-else',
+    userMselRoles: [],
+    ...overrides,
+  };
 }
 
 async function renderCiteActions(
-  overrides: { canEdit?: boolean; showTemplates?: boolean; activeMsel?: Msel | null } = {},
+  overrides: {
+    canEdit?: boolean;
+    showTemplates?: boolean;
+    activeMsel?: Msel | null;
+  } = {},
 ) {
-  const { canEdit = true, showTemplates = false, activeMsel = msel() } = overrides;
+  const {
+    canEdit = true,
+    showTemplates = false,
+    activeMsel = msel(),
+  } = overrides;
   const citeActionApi = {
     getCiteActionTemplates: vi.fn(() => of([structuredClone(TEMPLATE)])),
     deleteCiteAction: vi.fn(() => of<unknown>(null)),
@@ -94,7 +129,11 @@ const TEMPLATE_HEADER = [
   'Upload CITE Action templates from JSON',
   'Download CITE Action templates as JSON',
 ];
-const MSEL_ROW = ['Edit Isolate the host', 'Delete Isolate the host', 'Make Isolate the host a template'];
+const MSEL_ROW = [
+  'Edit Isolate the host',
+  'Delete Isolate the host',
+  'Make Isolate the host a template',
+];
 
 describe('CiteActionListComponent', () => {
   describe('templates (admin)', () => {
@@ -104,15 +143,25 @@ describe('CiteActionListComponent', () => {
      * Data: showTemplates true; canEdit true; no active MSEL; one template and one MSEL action.
      */
     it('offers template actions with canEdit', async () => {
-      const { citeActionApi } = await renderCiteActions({ showTemplates: true, canEdit: true, activeMsel: null });
+      const { citeActionApi } = await renderCiteActions({
+        showTemplates: true,
+        canEdit: true,
+        activeMsel: null,
+      });
 
       expect(citeActionApi.getCiteActionTemplates).toHaveBeenCalledTimes(1);
       for (const title of TEMPLATE_HEADER) {
         expect(within(table()).getByTitle(title)).toBeInTheDocument();
       }
-      expect(within(table()).getByRole('button', { name: 'Edit Template action' })).toBeInTheDocument();
-      expect(within(table()).getByRole('button', { name: 'Delete Template action' })).toBeInTheDocument();
-      expect(within(table()).queryByText('Isolate the host')).not.toBeInTheDocument();
+      expect(
+        within(table()).getByRole('button', { name: 'Edit Template action' }),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).getByRole('button', { name: 'Delete Template action' }),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).queryByText('Isolate the host'),
+      ).not.toBeInTheDocument();
     });
 
     /**
@@ -121,14 +170,24 @@ describe('CiteActionListComponent', () => {
      * Data: showTemplates true; canEdit false; no active MSEL.
      */
     it('hides template actions without canEdit', async () => {
-      await renderCiteActions({ showTemplates: true, canEdit: false, activeMsel: null });
+      await renderCiteActions({
+        showTemplates: true,
+        canEdit: false,
+        activeMsel: null,
+      });
 
       expect(within(table()).getByText('Template action')).toBeInTheDocument();
       for (const title of TEMPLATE_HEADER) {
         expect(within(table()).queryByTitle(title)).not.toBeInTheDocument();
       }
-      expect(within(table()).queryByRole('button', { name: 'Edit Template action' })).not.toBeInTheDocument();
-      expect(within(table()).queryByRole('button', { name: 'Delete Template action' })).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByRole('button', { name: 'Edit Template action' }),
+      ).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByRole('button', {
+          name: 'Delete Template action',
+        }),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -143,7 +202,9 @@ describe('CiteActionListComponent', () => {
 
       expect(within(table()).getByTitle('Add CITE Action')).toBeInTheDocument();
       for (const name of MSEL_ROW) {
-        expect(within(table()).getByRole('button', { name })).toBeInTheDocument();
+        expect(
+          within(table()).getByRole('button', { name }),
+        ).toBeInTheDocument();
       }
     });
 
@@ -155,13 +216,27 @@ describe('CiteActionListComponent', () => {
     it('lets the MSEL owner edit actions without canEdit, but not make templates', async () => {
       await renderCiteActions({
         canEdit: false,
-        activeMsel: msel({ userMselRoles: [{ id: 'umr-1', userId: ME, mselId: 'msel-1', role: MselRole.Owner }] }),
+        activeMsel: msel({
+          userMselRoles: [
+            { id: 'umr-1', userId: ME, mselId: 'msel-1', role: MselRole.Owner },
+          ],
+        }),
       });
 
       expect(within(table()).getByTitle('Add CITE Action')).toBeInTheDocument();
-      expect(within(table()).getByRole('button', { name: 'Edit Isolate the host' })).toBeInTheDocument();
-      expect(within(table()).getByRole('button', { name: 'Delete Isolate the host' })).toBeInTheDocument();
-      expect(within(table()).queryByRole('button', { name: 'Make Isolate the host a template' })).not.toBeInTheDocument();
+      expect(
+        within(table()).getByRole('button', { name: 'Edit Isolate the host' }),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).getByRole('button', {
+          name: 'Delete Isolate the host',
+        }),
+      ).toBeInTheDocument();
+      expect(
+        within(table()).queryByRole('button', {
+          name: 'Make Isolate the host a template',
+        }),
+      ).not.toBeInTheDocument();
     });
 
     /**
@@ -172,13 +247,26 @@ describe('CiteActionListComponent', () => {
     it('hides action buttons without canEdit for a non-owner', async () => {
       await renderCiteActions({
         canEdit: false,
-        activeMsel: msel({ userMselRoles: [{ id: 'umr-1', userId: ME, mselId: 'msel-1', role: MselRole.Approver }] }),
+        activeMsel: msel({
+          userMselRoles: [
+            {
+              id: 'umr-1',
+              userId: ME,
+              mselId: 'msel-1',
+              role: MselRole.Approver,
+            },
+          ],
+        }),
       });
 
       expect(within(table()).getByText('Isolate the host')).toBeInTheDocument();
-      expect(within(table()).queryByTitle('Add CITE Action')).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByTitle('Add CITE Action'),
+      ).not.toBeInTheDocument();
       for (const name of MSEL_ROW) {
-        expect(within(table()).queryByRole('button', { name })).not.toBeInTheDocument();
+        expect(
+          within(table()).queryByRole('button', { name }),
+        ).not.toBeInTheDocument();
       }
     });
 
@@ -188,14 +276,44 @@ describe('CiteActionListComponent', () => {
      * Data: showTemplates false; canEdit true.
      */
     it('deletes an action after confirmation', async () => {
-      const { citeActionApi, confirm } = await renderCiteActions({ canEdit: true });
+      const { citeActionApi, confirm } = await renderCiteActions({
+        canEdit: true,
+      });
       const user = userEvent.setup();
 
-      await user.click(within(table()).getByRole('button', { name: 'Delete Isolate the host' }));
+      await user.click(
+        within(table()).getByRole('button', {
+          name: 'Delete Isolate the host',
+        }),
+      );
 
       expect(confirm).toHaveBeenCalledTimes(1);
+      expect(confirm).toHaveBeenCalledWith({
+        title: 'Delete CITE Action',
+        message: 'Are you sure that you want to delete Isolate the host?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      });
       expect(citeActionApi.deleteCiteAction).toHaveBeenCalledWith('ca-1');
-      expect(within(table()).queryByText('Isolate the host')).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByText('Isolate the host'),
+      ).not.toBeInTheDocument();
     });
+  });
+
+  /**
+   * Verifies: when the hub connection is replaced, the CITE action templates load again.
+   * Interacts with: HubReconnectService.announceReconnected, CiteActionService.getCiteActionTemplates (stub).
+   * Data: showTemplates true; no active MSEL.
+   */
+  it('reloads the templates when the hub connection is replaced', async () => {
+    const { citeActionApi } = await renderCiteActions({
+      showTemplates: true,
+      activeMsel: null,
+    });
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    expect(citeActionApi.getCiteActionTemplates).toHaveBeenCalledTimes(2);
   });
 });

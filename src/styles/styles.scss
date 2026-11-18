@@ -1,10 +1,12 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 
-@use "@angular/material" as mat;
-@use "./theme-colors" as theme;
-@use "./dark-theme-colors" as dark-theme;
+@use '@angular/material' as mat;
+@use './theme-colors' as theme;
+@use './dark-theme-colors' as dark-theme;
 @use '@mdi/font/scss/materialdesignicons.scss';
+// Declares the Open Sans family the theme typography and the classification banner use.
+@use '@cmusei/crucible-common/fonts';
 
 @import '@fortawesome/fontawesome-free/css/all.css';
 @include mat.core();
@@ -24,23 +26,33 @@
 @include mat.app-background();
 
 html {
-  @include mat.theme((color: theme.$primary-palette,
+  @include mat.theme(
+    (
+      color: theme.$primary-palette,
       typography: '"Open Sans", sans-serif',
-    ));
-  @include mat.icon-button-overrides((icon-color: var(--mat-sys-primary),
-    ));
+    )
+  );
+  @include mat.icon-button-overrides(
+    (
+      icon-color: var(--mat-sys-primary),
+    )
+  );
 }
 
 .darkMode {
-  @include mat.theme((color: (primary: dark-theme.$dark-primary-palette,
+  @include mat.theme(
+    (
+      color: (
+        primary: dark-theme.$dark-primary-palette,
         typography: '"Open Sans", sans-serif',
         theme-type: dark,
       ),
-    ));
+    )
+  );
 }
 
 body {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Open Sans', sans-serif;
   overflow: hidden;
   margin: 0;
 }
@@ -240,22 +252,4 @@ mat-paginator {
     font-size: 13px;
     color: var(--mat-sys-on-surface-variant);
   }
-}
-
-// The optional AppLandingBackgroundImage behind the dashboard, join and build
-// pages. Matches the Moodle site background: the image as-is in light mode,
-// and in dark mode a near-black tint over it, so the page stays dark. The
-// body and .darkMode prefixes outrank the background colors of the pages.
-body .landing-background.has-background {
-  background-image: var(--landing-background);
-  background-size: cover;
-  background-position: center;
-  // Pinned to the window, so the image sits in the same place in every app
-  // whatever the height of its top bar or page.
-  background-attachment: fixed;
-}
-
-.darkMode .landing-background.has-background {
-  background-color: #101215;
-  background-image: linear-gradient(rgba(7, 9, 12, 0.52), rgba(7, 9, 12, 0.44)), var(--landing-background);
 }

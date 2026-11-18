@@ -5,16 +5,24 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, firstValueFrom, of, throwError } from 'rxjs';
-import { CompetencyFramework, CompetencyFrameworkService } from 'src/app/generated/blueprint.api';
+import {
+  CompetencyFramework,
+  CompetencyFrameworkService,
+} from 'src/app/generated/blueprint.api';
 import { CompetencyFrameworkStore } from './competency-framework.store';
 import { CompetencyFrameworkDataService } from './competency-framework-data.service';
 import { CompetencyFrameworkQuery } from './competency-framework.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
-function framework(overrides: Partial<CompetencyFramework> = {}): CompetencyFramework {
+function framework(
+  overrides: Partial<CompetencyFramework> = {},
+): CompetencyFramework {
   return {
     id: 'cf-1',
     name: 'NICE Framework',
@@ -37,7 +45,10 @@ function setup(queryParams: Record<string, string> = {}) {
   TestBed.configureTestingModule({
     providers: [
       { provide: CompetencyFrameworkService, useValue: cfApi },
-      { provide: Router, useValue: { navigate } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -80,8 +91,12 @@ describe('CompetencyFrameworkDataService', () => {
    */
   it('single-framework calls keep the store in step with the API', () => {
     const { service, query, cfApi } = setup();
-    cfApi.getCompetencyFramework.mockReturnValue(of(framework({ id: 'cf-2', name: 'DCWF' })));
-    cfApi.createCompetencyFramework.mockReturnValue(of(framework({ id: 'cf-3', name: 'Custom' })));
+    cfApi.getCompetencyFramework.mockReturnValue(
+      of(framework({ id: 'cf-2', name: 'DCWF' })),
+    );
+    cfApi.createCompetencyFramework.mockReturnValue(
+      of(framework({ id: 'cf-3', name: 'Custom' })),
+    );
     cfApi.updateCompetencyFramework.mockReturnValue(
       of(framework({ id: 'cf-2', name: 'DCWF', version: '5.0' })),
     );
@@ -112,7 +127,9 @@ describe('CompetencyFrameworkDataService', () => {
   it('CompetencyFrameworkList filters on name, source or version', () => {
     const { service, route } = setup({ competencyFrameworkmask: 'nist' });
     service.updateStore(framework());
-    service.updateStore(framework({ id: 'cf-2', name: 'DCWF', source: 'DoD', version: '5.0' }));
+    service.updateStore(
+      framework({ id: 'cf-2', name: 'DCWF', source: 'DoD', version: '5.0' }),
+    );
     service.updateStore({ id: 'cf-3' });
     const list = recordEmissions(service.CompetencyFrameworkList);
 
@@ -152,25 +169,50 @@ describe('CompetencyFrameworkDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'load', endpoint: 'getCompetencyFrameworks', escapes: false, call: (s: CompetencyFrameworkDataService) => s.load() },
-    { method: 'loadById', endpoint: 'getCompetencyFramework', escapes: true, call: (s: CompetencyFrameworkDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createCompetencyFramework', escapes: true, call: (s: CompetencyFrameworkDataService) => s.add({ id: 'x-1' }) },
-    { method: 'update', endpoint: 'updateCompetencyFramework', escapes: true, call: (s: CompetencyFrameworkDataService) => s.update({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, cfApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(CompetencyFrameworkStore).setLoading(false);
-    cfApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'load',
+      endpoint: 'getCompetencyFrameworks',
+      escapes: false,
+      call: (s: CompetencyFrameworkDataService) => s.load(),
+    },
+    {
+      method: 'loadById',
+      endpoint: 'getCompetencyFramework',
+      escapes: true,
+      call: (s: CompetencyFrameworkDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createCompetencyFramework',
+      escapes: true,
+      call: (s: CompetencyFrameworkDataService) => s.add({ id: 'x-1' }),
+    },
+    {
+      method: 'update',
+      endpoint: 'updateCompetencyFramework',
+      escapes: true,
+      call: (s: CompetencyFrameworkDataService) => s.update({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, cfApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(CompetencyFrameworkStore).setLoading(false);
+      cfApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(CompetencyFrameworkQuery).getValue().loading).toBe(true);
-    // An empty error callback swallows the error; with no callback it escapes to
-    // ErrorService, the ErrorHandler app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(CompetencyFrameworkQuery).getValue().loading).toBe(
+        true,
+      );
+      // An empty error callback swallows the error; with no callback it escapes to
+      // ErrorService, the ErrorHandler app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete escapes to the app's global ErrorHandler.
@@ -178,19 +220,26 @@ describe('CompetencyFrameworkDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteCompetencyFramework', call: (s: CompetencyFrameworkDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, cfApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    cfApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteCompetencyFramework',
+      call: (s: CompetencyFrameworkDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, cfApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      cfApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

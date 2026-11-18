@@ -27,15 +27,45 @@ import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
 const POOL: MselCompetency[] = [
-  { id: 'mc-1', mselId: 'msel-1', competencyId: 'c-1', competency: { id: 'c-1', competencyFrameworkId: 'fw-1', idNumber: 'K0001', shortName: 'Networking' } },
-  { id: 'mc-2', mselId: 'msel-1', competencyId: 'c-2', competency: { id: 'c-2', competencyFrameworkId: 'fw-1', idNumber: 'S0002', shortName: 'Scripting' } },
+  {
+    id: 'mc-1',
+    mselId: 'msel-1',
+    competencyId: 'c-1',
+    competency: {
+      id: 'c-1',
+      competencyFrameworkId: 'fw-1',
+      idNumber: 'K0001',
+      shortName: 'Networking',
+    },
+  },
+  {
+    id: 'mc-2',
+    mselId: 'msel-1',
+    competencyId: 'c-2',
+    competency: {
+      id: 'c-2',
+      competencyFrameworkId: 'fw-1',
+      idNumber: 'S0002',
+      shortName: 'Scripting',
+    },
+  },
 ];
-const EXISTING: DataOption = { id: 'opt-1', dataFieldId: 'df-1', optionName: 'K0001', optionValue: 'Networking', displayOrder: 1 };
+const EXISTING: DataOption = {
+  id: 'opt-1',
+  dataFieldId: 'df-1',
+  optionName: 'K0001',
+  optionValue: 'Networking',
+  displayOrder: 1,
+};
 
-async function renderCompetencyOptions(overrides: { canEdit?: boolean; dataOptions?: DataOption[] } = {}) {
+async function renderCompetencyOptions(
+  overrides: { canEdit?: boolean; dataOptions?: DataOption[] } = {},
+) {
   const { canEdit = true, dataOptions = [EXISTING] } = overrides;
   const frameworkApi = {
-    getCompetencyFrameworks: vi.fn(() => of<CompetencyFramework[]>([{ id: 'fw-1', name: 'NICE' }])),
+    getCompetencyFrameworks: vi.fn(() =>
+      of<CompetencyFramework[]>([{ id: 'fw-1', name: 'NICE' }]),
+    ),
   } satisfies ApiStub<CompetencyFrameworkService>;
   const ref = dialogRefStub<CompetencyOptionsDialogComponent, DataOption[]>();
   const rendered = await renderComponent(CompetencyOptionsDialogComponent, {
@@ -52,7 +82,10 @@ async function renderCompetencyOptions(overrides: { canEdit?: boolean; dataOptio
     declarations: [CompetencyOptionsDialogComponent],
     providers: [
       { provide: CompetencyFrameworkService, useValue: frameworkApi },
-      { provide: MAT_DIALOG_DATA, useValue: { dataFieldId: 'df-1', dataOptions, canEdit } },
+      {
+        provide: MAT_DIALOG_DATA,
+        useValue: { dataFieldId: 'df-1', dataOptions, canEdit },
+      },
       { provide: MatDialogRef, useValue: ref.dialogRef },
       // The MSEL's competency pool, loaded by the MSEL page; seeded instead.
       {
@@ -69,7 +102,8 @@ async function renderCompetencyOptions(overrides: { canEdit?: boolean; dataOptio
 }
 
 const table = () => screen.getByRole('table');
-const row = (idNumber: string) => within(table()).getByText(idNumber).closest('tr') as HTMLElement;
+const row = (idNumber: string) =>
+  within(table()).getByText(idNumber).closest('tr') as HTMLElement;
 
 describe('CompetencyOptionsDialogComponent', () => {
   /**
@@ -80,7 +114,9 @@ describe('CompetencyOptionsDialogComponent', () => {
   it('lists the competency pool with the current selection', async () => {
     await renderCompetencyOptions();
 
-    expect(screen.getByRole('heading', { name: 'Manage Competencies (1 selected)' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Manage Competencies (1 selected)' }),
+    ).toBeInTheDocument();
     expect(within(row('K0001')).getByText('NICE')).toBeInTheDocument();
     expect(within(row('K0001')).getByText('Knowledge')).toBeInTheDocument();
     expect(within(row('S0002')).getByText('Skill')).toBeInTheDocument();
@@ -100,7 +136,13 @@ describe('CompetencyOptionsDialogComponent', () => {
 
     expect(close).toHaveBeenCalledWith([
       { ...EXISTING, displayOrder: 1, competencyId: 'c-1' },
-      expect.objectContaining({ dataFieldId: 'df-1', optionName: 'S0002', optionValue: 'Scripting', displayOrder: 2, competencyId: 'c-2' }),
+      expect.objectContaining({
+        dataFieldId: 'df-1',
+        optionName: 'S0002',
+        optionValue: 'Scripting',
+        displayOrder: 2,
+        competencyId: 'c-2',
+      }),
     ]);
   });
 
@@ -115,7 +157,9 @@ describe('CompetencyOptionsDialogComponent', () => {
 
     expect(within(table()).queryAllByRole('checkbox')).toEqual([]);
     await user.click(row('S0002'));
-    expect(screen.getByRole('heading', { name: 'Manage Competencies (1 selected)' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Manage Competencies (1 selected)' }),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Close' }));
 
     expect(close).toHaveBeenCalledWith(undefined);
@@ -128,8 +172,17 @@ describe('CompetencyOptionsDialogComponent', () => {
    * Data: canEdit true; options K0001 (in the pool) and X9999 (no longer in the pool); nothing ticked.
    */
   it('saves nothing when an editor closes without a change', async () => {
-    const stale: DataOption = { id: 'opt-9', dataFieldId: 'df-1', optionName: 'X9999', optionValue: 'Retired', displayOrder: 2 };
-    const { close } = await renderCompetencyOptions({ canEdit: true, dataOptions: [EXISTING, stale] });
+    const stale: DataOption = {
+      id: 'opt-9',
+      dataFieldId: 'df-1',
+      optionName: 'X9999',
+      optionValue: 'Retired',
+      displayOrder: 2,
+    };
+    const { close } = await renderCompetencyOptions({
+      canEdit: true,
+      dataOptions: [EXISTING, stale],
+    });
     const user = userEvent.setup();
 
     await user.click(screen.getByRole('button', { name: 'Close' }));

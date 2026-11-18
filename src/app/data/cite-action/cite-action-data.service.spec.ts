@@ -18,7 +18,10 @@ import { CiteActionQuery } from './cite-action.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function action(overrides: Partial<CiteAction> = {}): CiteAction {
   return {
@@ -43,14 +46,19 @@ function setup(queryParams: Record<string, string> = {}) {
     updateCiteAction: vi.fn(() => of<CiteAction>({})),
     deleteCiteAction: vi.fn(() => of<unknown>(null)),
     downloadJsonCiteActions: vi.fn(() => of(new Blob())),
-    uploadJsonCiteActions: vi.fn((): Observable<HttpEvent<CiteAction[]>> => EMPTY),
+    uploadJsonCiteActions: vi.fn(
+      (): Observable<HttpEvent<CiteAction[]>> => EMPTY,
+    ),
   } satisfies ApiStub<CiteActionService>;
   const navigate = vi.fn();
   const route = activatedRouteStub(queryParams);
   TestBed.configureTestingModule({
     providers: [
       { provide: CiteActionService, useValue: citeActionApi },
-      { provide: Router, useValue: { navigate } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -78,7 +86,13 @@ describe('CiteActionDataService', () => {
   it('loadTemplates merges, loadByMsel replaces', () => {
     const { service, query, citeActionApi } = setup();
     citeActionApi.getCiteActionTemplates.mockReturnValue(
-      of([action({ id: 'tmpl-1', description: 'Template action', isTemplate: true })]),
+      of([
+        action({
+          id: 'tmpl-1',
+          description: 'Template action',
+          isTemplate: true,
+        }),
+      ]),
     );
     citeActionApi.getActionsByMsel.mockReturnValue(
       of([action(), action({ id: 'act-2', description: 'Notify legal' })]),
@@ -86,11 +100,17 @@ describe('CiteActionDataService', () => {
     service.updateStore(action({ id: 'act-0', description: 'Existing' }));
 
     service.loadTemplates();
-    expect(descriptions(query.getAll())).toEqual(['Existing', 'Template action']);
+    expect(descriptions(query.getAll())).toEqual([
+      'Existing',
+      'Template action',
+    ]);
 
     service.loadByMsel('msel-1');
     expect(citeActionApi.getActionsByMsel).toHaveBeenCalledWith('msel-1');
-    expect(descriptions(query.getAll())).toEqual(['Isolate the host', 'Notify legal']);
+    expect(descriptions(query.getAll())).toEqual([
+      'Isolate the host',
+      'Notify legal',
+    ]);
     expect(query.getValue().loading).toBe(false);
   });
 
@@ -101,7 +121,9 @@ describe('CiteActionDataService', () => {
    */
   it('a failed loadByMsel empties the store', () => {
     const { service, query, citeActionApi } = setup();
-    citeActionApi.getActionsByMsel.mockReturnValue(throwError(() => new Error('boom')));
+    citeActionApi.getActionsByMsel.mockReturnValue(
+      throwError(() => new Error('boom')),
+    );
     service.updateStore(action());
 
     service.loadByMsel('msel-1');
@@ -117,8 +139,12 @@ describe('CiteActionDataService', () => {
    */
   it('single-action calls keep the store in step with the API', () => {
     const { service, query, citeActionApi } = setup();
-    citeActionApi.getCiteAction.mockReturnValue(of(action({ id: 'act-2', description: 'Notify legal' })));
-    citeActionApi.createCiteAction.mockReturnValue(of(action({ id: 'act-3', description: 'Brief press' })));
+    citeActionApi.getCiteAction.mockReturnValue(
+      of(action({ id: 'act-2', description: 'Notify legal' })),
+    );
+    citeActionApi.createCiteAction.mockReturnValue(
+      of(action({ id: 'act-3', description: 'Brief press' })),
+    );
     citeActionApi.updateCiteAction.mockReturnValue(
       of(action({ id: 'act-2', description: 'Notify legal counsel' })),
     );
@@ -131,7 +157,10 @@ describe('CiteActionDataService', () => {
       'act-2',
       expect.objectContaining({ description: 'edited' }),
     );
-    expect(descriptions(query.getAll())).toEqual(['Notify legal counsel', 'Brief press']);
+    expect(descriptions(query.getAll())).toEqual([
+      'Notify legal counsel',
+      'Brief press',
+    ]);
 
     service.delete('act-3');
     expect(descriptions(query.getAll())).toEqual(['Notify legal counsel']);
@@ -150,11 +179,17 @@ describe('CiteActionDataService', () => {
     const progress = recordEmissions(service.uploadProgress);
     citeActionApi.uploadJsonCiteActions.mockReturnValueOnce(
       of(
-        { type: HttpEventType.UploadProgress, loaded: 3, total: 4 } satisfies HttpUploadProgressEvent,
+        {
+          type: HttpEventType.UploadProgress,
+          loaded: 3,
+          total: 4,
+        } satisfies HttpUploadProgressEvent,
         new HttpResponse({ status: 200, body: [action()] }),
       ),
     );
-    citeActionApi.uploadJsonCiteActions.mockReturnValueOnce(throwError(() => new Error('bad')));
+    citeActionApi.uploadJsonCiteActions.mockReturnValueOnce(
+      throwError(() => new Error('bad')),
+    );
 
     service.uploadJson(new File(['[]'], 'actions.json'), 'events', true);
     service.uploadJson(new File(['[]'], 'actions.json'), 'events', true);
@@ -163,7 +198,9 @@ describe('CiteActionDataService', () => {
     expect(progress).toEqual([75, 0, 0]);
     expect(query.getValue().loading).toBe(false);
     service.downloadJson(['act-1']);
-    expect(citeActionApi.downloadJsonCiteActions).toHaveBeenCalledWith(['act-1']);
+    expect(citeActionApi.downloadJsonCiteActions).toHaveBeenCalledWith([
+      'act-1',
+    ]);
   });
 
   /**
@@ -212,25 +249,48 @@ describe('CiteActionDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'loadTemplates', endpoint: 'getCiteActionTemplates', escapes: false, call: (s: CiteActionDataService) => s.loadTemplates() },
-    { method: 'loadById', endpoint: 'getCiteAction', escapes: true, call: (s: CiteActionDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createCiteAction', escapes: true, call: (s: CiteActionDataService) => s.add({ id: 'x-1' }) },
-    { method: 'updateCiteAction', endpoint: 'updateCiteAction', escapes: true, call: (s: CiteActionDataService) => s.updateCiteAction({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, citeActionApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(CiteActionStore).setLoading(false);
-    citeActionApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'loadTemplates',
+      endpoint: 'getCiteActionTemplates',
+      escapes: false,
+      call: (s: CiteActionDataService) => s.loadTemplates(),
+    },
+    {
+      method: 'loadById',
+      endpoint: 'getCiteAction',
+      escapes: true,
+      call: (s: CiteActionDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createCiteAction',
+      escapes: true,
+      call: (s: CiteActionDataService) => s.add({ id: 'x-1' }),
+    },
+    {
+      method: 'updateCiteAction',
+      endpoint: 'updateCiteAction',
+      escapes: true,
+      call: (s: CiteActionDataService) => s.updateCiteAction({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, citeActionApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(CiteActionStore).setLoading(false);
+      citeActionApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(CiteActionQuery).getValue().loading).toBe(true);
-    // An empty error callback swallows the error; with no callback it escapes to
-    // ErrorService, the ErrorHandler app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(CiteActionQuery).getValue().loading).toBe(true);
+      // An empty error callback swallows the error; with no callback it escapes to
+      // ErrorService, the ErrorHandler app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete escapes to the app's global ErrorHandler.
@@ -238,19 +298,26 @@ describe('CiteActionDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteCiteAction', call: (s: CiteActionDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, citeActionApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    citeActionApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteCiteAction',
+      call: (s: CiteActionDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, citeActionApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      citeActionApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

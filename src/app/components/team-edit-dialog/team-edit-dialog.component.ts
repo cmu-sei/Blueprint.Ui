@@ -3,11 +3,25 @@
 // project root for license information.
 
 import { Component, inject, output } from '@angular/core';
-import { UntypedFormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  UntypedFormControl,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EDITOR_CONFIG } from 'src/app/utilities/editor-config';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
-import { MatFormField, MatLabel, MatInput, MatError, MatHint } from '@angular/material/input';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
+import {
+  MatFormField,
+  MatLabel,
+  MatInput,
+  MatError,
+  MatHint,
+} from '@angular/material/input';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
@@ -16,44 +30,49 @@ import { MatCheckbox } from '@angular/material/checkbox';
 const MIN_NAME_LENGTH = 3;
 
 @Component({
-    selector: 'app-team-edit-dialog',
-    templateUrl: './team-edit-dialog.component.html',
-    styleUrls: ['./team-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, ReactiveFormsModule, MatError, AngularEditorModule, MatSelect, MatOption, MatHint, MatCheckbox]
+  selector: 'app-team-edit-dialog',
+  templateUrl: './team-edit-dialog.component.html',
+  styleUrls: ['./team-edit-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    FormsModule,
+    ReactiveFormsModule,
+    MatError,
+    AngularEditorModule,
+    MatSelect,
+    MatOption,
+    MatHint,
+    MatCheckbox,
+  ],
 })
-
 export class TeamEditDialogComponent {
   data = inject(MAT_DIALOG_DATA);
 
   readonly editComplete = output<any>();
 
-  public teamNameFormControl = new UntypedFormControl(
-    this.data.team.name,
-    [
-      Validators.required,
-    ]
-  );
+  public teamNameFormControl = new UntypedFormControl(this.data.team.name, [
+    Validators.required,
+  ]);
   public teamShortNameFormControl = new UntypedFormControl(
     this.data.team.shortName,
-    [
-      Validators.required,
-    ]
+    [Validators.required],
   );
-  public emailFormControl = new UntypedFormControl(
-    this.data.team.email,
-    []
-  );
+  public emailFormControl = new UntypedFormControl(this.data.team.email, []);
   public descriptionFormControl = new UntypedFormControl(
     this.data.team.description,
-    []
+    [],
   );
   public citeTeamTypeIdFormControl = new UntypedFormControl(
     this.data.team.citeTeamTypeId,
-    []
+    [],
   );
   public casterTeamVariableFormControl = new UntypedFormControl(
     this.data.team.casterTeamVariable ?? '',
-    []
+    [],
   );
   editorConfig = EDITOR_CONFIG;
 
@@ -68,13 +87,14 @@ export class TeamEditDialogComponent {
   readonly MIN_NAME_LENGTH = MIN_NAME_LENGTH;
 
   errorFree() {
-    const hasNameErrors = this.teamNameFormControl.hasError('required') ||
+    const hasNameErrors =
+      this.teamNameFormControl.hasError('required') ||
       this.teamNameFormControl.hasError('minlength') ||
       this.teamShortNameFormControl.hasError('required') ||
       this.teamShortNameFormControl.hasError('minlength');
 
-    const hasCiteTeamTypeError = this.data.useCite &&
-      this.citeTeamTypeIdFormControl.hasError('required');
+    const hasCiteTeamTypeError =
+      this.data.useCite && this.citeTeamTypeIdFormControl.hasError('required');
 
     return !(hasNameErrors || hasCiteTeamTypeError);
   }
@@ -86,9 +106,7 @@ export class TeamEditDialogComponent {
     if (!saveChanges) {
       this.editComplete.emit({ saveChanges: false, team: null });
     } else {
-      this.data.team.name = this.teamNameFormControl.value
-        .toString()
-        .trim();
+      this.data.team.name = this.teamNameFormControl.value.toString().trim();
       this.data.team.shortName = this.teamShortNameFormControl.value
         .toString()
         .trim();
@@ -113,19 +131,23 @@ export class TeamEditDialogComponent {
         this.data.team.name = this.teamNameFormControl.value?.toString() || '';
         break;
       case 'shortName':
-        this.data.team.shortName = this.teamShortNameFormControl.value?.toString() || '';
+        this.data.team.shortName =
+          this.teamShortNameFormControl.value?.toString() || '';
         break;
       case 'email':
         this.data.team.email = this.emailFormControl.value?.toString() || '';
         break;
       case 'description':
-        this.data.team.description = this.descriptionFormControl.value?.toString() || '';
+        this.data.team.description =
+          this.descriptionFormControl.value?.toString() || '';
         break;
       case 'casterTeamVariable':
-        this.data.team.casterTeamVariable = this.casterTeamVariableFormControl.value?.toString() || null;
+        this.data.team.casterTeamVariable =
+          this.casterTeamVariableFormControl.value?.toString() || null;
         break;
       case 'citeTeamTypeId':
-        this.data.team.citeTeamTypeId = this.citeTeamTypeIdFormControl.value?.toString() || '';
+        this.data.team.citeTeamTypeId =
+          this.citeTeamTypeIdFormControl.value?.toString() || '';
         break;
       default:
         break;
@@ -145,11 +167,12 @@ export class TeamEditDialogComponent {
   // names the other teams that already write a variable, e.g. "blue_cell (used by Blue Team)"
   topologyTeamLabel(variable: string): string {
     const users: string[] = this.data.casterTeamVariableUsers?.[variable] ?? [];
-    return users.length > 0 ? variable + ' (used by ' + users.join(', ') + ')' : variable;
+    return users.length > 0
+      ? variable + ' (used by ' + users.join(', ') + ')'
+      : variable;
   }
 
   getUserName(userId: string) {
-    return this.data.userList.find(u => u.id === userId).name;
+    return this.data.userList.find((u) => u.id === userId).name;
   }
-
 }

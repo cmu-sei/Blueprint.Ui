@@ -1,8 +1,23 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, AfterViewInit, inject, input, viewChild, OnChanges } from '@angular/core';
-import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  AfterViewInit,
+  inject,
+  input,
+  viewChild,
+  OnChanges,
+} from '@angular/core';
+import {
+  UntypedFormControl,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
@@ -17,10 +32,27 @@ import { Theme } from '@cmusei/crucible-common';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
-import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+  MatTableDataSource,
+  MatTable,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { MatPaginator } from '@angular/material/paginator';
-import { CdkDragDrop, CdkDropList, CdkDragHandle, CdkDrag } from '@angular/cdk/drag-drop';
+import {
+  CdkDragDrop,
+  CdkDropList,
+  CdkDragHandle,
+  CdkDrag,
+} from '@angular/cdk/drag-drop';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataFieldTemplateQuery } from 'src/app/data/data-field/data-field-template.query';
@@ -40,19 +72,58 @@ import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { v4 as uuidv4 } from 'uuid';
 import { MatIcon } from '@angular/material/icon';
 
-import { MatFormField, MatInput, MatSuffix, MatLabel } from '@angular/material/input';
+import {
+  MatFormField,
+  MatInput,
+  MatSuffix,
+  MatLabel,
+} from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatCheckbox } from '@angular/material/checkbox';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
-    selector: 'app-data-field-list',
-    templateUrl: './data-field-list.component.html',
-    styleUrls: ['./data-field-list.component.scss'],
-    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatLabel, MatSelect, MatOption, MatPaginator, MatTable, MatSort, CdkDropList, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, CdkDragHandle, CdkDrag, MatMenuTrigger, MatMenu, MatMenuItem, MatSortHeader, MatCheckbox, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
+  selector: 'app-data-field-list',
+  templateUrl: './data-field-list.component.html',
+  styleUrls: ['./data-field-list.component.scss'],
+  imports: [
+    MatIcon,
+    MatFormField,
+    MatInput,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatLabel,
+    MatSelect,
+    MatOption,
+    MatPaginator,
+    MatTable,
+    MatSort,
+    CdkDropList,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCellDef,
+    MatCell,
+    CdkDragHandle,
+    CdkDrag,
+    MatMenuTrigger,
+    MatMenu,
+    MatMenuItem,
+    MatSortHeader,
+    MatCheckbox,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+  ],
 })
-export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, AfterViewInit {
+export class DataFieldListComponent
+  implements OnChanges, OnDestroy, OnInit, AfterViewInit
+{
   private mselQuery = inject(MselQuery);
   private dataFieldDataService = inject(DataFieldDataService);
   private dataFieldQuery = inject(DataFieldQuery);
@@ -83,10 +154,10 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
   dataFieldTypes = DataFieldType;
   systemDefinedDataFields = new Array<DataField>();
   dataFieldDataSource = new MatTableDataSource<DataField>(
-    new Array<DataField>()
+    new Array<DataField>(),
   );
   templateDataSource = new MatTableDataSource<DataField>(
-    new Array<DataField>()
+    new Array<DataField>(),
   );
   readonly baseSystemColumns: string[] = ['draghandleSpacer', 'action'];
   readonly baseColumns: string[] = ['draghandle', 'action'];
@@ -95,20 +166,66 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
     ...this.baseSystemColumns,
     ...this.trailingColumns,
   ];
-  displayedColumns: string[] = [
-    ...this.baseColumns,
-    ...this.trailingColumns,
+  displayedColumns: string[] = [...this.baseColumns, ...this.trailingColumns];
+  readonly displayOptions: {
+    key: string;
+    column: string;
+    label: string;
+    title: string;
+    hideInAdmin?: boolean;
+    hideInInjectType?: boolean;
+  }[] = [
+    {
+      key: 'onScenarioEventList',
+      column: 'events',
+      label: 'List',
+      title: 'Display on Scenario Events list',
+      hideInAdmin: true,
+      hideInInjectType: true,
+    },
+    {
+      key: 'onExerciseView',
+      column: 'exercise',
+      label: 'View',
+      title: 'Display on the Exercise View',
+      hideInAdmin: true,
+    },
+    {
+      key: 'isAssessorVisible',
+      column: 'assessor',
+      label: 'Assess',
+      title: 'Display on the Assessor View',
+    },
+    {
+      key: 'isInformationField',
+      column: 'information',
+      label: 'Info',
+      title: 'Display for Information Events',
+    },
+    {
+      key: 'isFacilitationField',
+      column: 'facilitation',
+      label: 'Facil',
+      title: 'Display for Facilitation Events',
+    },
+    {
+      key: 'isShownOnDefaultTab',
+      column: 'default',
+      label: 'Default',
+      title: 'Display on the default tab of the scenario event edit dialog',
+    },
+    {
+      key: 'isOnlyShownToOwners',
+      column: 'devs',
+      label: 'Devs',
+      title:
+        'Hide this field from participants on all views - show only to content developers and MSEL owners',
+    },
   ];
-  readonly displayOptions: { key: string; column: string; label: string; title: string; hideInAdmin?: boolean; hideInInjectType?: boolean }[] = [
-    { key: 'onScenarioEventList', column: 'events', label: 'List', title: 'Display on Scenario Events list', hideInAdmin: true, hideInInjectType: true },
-    { key: 'onExerciseView', column: 'exercise', label: 'View', title: 'Display on the Exercise View', hideInAdmin: true },
-    { key: 'isAssessorVisible', column: 'assessor', label: 'Assess', title: 'Display on the Assessor View' },
-    { key: 'isInformationField', column: 'information', label: 'Info', title: 'Display for Information Events' },
-    { key: 'isFacilitationField', column: 'facilitation', label: 'Facil', title: 'Display for Facilitation Events' },
-    { key: 'isShownOnDefaultTab', column: 'default', label: 'Default', title: 'Display on the default tab of the scenario event edit dialog' },
-    { key: 'isOnlyShownToOwners', column: 'devs', label: 'Devs', title: 'Hide this field from participants on all views - show only to content developers and MSEL owners' },
+  readonly defaultVisibleDisplayColumns: string[] = [
+    'onScenarioEventList',
+    'onExerciseView',
   ];
-  readonly defaultVisibleDisplayColumns: string[] = ['onScenarioEventList', 'onExerciseView'];
   visibleDisplayColumns: string[] = [];
   private unsubscribe$ = new Subject();
   private editRights = { fields: false, systemRows: false, templates: false };
@@ -129,6 +246,15 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
       });
     // load the dataField templates
     this.dataFieldDataService.loadTemplates();
+    // a new hub connection missed what was broadcast while the old one was down; an MSEL's own fields
+    // are reloaded by the MSEL page
+    reloadOnReconnect(() => {
+      this.dataFieldDataService.loadTemplates();
+      const injectTypeId = this.injectTypeId();
+      if (!this.showTemplates() && injectTypeId) {
+        this.dataFieldDataService.loadByInjectType(injectTypeId);
+      }
+    });
     // subscribe to the templates
     this.dataFieldTemplateQuery
       .selectAll()
@@ -144,7 +270,7 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
         },
         (error) => {
           this.templateDataSource.data = [];
-        }
+        },
       );
   }
 
@@ -155,14 +281,16 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
 
   ngOnInit() {
     // Load permissions and trigger change detection when loaded
-    this.permissionDataService.load()
+    this.permissionDataService
+      .load()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
         this.updateEditRights();
         this.changeDetectorRef.markForCheck();
       });
     const saved = this.uiDataService.getVisibleDataFieldColumns();
-    const seed = saved && saved.length > 0 ? saved : this.defaultVisibleDisplayColumns;
+    const seed =
+      saved && saved.length > 0 ? saved : this.defaultVisibleDisplayColumns;
     const availableKeys = this.availableDisplayOptions().map((o) => o.key);
     this.visibleDisplayColumns = seed.filter((k) => availableKeys.includes(k));
     this.applyVisibleDisplayColumns();
@@ -335,13 +463,13 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
         dataField: dataField,
         canEdit: this.canEdit(),
         galleryArticleParameters: this.getUnusedGalleryOptions(
-          dataField.galleryArticleParameter
+          dataField.galleryArticleParameter,
         ),
         useGallery: this.msel.useGallery,
         useCite: this.msel.useCite,
         dataFieldTypes: this.dataFieldTypes,
         title: dialogTitle,
-        onSave: (df: DataField) => this.saveDataField(df)
+        onSave: (df: DataField) => this.saveDataField(df),
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -405,14 +533,20 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
       },
       (err) => {
         window.alert('Error downloading file');
-      }
+      },
     );
   }
 
   deleteDataField(dataField: DataField): void {
     this.dialogService
-      .confirm({ title: 'Delete Data Field', message: 'Are you sure that you want to delete ' + dataField.name + '?'
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Delete Data Field',
+        message: 'Are you sure that you want to delete ' + dataField.name + '?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.dataFieldDataService.delete(dataField.id);
         }
@@ -432,7 +566,7 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
     const filteredData = this.getFilteredDataFields(
       this.msel.id,
       this.injectTypeId(),
-      this.dataFieldList
+      this.dataFieldList,
     );
     this.dataFieldDataSource.data = filteredData;
     const paginator = this.paginator();
@@ -440,7 +574,7 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
       paginator.length = filteredData.length;
     }
     this.templateDataSource.data = this.templateList.sort((a, b) =>
-      this.sortDataFields(a, b)
+      this.sortDataFields(a, b),
     );
   }
 
@@ -495,7 +629,7 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
         const bStr = b[sortFieldName];
         sortResult = Intl.Collator().compare(
           aStr ? aStr.trim().toLowerCase() : '',
-          bStr ? bStr.trim().toLowerCase() : ''
+          bStr ? bStr.trim().toLowerCase() : '',
         );
         break;
     }
@@ -522,17 +656,17 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
   getFilteredDataFields(
     mselId: string,
     injectTypeId: string,
-    dataFields: DataField[]
+    dataFields: DataField[],
   ): DataField[] {
     let filteredDataFields: DataField[] = [];
     if (dataFields && dataFields.length > 0) {
-      dataFields.forEach(m => {
+      dataFields.forEach((m) => {
         filteredDataFields.push({ ...m });
       });
       if (this.filterString) {
         const filterString = this.filterString?.toLowerCase();
         filteredDataFields = filteredDataFields.filter((a) =>
-          a.name?.toLowerCase().includes(filterString)
+          a.name?.toLowerCase().includes(filterString),
         );
       }
     }
@@ -563,7 +697,10 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
 
   viewDataOptions(dataField: DataField, event: Event) {
     event.stopPropagation();
-    if (dataField.dataType === DataFieldType.Competency || (dataField.dataOptions && dataField.dataOptions.length > 0)) {
+    if (
+      dataField.dataType === DataFieldType.Competency ||
+      (dataField.dataOptions && dataField.dataOptions.length > 0)
+    ) {
       const hasEditPermission = this.canEdit();
       const supportsOptionList =
         dataField.dataType === DataFieldType.Double ||
@@ -575,16 +712,19 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
       const canAddOptions = hasEditPermission && supportsOptionList;
 
       if (dataField.dataType === DataFieldType.Competency) {
-        const compDialogRef = this.dialog.open(CompetencyOptionsDialogComponent, {
-          width: '900px',
-          maxWidth: '95vw',
-          maxHeight: '90vh',
-          data: {
-            dataFieldId: dataField.id,
-            dataOptions: dataField.dataOptions,
-            canEdit: canAddOptions
-          }
-        });
+        const compDialogRef = this.dialog.open(
+          CompetencyOptionsDialogComponent,
+          {
+            width: '900px',
+            maxWidth: '95vw',
+            maxHeight: '90vh',
+            data: {
+              dataFieldId: dataField.id,
+              dataOptions: dataField.dataOptions,
+              canEdit: canAddOptions,
+            },
+          },
+        );
         compDialogRef.afterClosed().subscribe((updatedOptions) => {
           // Closing without saving answers nothing; a read-only user has nothing to save.
           if (!canAddOptions || updatedOptions === undefined) {
@@ -601,11 +741,13 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
           data: {
             dataOptions: dataField.dataOptions,
             canEdit: canAddOptions,
-            onEdit: (option: DataOption) => this.editDataOption(option, dataField),
-            onDelete: (option: DataOption) => this.deleteDataOption(option, dataField),
+            onEdit: (option: DataOption) =>
+              this.editDataOption(option, dataField),
+            onDelete: (option: DataOption) =>
+              this.deleteDataOption(option, dataField),
             onAdd: () => this.addDataOption(dataField),
-            onImport: () => this.importDataOptions(dataField)
-          }
+            onImport: () => this.importDataOptions(dataField),
+          },
         });
       }
     }
@@ -614,7 +756,7 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
   addDataOption(dataField: DataField) {
     const dataOption: DataOption = {
       displayOrder: dataField.dataOptions.length + 1,
-      dataFieldId: dataField.id
+      dataFieldId: dataField.id,
     };
     this.openDataOptionEditDialog(dataOption, dataField);
   }
@@ -625,24 +767,29 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
   }
 
   deleteDataOption(option: DataOption, dataField: DataField) {
-    const index = dataField.dataOptions.findIndex(x => x.id === option.id);
+    const index = dataField.dataOptions.findIndex((x) => x.id === option.id);
     if (index >= 0) {
       dataField.dataOptions.splice(index, 1);
       this.dataFieldDataService.updateDataField(dataField);
     }
   }
 
-  private openDataOptionEditDialog(dataOption: DataOption, dataField: DataField) {
+  private openDataOptionEditDialog(
+    dataOption: DataOption,
+    dataField: DataField,
+  ) {
     const dialogRef = this.dialog.open(DataOptionEditDialogComponent, {
       minWidth: '400px',
       maxWidth: '90vw',
       width: 'auto',
-      data: { dataOption }
+      data: { dataOption },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
       if (result.saveChanges && result.dataOption) {
         if (dataOption.id) {
-          const index = dataField.dataOptions.findIndex(x => x.id === dataOption.id);
+          const index = dataField.dataOptions.findIndex(
+            (x) => x.id === dataOption.id,
+          );
           dataField.dataOptions[index] = dataOption;
         } else {
           dataOption.id = uuidv4();
@@ -660,7 +807,7 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
       maxWidth: '90vw',
       data: {
         dataFieldId: dataField.id,
-        existingOptions: dataField.dataOptions
+        existingOptions: dataField.dataOptions,
       },
     });
     dialogRef.afterClosed().subscribe((result) => {
@@ -694,8 +841,16 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
     const trailing = hasIntegration
       ? [...this.trailingColumns, 'integration']
       : [...this.trailingColumns];
-    this.displayedColumns = [...this.baseColumns, ...chosenColumns, ...trailing];
-    this.systemFieldDisplayedColumns = [...this.baseSystemColumns, ...chosenColumns, ...this.trailingColumns];
+    this.displayedColumns = [
+      ...this.baseColumns,
+      ...chosenColumns,
+      ...trailing,
+    ];
+    this.systemFieldDisplayedColumns = [
+      ...this.baseSystemColumns,
+      ...chosenColumns,
+      ...this.trailingColumns,
+    ];
   }
 
   saveChange(dataField: DataField) {
@@ -720,9 +875,12 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
           this.msel.showTimeOnAssessorView = dataField.isAssessorVisible;
           break;
         case 'Integration Target':
-          this.msel.showIntegrationTargetOnExerciseView = dataField.onExerciseView;
-          this.msel.showIntegrationTargetOnScenarioEventList = dataField.onScenarioEventList;
-          this.msel.showIntegrationTargetOnAssessorView = dataField.isAssessorVisible;
+          this.msel.showIntegrationTargetOnExerciseView =
+            dataField.onExerciseView;
+          this.msel.showIntegrationTargetOnScenarioEventList =
+            dataField.onScenarioEventList;
+          this.msel.showIntegrationTargetOnAssessorView =
+            dataField.isAssessorVisible;
           break;
       }
       this.saveMsel();
@@ -735,7 +893,7 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
     if (todoList && todoList.length > 0) {
       todoList = todoList.filter(
         (x) =>
-          !this.dataFieldList.some((df) => df.galleryArticleParameter === x)
+          !this.dataFieldList.some((df) => df.galleryArticleParameter === x),
       );
       todoString = todoList.join(', ');
     }
@@ -778,7 +936,7 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
     // The nonSystemDefaultFieldStartIndex tracks which actual index is equivalent to zero
     const nonSystemDefaultFieldStartIndex =
       this.dataFieldDataSource.data.findIndex(
-        (df, index) => !this.fieldIsSystemDefined(index, df)
+        (df, index) => !this.fieldIsSystemDefined(index, df),
       );
     const prevIndex = event.previousIndex + nonSystemDefaultFieldStartIndex;
     const currIndex = event.currentIndex + nonSystemDefaultFieldStartIndex;
@@ -800,7 +958,9 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
   }
 
   canEditRow(dataField: DataField): boolean {
-    return dataField.displayOrder < 0 ? this.editRights.systemRows : this.editRights.fields;
+    return dataField.displayOrder < 0
+      ? this.editRights.systemRows
+      : this.editRights.fields;
   }
 
   canMakeTemplate(): boolean {
@@ -809,16 +969,23 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
 
   private updateEditRights() {
     const userId = this.loggedInUserId();
-    const hasEditMsels = this.permissionDataService.hasPermission(SystemPermission.EditMsels);
-    const hasManageDataFields = this.permissionDataService.hasPermission(SystemPermission.ManageDataFields);
+    const hasEditMsels = this.permissionDataService.hasPermission(
+      SystemPermission.EditMsels,
+    );
+    const hasManageDataFields = this.permissionDataService.hasPermission(
+      SystemPermission.ManageDataFields,
+    );
     // Template and inject type fields belong to no MSEL; the API wants ManageDataFields for them.
     // A MSEL's fields and options: EditMsels, its owners and its Editors. hasRole's editor is also
     // true for an Approver, who edits events but not the fields, so the Editor role is checked directly.
-    const fields = this.showTemplates() || this.injectTypeId()
-      ? hasManageDataFields
-      : hasEditMsels ||
-        this.msel.hasRole(userId, '').owner ||
-        (this.msel.userMselRoles ?? []).some((r) => r.userId === userId && r.role === MselRole.Editor);
+    const fields =
+      this.showTemplates() || this.injectTypeId()
+        ? hasManageDataFields
+        : hasEditMsels ||
+          this.msel.hasRole(userId, '').owner ||
+          (this.msel.userMselRoles ?? []).some(
+            (r) => r.userId === userId && r.role === MselRole.Editor,
+          );
     this.editRights = {
       fields,
       // The system rows (Move, Group, Execution Time, Integration Target) are MSEL settings, saved

@@ -53,12 +53,30 @@ class TeamUsersStub {
 }
 
 const ME = 'user-me';
-const BLUE: Team = { id: 'team-1', mselId: 'msel-1', name: 'Blue Team', shortName: 'BLUE', email: 'blue@example.com', citeTeamTypeId: 'tt-1', canTeamMemberInvite: true };
-const ALL_BUT_MANAGE_MSELS = Object.values(SystemPermission).filter((p) => p !== SystemPermission.ManageMsels);
+const BLUE: Team = {
+  id: 'team-1',
+  mselId: 'msel-1',
+  name: 'Blue Team',
+  shortName: 'BLUE',
+  email: 'blue@example.com',
+  citeTeamTypeId: 'tt-1',
+  canTeamMemberInvite: true,
+};
+const ALL_BUT_MANAGE_MSELS = Object.values(SystemPermission).filter(
+  (p) => p !== SystemPermission.ManageMsels,
+);
 
 // A MSEL that deploys its topology from Caster directory dir-1.
-const CASTER: Partial<Msel> = { usePlayer: true, useCaster: true, casterDirectoryId: 'dir-1' };
-const team = (name: string, casterTeamVariable?: string, id = `team-${name}`): Team => ({
+const CASTER: Partial<Msel> = {
+  usePlayer: true,
+  useCaster: true,
+  casterDirectoryId: 'dir-1',
+};
+const team = (
+  name: string,
+  casterTeamVariable?: string,
+  id = `team-${name}`,
+): Team => ({
   id,
   mselId: 'msel-1',
   name,
@@ -71,7 +89,12 @@ function msel(roles: MselRole[] = [], extra: Partial<Msel> = {}): Msel {
     id: 'msel-1',
     name: 'Exercise Alpha',
     createdBy: 'someone-else',
-    userMselRoles: roles.map((role, i) => ({ id: `umr-${i}`, userId: ME, mselId: 'msel-1', role })),
+    userMselRoles: roles.map((role, i) => ({
+      id: `umr-${i}`,
+      userId: ME,
+      mselId: 'msel-1',
+      role,
+    })),
     ...extra,
   };
 }
@@ -126,18 +149,24 @@ async function renderMselTeams(
       MatTableModule,
       MatTooltipModule,
     ],
-    childStubs: [
-      { replace: TeamUsersComponent, with: TeamUsersStub },
-    ],
+    childStubs: [{ replace: TeamUsersComponent, with: TeamUsersStub }],
     providers: [
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: CiteService, useValue: citeApi },
       { provide: CasterService, useValue: casterApi },
       { provide: TeamService, useValue: teamApi },
       { provide: UnitService, useValue: unitApi },
       { provide: CrucibleDialogService, useValue: dialog },
-      dialogOpen ? { provide: MatDialog, useValue: { open: dialogOpen } satisfies Pick<MatDialog, 'open'> } : unstubbed(MatDialog),
+      dialogOpen
+        ? {
+            provide: MatDialog,
+            useValue: { open: dialogOpen } satisfies Pick<MatDialog, 'open'>,
+          }
+        : unstubbed(MatDialog),
       // The MSEL page loads the MSEL and its teams; the stores are seeded instead.
       {
         provide: MselStore,
@@ -163,10 +192,27 @@ async function renderMselTeams(
 }
 
 const table = () => screen.getByRole('table');
-const headers = () => within(table()).getAllByRole('columnheader').map((th) => th.textContent.trim());
-const rowOf = (name: string) => within(within(table()).getByText(name, { selector: 'td' }).closest('tr') as HTMLElement);
-const cellOf = (name: string, header: string) => rowOf(name).getAllByRole('cell')[headers().indexOf(header)].textContent.replace(/\s+/g, ' ').trim();
-const warnings = () => screen.queryAllByText(/Topology team|topology team|Push will be refused|Topology teams:/).map((el) => el.textContent.replace(/\s+/g, ' ').trim());
+const headers = () =>
+  within(table())
+    .getAllByRole('columnheader')
+    .map((th) => th.textContent.trim());
+const rowOf = (name: string) =>
+  within(
+    within(table())
+      .getByText(name, { selector: 'td' })
+      .closest('tr') as HTMLElement,
+  );
+const cellOf = (name: string, header: string) =>
+  rowOf(name)
+    .getAllByRole('cell')
+    [headers().indexOf(header)].textContent.replace(/\s+/g, ' ')
+    .trim();
+const warnings = () =>
+  screen
+    .queryAllByText(
+      /Topology team|topology team|Push will be refused|Topology teams:/,
+    )
+    .map((el) => el.textContent.replace(/\s+/g, ' ').trim());
 const ACTIONS = ['Add a team', 'Edit Blue Team', 'Delete team'];
 
 describe('MselTeamsComponent', () => {
@@ -176,9 +222,14 @@ describe('MselTeamsComponent', () => {
    * Data: a MSEL using CITE; BLUE, an Agency team whose members can invite.
    */
   it('lists the MSEL teams', async () => {
-    await renderMselTeams({ permissions: [SystemPermission.ManageMsels], mselExtra: { useCite: true } });
+    await renderMselTeams({
+      permissions: [SystemPermission.ManageMsels],
+      mselExtra: { useCite: true },
+    });
 
-    const row = within(within(table()).getByText('BLUE').closest('tr') as HTMLElement);
+    const row = within(
+      within(table()).getByText('BLUE').closest('tr') as HTMLElement,
+    );
     expect(row.getByText('blue@example.com')).toBeInTheDocument();
     expect(row.getByText('Agency')).toBeInTheDocument();
     expect(row.getByRole('checkbox')).toBeChecked();
@@ -191,7 +242,11 @@ describe('MselTeamsComponent', () => {
    * Data: ManageMsels with no role; or no permission with the Owner role.
    */
   it.each([
-    { label: 'with ManageMsels', permissions: [SystemPermission.ManageMsels], roles: [] },
+    {
+      label: 'with ManageMsels',
+      permissions: [SystemPermission.ManageMsels],
+      roles: [],
+    },
     { label: 'as the MSEL owner', permissions: [], roles: [MselRole.Owner] },
   ])('offers team actions $label', async ({ permissions, roles }) => {
     await renderMselTeams({ permissions, roles });
@@ -207,11 +262,16 @@ describe('MselTeamsComponent', () => {
    * Data: every permission but ManageMsels (near miss); MSEL roles Editor and Approver.
    */
   it('hides team actions without ManageMsels or ownership', async () => {
-    await renderMselTeams({ permissions: ALL_BUT_MANAGE_MSELS, roles: [MselRole.Editor, MselRole.Approver] });
+    await renderMselTeams({
+      permissions: ALL_BUT_MANAGE_MSELS,
+      roles: [MselRole.Editor, MselRole.Approver],
+    });
 
     expect(within(table()).getByText('Blue Team')).toBeInTheDocument();
     for (const name of ACTIONS) {
-      expect(within(table()).queryByRole('button', { name })).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByRole('button', { name }),
+      ).not.toBeInTheDocument();
     }
   });
 
@@ -221,12 +281,15 @@ describe('MselTeamsComponent', () => {
    * Data: ManageMsels; BLUE.
    */
   it('expands a team to its users', async () => {
-    const { fixture } = await renderMselTeams({ permissions: [SystemPermission.ManageMsels] });
+    const { fixture } = await renderMselTeams({
+      permissions: [SystemPermission.ManageMsels],
+    });
     const user = userEvent.setup();
 
     await user.click(within(table()).getByText('Blue Team'));
 
-    const users = fixture.debugElement.query(By.directive(TeamUsersStub)).componentInstance as TeamUsersStub;
+    const users = fixture.debugElement.query(By.directive(TeamUsersStub))
+      .componentInstance as TeamUsersStub;
     expect(users.team()).toEqual(BLUE);
   });
 
@@ -236,12 +299,22 @@ describe('MselTeamsComponent', () => {
    * Data: ManageMsels; BLUE.
    */
   it('deletes a team after confirmation', async () => {
-    const { teamApi, confirm } = await renderMselTeams({ permissions: [SystemPermission.ManageMsels] });
+    const { teamApi, confirm } = await renderMselTeams({
+      permissions: [SystemPermission.ManageMsels],
+    });
     const user = userEvent.setup();
 
-    await user.click(within(table()).getByRole('button', { name: 'Delete team' }));
+    await user.click(
+      within(table()).getByRole('button', { name: 'Delete team' }),
+    );
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Team' }));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Delete Team',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      }),
+    );
     expect(teamApi.deleteTeam).toHaveBeenCalledWith('team-1');
     expect(within(table()).queryByText('Blue Team')).not.toBeInTheDocument();
   });
@@ -255,7 +328,10 @@ describe('MselTeamsComponent', () => {
     { label: 'shows', useCite: true },
     { label: 'hides', useCite: false },
   ])('$label the Team Type column by CITE use', async ({ useCite }) => {
-    await renderMselTeams({ permissions: [SystemPermission.ManageMsels], mselExtra: { useCite } });
+    await renderMselTeams({
+      permissions: [SystemPermission.ManageMsels],
+      mselExtra: { useCite },
+    });
 
     expect(headers()).toEqual(
       useCite
@@ -272,16 +348,36 @@ describe('MselTeamsComponent', () => {
      * Data: Caster directory dir-1 declaring blue_team, red_cell, _1st_cell, équipe_été and red__blue_hq; teams Blue Team, Gold Team mapped to red_cell, 1st Cell, "Équipe Été", "Red & Blue (HQ)" and "???".
      */
     it('shows the variable each team writes', async () => {
-      const variables = ['blue_team', 'red_cell', '_1st_cell', 'équipe_été', 'red__blue_hq'].map((name) => ({ name }));
+      const variables = [
+        'blue_team',
+        'red_cell',
+        '_1st_cell',
+        'équipe_été',
+        'red__blue_hq',
+      ].map((name) => ({ name }));
       const { casterApi } = await renderMselTeams({
         permissions: [SystemPermission.ManageMsels],
         mselExtra: CASTER,
-        teams: [team('Blue Team'), team('Gold Team', 'red_cell'), team('1st Cell'), team('Équipe Été'), team('Red & Blue (HQ)'), team('???')],
+        teams: [
+          team('Blue Team'),
+          team('Gold Team', 'red_cell'),
+          team('1st Cell'),
+          team('Équipe Été'),
+          team('Red & Blue (HQ)'),
+          team('???'),
+        ],
         teamVariables: () => of(variables),
       });
 
       expect(casterApi.getCasterTeamVariables).toHaveBeenCalledWith('dir-1');
-      expect(headers()).toEqual(['', 'Short Name', 'Name', 'Email', 'Topology Team', 'Open Invite']);
+      expect(headers()).toEqual([
+        '',
+        'Short Name',
+        'Name',
+        'Email',
+        'Topology Team',
+        'Open Invite',
+      ]);
       expect(cellOf('Blue Team', 'Topology Team')).toBe('blue_team');
       expect(cellOf('Gold Team', 'Topology Team')).toBe('red_cell');
       expect(cellOf('1st Cell', 'Topology Team')).toBe('_1st_cell');
@@ -297,7 +393,10 @@ describe('MselTeamsComponent', () => {
      */
     it.each([
       { label: 'without Caster', mselExtra: { ...CASTER, useCaster: false } },
-      { label: 'without a Caster directory', mselExtra: { ...CASTER, casterDirectoryId: null } },
+      {
+        label: 'without a Caster directory',
+        mselExtra: { ...CASTER, casterDirectoryId: null },
+      },
     ])('has no topology teams $label', async ({ mselExtra }) => {
       const { casterApi } = await renderMselTeams({
         permissions: [SystemPermission.ManageMsels],
@@ -319,12 +418,20 @@ describe('MselTeamsComponent', () => {
       await renderMselTeams({
         permissions: [SystemPermission.ManageMsels],
         mselExtra: CASTER,
-        teams: [team('Blue Team'), team('Red Team'), team('Crimson', 'red_team')],
+        teams: [
+          team('Blue Team'),
+          team('Red Team'),
+          team('Crimson', 'red_team'),
+        ],
         teamVariables: () => of([{ name: 'red_team' }]),
       });
 
-      expect(cellOf('Blue Team', 'Topology Team')).toBe('blue_team (not in template)');
-      expect(cellOf('Red Team', 'Topology Team')).toBe('red_team (replaced by Crimson)');
+      expect(cellOf('Blue Team', 'Topology Team')).toBe(
+        'blue_team (not in template)',
+      );
+      expect(cellOf('Red Team', 'Topology Team')).toBe(
+        'red_team (replaced by Crimson)',
+      );
       expect(cellOf('Crimson', 'Topology Team')).toBe('red_team');
       expect(warnings()).toEqual([]);
     });
@@ -339,11 +446,17 @@ describe('MselTeamsComponent', () => {
         permissions: [SystemPermission.ManageMsels],
         mselExtra: CASTER,
         teams: [team('Blue Team'), team('Gold Team', 'old_cell')],
-        teamVariables: () => of([{ name: 'admin' }, { name: 'red_cell', required: true }, { name: 'green_cell', required: false }, { name: 'blue_team' }]),
+        teamVariables: () =>
+          of([
+            { name: 'admin' },
+            { name: 'red_cell', required: true },
+            { name: 'green_cell', required: false },
+            { name: 'blue_team' },
+          ]),
       });
 
       expect(warnings()).toEqual([
-        "Topology team \"admin\" has no MSEL team. Its VMs will go to the Player view's own Admin team.",
+        'Topology team "admin" has no MSEL team. Its VMs will go to the Player view\'s own Admin team.',
         'Topology team "red_cell" has no MSEL team. The Caster template gives it no default, so the plan will fail unless Caster supplies it.',
         'Gold Team is mapped to topology team "old_cell", which the Caster template no longer declares.',
       ]);
@@ -366,11 +479,12 @@ describe('MselTeamsComponent', () => {
           team('Red Team'),
           team('Crimson', 'red_team'),
         ],
-        teamVariables: () => of([{ name: 'blue_cell' }, { name: 'admin' }, { name: 'red_team' }]),
+        teamVariables: () =>
+          of([{ name: 'blue_cell' }, { name: 'admin' }, { name: 'red_team' }]),
       });
 
       expect(warnings()).toEqual([
-        "\"Admin!\" and Player's Admin team all become \"admin\", so Push will be refused. Rename one or map it to a different topology team.",
+        '"Admin!" and Player\'s Admin team all become "admin", so Push will be refused. Rename one or map it to a different topology team.',
         '"Blue Team", "Cyan Team" and "Teal Team" all become "blue_cell", so Push will be refused. Rename one or map it to a different topology team.',
       ]);
       expect(cellOf('Admin!', 'Topology Team')).toBe('admin');
@@ -382,19 +496,30 @@ describe('MselTeamsComponent', () => {
      * Data: template declares admin; a team named Admin (unmapped), or Gold Team mapped to admin.
      */
     it.each([
-      { label: 'a MSEL team named Admin', teams: [team('Admin')], name: 'Admin' },
-      { label: 'a team mapped to admin', teams: [team('Gold Team', 'admin')], name: 'Gold Team' },
-    ])("lets $label take the place of Player's Admin team", async ({ teams, name }) => {
-      await renderMselTeams({
-        permissions: [SystemPermission.ManageMsels],
-        mselExtra: CASTER,
-        teams,
-        teamVariables: () => of([{ name: 'admin' }]),
-      });
+      {
+        label: 'a MSEL team named Admin',
+        teams: [team('Admin')],
+        name: 'Admin',
+      },
+      {
+        label: 'a team mapped to admin',
+        teams: [team('Gold Team', 'admin')],
+        name: 'Gold Team',
+      },
+    ])(
+      "lets $label take the place of Player's Admin team",
+      async ({ teams, name }) => {
+        await renderMselTeams({
+          permissions: [SystemPermission.ManageMsels],
+          mselExtra: CASTER,
+          teams,
+          teamVariables: () => of([{ name: 'admin' }]),
+        });
 
-      expect(cellOf(name, 'Topology Team')).toBe('admin');
-      expect(warnings()).toEqual([]);
-    });
+        expect(cellOf(name, 'Topology Team')).toBe('admin');
+        expect(warnings()).toEqual([]);
+      },
+    );
 
     /**
      * Verifies: when the team variables cannot be read, the API's problem title (or a fallback) is shown and logged, the Topology Team column still shows, and duplicate mappings are still warned about.
@@ -402,25 +527,41 @@ describe('MselTeamsComponent', () => {
      * Data: a 403 whose problem title is "Caster scope missing", and an error without a title; Blue Team and Cyan Team both mapped to blue_cell.
      */
     it.each([
-      { label: 'the problem title', error: { status: 403, error: { title: 'Caster scope missing' } }, message: 'Caster scope missing' },
-      { label: 'a fallback', error: new Error('network down'), message: 'The Caster template could not be read.' },
-    ])('reports a failed team variable load with $label', async ({ error, message }) => {
-      const logged = vi.spyOn(console, 'error').mockImplementation(() => {});
-      await renderMselTeams({
-        permissions: [SystemPermission.ManageMsels],
-        mselExtra: CASTER,
-        teams: [team('Blue Team', 'blue_cell'), team('Cyan Team', 'blue_cell')],
-        teamVariables: () => throwError(() => error),
-      });
+      {
+        label: 'the problem title',
+        error: { status: 403, error: { title: 'Caster scope missing' } },
+        message: 'Caster scope missing',
+      },
+      {
+        label: 'a fallback',
+        error: new Error('network down'),
+        message: 'The Caster template could not be read.',
+      },
+    ])(
+      'reports a failed team variable load with $label',
+      async ({ error, message }) => {
+        const logged = vi.spyOn(console, 'error').mockImplementation(() => {});
+        await renderMselTeams({
+          permissions: [SystemPermission.ManageMsels],
+          mselExtra: CASTER,
+          teams: [
+            team('Blue Team', 'blue_cell'),
+            team('Cyan Team', 'blue_cell'),
+          ],
+          teamVariables: () => throwError(() => error),
+        });
 
-      expect(logged.mock.calls).toEqual([['Failed to load the Caster team variables:', error]]);
-      expect(warnings()).toEqual([
-        `Topology teams: ${message}`,
-        '"Blue Team" and "Cyan Team" all become "blue_cell", so Push will be refused. Rename one or map it to a different topology team.',
-      ]);
-      expect(headers()).toContain('Topology Team');
-      expect(cellOf('Blue Team', 'Topology Team')).toBe('blue_cell');
-    });
+        expect(logged.mock.calls).toEqual([
+          ['Failed to load the Caster team variables:', error],
+        ]);
+        expect(warnings()).toEqual([
+          `Topology teams: ${message}`,
+          '"Blue Team" and "Cyan Team" all become "blue_cell", so Push will be refused. Rename one or map it to a different topology team.',
+        ]);
+        expect(headers()).toContain('Topology Team');
+        expect(cellOf('Blue Team', 'Topology Team')).toBe('blue_cell');
+      },
+    );
 
     /**
      * Verifies: choosing another directory on the Info tab reloads the variables for it and ignores a late answer for the old one; turning Caster off drops the column and the warnings.
@@ -428,7 +569,10 @@ describe('MselTeamsComponent', () => {
      * Data: dir-1 answers late with required stale_req; dir-2 declares required fresh_req; Blue Team unmapped.
      */
     it('follows the Caster directory chosen on the Info tab', async () => {
-      const answers: Record<string, Subject<CasterTeamVariable[]>> = { 'dir-1': new Subject(), 'dir-2': new Subject() };
+      const answers: Record<string, Subject<CasterTeamVariable[]>> = {
+        'dir-1': new Subject(),
+        'dir-2': new Subject(),
+      };
       const { fixture, casterApi } = await renderMselTeams({
         permissions: [SystemPermission.ManageMsels],
         mselExtra: CASTER,
@@ -442,11 +586,16 @@ describe('MselTeamsComponent', () => {
       answers['dir-1'].next([{ name: 'stale_req', required: true }]);
       fixture.detectChanges();
 
-      expect(casterApi.getCasterTeamVariables.mock.calls).toEqual([['dir-1'], ['dir-2']]);
+      expect(casterApi.getCasterTeamVariables.mock.calls).toEqual([
+        ['dir-1'],
+        ['dir-2'],
+      ]);
       expect(warnings()).toEqual([
         'Topology team "fresh_req" has no MSEL team. The Caster template gives it no default, so the plan will fail unless Caster supplies it.',
       ]);
-      expect(cellOf('Blue Team', 'Topology Team')).toBe('blue_team (not in template)');
+      expect(cellOf('Blue Team', 'Topology Team')).toBe(
+        'blue_team (not in template)',
+      );
 
       store.update('msel-1', { useCaster: false });
       fixture.detectChanges();
@@ -464,9 +613,16 @@ describe('MselTeamsComponent', () => {
     it('passes the topology teams to the team dialog', async () => {
       const editComplete = new EventEmitter<unknown>();
       const { dialogRef } = dialogRefStub<TeamEditDialogComponent>();
-      dialogRef.componentInstance = { editComplete } as unknown as TeamEditDialogComponent;
+      dialogRef.componentInstance = {
+        editComplete,
+      } as unknown as TeamEditDialogComponent;
       const open = vi.fn(() => dialogRef);
-      const teams = [team('Blue Team', 'blue_cell'), team('Cyan Team', 'blue_cell'), team('Red Team'), team('Crimson', 'red_team')];
+      const teams = [
+        team('Blue Team', 'blue_cell'),
+        team('Cyan Team', 'blue_cell'),
+        team('Red Team'),
+        team('Crimson', 'red_team'),
+      ];
       await renderMselTeams({
         permissions: [SystemPermission.ManageMsels],
         mselExtra: CASTER,
@@ -476,17 +632,25 @@ describe('MselTeamsComponent', () => {
       });
       const user = userEvent.setup();
 
-      await user.click(within(table()).getByRole('button', { name: 'Edit Blue Team' }));
+      await user.click(
+        within(table()).getByRole('button', { name: 'Edit Blue Team' }),
+      );
 
       expect(open).toHaveBeenCalledTimes(1);
-      const [component, config] = open.mock.calls[0] as unknown as [unknown, { data: Record<string, unknown> }];
+      const [component, config] = open.mock.calls[0] as unknown as [
+        unknown,
+        { data: Record<string, unknown> },
+      ];
       expect(component).toBe(TeamEditDialogComponent);
       expect(config.data).toEqual({
         team: teams[0],
         useCite: undefined,
         teamTypeList: [{ id: 'tt-1', name: 'Agency' }],
         casterTeamVariables: ['blue_cell', 'red_team'],
-        casterTeamVariableUsers: { blue_cell: ['Cyan Team'], red_team: ['Crimson'] },
+        casterTeamVariableUsers: {
+          blue_cell: ['Cyan Team'],
+          red_team: ['Crimson'],
+        },
       });
       const stored = TestBed.inject(TeamQuery).getEntity(teams[0].id);
       expect(stored).toEqual(teams[0]);
@@ -501,29 +665,46 @@ describe('MselTeamsComponent', () => {
     it('passes the topology teams to the dialog for a new team', async () => {
       const editComplete = new EventEmitter<unknown>();
       const { dialogRef } = dialogRefStub<TeamEditDialogComponent>();
-      dialogRef.componentInstance = { editComplete } as unknown as TeamEditDialogComponent;
+      dialogRef.componentInstance = {
+        editComplete,
+      } as unknown as TeamEditDialogComponent;
       const open = vi.fn(() => dialogRef);
       await renderMselTeams({
         permissions: [SystemPermission.ManageMsels],
         mselExtra: CASTER,
-        teams: [team('Blue Team', 'blue_cell'), team('Cyan Team', 'blue_cell'), team('Red Team'), team('Crimson', 'red_team')],
+        teams: [
+          team('Blue Team', 'blue_cell'),
+          team('Cyan Team', 'blue_cell'),
+          team('Red Team'),
+          team('Crimson', 'red_team'),
+        ],
         teamVariables: () => of([{ name: 'blue_cell' }, { name: 'red_team' }]),
         dialogOpen: open,
       });
       const user = userEvent.setup();
 
-      await user.click(within(table()).getByRole('button', { name: 'Add a team' }));
-      await user.click(await screen.findByRole('menuitem', { name: 'New Team' }));
+      await user.click(
+        within(table()).getByRole('button', { name: 'Add a team' }),
+      );
+      await user.click(
+        await screen.findByRole('menuitem', { name: 'New Team' }),
+      );
 
       expect(open).toHaveBeenCalledTimes(1);
-      const [component, config] = open.mock.calls[0] as unknown as [unknown, { data: Record<string, unknown> }];
+      const [component, config] = open.mock.calls[0] as unknown as [
+        unknown,
+        { data: Record<string, unknown> },
+      ];
       expect(component).toBe(TeamEditDialogComponent);
       expect(config.data).toEqual({
         team: { name: '', shortName: '', description: '', mselId: 'msel-1' },
         useCite: undefined,
         teamTypeList: [{ id: 'tt-1', name: 'Agency' }],
         casterTeamVariables: ['blue_cell', 'red_team'],
-        casterTeamVariableUsers: { blue_cell: ['Blue Team', 'Cyan Team'], red_team: ['Crimson'] },
+        casterTeamVariableUsers: {
+          blue_cell: ['Blue Team', 'Cyan Team'],
+          red_team: ['Crimson'],
+        },
       });
     });
 
@@ -533,14 +714,26 @@ describe('MselTeamsComponent', () => {
      * Data: ManageMsels; a MSEL using CITE and Caster with directory dir-1.
      */
     it('describes the Team Type, Topology Team and Open Invite columns', async () => {
-      const { fixture } = await renderMselTeams({ permissions: [SystemPermission.ManageMsels], mselExtra: { ...CASTER, useCite: true } });
+      const { fixture } = await renderMselTeams({
+        permissions: [SystemPermission.ManageMsels],
+        mselExtra: { ...CASTER, useCite: true },
+      });
       await fixture.whenStable();
       fixture.detectChanges();
 
-      const header = (name: string) => within(table()).getAllByRole('columnheader').find((th) => th.textContent.trim() === name);
-      expect(header('Team Type')).toHaveAccessibleDescription('The CITE team type this team is created with when the MSEL is pushed to CITE');
-      expect(header('Topology Team')).toHaveAccessibleDescription("The Caster template variable this team's Player team ID is written to");
-      expect(header('Open Invite')).toHaveAccessibleDescription('Any member of this team can invite others to it');
+      const header = (name: string) =>
+        within(table())
+          .getAllByRole('columnheader')
+          .find((th) => th.textContent.trim() === name);
+      expect(header('Team Type')).toHaveAccessibleDescription(
+        'The CITE team type this team is created with when the MSEL is pushed to CITE',
+      );
+      expect(header('Topology Team')).toHaveAccessibleDescription(
+        "The Caster template variable this team's Player team ID is written to",
+      );
+      expect(header('Open Invite')).toHaveAccessibleDescription(
+        'Any member of this team can invite others to it',
+      );
     });
   });
 });

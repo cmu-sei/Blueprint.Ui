@@ -2,10 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { Order, Query, QueryConfig, QueryEntity } from '@datorama/akita';
-import {
-  InvitationState,
-  InvitationStore,
-} from './invitation.store';
+import { InvitationState, InvitationStore } from './invitation.store';
 import { Invitation } from 'src/app/generated/blueprint.api';
 import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
@@ -25,7 +22,7 @@ export class InvitationQuery extends QueryEntity<InvitationState> {
     const store = inject(InvitationStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

@@ -6,7 +6,10 @@ import { Component, inject as inject_1, output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DataValue } from 'src/app/generated/blueprint.api';
 import { hasInvalidDataValue } from 'src/app/utilities/ip-address';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
 import { MatFormField, MatLabel, MatInput } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatSelect } from '@angular/material/select';
@@ -14,10 +17,20 @@ import { MatOption } from '@angular/material/autocomplete';
 import { DataValueComponent } from '../data-value/data-value.component';
 
 @Component({
-    selector: 'app-inject-edit-dialog',
-    templateUrl: './inject-edit-dialog.component.html',
-    styleUrls: ['./inject-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, MatSelect, MatOption, DataValueComponent]
+  selector: 'app-inject-edit-dialog',
+  templateUrl: './inject-edit-dialog.component.html',
+  styleUrls: ['./inject-edit-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    FormsModule,
+    MatSelect,
+    MatOption,
+    DataValueComponent,
+  ],
 })
 export class InjectEditDialogComponent {
   data = inject_1(MAT_DIALOG_DATA);
@@ -25,9 +38,18 @@ export class InjectEditDialogComponent {
   readonly editComplete = output<any>();
 
   errorFree() {
-    return this.data.inject.name && this.data.inject.description &&
+    return (
+      this.data.inject.name &&
+      this.data.inject.description &&
       // a read-only value can't be fixed here, so it doesn't hold up Save
-      !(this.data.isEditMode && hasInvalidDataValue(this.data.dataFieldList, this.data.inject.dataValues));
+      !(
+        this.data.isEditMode &&
+        hasInvalidDataValue(
+          this.data.dataFieldList,
+          this.data.inject.dataValues,
+        )
+      )
+    );
   }
 
   /**
@@ -48,7 +70,7 @@ export class InjectEditDialogComponent {
 
   getDataValue(dataFieldId: string): DataValue {
     const dataValue = this.data.inject.dataValues.find(
-      (dv) => dv.dataFieldId === dataFieldId
+      (dv) => dv.dataFieldId === dataFieldId,
     );
     return dataValue ? dataValue : ({} as DataValue);
   }

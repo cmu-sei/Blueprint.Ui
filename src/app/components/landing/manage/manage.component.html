@@ -4,54 +4,76 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 @if (msel.id && (msel.hasRole(loggedInUserId, null).owner || canEditMsels)) {
-<div class="top-container background">
-  @if (!hideTopbar) {
-  <app-topbar [title]="topbarText" [topbarView]="TopbarView.BLUEPRINT_HOME" [imageFilePath]="topbarImage"
-    (urlNavigate)="topBarNavigate($event)" />
-  }
-  <mat-card appearance="outlined" class="base-card">
-    <mat-card-header>
-      <mat-card-title>{{ msel.name }}</mat-card-title>
-      <mat-card-subtitle>{{ msel.description }}</mat-card-subtitle><br />
-    </mat-card-header>
-    <mat-card-content>
-      @if (msel.status === 'Deployed') {
-      <div>
-        <mat-form-field>
-          <input matInput placeholder="End Date / Time" [(ngModel)]="endTime" (cut)="updateEndTime()"
-            (change)="updateEndTime()" (paste)="updateEndTime()" (keypress)="updateEndTime()">
-          <!-- <datetime-picker> -->
-        </mat-form-field>
-      </div>
-      }
-      @if (msel.status !== 'Deployed') {
-      <div>
-        <!-- h2, not h1: the top bar's title is the page's single h1. -->
-        <h2>This event has ended</h2>
-      </div>
-      }
-    </mat-card-content>
-    @if (msel.status === 'Deployed') {
-    <mat-card-actions>
-      <button mat-stroked-button (click)="endEvent()" style="height: 40px;" title="End Event">
-        End Event
-      </button>
-    </mat-card-actions>
+  <div class="top-container background">
+    @if (!hideTopbar) {
+      <app-topbar
+        [title]="topbarText"
+        [topbarView]="TopbarView.BLUEPRINT_HOME"
+        [imageFilePath]="topbarImage"
+        (urlNavigate)="topBarNavigate($event)"
+      />
     }
-  </mat-card>
-  @if (msel.status === 'Deployed') {
-  <mat-card appearance="outlined">
-    <app-invitation-list [loggedInUserId]="loggedInUserId" [hideSearch]="true" />
-  </mat-card>
-  }
-</div>
+    <mat-card appearance="outlined" class="base-card">
+      <mat-card-header>
+        <mat-card-title>{{ msel.name }}</mat-card-title>
+        <mat-card-subtitle>{{ msel.description }}</mat-card-subtitle><br />
+      </mat-card-header>
+      <mat-card-content>
+        @if (msel.status === 'Deployed') {
+          <div>
+            <mat-form-field>
+              <input
+                matInput
+                placeholder="End Date / Time"
+                [(ngModel)]="endTime"
+                (cut)="updateEndTime()"
+                (change)="updateEndTime()"
+                (paste)="updateEndTime()"
+                (keypress)="updateEndTime()"
+              />
+              <!-- <datetime-picker> -->
+            </mat-form-field>
+          </div>
+        }
+        @if (msel.status !== 'Deployed') {
+          <div>
+            <!-- h2, not h1: the top bar's title is the page's single h1. -->
+            <h2>This event has ended</h2>
+          </div>
+        }
+      </mat-card-content>
+      @if (msel.status === 'Deployed') {
+        <mat-card-actions>
+          <button
+            mat-stroked-button
+            (click)="endEvent()"
+            style="height: 40px"
+            title="End Event"
+          >
+            End Event
+          </button>
+        </mat-card-actions>
+      }
+    </mat-card>
+    @if (msel.status === 'Deployed') {
+      <mat-card appearance="outlined">
+        <app-invitation-list
+          [loggedInUserId]="loggedInUserId"
+          [hideSearch]="true"
+        />
+      </mat-card>
+    }
+  </div>
 }
 
 @if (!(msel.id && (msel.hasRole(loggedInUserId, null).owner || canEditMsels))) {
-<div class="nothing-to-see-here background">
-  <!-- Stays an h1: this branch replaces the whole page, top bar included, so it is the only
+  <div class="nothing-to-see-here background">
+    <!-- Stays an h1: this branch replaces the whole page, top bar included, so it is the only
        heading there is. -->
-  <h1>You have nothing to manage.</h1>
-  <h2>If you believe you should have permissions to manage this event, contact your administrator.</h2>
-</div>
+    <h1>You have nothing to manage.</h1>
+    <h2>
+      If you believe you should have permissions to manage this event, contact
+      your administrator.
+    </h2>
+  </div>
 }

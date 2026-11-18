@@ -2,10 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { Order, Query, QueryConfig, QueryEntity } from '@datorama/akita';
-import {
-  InjectTypeState,
-  InjectTypeStore,
-} from './inject-type.store';
+import { InjectTypeState, InjectTypeStore } from './inject-type.store';
 import { InjectType } from 'src/app/generated/blueprint.api';
 import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
@@ -25,7 +22,7 @@ export class InjectTypeQuery extends QueryEntity<InjectTypeState> {
     const store = inject(InjectTypeStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

@@ -31,7 +31,7 @@ export class CatalogDataService {
 
   private _requestedCatalogId: string;
   private _requestedCatalogId$ = this.activatedRoute.queryParamMap.pipe(
-    map((params) => params.get('catalogId') || '')
+    map((params) => params.get('catalogId') || ''),
   );
   readonly CatalogList: Observable<Catalog[]>;
   readonly filterControl = new UntypedFormControl();
@@ -48,7 +48,7 @@ export class CatalogDataService {
     const activatedRoute = this.activatedRoute;
 
     this.filterTerm = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('catalogmask') || '')
+      map((params) => params.get('catalogmask') || ''),
     );
     this.filterControl.valueChanges.subscribe((term) => {
       this.router.navigate([], {
@@ -57,16 +57,16 @@ export class CatalogDataService {
       });
     });
     this.sortColumn = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('sorton') || 'name')
+      map((params) => params.get('sorton') || 'name'),
     );
     this.sortIsAscending = activatedRoute.queryParamMap.pipe(
-      map((params) => (params.get('sortdir') || 'asc') === 'asc')
+      map((params) => (params.get('sortdir') || 'asc') === 'asc'),
     );
     this.pageSize = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pagesize') || '20', 10))
+      map((params) => parseInt(params.get('pagesize') || '20', 10)),
     );
     this.pageIndex = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pageindex') || '0', 10))
+      map((params) => parseInt(params.get('pageindex') || '0', 10)),
     );
     this.CatalogList = combineLatest([
       this.catalogQuery.selectAll(),
@@ -87,10 +87,10 @@ export class CatalogDataService {
         ]) =>
           items
             ? (items as Catalog[]).filter((catalog) =>
-              catalog.id.toLowerCase().includes(filterTerm.toLowerCase())
-            )
-            : []
-      )
+                catalog.id.toLowerCase().includes(filterTerm.toLowerCase()),
+              )
+            : [],
+      ),
     );
   }
 
@@ -102,13 +102,13 @@ export class CatalogDataService {
         tap(() => {
           this.catalogStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (templates) => {
           this.catalogStore.upsertMany(templates);
         },
-        (error) => { }
+        (error) => {},
       );
   }
 
@@ -120,13 +120,13 @@ export class CatalogDataService {
         tap(() => {
           this.catalogStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (templates) => {
           this.catalogStore.upsertMany(templates);
         },
-        (error) => { }
+        (error) => {},
       );
   }
 
@@ -138,7 +138,7 @@ export class CatalogDataService {
         tap(() => {
           this.catalogStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.catalogStore.upsert(s.id, { ...s });
@@ -157,7 +157,7 @@ export class CatalogDataService {
         tap(() => {
           this.catalogStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.catalogStore.add(s);
@@ -181,7 +181,7 @@ export class CatalogDataService {
         tap(() => {
           this.catalogStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((n) => {
         this.updateStore(n);
@@ -200,7 +200,7 @@ export class CatalogDataService {
   addInjectToCatalog(
     catalogId: string,
     injectId: string,
-    displayOrder: number
+    displayOrder: number,
   ) {
     const catalogInject = {
       catalogId: catalogId,
@@ -211,7 +211,7 @@ export class CatalogDataService {
     this.catalogInjectService
       .createCatalogInject(catalogInject)
       .pipe(take(1))
-      .subscribe((r) => { });
+      .subscribe((r) => {});
   }
 
   downloadJson(id: string) {
@@ -226,7 +226,7 @@ export class CatalogDataService {
         (event: any) => {
           if (event.type === HttpEventType.UploadProgress) {
             const uploadProgress = Math.round(
-              (100 * event.loaded) / event.total
+              (100 * event.loaded) / event.total,
             );
             this.uploadProgress.next(uploadProgress);
           } else if (event instanceof HttpResponse) {
@@ -241,7 +241,7 @@ export class CatalogDataService {
         (error) => {
           this.catalogStore.setLoading(false);
           this.uploadProgress.next(0);
-        }
+        },
       );
   }
 

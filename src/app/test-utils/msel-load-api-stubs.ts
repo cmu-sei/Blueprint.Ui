@@ -80,7 +80,8 @@ export interface MselLoadRows {
 
 // A fresh copy per call: Akita deep-freezes what it stores, and the data
 // services write parsed dates onto each response.
-const rows = <T>(list: T[] | undefined) => vi.fn(() => of(structuredClone(list ?? [])));
+const rows = <T>(list: T[] | undefined) =>
+  vi.fn(() => of(structuredClone(list ?? [])));
 
 export function mselLoadApiStubs(data: MselLoadRows) {
   return {
@@ -88,16 +89,34 @@ export function mselLoadApiStubs(data: MselLoadRows) {
       getMsel: vi.fn(() => of(structuredClone(data.msel))),
     } satisfies ApiStub<MselService>,
     card: { getCardsByMsel: rows(data.cards) } satisfies ApiStub<CardService>,
-    cardTeam: { getMselCardTeams: rows(data.cardTeams) } satisfies ApiStub<CardTeamService>,
-    catalog: { getMyCatalogs: rows(data.catalogs) } satisfies ApiStub<CatalogService>,
-    citeAction: { getActionsByMsel: rows(data.citeActions) } satisfies ApiStub<CiteActionService>,
-    citeDuty: { getDutiesByMsel: rows(data.citeDuties) } satisfies ApiStub<CiteDutyService>,
-    dataField: { getDataFieldsByMsel: rows(data.dataFields) } satisfies ApiStub<DataFieldService>,
-    dataOption: { getDataOptionsByMsel: rows(data.dataOptions) } satisfies ApiStub<DataOptionService>,
-    dataValue: { getDataValuesByMsel: rows(data.dataValues) } satisfies ApiStub<DataValueService>,
-    invitation: { getInvitations: rows(data.invitations) } satisfies ApiStub<InvitationService>,
+    cardTeam: {
+      getMselCardTeams: rows(data.cardTeams),
+    } satisfies ApiStub<CardTeamService>,
+    catalog: {
+      getMyCatalogs: rows(data.catalogs),
+    } satisfies ApiStub<CatalogService>,
+    citeAction: {
+      getActionsByMsel: rows(data.citeActions),
+    } satisfies ApiStub<CiteActionService>,
+    citeDuty: {
+      getDutiesByMsel: rows(data.citeDuties),
+    } satisfies ApiStub<CiteDutyService>,
+    dataField: {
+      getDataFieldsByMsel: rows(data.dataFields),
+    } satisfies ApiStub<DataFieldService>,
+    dataOption: {
+      getDataOptionsByMsel: rows(data.dataOptions),
+    } satisfies ApiStub<DataOptionService>,
+    dataValue: {
+      getDataValuesByMsel: rows(data.dataValues),
+    } satisfies ApiStub<DataValueService>,
+    invitation: {
+      getInvitations: rows(data.invitations),
+    } satisfies ApiStub<InvitationService>,
     move: { getMovesByMsel: rows(data.moves) } satisfies ApiStub<MoveService>,
-    mselUnit: { getMselUnits: rows(data.mselUnits) } satisfies ApiStub<MselUnitService>,
+    mselUnit: {
+      getMselUnits: rows(data.mselUnits),
+    } satisfies ApiStub<MselUnitService>,
     organization: {
       getOrganizationsByMsel: rows(data.organizations),
       getOrganizationTemplates: rows<Organization>([]),
@@ -105,15 +124,25 @@ export function mselLoadApiStubs(data: MselLoadRows) {
     scenarioEvent: {
       getScenarioEventsByMsel: rows(data.scenarioEvents),
       getScenarioEvent: vi.fn((id: string) =>
-        of(structuredClone((data.scenarioEvents ?? []).find((se) => se.id === id) ?? {})),
+        of(
+          structuredClone(
+            (data.scenarioEvents ?? []).find((se) => se.id === id) ?? {},
+          ),
+        ),
       ),
     } satisfies ApiStub<ScenarioEventService>,
     team: { getTeamsByMsel: rows(data.teams) } satisfies ApiStub<TeamService>,
-    teamUser: { getMselTeamUsers: rows(data.teamUsers) } satisfies ApiStub<TeamUserService>,
+    teamUser: {
+      getMselTeamUsers: rows(data.teamUsers),
+    } satisfies ApiStub<TeamUserService>,
     unit: { getUnits: rows(data.units) } satisfies ApiStub<UnitService>,
     user: { getMselUsers: rows(data.users) } satisfies ApiStub<UserService>,
-    userMselRole: { getUserMselRolesByMsel: rows(data.userMselRoles) } satisfies ApiStub<UserMselRoleService>,
-    userTeamRole: { getUserTeamRolesByMsel: rows(data.userTeamRoles) } satisfies ApiStub<UserTeamRoleService>,
+    userMselRole: {
+      getUserMselRolesByMsel: rows(data.userMselRoles),
+    } satisfies ApiStub<UserMselRoleService>,
+    userTeamRole: {
+      getUserTeamRolesByMsel: rows(data.userTeamRoles),
+    } satisfies ApiStub<UserTeamRoleService>,
   };
 }
 

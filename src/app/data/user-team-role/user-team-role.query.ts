@@ -2,10 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { Order, Query, QueryConfig, QueryEntity } from '@datorama/akita';
-import {
-  UserTeamRoleState,
-  UserTeamRoleStore,
-} from './user-team-role.store';
+import { UserTeamRoleState, UserTeamRoleStore } from './user-team-role.store';
 import { UserTeamRole } from 'src/app/generated/blueprint.api';
 import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
@@ -25,7 +22,7 @@ export class UserTeamRoleQuery extends QueryEntity<UserTeamRoleState> {
     const store = inject(UserTeamRoleStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

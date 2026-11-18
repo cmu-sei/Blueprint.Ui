@@ -8,8 +8,19 @@ import { casterVmAppWarning } from './caster-vm-app';
 const WARNING =
   'No Player application opens the VM UI, so participants will not be able to reach the Caster VMs. Add one using {vmUrl}, for example {vmUrl}/views/{playerViewId}.';
 const VM_URL = 'http://vm.example';
-const READY: Msel = { id: 'msel-1', name: 'Exercise Alpha', useCaster: true, usePlayer: true, casterDirectoryId: 'dir-1' };
-const app = (url: string, mselId = 'msel-1'): PlayerApplication => ({ id: `app-${url}`, mselId, name: 'App', url });
+const READY: Msel = {
+  id: 'msel-1',
+  name: 'Exercise Alpha',
+  useCaster: true,
+  usePlayer: true,
+  casterDirectoryId: 'dir-1',
+};
+const app = (url: string, mselId = 'msel-1'): PlayerApplication => ({
+  id: `app-${url}`,
+  mselId,
+  name: 'App',
+  url,
+});
 
 describe('casterVmAppWarning', () => {
   /**
@@ -21,7 +32,10 @@ describe('casterVmAppWarning', () => {
     { label: 'without a MSEL', msel: undefined as Msel },
     { label: 'when Caster is not used', msel: { ...READY, useCaster: false } },
     { label: 'when Player is not used', msel: { ...READY, usePlayer: false } },
-    { label: 'without a Caster directory', msel: { ...READY, casterDirectoryId: null } },
+    {
+      label: 'without a Caster directory',
+      msel: { ...READY, casterDirectoryId: null },
+    },
   ])('gives no warning $label', ({ msel }) => {
     expect(casterVmAppWarning(msel, [], VM_URL)).toBe('');
   });
@@ -34,9 +48,18 @@ describe('casterVmAppWarning', () => {
   it.each([
     { label: 'no applications', apps: [] as PlayerApplication[] },
     { label: 'a null application list', apps: null as PlayerApplication[] },
-    { label: 'an application without a URL', apps: [{ id: 'app-0', mselId: 'msel-1', name: 'Blank' }] },
-    { label: 'an application on another site', apps: [app('https://mail.example.com')] },
-    { label: 'a VM application of another MSEL', apps: [app('{vmUrl}/views/{playerViewId}', 'msel-2')] },
+    {
+      label: 'an application without a URL',
+      apps: [{ id: 'app-0', mselId: 'msel-1', name: 'Blank' }],
+    },
+    {
+      label: 'an application on another site',
+      apps: [app('https://mail.example.com')],
+    },
+    {
+      label: 'a VM application of another MSEL',
+      apps: [app('{vmUrl}/views/{playerViewId}', 'msel-2')],
+    },
   ])('warns with $label', ({ apps }) => {
     expect(casterVmAppWarning(READY, apps, VM_URL)).toBe(WARNING);
   });
@@ -47,10 +70,24 @@ describe('casterVmAppWarning', () => {
    * Data: READY; a {vmUrl} application; an application under http://vm.example with the setting given as http://vm.example//.
    */
   it.each([
-    { label: 'uses {vmUrl}', url: '{vmUrl}/views/{playerViewId}', vmUrl: VM_URL },
-    { label: 'starts with the VM UI URL', url: 'http://vm.example/views/1', vmUrl: 'http://vm.example//' },
+    {
+      label: 'uses {vmUrl}',
+      url: '{vmUrl}/views/{playerViewId}',
+      vmUrl: VM_URL,
+    },
+    {
+      label: 'starts with the VM UI URL',
+      url: 'http://vm.example/views/1',
+      vmUrl: 'http://vm.example//',
+    },
   ])('gives no warning when an application $label', ({ url, vmUrl }) => {
-    expect(casterVmAppWarning(READY, [app('https://mail.example.com'), app(url)], vmUrl)).toBe('');
+    expect(
+      casterVmAppWarning(
+        READY,
+        [app('https://mail.example.com'), app(url)],
+        vmUrl,
+      ),
+    ).toBe('');
   });
 
   /**
@@ -62,7 +99,9 @@ describe('casterVmAppWarning', () => {
     { label: 'empty', vmUrl: '' },
     { label: 'undefined', vmUrl: undefined as string },
   ])('needs {vmUrl} when the VmUrl setting is $label', ({ vmUrl }) => {
-    expect(casterVmAppWarning(READY, [app('http://vm.example/views/1')], vmUrl)).toBe(WARNING);
+    expect(
+      casterVmAppWarning(READY, [app('http://vm.example/views/1')], vmUrl),
+    ).toBe(WARNING);
     expect(casterVmAppWarning(READY, [app('{vmUrl}/views/1')], vmUrl)).toBe('');
   });
 });

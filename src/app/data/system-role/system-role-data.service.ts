@@ -28,7 +28,7 @@ export class SystemRoleDataService {
     return this.systemRolesService.updateSystemRole(role.id, role).pipe(
       tap((x) => {
         this.upsert(role.id, x);
-      })
+      }),
     );
   }
 
@@ -36,7 +36,7 @@ export class SystemRoleDataService {
     return this.systemRolesService.createSystemRole(role).pipe(
       tap((x) => {
         this.upsert(x.id, x);
-      })
+      }),
     );
   }
 
@@ -44,7 +44,7 @@ export class SystemRoleDataService {
     return this.systemRolesService.deleteSystemRole(id).pipe(
       tap(() => {
         this.remove(id);
-      })
+      }),
     );
   }
 

@@ -40,20 +40,39 @@ import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.serv
 const ME = 'user-me';
 const ALICE: User = { id: 'user-a', name: 'Alice' };
 const BOB: User = { id: 'user-b', name: 'Bob' };
-const TEAM: Team = { id: 'team-1', mselId: 'msel-1', name: 'Blue Team', shortName: 'BLUE' };
-const ALICE_ON_TEAM: TeamUser = { id: 'tu-1', teamId: 'team-1', userId: 'user-a' };
-const ALL_BUT_MANAGE_MSELS = Object.values(SystemPermission).filter((p) => p !== SystemPermission.ManageMsels);
+const TEAM: Team = {
+  id: 'team-1',
+  mselId: 'msel-1',
+  name: 'Blue Team',
+  shortName: 'BLUE',
+};
+const ALICE_ON_TEAM: TeamUser = {
+  id: 'tu-1',
+  teamId: 'team-1',
+  userId: 'user-a',
+};
+const ALL_BUT_MANAGE_MSELS = Object.values(SystemPermission).filter(
+  (p) => p !== SystemPermission.ManageMsels,
+);
 
 function msel(roles: MselRole[] = []): Msel {
   return {
     id: 'msel-1',
     name: 'Exercise Alpha',
     createdBy: 'someone-else',
-    userMselRoles: roles.map((role, i) => ({ id: `umr-${i}`, userId: ME, mselId: 'msel-1', role })),
+    userMselRoles: roles.map((role, i) => ({
+      id: `umr-${i}`,
+      userId: ME,
+      mselId: 'msel-1',
+      role,
+    })),
   };
 }
 
-function seeded<S extends { set(entities: unknown[]): void }>(Store: new () => S, entities: unknown[]) {
+function seeded<S extends { set(entities: unknown[]): void }>(
+  Store: new () => S,
+  entities: unknown[],
+) {
   return {
     provide: Store,
     useFactory: () => {
@@ -64,13 +83,19 @@ function seeded<S extends { set(entities: unknown[]): void }>(Store: new () => S
   };
 }
 
-async function renderTeamUsers(overrides: { permissions?: SystemPermission[]; roles?: MselRole[] } = {}) {
+async function renderTeamUsers(
+  overrides: { permissions?: SystemPermission[]; roles?: MselRole[] } = {},
+) {
   const { permissions = [], roles = [] } = overrides;
   const citeApi = {
-    getTeamRoles: vi.fn(() => of<TeamRole[]>([{ id: 'tr-1', name: 'Incident Commander' }])),
+    getTeamRoles: vi.fn(() =>
+      of<TeamRole[]>([{ id: 'tr-1', name: 'Incident Commander' }]),
+    ),
   } satisfies ApiStub<CiteService>;
   const teamUserApi = {
-    createTeamUser: vi.fn((tu: TeamUser) => of<TeamUser>({ ...tu, id: 'tu-2' })),
+    createTeamUser: vi.fn((tu: TeamUser) =>
+      of<TeamUser>({ ...tu, id: 'tu-2' }),
+    ),
     deleteTeamUser: vi.fn(() => of<unknown>(null)),
   } satisfies ApiStub<TeamUserService>;
   // TeamUsersComponent loads the permissions itself in ngOnInit, so the real
@@ -90,7 +115,10 @@ async function renderTeamUsers(overrides: { permissions?: SystemPermission[]; ro
     ],
     declarations: [TeamUsersComponent],
     providers: [
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: CiteService, useValue: citeApi },
       { provide: TeamUserService, useValue: teamUserApi },
@@ -116,7 +144,14 @@ async function renderTeamUsers(overrides: { permissions?: SystemPermission[]; ro
       seeded(UserStore, [ALICE, BOB]),
       seeded(TeamStore, [TEAM]),
       seeded(TeamUserStore, [ALICE_ON_TEAM]),
-      seeded(MselUnitStore, [{ id: 'mu-1', mselId: 'msel-1', unitId: 'unit-1', unit: { id: 'unit-1', users: [ALICE, BOB] } }]),
+      seeded(MselUnitStore, [
+        {
+          id: 'mu-1',
+          mselId: 'msel-1',
+          unitId: 'unit-1',
+          unit: { id: 'unit-1', users: [ALICE, BOB] },
+        },
+      ]),
     ],
     inputs: { team: TEAM },
   });
@@ -134,19 +169,35 @@ describe('TeamUsersComponent', () => {
    * Data: ManageMsels with no role; or no permission with the Owner role. Bob is a contributor, Alice a member.
    */
   it.each([
-    { label: 'with ManageMsels', permissions: [SystemPermission.ManageMsels], roles: [] },
+    {
+      label: 'with ManageMsels',
+      permissions: [SystemPermission.ManageMsels],
+      roles: [],
+    },
     { label: 'as the MSEL owner', permissions: [], roles: [MselRole.Owner] },
   ])('manages team members $label', async ({ permissions, roles }) => {
     const { teamUserApi } = await renderTeamUsers({ permissions, roles });
     const user = userEvent.setup();
 
-    expect(within(members()).getByRole('combobox')).toHaveAttribute('aria-disabled', 'false');
-    await user.click(within(contributors()).getByRole('button', { name: 'Add Bob to Team' }));
-    expect(teamUserApi.createTeamUser).toHaveBeenCalledWith({ teamId: 'team-1', userId: 'user-b' });
+    expect(within(members()).getByRole('combobox')).toHaveAttribute(
+      'aria-disabled',
+      'false',
+    );
+    await user.click(
+      within(contributors()).getByRole('button', { name: 'Add Bob to Team' }),
+    );
+    expect(teamUserApi.createTeamUser).toHaveBeenCalledWith({
+      teamId: 'team-1',
+      userId: 'user-b',
+    });
 
     // Same case as 'labels the Remove button without the member name'.
-    const aliceRow = within(members()).getByText('Alice').closest('mat-row') as HTMLElement;
-    await user.click(within(aliceRow).getByRole('button', { name: 'Remove from Team' }));
+    const aliceRow = within(members())
+      .getByText('Alice')
+      .closest('mat-row') as HTMLElement;
+    await user.click(
+      within(aliceRow).getByRole('button', { name: 'Remove from Team' }),
+    );
     expect(teamUserApi.deleteTeamUser).toHaveBeenCalledWith('tu-1');
   });
 
@@ -156,13 +207,23 @@ describe('TeamUsersComponent', () => {
    * Data: every permission but ManageMsels (near miss); MSEL roles Editor and Approver.
    */
   it('lists the team read-only without ManageMsels or ownership', async () => {
-    await renderTeamUsers({ permissions: ALL_BUT_MANAGE_MSELS, roles: [MselRole.Editor, MselRole.Approver] });
+    await renderTeamUsers({
+      permissions: ALL_BUT_MANAGE_MSELS,
+      roles: [MselRole.Editor, MselRole.Approver],
+    });
 
     expect(within(members()).getByText('Alice')).toBeInTheDocument();
     expect(within(contributors()).getByText('Bob')).toBeInTheDocument();
-    expect(within(contributors()).queryByRole('button', { name: 'Add Bob to Team' })).not.toBeInTheDocument();
-    expect(within(members()).queryByRole('button', { name: /^Remove/ })).not.toBeInTheDocument();
-    expect(within(members()).getByRole('combobox')).toHaveAttribute('aria-disabled', 'true');
+    expect(
+      within(contributors()).queryByRole('button', { name: 'Add Bob to Team' }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(members()).queryByRole('button', { name: /^Remove/ }),
+    ).not.toBeInTheDocument();
+    expect(within(members()).getByRole('combobox')).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
   });
 
   /**
@@ -174,6 +235,8 @@ describe('TeamUsersComponent', () => {
     await renderTeamUsers({ permissions: [SystemPermission.ManageMsels] });
 
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
-    expect(within(members()).getByRole('button', { name: /^Remove/ })).toHaveAccessibleName('Remove from Team');
+    expect(
+      within(members()).getByRole('button', { name: /^Remove/ }),
+    ).toHaveAccessibleName('Remove from Team');
   });
 });

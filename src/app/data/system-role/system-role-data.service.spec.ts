@@ -4,7 +4,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom, of } from 'rxjs';
-import { SystemPermission, SystemRole, SystemRolesService } from 'src/app/generated/blueprint.api';
+import {
+  SystemPermission,
+  SystemRole,
+  SystemRolesService,
+} from 'src/app/generated/blueprint.api';
 import { SystemRoleDataService } from './system-role-data.service';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
@@ -49,7 +53,14 @@ describe('SystemRoleDataService', () => {
   it('getRoles publishes the roles', async () => {
     const { service, rolesApi, roles } = setup();
     rolesApi.getSystemRoles.mockReturnValue(
-      of([role(), role({ id: 'role-cd', name: 'Content Developer', allPermissions: false })]),
+      of([
+        role(),
+        role({
+          id: 'role-cd',
+          name: 'Content Developer',
+          allPermissions: false,
+        }),
+      ]),
     );
 
     const roles$ = service.getRoles();
@@ -66,7 +77,12 @@ describe('SystemRoleDataService', () => {
    */
   it('create, edit and delete keep roles$ current', async () => {
     const { service, rolesApi, roles } = setup();
-    const observer = role({ id: 'role-obs', name: 'Observer', allPermissions: false, immutable: false });
+    const observer = role({
+      id: 'role-obs',
+      name: 'Observer',
+      allPermissions: false,
+      immutable: false,
+    });
     rolesApi.createSystemRole.mockReturnValue(of(observer));
     rolesApi.updateSystemRole.mockReturnValue(
       of({ ...observer, permissions: [SystemPermission.ViewMsels] }),
@@ -76,8 +92,16 @@ describe('SystemRoleDataService', () => {
     await firstValueFrom(service.createRole({ name: 'Observer' }));
     expect(names(roles.at(-1))).toEqual(['Observer']);
 
-    await firstValueFrom(service.editRole({ ...observer, permissions: [SystemPermission.ViewMsels] }));
-    expect(rolesApi.updateSystemRole).toHaveBeenCalledWith('role-obs', expect.objectContaining({ name: 'Observer' }));
+    await firstValueFrom(
+      service.editRole({
+        ...observer,
+        permissions: [SystemPermission.ViewMsels],
+      }),
+    );
+    expect(rolesApi.updateSystemRole).toHaveBeenCalledWith(
+      'role-obs',
+      expect.objectContaining({ name: 'Observer' }),
+    );
     expect(roles.at(-1)[0].permissions).toEqual([SystemPermission.ViewMsels]);
 
     await firstValueFrom(service.deleteRole('role-obs'));

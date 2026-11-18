@@ -12,7 +12,10 @@ import { MoveQuery } from './move.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function move(overrides: Partial<Move> = {}): Move {
   return {
@@ -41,7 +44,10 @@ function setup(queryParams: Record<string, string> = {}) {
   TestBed.configureTestingModule({
     providers: [
       { provide: MoveService, useValue: moveApi },
-      { provide: Router, useValue: { navigate } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -106,9 +112,7 @@ describe('MoveDataService', () => {
   it('loadByMsel empties the store and stops loading when the API fails', () => {
     const { service, query, moveApi } = setup();
     service.updateStore(move());
-    moveApi.getMovesByMsel.mockReturnValue(
-      throwError(() => new Error('boom')),
-    );
+    moveApi.getMovesByMsel.mockReturnValue(throwError(() => new Error('boom')));
 
     service.loadByMsel('msel-1');
 
@@ -245,29 +249,48 @@ describe('MoveDataService', () => {
   });
 
   /**
-   * Verifies: a failed request leaves loading set for every method that sets it first (current behavior), and the ones with no error callback let the error escape.
+   * Verifies: a failed request clears loading for every method that sets it first, so a save the API refuses
+   * (e.g. a start time another move has) does not leave the moves loading, and the error still escapes.
    * Interacts with: MoveService endpoints (stubs failing), real MoveStore and MoveQuery, captureUnhandledRxErrors.
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'loadById', endpoint: 'getMove', escapes: true, call: (s: MoveDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createMove', escapes: true, call: (s: MoveDataService) => s.add({ id: 'x-1' }) },
-    { method: 'updateMove', endpoint: 'updateMove', escapes: true, call: (s: MoveDataService) => s.updateMove({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, moveApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(MoveStore).setLoading(false);
-    moveApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'loadById',
+      endpoint: 'getMove',
+      escapes: true,
+      call: (s: MoveDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createMove',
+      escapes: true,
+      call: (s: MoveDataService) => s.add({ id: 'x-1' }),
+    },
+    {
+      method: 'updateMove',
+      endpoint: 'updateMove',
+      escapes: true,
+      call: (s: MoveDataService) => s.updateMove({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method stops loading when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, moveApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(MoveStore).setLoading(false);
+      moveApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(MoveQuery).getValue().loading).toBe(true);
-    // With no error callback the error escapes to ErrorService, the ErrorHandler
-    // app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(MoveQuery).getValue().loading).toBe(false);
+      // With no error callback the error escapes to ErrorService, the ErrorHandler
+      // app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete escapes to the app's global ErrorHandler.
@@ -275,19 +298,26 @@ describe('MoveDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteMove', call: (s: MoveDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, moveApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    moveApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteMove',
+      call: (s: MoveDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, moveApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      moveApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

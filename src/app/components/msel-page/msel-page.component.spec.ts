@@ -15,7 +15,12 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const PAGE: MselPage = { id: 'page-1', mselId: 'msel-1', name: 'Read Ahead', content: '<p>Welcome to the exercise</p>' };
+const PAGE: MselPage = {
+  id: 'page-1',
+  mselId: 'msel-1',
+  name: 'Read Ahead',
+  content: '<p>Welcome to the exercise</p>',
+};
 
 async function renderMselPage(marking: Partial<Msel> = {}, getMsel?: () => Observable<Msel>) {
   const pageApi = {
@@ -32,7 +37,13 @@ async function renderMselPage(marking: Partial<Msel> = {}, getMsel?: () => Obser
       { provide: MselPageService, useValue: pageApi },
       { provide: MselService, useValue: mselApi },
       { provide: ActivatedRoute, useValue: route },
-      { provide: ComnSettingsService, useValue: { settings: { AppTitle: 'Blueprint' } } satisfies Pick<ComnSettingsService, 'settings'> },
+      {
+        provide: ComnSettingsService,
+        useValue: { settings: { AppTitle: 'Blueprint' } } satisfies Pick<
+          ComnSettingsService,
+          'settings'
+        >,
+      },
       // angular-editor injects HttpClient for its image upload.
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -65,7 +76,9 @@ describe('MselPageComponent', () => {
     expect(fixture.componentInstance).toBeInstanceOf(MselPageComponent);
     expect(pageApi.getMselPage).toHaveBeenCalledWith('page-1');
     expect(fixture.nativeElement).toHaveTextContent('Welcome to the exercise');
-    expect(document.getElementById('appTitle')).toHaveTextContent('Blueprint MSEL Page');
+    expect(document.getElementById('appTitle')).toHaveTextContent(
+      'Blueprint MSEL Page',
+    );
   });
 
   // by selector: naming a role reads computed styles, which jsdom cannot compute for the editor's stylesheet
@@ -109,7 +122,7 @@ describe('MselPageComponent', () => {
         expect(banner).toHaveTextContent(subtext);
       }
     }
-    const page = fixture.nativeElement.querySelector('.page') as HTMLElement;
+    const page = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('.page');
     expect(page.firstElementChild).toBe(top);
     expect(page.lastElementChild).toBe(bottom);
     expect(page).toHaveTextContent('Welcome to the exercise');

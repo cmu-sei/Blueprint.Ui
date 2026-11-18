@@ -60,7 +60,10 @@ describe('UIDataService', () => {
     expect(restored.getTheme()).toBe('dark-theme');
     expect(restored.isNavCollapsed()).toBe(true);
     expect(restored.useRealTime()).toBe(true);
-    expect(restored.getVisibleDataFieldColumns()).toEqual(['Title', 'Assigned To']);
+    expect(restored.getVisibleDataFieldColumns()).toEqual([
+      'Title',
+      'Assigned To',
+    ]);
     expect(restored.getStatementGrouping()).toBe('user');
   });
 
@@ -70,7 +73,10 @@ describe('UIDataService', () => {
    * Data: saved state with visibleDataFieldColumns null.
    */
   it('treats a missing column list as empty', () => {
-    localStorage.setItem('uiState', JSON.stringify({ visibleDataFieldColumns: null }));
+    localStorage.setItem(
+      'uiState',
+      JSON.stringify({ visibleDataFieldColumns: null }),
+    );
 
     expect(new UIDataService().getVisibleDataFieldColumns()).toEqual([]);
   });

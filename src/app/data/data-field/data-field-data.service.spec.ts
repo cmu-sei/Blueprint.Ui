@@ -11,7 +11,11 @@ import {
 } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EMPTY, Observable, of, throwError } from 'rxjs';
-import { DataField, DataFieldService, DataFieldType } from 'src/app/generated/blueprint.api';
+import {
+  DataField,
+  DataFieldService,
+  DataFieldType,
+} from 'src/app/generated/blueprint.api';
 import { DataFieldStore } from './data-field.store';
 import { DataFieldTemplateStore } from './data-field-template.store';
 import { DataFieldDataService } from './data-field-data.service';
@@ -20,7 +24,10 @@ import { DataFieldTemplateQuery } from './data-field-template.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function field(overrides: Partial<DataField> = {}): DataField {
   return {
@@ -50,17 +57,24 @@ function setup(queryParams: Record<string, string> = {}) {
     getDataFieldsByMsel: vi.fn(() => of<DataField[]>([])),
     getDataFieldsByInjectType: vi.fn(() => of<DataField[]>([])),
     createDataField: vi.fn((dataField: DataField) => of({ ...dataField })),
-    updateDataField: vi.fn((_id: string, dataField: DataField) => of({ ...dataField })),
+    updateDataField: vi.fn((_id: string, dataField: DataField) =>
+      of({ ...dataField }),
+    ),
     deleteDataField: vi.fn(() => of('')),
     downloadJsonDataFields: vi.fn(() => of(new Blob())),
-    uploadJsonDataFields: vi.fn((): Observable<HttpEvent<DataField[]>> => EMPTY),
+    uploadJsonDataFields: vi.fn(
+      (): Observable<HttpEvent<DataField[]>> => EMPTY,
+    ),
   } satisfies ApiStub<DataFieldService>;
   const navigate = vi.fn();
   const route = activatedRouteStub(queryParams);
   TestBed.configureTestingModule({
     providers: [
       { provide: DataFieldService, useValue: dataFieldApi },
-      { provide: Router, useValue: { navigate } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -91,7 +105,14 @@ describe('DataFieldDataService', () => {
     service.updateStore(field({ id: 'stale', name: 'Stale' }));
     dataFieldApi.getDataFieldTemplates.mockReturnValue(of([template()]));
     dataFieldApi.getDataFieldsByMsel.mockReturnValue(
-      of([field(), field({ id: 'df-2', name: 'Assigned To', dataType: DataFieldType.Team })]),
+      of([
+        field(),
+        field({
+          id: 'df-2',
+          name: 'Assigned To',
+          dataType: DataFieldType.Team,
+        }),
+      ]),
     );
     dataFieldApi.getDataFieldsByInjectType.mockReturnValue(
       of([field({ id: 'df-it', name: 'Inject Body', injectTypeId: 'it-1' })]),
@@ -104,7 +125,11 @@ describe('DataFieldDataService', () => {
     expect(names(templateQuery.getAll())).toEqual(['Template Field']);
     expect(dataFieldApi.getDataFieldsByMsel).toHaveBeenCalledWith('msel-1');
     expect(dataFieldApi.getDataFieldsByInjectType).toHaveBeenCalledWith('it-1');
-    expect(names(query.getAll())).toEqual(['Assigned To', 'Inject Body', 'Title']);
+    expect(names(query.getAll())).toEqual([
+      'Assigned To',
+      'Inject Body',
+      'Title',
+    ]);
     expect(query.getValue().loading).toBe(false);
     expect(templateQuery.getValue().loading).toBe(false);
   });
@@ -117,7 +142,9 @@ describe('DataFieldDataService', () => {
   it('a failed loadByMsel empties the field store', () => {
     const { service, query, dataFieldApi } = setup();
     service.updateStore(field());
-    dataFieldApi.getDataFieldsByMsel.mockReturnValue(throwError(() => new Error('boom')));
+    dataFieldApi.getDataFieldsByMsel.mockReturnValue(
+      throwError(() => new Error('boom')),
+    );
 
     service.loadByMsel('msel-1');
 
@@ -135,8 +162,8 @@ describe('DataFieldDataService', () => {
     dataFieldApi.createDataField.mockImplementation((df: DataField) =>
       of({ ...df, id: df.isTemplate ? 'tmpl-1' : 'df-1' }),
     );
-    dataFieldApi.updateDataField.mockImplementation((_id: string, df: DataField) =>
-      of({ ...df, name: `${df.name} (saved)` }),
+    dataFieldApi.updateDataField.mockImplementation(
+      (_id: string, df: DataField) => of({ ...df, name: `${df.name} (saved)` }),
     );
 
     service.add(template({ id: undefined }));
@@ -200,11 +227,17 @@ describe('DataFieldDataService', () => {
     const progress = recordEmissions(service.uploadProgress);
     dataFieldApi.uploadJsonDataFields.mockReturnValueOnce(
       of(
-        { type: HttpEventType.UploadProgress, loaded: 5, total: 10 } satisfies HttpUploadProgressEvent,
+        {
+          type: HttpEventType.UploadProgress,
+          loaded: 5,
+          total: 10,
+        } satisfies HttpUploadProgressEvent,
         new HttpResponse({ status: 200, body: [template()] }),
       ),
     );
-    dataFieldApi.uploadJsonDataFields.mockReturnValueOnce(throwError(() => new Error('bad')));
+    dataFieldApi.uploadJsonDataFields.mockReturnValueOnce(
+      throwError(() => new Error('bad')),
+    );
 
     service.uploadJson(new File(['[]'], 'fields.json'), 'events', true);
     service.uploadJson(new File(['[]'], 'fields.json'), 'events', true);
@@ -213,7 +246,9 @@ describe('DataFieldDataService', () => {
     expect(progress).toEqual([50, 0, 0]);
     expect(templateQuery.getValue().loading).toBe(false);
     service.downloadJson(['tmpl-1']);
-    expect(dataFieldApi.downloadJsonDataFields).toHaveBeenCalledWith(['tmpl-1']);
+    expect(dataFieldApi.downloadJsonDataFields).toHaveBeenCalledWith([
+      'tmpl-1',
+    ]);
   });
 
   /**
@@ -239,30 +274,70 @@ describe('DataFieldDataService', () => {
    * Data: both loading flags cleared first; each endpoint fails with "request failed"; add and updateDataField get a template and an MSEL field.
    */
   it.each([
-    { method: 'loadTemplates', endpoint: 'getDataFieldTemplates', target: 'template', escapes: false, call: (s: DataFieldDataService) => s.loadTemplates() },
-    { method: 'loadByInjectType', endpoint: 'getDataFieldsByInjectType', target: 'field', escapes: true, call: (s: DataFieldDataService) => s.loadByInjectType('it-1') },
-    { method: 'add (template)', endpoint: 'createDataField', target: 'template', escapes: true, call: (s: DataFieldDataService) => s.add(template()) },
-    { method: 'add (MSEL field)', endpoint: 'createDataField', target: 'field', escapes: true, call: (s: DataFieldDataService) => s.add(field()) },
-    { method: 'updateDataField (template)', endpoint: 'updateDataField', target: 'template', escapes: true, call: (s: DataFieldDataService) => s.updateDataField(template()) },
-    { method: 'updateDataField (MSEL field)', endpoint: 'updateDataField', target: 'field', escapes: true, call: (s: DataFieldDataService) => s.updateDataField(field()) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, target, escapes, call }) => {
-    const { service, query, templateQuery, dataFieldApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(DataFieldStore).setLoading(false);
-    TestBed.inject(DataFieldTemplateStore).setLoading(false);
-    dataFieldApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'loadTemplates',
+      endpoint: 'getDataFieldTemplates',
+      target: 'template',
+      escapes: false,
+      call: (s: DataFieldDataService) => s.loadTemplates(),
+    },
+    {
+      method: 'loadByInjectType',
+      endpoint: 'getDataFieldsByInjectType',
+      target: 'field',
+      escapes: true,
+      call: (s: DataFieldDataService) => s.loadByInjectType('it-1'),
+    },
+    {
+      method: 'add (template)',
+      endpoint: 'createDataField',
+      target: 'template',
+      escapes: true,
+      call: (s: DataFieldDataService) => s.add(template()),
+    },
+    {
+      method: 'add (MSEL field)',
+      endpoint: 'createDataField',
+      target: 'field',
+      escapes: true,
+      call: (s: DataFieldDataService) => s.add(field()),
+    },
+    {
+      method: 'updateDataField (template)',
+      endpoint: 'updateDataField',
+      target: 'template',
+      escapes: true,
+      call: (s: DataFieldDataService) => s.updateDataField(template()),
+    },
+    {
+      method: 'updateDataField (MSEL field)',
+      endpoint: 'updateDataField',
+      target: 'field',
+      escapes: true,
+      call: (s: DataFieldDataService) => s.updateDataField(field()),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, target, escapes, call }) => {
+      const { service, query, templateQuery, dataFieldApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(DataFieldStore).setLoading(false);
+      TestBed.inject(DataFieldTemplateStore).setLoading(false);
+      dataFieldApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    const [stuck, untouched] = target === 'template' ? [templateQuery, query] : [query, templateQuery];
-    expect(stuck.getValue().loading).toBe(true);
-    expect(untouched.getValue().loading).toBe(false);
-    // An empty error callback swallows the error; with no callback it escapes to
-    // ErrorService, the ErrorHandler app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      const [stuck, untouched] =
+        target === 'template' ? [templateQuery, query] : [query, templateQuery];
+      expect(stuck.getValue().loading).toBe(true);
+      expect(untouched.getValue().loading).toBe(false);
+      // An empty error callback swallows the error; with no callback it escapes to
+      // ErrorService, the ErrorHandler app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed delete escapes to the app's global ErrorHandler.

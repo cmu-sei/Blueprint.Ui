@@ -5,10 +5,7 @@
 */
 
 import { Order, Query, QueryConfig, QueryEntity } from '@datorama/akita';
-import {
-  CardState,
-  CardStore,
-} from './card.store';
+import { CardState, CardStore } from './card.store';
 import { Card } from 'src/app/generated/blueprint.api';
 import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
@@ -28,7 +25,7 @@ export class CardQuery extends QueryEntity<CardState> {
     const store = inject(CardStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

@@ -3,10 +3,7 @@
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
 import { Order, Query, QueryConfig, QueryEntity } from '@datorama/akita';
-import {
-  TeamUserState,
-  TeamUserStore,
-} from './team-user.store';
+import { TeamUserState, TeamUserStore } from './team-user.store';
 import { TeamUser } from 'src/app/generated/blueprint.api';
 import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
@@ -26,7 +23,7 @@ export class TeamUserQuery extends QueryEntity<TeamUserState> {
     const store = inject(TeamUserStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

@@ -4,10 +4,7 @@
  project root for license information.
 */
 import { Order, Query, QueryConfig, QueryEntity } from '@datorama/akita';
-import {
-  UnitState,
-  UnitStore,
-} from './unit.store';
+import { UnitState, UnitStore } from './unit.store';
 import { Unit } from 'src/app/generated/blueprint.api';
 import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
@@ -27,7 +24,7 @@ export class UnitQuery extends QueryEntity<UnitState> {
     const store = inject(UnitStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

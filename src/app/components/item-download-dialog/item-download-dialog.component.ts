@@ -4,7 +4,10 @@
 
 import { Component, inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
 import { MatCheckbox } from '@angular/material/checkbox';
 
 export interface ItemDownloadOption {
@@ -18,14 +21,14 @@ export interface ItemDownloadDialogData {
 }
 
 @Component({
-    selector: 'app-item-download-dialog',
-    templateUrl: './item-download-dialog.component.html',
-    styleUrls: ['./item-download-dialog.component.scss'],
-    imports: [
-        CrucibleDialogComponent,
-        CrucibleDialogContentDirective,
-        MatCheckbox,
-    ],
+  selector: 'app-item-download-dialog',
+  templateUrl: './item-download-dialog.component.html',
+  styleUrls: ['./item-download-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatCheckbox,
+  ],
 })
 export class ItemDownloadDialogComponent {
   dialogRef = inject<MatDialogRef<ItemDownloadDialogComponent>>(MatDialogRef);
@@ -38,11 +41,16 @@ export class ItemDownloadDialogComponent {
   }
 
   isAllSelected(): boolean {
-    return this.data.items.length > 0 && this.selected.size === this.data.items.length;
+    return (
+      this.data.items.length > 0 &&
+      this.selected.size === this.data.items.length
+    );
   }
 
   isIndeterminate(): boolean {
-    return this.selected.size > 0 && this.selected.size < this.data.items.length;
+    return (
+      this.selected.size > 0 && this.selected.size < this.data.items.length
+    );
   }
 
   toggleAll(checked: boolean) {

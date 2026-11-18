@@ -16,10 +16,10 @@ import { FormsModule } from '@angular/forms';
 import { MarkingBanner, markingBanner } from 'src/app/utilities/msel-marking';
 
 @Component({
-    selector: 'app-msel-pageapp',
-    templateUrl: './msel-page.component.html',
-    styleUrls: ['./msel-page.component.scss'],
-    imports: [AngularEditorModule, FormsModule, NgTemplateOutlet]
+  selector: 'app-msel-pageapp',
+  templateUrl: './msel-page.component.html',
+  styleUrls: ['./msel-page.component.scss'],
+  imports: [AngularEditorModule, FormsModule, NgTemplateOutlet],
 })
 export class MselPageComponent implements OnDestroy {
   private activatedRoute = inject(ActivatedRoute);
@@ -37,35 +37,40 @@ export class MselPageComponent implements OnDestroy {
   readonly banner = signal<MarkingBanner | null>(null);
 
   constructor() {
-    this._document.getElementById('appTitle').innerHTML = this.settingsService.settings.AppTitle + ' MSEL Page';
+    this._document.getElementById('appTitle').innerHTML =
+      this.settingsService.settings.AppTitle + ' MSEL Page';
     // subscribe to route changes
-    this.activatedRoute.paramMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
-      const mselPageId = params.get('id');
-      if (mselPageId) {
-        this.mselPageDataService.loadById(mselPageId);
-        this.mselPageDataService.setActive(mselPageId);
-      } else {
-        this.mselPageDataService.setActive('');
-      }
-    });
+    this.activatedRoute.paramMap
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((params) => {
+        const mselPageId = params.get('id');
+        if (mselPageId) {
+          this.mselPageDataService.loadById(mselPageId);
+          this.mselPageDataService.setActive(mselPageId);
+        } else {
+          this.mselPageDataService.setActive('');
+        }
+      });
     // subscribe to the mselPage
-    (this.mselPageQuery.selectActive() as Observable<MselPage>).pipe(takeUntil(this.unsubscribe$)).subscribe(mselPage => {
-      if (mselPage) {
-        this.mselPage = mselPage;
-      }
-    });
+    (this.mselPageQuery.selectActive() as Observable<MselPage>)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((mselPage) => {
+        if (mselPage) {
+          this.mselPage = mselPage;
+        }
+      });
     // the marking of the page's MSEL; a page whose MSEL cannot be read shows none
-    (this.mselPageQuery.selectActive() as Observable<MselPage>).pipe(
-      map(mselPage => mselPage?.mselId),
-      filter(mselId => !!mselId),
-      distinctUntilChanged(),
-      switchMap(mselId => this.mselService.getMsel(mselId).pipe(catchError(() => of(null)))),
-      takeUntil(this.unsubscribe$)
-    ).subscribe(msel => {
-      this.banner.set(msel ? markingBanner(msel.articleMarking, msel.articleMarkingText, msel.name) : null);
-    });
-
-
+    (this.mselPageQuery.selectActive() as Observable<MselPage>)
+      .pipe(
+        map((mselPage) => mselPage?.mselId),
+        filter((mselId) => !!mselId),
+        distinctUntilChanged(),
+        switchMap((mselId) => this.mselService.getMsel(mselId).pipe(catchError(() => of(null)))),
+        takeUntil(this.unsubscribe$),
+      )
+      .subscribe((msel) => {
+        this.banner.set(msel ? markingBanner(msel.articleMarking, msel.articleMarkingText, msel.name) : null);
+      });
   }
 
   ngOnDestroy() {

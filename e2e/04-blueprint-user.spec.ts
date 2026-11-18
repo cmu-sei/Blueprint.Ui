@@ -8,12 +8,20 @@ import { test, expect } from '@playwright/test';
 const extraConfig = require('./settings.json');
 const fs = require('fs');
 // MSEL info for test MSEL
-const testMselName =  extraConfig.testUserMsel;
+const testMselName = extraConfig.testUserMsel;
 console.log('Using ' + testMselName + ' as the base MSEL for testing.');
 
 // pull proxy from settings file
 if (extraConfig.proxySettings.port) {
-  test.use({proxy: {server: 'http:// ' + extraConfig.proxySettings.host + ':' + extraConfig.proxySettings.port}});
+  test.use({
+    proxy: {
+      server:
+        'http:// ' +
+        extraConfig.proxySettings.host +
+        ':' +
+        extraConfig.proxySettings.port,
+    },
+  });
 }
 
 // ===================== Blueprint Access Check ======================
@@ -60,7 +68,9 @@ test('access all MSEL tabs', async ({ page }) => {
   await page.waitForTimeout(2 * 1000);
 
   // Exercise View Tab
-  await page.getByRole('button', { name: 'Exercise View', exact: true }).click();
+  await page
+    .getByRole('button', { name: 'Exercise View', exact: true })
+    .click();
   await page.waitForTimeout(2 * 1000);
   // Info Tab
   await page.getByRole('button', { name: 'Info' }).click();
@@ -120,7 +130,9 @@ test('add delete teams', async ({ page }) => {
   await page.waitForTimeout(1 * 1000);
 
   // Remove Team from MSEL
-  const panelElement = await page.locator('mat-expansion-panel:has(:text("FRB - Federal Reserve Board"))');
+  const panelElement = await page.locator(
+    'mat-expansion-panel:has(:text("FRB - Federal Reserve Board"))',
+  );
   await panelElement.locator('button[title="Remove team from MSEL"]').click();
   await page.waitForTimeout(1 * 1000);
 
@@ -140,7 +152,9 @@ test('add delete data fields', async ({ page }) => {
 
   // Add Data Fields
   await page.getByRole('button', { name: 'Data Fields', exact: true }).click();
-  await page.getByRole('button', { name: 'Add new data field', exact: true }).click();
+  await page
+    .getByRole('button', { name: 'Add new data field', exact: true })
+    .click();
   await page.getByLabel('Display Order').press('Tab');
   await page.getByLabel('Name', { exact: true }).fill('Added Me');
   await page.getByLabel('Name', { exact: true }).press('Tab');
@@ -151,7 +165,9 @@ test('add delete data fields', async ({ page }) => {
   await page.waitForTimeout(2 * 1000);
 
   // // Remove Data Field
-  await page.getByRole('button', { name: 'Delete Added Me', exact: true }).click({force: true});
+  await page
+    .getByRole('button', { name: 'Delete Added Me', exact: true })
+    .click({ force: true });
   await page.click('text=Yes');
   await page.waitForTimeout(5 * 1000);
 
@@ -191,7 +207,9 @@ test('add delete organizations', async ({ page }) => {
   await page.locator('text=' + extraConfig.orgName);
 
   // cleanup process
-  await page.getByRole('button', { name: 'Delete ' + extraConfig.orgName }).click();
+  await page
+    .getByRole('button', { name: 'Delete ' + extraConfig.orgName })
+    .click();
   await page.click('text=Yes');
   await page.waitForTimeout(5 * 1000);
 
@@ -219,14 +237,17 @@ test('add delete move', async ({ page }) => {
   // Moves section
   await page.getByRole('button', { name: 'Moves' }).click();
   await page.click('button:has(mat-icon.mdi-plus-circle-outline)');
-  await page.getByLabel('Move Description', { exact: true }).fill('Playwright Move');
+  await page
+    .getByLabel('Move Description', { exact: true })
+    .fill('Playwright Move');
   await page.click('button:has-text("Save")');
 
   // Delete Move
-  const moveDeleteButton = 'mat-expansion-panel-header:has-text("Playwright Move") button[title="Delete Move 4"]';
-  if (moveDeleteButton){
+  const moveDeleteButton =
+    'mat-expansion-panel-header:has-text("Playwright Move") button[title="Delete Move 4"]';
+  if (moveDeleteButton) {
     await page.waitForTimeout(1 * 1000);
-    await page.click(moveDeleteButton, {force: true});
+    await page.click(moveDeleteButton, { force: true });
     await page.waitForTimeout(1 * 1000);
     await page.click('button:has-text("Yes")');
   } else {
@@ -260,10 +281,11 @@ test('add delete gallery card', async ({ page }) => {
   await page.click('text=Save');
 
   // Delete Gallery Card
-  const cardDeleteButton = 'mat-expansion-panel-header:has-text("Playwright Card") button[title="Delete Playwright Card"]';
-  if (cardDeleteButton){
+  const cardDeleteButton =
+    'mat-expansion-panel-header:has-text("Playwright Card") button[title="Delete Playwright Card"]';
+  if (cardDeleteButton) {
     await page.waitForTimeout(1 * 1000);
-    await page.click(cardDeleteButton, {force: true});
+    await page.click(cardDeleteButton, { force: true });
     await page.waitForTimeout(1 * 1000);
     await page.click('button:has-text("Yes")');
   } else {
@@ -295,14 +317,17 @@ test('add delete cite action', async ({ page }) => {
   await page.locator('mat-select[role="combobox"] >> text=Team').nth(1).click();
   await page.locator('text=Test Users').click();
   await page.locator('text=Display Order').nth(1).fill('1');
-  await page.getByLabel('Description of the Action').fill('Playwright CITE Action');
+  await page
+    .getByLabel('Description of the Action')
+    .fill('Playwright CITE Action');
   await page.click('text=Save');
 
   // Delete CITE Action
-  const actionDeleteButton = 'mat-expansion-panel-header:has-text("Playwright CITE Action") button[title="Delete Playwright CITE Action"]';
-  if (actionDeleteButton){
+  const actionDeleteButton =
+    'mat-expansion-panel-header:has-text("Playwright CITE Action") button[title="Delete Playwright CITE Action"]';
+  if (actionDeleteButton) {
     await page.waitForTimeout(1 * 1000);
-    await page.click(actionDeleteButton, {force: true});
+    await page.click(actionDeleteButton, { force: true });
     await page.waitForTimeout(1 * 1000);
     await page.click('button:has-text("Yes")');
   } else {
@@ -335,10 +360,11 @@ test('add delete cite role', async ({ page }) => {
   await page.click('text=Save');
 
   // Delete CITE Role
-  const roleDeleteButton = 'mat-expansion-panel-header:has-text("Playwright CITE Role") button[title="Delete Playwright CITE Role"]';
-  if (roleDeleteButton){
+  const roleDeleteButton =
+    'mat-expansion-panel-header:has-text("Playwright CITE Role") button[title="Delete Playwright CITE Role"]';
+  if (roleDeleteButton) {
     await page.waitForTimeout(1 * 1000);
-    await page.click(roleDeleteButton, {force: true});
+    await page.click(roleDeleteButton, { force: true });
     await page.waitForTimeout(1 * 1000);
     await page.click('button:has-text("Yes")');
   } else {

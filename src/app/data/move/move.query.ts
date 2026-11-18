@@ -5,10 +5,7 @@
 */
 
 import { Order, Query, QueryConfig, QueryEntity } from '@datorama/akita';
-import {
-  MoveState,
-  MoveStore,
-} from './move.store';
+import { MoveState, MoveStore } from './move.store';
 import { Move } from 'src/app/generated/blueprint.api';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -27,7 +24,7 @@ export class MoveQuery extends QueryEntity<MoveState> {
     const store = inject(MoveStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

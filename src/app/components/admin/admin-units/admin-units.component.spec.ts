@@ -32,7 +32,12 @@ class UnitUsersStub {
   readonly canManage = input<boolean>(undefined);
 }
 
-const UNIT: Unit = { id: 'unit-1', name: 'Blue Team', shortName: 'BLUE', description: 'Defenders' };
+const UNIT: Unit = {
+  id: 'unit-1',
+  name: 'Blue Team',
+  shortName: 'BLUE',
+  description: 'Defenders',
+};
 
 async function renderUnits(overrides: { canManage?: boolean } = {}) {
   const { canManage = true } = overrides;
@@ -55,9 +60,7 @@ async function renderUnits(overrides: { canManage?: boolean } = {}) {
       MatSortModule,
       MatTableModule,
     ],
-    childStubs: [
-      { replace: AdminUnitUsersComponent, with: UnitUsersStub },
-    ],
+    childStubs: [{ replace: AdminUnitUsersComponent, with: UnitUsersStub }],
     providers: [
       { provide: UnitService, useValue: unitApi },
       { provide: CrucibleDialogService, useValue: dialog },
@@ -103,7 +106,9 @@ describe('AdminUnitsComponent', () => {
       expect(within(table()).queryByTitle(title)).not.toBeInTheDocument();
     }
     for (const name of ROW) {
-      expect(within(table()).queryByRole('button', { name })).not.toBeInTheDocument();
+      expect(
+        within(table()).queryByRole('button', { name }),
+      ).not.toBeInTheDocument();
     }
   });
 
@@ -112,16 +117,20 @@ describe('AdminUnitsComponent', () => {
    * Interacts with: row click, UnitUsersStub inputs.
    * Data: canManage true and false.
    */
-  it.each([true, false])('passes canManage %s to the expanded unit users', async (canManage) => {
-    const { fixture } = await renderUnits({ canManage });
-    const user = userEvent.setup();
+  it.each([true, false])(
+    'passes canManage %s to the expanded unit users',
+    async (canManage) => {
+      const { fixture } = await renderUnits({ canManage });
+      const user = userEvent.setup();
 
-    await user.click(within(table()).getByText('Blue Team'));
+      await user.click(within(table()).getByText('Blue Team'));
 
-    const users = fixture.debugElement.query(By.directive(UnitUsersStub)).componentInstance as UnitUsersStub;
-    expect(users.unitId()).toBe('unit-1');
-    expect(users.canManage()).toBe(canManage);
-  });
+      const users = fixture.debugElement.query(By.directive(UnitUsersStub))
+        .componentInstance as UnitUsersStub;
+      expect(users.unitId()).toBe('unit-1');
+      expect(users.canManage()).toBe(canManage);
+    },
+  );
 
   /**
    * Verifies: confirming Delete removes the unit through the API and from the list.
@@ -132,9 +141,17 @@ describe('AdminUnitsComponent', () => {
     const { unitApi, confirm } = await renderUnits({ canManage: true });
     const user = userEvent.setup();
 
-    await user.click(within(table()).getByRole('button', { name: 'Delete Blue Team' }));
+    await user.click(
+      within(table()).getByRole('button', { name: 'Delete Blue Team' }),
+    );
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Unit' }));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Delete Unit',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      }),
+    );
     expect(unitApi.deleteUnit).toHaveBeenCalledWith('unit-1');
     expect(within(table()).queryByText('Blue Team')).not.toBeInTheDocument();
   });

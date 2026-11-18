@@ -22,7 +22,7 @@ export class CatalogInjectQuery extends QueryEntity<CatalogInjectState> {
     const store = inject(CatalogInjectStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

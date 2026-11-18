@@ -7,13 +7,11 @@ import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
+  CrucibleLandingBackgroundDirective,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { UserQuery } from 'src/app/data/user/user.query';
-import {
-  Msel,
-  User,
-} from 'src/app/generated/blueprint.api';
+import { Msel, User } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
@@ -21,7 +19,6 @@ import { Title } from '@angular/platform-browser';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { XApiService } from 'src/app/services/xapi/xapi.service';
-import { landingBackground } from 'src/app/utilities/landing-background';
 import { cardImage } from 'src/app/utilities/card-image';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 import { OverflowTooltipDirective } from '../../shared/overflow-tooltip/overflow-tooltip.directive';
@@ -30,10 +27,18 @@ import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
-    selector: 'app-join',
-    templateUrl: './join.component.html',
-    styleUrls: ['./join.component.scss'],
-    imports: [TopbarComponent, MatButton, MatIcon, MatProgressSpinner, RouterLink, OverflowTooltipDirective]
+  selector: 'app-join',
+  templateUrl: './join.component.html',
+  styleUrls: ['./join.component.scss'],
+  imports: [
+    CrucibleLandingBackgroundDirective,
+    TopbarComponent,
+    MatButton,
+    MatIcon,
+    MatProgressSpinner,
+    RouterLink,
+    OverflowTooltipDirective,
+  ],
 })
 export class JoinComponent implements OnDestroy, OnInit {
   private userDataService = inject(UserDataService);
@@ -57,7 +62,6 @@ export class JoinComponent implements OnDestroy, OnInit {
   topbarColor = '#ef3a47';
   topbarTextColor = '#FFFFFF';
   topbarImage = this.settingsService.settings.AppTopBarImage;
-  backgroundImage = landingBackground(this.settingsService.settings);
   TopbarView = TopbarView;
   appTitle = 'Join Event';
   joinStatus: { [id: string]: string } = {};
@@ -71,7 +75,7 @@ export class JoinComponent implements OnDestroy, OnInit {
     // set image
     this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace(
       'white',
-      'blue'
+      'blue',
     );
     this.titleService.setTitle(this.appTitle);
     // Set the display settings from config file
@@ -99,7 +103,8 @@ export class JoinComponent implements OnDestroy, OnInit {
     this.userDataService.setCurrentUser();
 
     // subscribe to users
-    this.userQuery.selectAll()
+    this.userQuery
+      .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((users) => {
         this.userList = users;
@@ -120,7 +125,7 @@ export class JoinComponent implements OnDestroy, OnInit {
               if (url) {
                 this.cardPhotos[msel.id] = url;
               }
-            })
+            }),
         );
       });
   }
@@ -152,7 +157,7 @@ export class JoinComponent implements OnDestroy, OnInit {
           this.isJoined[mselId] = false;
           this.showChoices = true;
           this.errorService.handleError(error);
-        }
+        },
       );
   }
 

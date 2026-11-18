@@ -2,28 +2,78 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, OnDestroy, OnInit, ElementRef, AfterViewInit, inject, input, viewChild } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ElementRef,
+  AfterViewInit,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
-import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+  MatTableDataSource,
+  MatTable,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 import { User } from 'src/app/generated/blueprint.api';
 import { UnitUserDataService } from 'src/app/data/user/unit-user-data.service';
 import { UserQuery } from 'src/app/data/user/user.query';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  UntypedFormControl,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { MatToolbar, MatToolbarRow } from '@angular/material/toolbar';
 import { MatIcon } from '@angular/material/icon';
 import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
 
 @Component({
-    selector: 'app-admin-unit-users',
-    templateUrl: './admin-unit-users.component.html',
-    styleUrls: ['./admin-unit-users.component.scss'],
-    imports: [MatToolbar, MatToolbarRow, MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatSortHeader, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
+  selector: 'app-admin-unit-users',
+  templateUrl: './admin-unit-users.component.html',
+  styleUrls: ['./admin-unit-users.component.scss'],
+  imports: [
+    MatToolbar,
+    MatToolbarRow,
+    MatIcon,
+    MatFormField,
+    MatInput,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatPaginator,
+    MatTable,
+    MatSort,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatSortHeader,
+    MatCellDef,
+    MatCell,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+  ],
 })
-export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit {
+export class AdminUnitUsersComponent
+  implements OnDestroy, OnInit, AfterViewInit
+{
   private unitUserDataService = inject(UnitUserDataService);
   private userQuery = inject(UserQuery);
 
@@ -46,30 +96,41 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
   readonly usersInput = viewChild<ElementRef<HTMLInputElement>>('usersInput');
 
   constructor() {
-    this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
-      this.userList = users;
-      this.setDataSources();
-    });
-    this.unitUserDataService.unitUsers.pipe(takeUntil(this.unsubscribe$)).subscribe(tUsers => {
-      this.unitUsers = tUsers;
-      this.setDataSources();
-    });
+    this.userQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((users) => {
+        this.userList = users;
+        this.setDataSources();
+      });
+    this.unitUserDataService.unitUsers
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((tUsers) => {
+        this.unitUsers = tUsers;
+        this.setDataSources();
+      });
   }
 
   ngOnInit() {
-    this.unitUserDataService.unitUsers.pipe(takeUntil(this.unsubscribe$)).subscribe(tUsers => {
-      this.unitUsers = tUsers;
-      this.setDataSources();
-    });
+    this.unitUserDataService.unitUsers
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((tUsers) => {
+        this.unitUsers = tUsers;
+        this.setDataSources();
+      });
     this.unitUserDataService.getUnitUsersFromApi(this.unitId());
-    this.filterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
-      this.filterString = this.filterControl.value;
-      this.applyFilter();
-    });
-    this.unitUserFilterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
-      this.unitUserFilterString = this.unitUserFilterControl.value;
-      this.applyUnitUserFilter();
-    });
+    this.filterControl.valueChanges
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.filterString = this.filterControl.value;
+        this.applyFilter();
+      });
+    this.unitUserFilterControl.valueChanges
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.unitUserFilterString = this.unitUserFilterControl.value;
+        this.applyUnitUserFilter();
+      });
   }
 
   ngAfterViewInit() {
@@ -78,7 +139,9 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
   }
 
   applyFilter() {
-    const filterValue = this.filterControl.value ? this.filterControl.value.toLowerCase() : '';
+    const filterValue = this.filterControl.value
+      ? this.filterControl.value.toLowerCase()
+      : '';
     this.userDataSource.filter = filterValue;
   }
 
@@ -87,9 +150,13 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
   }
 
   applyUnitUserFilter() {
-    const searchTerm = this.unitUserFilterControl.value ? this.unitUserFilterControl.value.toLowerCase() : '';
-    const filteredUnitUsers = this.unitUsers.filter(user =>
-      !searchTerm || (user.name && user.name.toLowerCase().includes(searchTerm))
+    const searchTerm = this.unitUserFilterControl.value
+      ? this.unitUserFilterControl.value.toLowerCase()
+      : '';
+    const filteredUnitUsers = this.unitUsers.filter(
+      (user) =>
+        !searchTerm ||
+        (user.name && user.name.toLowerCase().includes(searchTerm)),
     );
     this.sortUserUnitData(filteredUnitUsers);
   }
@@ -99,7 +166,7 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
   }
 
   getUserName(id: string) {
-    const user = this.userList.find(u => u.id === id);
+    const user = this.userList.find((u) => u.id === id);
     return user ? user.name : '?';
   }
 
@@ -115,7 +182,9 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
         return 0;
       }
     });
-    const newAllUsers = !this.userList ? new Array<User>() : this.userList.slice(0);
+    const newAllUsers = !this.userList
+      ? new Array<User>()
+      : this.userList.slice(0);
     this.unitUserDataSource.data.forEach((tu) => {
       const index = newAllUsers.findIndex((u) => u.id === tu.id);
       if (index >= 0) {
@@ -135,7 +204,7 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
 
   addUserToUnit(user: User): void {
     const index = this.unitUserDataSource.data.findIndex(
-      (tu) => tu.id === user.id
+      (tu) => tu.id === user.id,
     );
     if (index === -1) {
       this.unitUserDataService.addUserToUnit(this.unitId(), user);
@@ -196,7 +265,7 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
    */
   removeUserFromUnit(user: User): void {
     const index = this.unitUserDataSource.data.findIndex(
-      (tu) => tu.id === user.id
+      (tu) => tu.id === user.id,
     );
     if (index !== -1) {
       this.unitUserDataService.removeUnitUser(this.unitId(), user.id);
@@ -215,5 +284,4 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
   }
-
 }

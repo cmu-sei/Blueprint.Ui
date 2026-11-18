@@ -42,7 +42,11 @@ describe('SortByPipe', () => {
    * Data: ['bravo', 'alpha', 'charlie'] with order 'DESC' and column ''.
    */
   it('sorts a plain array descending for any order but asc', () => {
-    expect(pipe.transform(['bravo', 'alpha', 'charlie'], 'DESC', '')).toEqual(['charlie', 'bravo', 'alpha']);
+    expect(pipe.transform(['bravo', 'alpha', 'charlie'], 'DESC', '')).toEqual([
+      'charlie',
+      'bravo',
+      'alpha',
+    ]);
   });
 
   /**
@@ -57,7 +61,9 @@ describe('SortByPipe', () => {
 
     expect(asc.map((m) => m.moveNumber)).toEqual([1, 2, 3]);
     expect(asc).not.toBe(moves);
-    expect(pipe.transform(moves, 'desc', 'moveNumber').map((m) => m.moveNumber)).toEqual([3, 2, 1]);
+    expect(
+      pipe.transform(moves, 'desc', 'moveNumber').map((m) => m.moveNumber),
+    ).toEqual([3, 2, 1]);
   });
 });
 

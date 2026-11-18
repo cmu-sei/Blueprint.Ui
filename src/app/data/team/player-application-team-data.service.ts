@@ -9,7 +9,10 @@ import { ComnAuthQuery, ComnAuthService } from '@cmusei/crucible-common';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { PlayerApplicationTeamService } from 'src/app/generated/blueprint.api/api/api';
-import { PlayerApplicationTeam, Team } from 'src/app/generated/blueprint.api/model/models';
+import {
+  PlayerApplicationTeam,
+  Team,
+} from 'src/app/generated/blueprint.api/model/models';
 
 @Injectable({
   providedIn: 'root',
@@ -42,14 +45,14 @@ export class PlayerApplicationTeamDataService implements OnDestroy {
         },
         (error) => {
           this.updatePlayerApplicationTeams([]);
-        }
+        },
       );
   }
 
   addTeamToPlayerApplication(
     playerApplicationId: string,
     team: Team,
-    displayOrder: number
+    displayOrder: number,
   ) {
     this.playerApplicationTeamService
       .createPlayerApplicationTeam({
@@ -63,7 +66,7 @@ export class PlayerApplicationTeamDataService implements OnDestroy {
         },
         (error) => {
           this.updatePlayerApplicationTeams(this._playerApplicationTeams);
-        }
+        },
       );
   }
 
@@ -71,13 +74,13 @@ export class PlayerApplicationTeamDataService implements OnDestroy {
     this.playerApplicationTeamService.deletePlayerApplicationTeam(id).subscribe(
       (response) => {
         this._playerApplicationTeams = this._playerApplicationTeams.filter(
-          (u) => u.id !== id
+          (u) => u.id !== id,
         );
         this.updatePlayerApplicationTeams(this._playerApplicationTeams);
       },
       (error) => {
         this.updatePlayerApplicationTeams(this._playerApplicationTeams);
-      }
+      },
     );
   }
 
@@ -85,7 +88,7 @@ export class PlayerApplicationTeamDataService implements OnDestroy {
     this.playerApplicationTeamService
       .updatePlayerApplicationTeam(
         playerApplicationTeam.id,
-        playerApplicationTeam
+        playerApplicationTeam,
       )
       .subscribe(
         (et) => {
@@ -93,13 +96,13 @@ export class PlayerApplicationTeamDataService implements OnDestroy {
         },
         (error) => {
           this.updatePlayerApplicationTeams(this._playerApplicationTeams);
-        }
+        },
       );
   }
 
   updateStore(playerApplicationTeam: PlayerApplicationTeam) {
     const updatedPlayerApplicationTeams = this._playerApplicationTeams.filter(
-      (tu) => tu.id !== playerApplicationTeam.id
+      (tu) => tu.id !== playerApplicationTeam.id,
     );
     updatedPlayerApplicationTeams.unshift(playerApplicationTeam);
     this.updatePlayerApplicationTeams(updatedPlayerApplicationTeams);
@@ -107,7 +110,7 @@ export class PlayerApplicationTeamDataService implements OnDestroy {
 
   deleteFromStore(id: string) {
     const updatedPlayerApplicationTeams = this._playerApplicationTeams.filter(
-      (tu) => tu.id !== id
+      (tu) => tu.id !== id,
     );
     this.updatePlayerApplicationTeams(updatedPlayerApplicationTeams);
   }
@@ -118,7 +121,7 @@ export class PlayerApplicationTeamDataService implements OnDestroy {
   }
 
   private updatePlayerApplicationTeams(
-    playerApplicationTeams: PlayerApplicationTeam[]
+    playerApplicationTeams: PlayerApplicationTeam[],
   ) {
     this._playerApplicationTeams = Object.assign([], playerApplicationTeams);
     this.playerApplicationTeams.next(this._playerApplicationTeams);

@@ -8,7 +8,11 @@ import { By } from '@angular/platform-browser';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { CRUCIBLE_DIALOG_IMPORTS, CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import {
+  CRUCIBLE_DIALOG_IMPORTS,
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
 import { Catalog, InjectType, Injectm } from 'src/app/generated/blueprint.api';
 import { InjectSelectDialogComponent } from './inject-select-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
@@ -23,28 +27,46 @@ class InjectListStub {
   readonly selectedInjectIdList = output<string[]>();
 }
 
-const CATALOG: Catalog = { id: 'cat-1', name: 'Ransomware Catalog', injectTypeId: 'it-email' };
+const CATALOG: Catalog = {
+  id: 'cat-1',
+  name: 'Ransomware Catalog',
+  injectTypeId: 'it-email',
+};
 
 async function renderInjectSelect() {
-  const data = { catalog: CATALOG, injectType: { id: 'it-email', name: 'Email' }, injectList: [], loggedInUserId: 'user-1' };
+  const data = {
+    catalog: CATALOG,
+    injectType: { id: 'it-email', name: 'Email' },
+    injectList: [],
+    loggedInUserId: 'user-1',
+  };
   const rendered = await renderComponent(InjectSelectDialogComponent, {
     imports: [...CRUCIBLE_DIALOG_IMPORTS],
     // The component imports InjectListComponent through forwardRef, which
     // childStubs cannot match by class, so the imports list is set whole.
     configureTestBed: (testBed) => {
       testBed.overrideComponent(InjectSelectDialogComponent, {
-        set: { imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, InjectListStub] },
+        set: {
+          imports: [
+            CrucibleDialogComponent,
+            CrucibleDialogContentDirective,
+            InjectListStub,
+          ],
+        },
       });
     },
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
   });
   const results: unknown[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, results };
 }
 
 function list(fixture: ComponentFixture<unknown>): InjectListStub {
-  return fixture.debugElement.query(By.directive(InjectListStub)).componentInstance;
+  return fixture.debugElement.query(By.directive(InjectListStub))
+    .componentInstance;
 }
 
 describe('InjectSelectDialogComponent', () => {
@@ -56,8 +78,12 @@ describe('InjectSelectDialogComponent', () => {
   it('renders with the default test providers', async () => {
     const { fixture } = await renderInjectSelect();
 
-    expect(fixture.componentInstance).toBeInstanceOf(InjectSelectDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Select Injects to Add' })).toBeInTheDocument();
+    expect(fixture.componentInstance).toBeInstanceOf(
+      InjectSelectDialogComponent,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Select Injects to Add' }),
+    ).toBeInTheDocument();
     expect(list(fixture).catalog()).toEqual(CATALOG);
     expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled();
   });

@@ -1,7 +1,16 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, inject, input, viewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
@@ -15,7 +24,7 @@ import {
   SystemPermission,
   Unit,
   User,
-  UserMselRole
+  UserMselRole,
 } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
@@ -26,13 +35,36 @@ import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.query';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { MatTable, MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+  MatTable,
+  MatTableDataSource,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
-import { animate, state, style, transition, trigger } from '@angular/animations';
+import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
 import { MatIcon } from '@angular/material/icon';
 
-import { MatFormField, MatInput, MatSuffix, MatLabel } from '@angular/material/input';
+import {
+  MatFormField,
+  MatInput,
+  MatSuffix,
+  MatLabel,
+} from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatIconButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
@@ -40,17 +72,50 @@ import { MatOption } from '@angular/material/autocomplete';
 import { MatTooltip } from '@angular/material/tooltip';
 
 @Component({
-    selector: 'app-msel-contributors',
-    templateUrl: './msel-contributors.component.html',
-    styleUrls: ['./msel-contributors.component.scss'],
-    animations: [
-        trigger('detailExpand', [
-            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-            state('expanded', style({ height: '*', visibility: 'visible' })),
-            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-        ]),
-    ],
-    imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatPaginator, MatMenu, MatMenuItem, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, MatLabel, MatSelect, MatOption, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
+  selector: 'app-msel-contributors',
+  templateUrl: './msel-contributors.component.html',
+  styleUrls: ['./msel-contributors.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state(
+        'collapsed',
+        style({ height: '0px', minHeight: '0', visibility: 'hidden' }),
+      ),
+      state('expanded', style({ height: '*', visibility: 'visible' })),
+      transition(
+        'expanded <=> collapsed',
+        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+      ),
+    ]),
+  ],
+  imports: [
+    MatIcon,
+    MatFormField,
+    MatInput,
+    FormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatPaginator,
+    MatMenu,
+    MatMenuItem,
+    MatTable,
+    MatSort,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatMenuTrigger,
+    MatCellDef,
+    MatCell,
+    MatSortHeader,
+    MatLabel,
+    MatSelect,
+    MatOption,
+    MatTooltip,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+  ],
 })
 export class MselContributorsComponent implements OnDestroy, OnInit {
   private unitDataService = inject(UnitDataService);
@@ -87,7 +152,7 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
     MselRole.MoveEditor,
     MselRole.Owner,
     MselRole.Evaluator,
-    MselRole.Viewer
+    MselRole.Viewer,
   ];
   citeEvaluationRoles: string[] = [
     'Owner',
@@ -96,18 +161,14 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
     'Facilitator',
     'Advancer',
     'Observer',
-    'Member'
+    'Member',
   ];
-  galleryExhibitRoles: string[] = [
-    'Manager',
-    'Observer',
-    'Member'
-  ];
+  galleryExhibitRoles: string[] = ['Manager', 'Observer', 'Member'];
   steamfitterScenarioRoles: string[] = [
     'Manager',
     'Facilitator',
     'Member',
-    'Observer'
+    'Observer',
   ];
   isEditEnabled = false;
   userList: User[] = [];
@@ -116,51 +177,69 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
   mselUnitDataSource = new MatTableDataSource<MselUnit>(new Array<MselUnit>());
   displayedColumns: string[] = ['action', 'shortName', 'name'];
   expandedElementId = '';
-  isExpansionDetailRow = (i: number, row: Object) => (row as MselUnit).id === this.expandedElementId;
+  isExpansionDetailRow = (i: number, row: Object) =>
+    (row as MselUnit).id === this.expandedElementId;
   private allUnits: Unit[] = [];
   private unsubscribe$ = new Subject();
 
   constructor() {
     // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel && this.msel.id !== msel.id) {
-        Object.assign(this.originalMsel, msel);
-        Object.assign(this.msel, msel);
-        this.sortedDataFields = this.getSortedDataFields(msel.dataFields);
-      }
-    });
-    // subscribe to users
-    this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
-      this.userList = users;
-    });
-    // subscribe to units
-    this.unitQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(units => {
-      if (units && units.length > 0) {
-        this.allUnits = units.sort((a, b) => a.shortName?.toLowerCase() > b.shortName?.toLowerCase() ? 1 : -1);
-      }
-    });
-    // subscribe to mselUnits
-    this.mselUnitQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(mselUnits => {
-      this.mselUnitList = [];
-      mselUnits.forEach(mt => {
-        const mselUnit = {} as MselUnit;
-        if (mt) {
-          this.mselUnitList.push(Object.assign(mselUnit, mt));
+    (this.mselQuery.selectActive() as Observable<MselPlus>)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((msel) => {
+        if (msel && this.msel.id !== msel.id) {
+          Object.assign(this.originalMsel, msel);
+          Object.assign(this.msel, msel);
+          this.sortedDataFields = this.getSortedDataFields(msel.dataFields);
         }
       });
-      this.applyFilter(this.filterString);
-    });
+    // subscribe to users
+    this.userQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((users) => {
+        this.userList = users;
+      });
+    // subscribe to units
+    this.unitQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((units) => {
+        if (units && units.length > 0) {
+          this.allUnits = units.sort((a, b) =>
+            a.shortName?.toLowerCase() > b.shortName?.toLowerCase() ? 1 : -1,
+          );
+        }
+      });
+    // subscribe to mselUnits
+    this.mselUnitQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((mselUnits) => {
+        this.mselUnitList = [];
+        mselUnits.forEach((mt) => {
+          const mselUnit = {} as MselUnit;
+          if (mt) {
+            this.mselUnitList.push(Object.assign(mselUnit, mt));
+          }
+        });
+        this.applyFilter(this.filterString);
+      });
     // subscribe to UserMselRoles
-    this.userMselRoleQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(umrs => {
-      this.userMselRoles = umrs;
-    });
+    this.userMselRoleQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((umrs) => {
+        this.userMselRoles = umrs;
+      });
   }
 
   ngOnInit() {
     // Refresh units so newly created units appear in the add menu
     this.unitDataService.load();
     // Load permissions and trigger change detection when loaded
-    this.permissionDataService.load()
+    this.permissionDataService
+      .load()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
@@ -168,26 +247,33 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
   }
 
   getUserName(userId: string) {
-    const user = this.userList.find(u => u.id === userId);
+    const user = this.userList.find((u) => u.id === userId);
     return user ? user.name : 'unknown';
   }
 
   getSortedDataFields(dataFields: DataField[]): DataField[] {
     const sortedDataFields: DataField[] = [];
     if (dataFields) {
-      dataFields.forEach(df => {
+      dataFields.forEach((df) => {
         sortedDataFields.push({ ...df });
       });
-      sortedDataFields.sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
+      sortedDataFields.sort((a, b) =>
+        +a.displayOrder > +b.displayOrder ? 1 : -1,
+      );
     }
     return sortedDataFields;
   }
 
   getUnitList() {
     let unitList = this.allUnits;
-    if (this.msel && this.mselUnitList && this.mselUnitList.length > 0 && unitList.length > 0) {
-      const mselUnitIds = new Set(this.mselUnitList.map(mt => mt.unitId));
-      unitList = this.allUnits.filter(t => !mselUnitIds.has(t.id));
+    if (
+      this.msel &&
+      this.mselUnitList &&
+      this.mselUnitList.length > 0 &&
+      unitList.length > 0
+    ) {
+      const mselUnitIds = new Set(this.mselUnitList.map((mt) => mt.unitId));
+      unitList = this.allUnits.filter((t) => !mselUnitIds.has(t.id));
     }
 
     return unitList;
@@ -198,30 +284,34 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
   }
 
   getUnit(id: string) {
-    const unit = this.allUnits.find(t => t.id === id);
+    const unit = this.allUnits.find((t) => t.id === id);
     return unit ? unit : {};
   }
 
   getMselUnitUsers(id: string) {
-    const unit = this.mselUnitList.find(mt => mt.unitId === id).unit;
+    const unit = this.mselUnitList.find((mt) => mt.unitId === id).unit;
     return unit ? unit.users : [];
   }
 
   addUnitToMsel(unitId: string) {
     const mselUnit: MselUnit = {
       mselId: this.msel.id,
-      unitId: unitId
+      unitId: unitId,
     };
     this.mselUnitDataService.add(mselUnit);
   }
 
   removeUnitFromMsel(id: string): void {
-    const mselUnit = this.mselUnitList.find(u => u.id === id);
+    const mselUnit = this.mselUnitList.find((u) => u.id === id);
     const unitLabel = mselUnit?.unit?.name;
 
     this.dialogService
-      .confirm({ title: 'Remove Contributor', message: `Are you sure that you want to remove ${unitLabel} from the MSEL?`
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Remove Contributor',
+        message: `Are you sure that you want to remove ${unitLabel} from the MSEL?`,
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.mselUnitDataService.delete(id);
         }
@@ -229,8 +319,12 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
   }
 
   hasMselRole(userId: string, mselRole: MselRole): boolean {
-    const hasRole = this.userMselRoles.some(umr =>
-      umr.userId === userId && umr.role === mselRole && umr.mselId === this.msel.id);
+    const hasRole = this.userMselRoles.some(
+      (umr) =>
+        umr.userId === userId &&
+        umr.role === mselRole &&
+        umr.mselId === this.msel.id,
+    );
     return hasRole;
   }
 
@@ -239,14 +333,15 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
       const umr = {
         userId: userId,
         mselId: this.msel.id,
-        role: mselRole
+        role: mselRole,
       } as UserMselRole;
       this.userMselRoleDataService.add(umr);
     } else {
-      const umrId = this.userMselRoles.find(umr =>
-        umr.userId === userId &&
-        umr.mselId === this.msel.id &&
-        umr.role === mselRole
+      const umrId = this.userMselRoles.find(
+        (umr) =>
+          umr.userId === userId &&
+          umr.mselId === this.msel.id &&
+          umr.role === mselRole,
       ).id;
       this.userMselRoleDataService.delete(umrId);
     }
@@ -254,8 +349,8 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
 
   getSelectedMselRoles(userId: string): MselRole[] {
     const roles = this.userMselRoles
-      .filter(umr => umr.userId === userId && umr.mselId === this.msel.id)
-      .map(umr => umr.role);
+      .filter((umr) => umr.userId === userId && umr.mselId === this.msel.id)
+      .map((umr) => umr.role);
 
     // Add 'Creator' as a display-only pseudo-role for the MSEL creator
     if (userId === this.msel.createdBy) {
@@ -267,52 +362,61 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
 
   setMselRoles(userId: string, newRoles: MselRole[]) {
     const current = this.getSelectedMselRoles(userId);
-    const toAdd = newRoles.filter(r => !current.includes(r));
-    const toRemove = current.filter(r => !newRoles.includes(r));
-    toAdd.forEach(r => this.toggleMselRole(userId, r, true));
-    toRemove.forEach(r => this.toggleMselRole(userId, r, false));
+    const toAdd = newRoles.filter((r) => !current.includes(r));
+    const toRemove = current.filter((r) => !newRoles.includes(r));
+    toAdd.forEach((r) => this.toggleMselRole(userId, r, true));
+    toRemove.forEach((r) => this.toggleMselRole(userId, r, false));
   }
 
   getCiteEvaluationRole(userId: string): string | null {
-    const umr = this.userMselRoles.find(u =>
-      u.userId === userId && u.mselId === this.msel.id);
+    const umr = this.userMselRoles.find(
+      (u) => u.userId === userId && u.mselId === this.msel.id,
+    );
     return umr?.citeEvaluationRole ?? null;
   }
 
   setCiteEvaluationRole(userId: string, role: string | null) {
     this.userMselRoleDataService.setIntegrationRoles(
-      this.msel.id, userId,
+      this.msel.id,
+      userId,
       role,
       this.getGalleryExhibitRole(userId),
-      this.getSteamfitterScenarioRole(userId));
+      this.getSteamfitterScenarioRole(userId),
+    );
   }
 
   getGalleryExhibitRole(userId: string): string | null {
-    const umr = this.userMselRoles.find(u =>
-      u.userId === userId && u.mselId === this.msel.id);
+    const umr = this.userMselRoles.find(
+      (u) => u.userId === userId && u.mselId === this.msel.id,
+    );
     return umr?.galleryExhibitRole ?? null;
   }
 
   setGalleryExhibitRole(userId: string, role: string | null) {
     this.userMselRoleDataService.setIntegrationRoles(
-      this.msel.id, userId,
+      this.msel.id,
+      userId,
       this.getCiteEvaluationRole(userId),
       role,
-      this.getSteamfitterScenarioRole(userId));
+      this.getSteamfitterScenarioRole(userId),
+    );
   }
 
   getSteamfitterScenarioRole(userId: string): string | null {
-    const umr = this.userMselRoles.find(u =>
-      u.userId === userId && u.mselId === this.msel.id);
+    const umr = this.userMselRoles.find(
+      (u) => u.userId === userId && u.mselId === this.msel.id,
+    );
     return umr?.steamfitterScenarioRole ?? null;
   }
 
   setSteamfitterScenarioRole(userId: string, role: string | null) {
     this.userMselRoleDataService.setIntegrationRoles(
-      this.msel.id, userId,
+      this.msel.id,
+      userId,
       this.getCiteEvaluationRole(userId),
       this.getGalleryExhibitRole(userId),
-      role);
+      role,
+    );
   }
 
   saveMselUnit(mselUnit: MselUnit) {
@@ -350,7 +454,7 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
 
   getMselRolesToDisplay(): MselRole[] {
     const mselRoles = [];
-    this.mselRoles.forEach(mr => {
+    this.mselRoles.forEach((mr) => {
       if (mr.startsWith('Cite')) {
         if (this.msel.useCite) {
           mselRoles.push(mr);
@@ -370,21 +474,31 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
 
   // membership of a contributing unit opens nothing on its own: the member needs a role on the MSEL
   canViewMsel(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.ViewMsels) ||
-      this.msel.hasRole(this.loggedInUserId(), '').viewer;
+    return (
+      this.permissionDataService.hasPermission(SystemPermission.ViewMsels) ||
+      this.msel.hasRole(this.loggedInUserId(), '').viewer
+    );
   }
 
   canManageMsel(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
-      this.msel.hasRole(this.loggedInUserId(), '').owner;
+    return (
+      this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
+      this.msel.hasRole(this.loggedInUserId(), '').owner
+    );
   }
 
   isOwnOwnerRole(userId: string, mselRole: MselRole): boolean {
-    return userId === this.loggedInUserId() && mselRole === MselRole.Owner && this.hasMselRole(userId, mselRole);
+    return (
+      userId === this.loggedInUserId() &&
+      mselRole === MselRole.Owner &&
+      this.hasMselRole(userId, mselRole)
+    );
   }
 
   isCreatorRole(userId: string, mselRole: MselRole): boolean {
-    return mselRole === ('Creator' as MselRole) && userId === this.msel.createdBy;
+    return (
+      mselRole === ('Creator' as MselRole) && userId === this.msel.createdBy
+    );
   }
 
   ngOnDestroy() {
@@ -396,10 +510,13 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
     this.filterString = filterValue;
     filterValue = filterValue.toLowerCase();
     const filtered = this.mselUnitList
-      .filter(mu =>
-        mu.unit?.name?.toLowerCase().includes(filterValue) ||
-        mu.unit?.shortName?.toLowerCase().includes(filterValue) ||
-        mu.unit?.users?.some(u => u.name?.toLowerCase().includes(filterValue))
+      .filter(
+        (mu) =>
+          mu.unit?.name?.toLowerCase().includes(filterValue) ||
+          mu.unit?.shortName?.toLowerCase().includes(filterValue) ||
+          mu.unit?.users?.some((u) =>
+            u.name?.toLowerCase().includes(filterValue),
+          ),
       )
       .sort((a, b) => this.sortMselUnits(a, b));
     this.mselUnitDataSource.data = filtered;
@@ -414,9 +531,15 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
     const dir = this.sort.direction === 'desc' ? -1 : 1;
     switch (this.sort.active) {
       case 'name':
-        return (a.unit?.name?.toLowerCase() ?? '') < (b.unit?.name?.toLowerCase() ?? '') ? -dir : dir;
+        return (a.unit?.name?.toLowerCase() ?? '') <
+          (b.unit?.name?.toLowerCase() ?? '')
+          ? -dir
+          : dir;
       default:
-        return (a.unit?.shortName?.toLowerCase() ?? '') < (b.unit?.shortName?.toLowerCase() ?? '') ? -dir : dir;
+        return (a.unit?.shortName?.toLowerCase() ?? '') <
+          (b.unit?.shortName?.toLowerCase() ?? '')
+          ? -dir
+          : dir;
     }
   }
 
@@ -426,11 +549,13 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
       [MselRole.Approver]: 'Can approve scenario events on the MSEL.',
       [MselRole.MoveEditor]: 'Can modify the move-related information.',
       [MselRole.Owner]: 'Holds full control over the MSEL.',
-      [MselRole.Evaluator]: 'Can access the MSEL view and mark items as complete.',
-      [MselRole.Viewer]: 'Can only view MSEL Pages without the ability to make changes.',
-      'Creator': 'Created this MSEL and permanently holds Owner permissions. This cannot be removed.'
+      [MselRole.Evaluator]:
+        'Can access the MSEL view and mark items as complete.',
+      [MselRole.Viewer]:
+        'Can only view MSEL Pages without the ability to make changes.',
+      Creator:
+        'Created this MSEL and permanently holds Owner permissions. This cannot be removed.',
     };
     return descriptions[role] || 'No description available.';
   }
-
 }
