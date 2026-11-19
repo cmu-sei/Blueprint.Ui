@@ -803,6 +803,36 @@ describe('AssessorViewComponent', () => {
 
     // Clicks Print Assessment Report, answers the statements request, and waits until the report would be printed.
     // printDocument, which copies the area into the body, prints and reloads, is stubbed: jsdom can do neither.
+    const isStatementsRead = (req: {
+      url: string;
+      params: { get(name: string): string | null };
+    }) =>
+      req.url === '/api/xapi/statements' &&
+      req.params.get('mselId') === 'msel-1';
+
+    // the report exercise, rendered with its print spied on, for a test that answers the reads itself
+    async function renderForPrint() {
+      vi.stubEnv('TZ', 'America/New_York');
+      const rendered = await renderAssessorView({
+        msel: REPORT_MSEL,
+        moves: REPORT_MOVES,
+        fields: REPORT_FIELDS,
+        events: REPORT_EVENTS,
+        values: REPORT_VALUES,
+        mselCompetencies: REPORT_COMPETENCIES,
+        proficiencyLevels: LEVELS,
+      });
+      const printDocument = vi
+        .spyOn(
+          rendered.fixture.componentInstance as unknown as {
+            printDocument(): void;
+          },
+          'printDocument',
+        )
+        .mockImplementation(() => undefined);
+      return { ...rendered, printDocument };
+    }
+
     async function printReport(
       statements: unknown[] | 'unavailable',
       overrides: Parameters<typeof renderAssessorView>[0] = {},
@@ -1210,29 +1240,9 @@ describe('AssessorViewComponent', () => {
      * J. Doe's ratings, and the second with the same ratings without the actor's name.
      */
     it('still prints when names are hidden during its read', async () => {
-      vi.stubEnv('TZ', 'America/New_York');
-      const { fixture } = await renderAssessorView({
-        msel: REPORT_MSEL,
-        moves: REPORT_MOVES,
-        fields: REPORT_FIELDS,
-        events: REPORT_EVENTS,
-        values: REPORT_VALUES,
-        mselCompetencies: REPORT_COMPETENCIES,
-        proficiencyLevels: LEVELS,
-      });
-      const printDocument = vi
-        .spyOn(
-          fixture.componentInstance as unknown as { printDocument(): void },
-          'printDocument',
-        )
-        .mockImplementation(() => undefined);
+      const { fixture, printDocument } = await renderForPrint();
       const http = TestBed.inject(HttpTestingController);
-      const isRead = (req: {
-        url: string;
-        params: { get(name: string): string | null };
-      }) =>
-        req.url === '/api/xapi/statements' &&
-        req.params.get('mselId') === 'msel-1';
+      const isRead = isStatementsRead;
 
       await userEvent.click(
         screen.getByRole('button', { name: 'Print Assessment Report' }),
@@ -1290,37 +1300,17 @@ describe('AssessorViewComponent', () => {
     });
 
     /**
-     * Verifies: when the MSEL starts hiding names after the report is drawn but before it prints, the print waits for
-     * the statements read for the change and prints from them, so the names drawn before are not printed.
-     * Interacts with: printReport (restart), MselStore update (as a MselUpdated broadcast does), reloadStatements,
+     * Verifies: when the MSEL starts hiding names after the report is drawn but before it prints, the print does not
+     * print what it drew: it starts again with a read of its own and prints from that, so the names are not printed.
+     * Interacts with: printReport (starting again), MselStore update (as a MselUpdated broadcast does),
      * HttpClient GET api/xapi/statements (HttpTestingController), printDocument (spy).
-     * Data: the report exercise; the first read answers with J. Doe's ratings, then the MSEL hides names, and every
-     * read after that answers without the actor's name.
+     * Data: the report exercise; the first read answers with J. Doe's ratings, then the MSEL hides names, and the
+     * print's second read answers without the actor's name.
      */
     it('prints from the masked statements when names are hidden before it prints', async () => {
-      vi.stubEnv('TZ', 'America/New_York');
-      const { fixture } = await renderAssessorView({
-        msel: REPORT_MSEL,
-        moves: REPORT_MOVES,
-        fields: REPORT_FIELDS,
-        events: REPORT_EVENTS,
-        values: REPORT_VALUES,
-        mselCompetencies: REPORT_COMPETENCIES,
-        proficiencyLevels: LEVELS,
-      });
-      const printDocument = vi
-        .spyOn(
-          fixture.componentInstance as unknown as { printDocument(): void },
-          'printDocument',
-        )
-        .mockImplementation(() => undefined);
+      const { fixture, printDocument } = await renderForPrint();
       const http = TestBed.inject(HttpTestingController);
-      const isRead = (req: {
-        url: string;
-        params: { get(name: string): string | null };
-      }) =>
-        req.url === '/api/xapi/statements' &&
-        req.params.get('mselId') === 'msel-1';
+      const isRead = isStatementsRead;
       const masked = STATEMENTS.map((stmt) => ({
         ...stmt,
         actor: { objectType: 'Agent' },
@@ -1336,17 +1326,12 @@ describe('AssessorViewComponent', () => {
         hideNamesOnAssessorView: true,
       });
       fixture.detectChanges();
-      // the read for the change is still under way when the print's wait ends
-      const reload = http.expectOne(isRead);
-      await new Promise((r) => setTimeout(r, 400));
+      // the wait ends without printing, and the print reads again
+      const again = await vi.waitFor(() => http.expectOne(isRead));
       expect(printDocument).not.toHaveBeenCalled();
-      reload.flush({ statements: masked });
-      await vi.waitFor(() => {
-        for (const read of http.match(isRead))
-          read.flush({ statements: masked });
-        fixture.detectChanges();
-        expect(printDocument).toHaveBeenCalledTimes(1);
-      });
+      again.flush({ statements: masked });
+      fixture.detectChanges();
+      await vi.waitFor(() => expect(printDocument).toHaveBeenCalledTimes(1));
       fixture.detectChanges();
 
       const facts = section('Cover').querySelector('.cover-facts');
@@ -1362,22 +1347,7 @@ describe('AssessorViewComponent', () => {
      * Data: the report exercise; J. Doe's named statements read, then names hidden, then the image answers.
      */
     it('does not print names read before they were hidden while the image loaded', async () => {
-      vi.stubEnv('TZ', 'America/New_York');
-      const { fixture } = await renderAssessorView({
-        msel: REPORT_MSEL,
-        moves: REPORT_MOVES,
-        fields: REPORT_FIELDS,
-        events: REPORT_EVENTS,
-        values: REPORT_VALUES,
-        mselCompetencies: REPORT_COMPETENCIES,
-        proficiencyLevels: LEVELS,
-      });
-      const printDocument = vi
-        .spyOn(
-          fixture.componentInstance as unknown as { printDocument(): void },
-          'printDocument',
-        )
-        .mockImplementation(() => undefined);
+      const { fixture, printDocument } = await renderForPrint();
       const images: Subject<string | null>[] = [];
       vi.spyOn(
         TestBed.inject(MselImageDataService),
@@ -1388,12 +1358,7 @@ describe('AssessorViewComponent', () => {
         return image;
       });
       const http = TestBed.inject(HttpTestingController);
-      const isRead = (req: {
-        url: string;
-        params: { get(name: string): string | null };
-      }) =>
-        req.url === '/api/xapi/statements' &&
-        req.params.get('mselId') === 'msel-1';
+      const isRead = isStatementsRead;
       const masked = STATEMENTS.map((stmt) => ({
         ...stmt,
         actor: { objectType: 'Agent' },
@@ -1423,6 +1388,34 @@ describe('AssessorViewComponent', () => {
       fixture.detectChanges();
 
       expect(section('Cover')).not.toHaveTextContent('J. Doe');
+    });
+
+    /**
+     * Verifies: a MSEL that hides names and shows them again while the report waits to print still starts again: the
+     * setting is the same at the end, but the statements read at the start may not have been answered under it.
+     * Interacts with: printReport (namesSettingChanges), MselStore update, HttpTestingController, printDocument (spy).
+     * Data: the report exercise; names hidden and shown again after the first read.
+     */
+    it('starts again when names are hidden and shown again before it prints', async () => {
+      const { fixture, printDocument } = await renderForPrint();
+      const http = TestBed.inject(HttpTestingController);
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      );
+      http.expectOne(isStatementsRead).flush({ statements: STATEMENTS });
+      for (const hide of [true, false]) {
+        TestBed.inject(MselStore).update('msel-1', {
+          hideNamesOnAssessorView: hide,
+        });
+        fixture.detectChanges();
+      }
+
+      const again = await vi.waitFor(() => http.expectOne(isStatementsRead));
+      expect(printDocument).not.toHaveBeenCalled();
+      again.flush({ statements: STATEMENTS });
+      fixture.detectChanges();
+      await vi.waitFor(() => expect(printDocument).toHaveBeenCalledTimes(1));
     });
 
     /**

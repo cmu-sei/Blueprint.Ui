@@ -9,7 +9,14 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { Subject, Subscription, Observable, fromEvent, of } from 'rxjs';
+import {
+  Subject,
+  Subscription,
+  Observable,
+  forkJoin,
+  fromEvent,
+  of,
+} from 'rxjs';
 import {
   takeUntil,
   debounceTime,
@@ -17,6 +24,8 @@ import {
   mergeMap,
   delay,
   take,
+  map,
+  catchError,
 } from 'rxjs/operators';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { HttpClient } from '@angular/common/http';
@@ -262,6 +271,28 @@ interface StatementListCacheEntry {
   itemsVersion: number;
 }
 
+/**
+ * The statements of the MSEL's current session: those from its latest Blueprint launch on, or all of them when it was
+ * never launched.
+ */
+export function currentSession(statements: XApiStatement[]): XApiStatement[] {
+  let launchTimestamp = '';
+  for (const stmt of statements) {
+    const verb = stmt.verb?.id || '';
+    const platform = (stmt.context?.platform || '').toLowerCase();
+    if (
+      platform === 'blueprint' &&
+      verb.endsWith('/launched') &&
+      (stmt.timestamp || '') > launchTimestamp
+    ) {
+      launchTimestamp = stmt.timestamp || '';
+    }
+  }
+  return launchTimestamp
+    ? statements.filter((s) => (s.timestamp || '') >= launchTimestamp)
+    : statements;
+}
+
 @Component({
   selector: 'app-assessor-view',
   templateUrl: './assessor-view.component.html',
@@ -486,6 +517,7 @@ export class AssessorViewComponent
             this.resetAssertionTeams();
           }
           if (hidingChanged) {
+            this.namesSettingChanges++;
             this.reloadStatements();
           }
           if (mselChanged && msel.id) {
@@ -890,13 +922,16 @@ export class AssessorViewComponent
   // xAPI evidence
   private allMselStatements: XApiStatement[] = [];
   private statementsLoaded = false;
-  private statementsFailed = false;
   statementsLoading = false;
   /** Set when names were hidden or shown while a read was under way, so its answer is out of date. */
   private statementsStale = false;
 
   // The printed assessment report, drawn into the print-only area only while printing
   printing = false;
+  /** True from Print Assessment Report until the page prints. */
+  printPending = false;
+  /** Counts the MSEL hiding or showing names, so a print can tell the setting changed at any point while it ran. */
+  private namesSettingChanges = 0;
   report: AssessmentReport | null = null;
   reportImageUrl: string | null = null;
   printedAt: Date | null = null;
@@ -1359,9 +1394,6 @@ export class AssessorViewComponent
     return `${first} + ${others} ${others === 1 ? 'other' : 'others'}`;
   }
 
-  /** Whether the MSEL hid names when the statements on hand were read: the API answered them that way. */
-  private statementsHidingNames = false;
-
   /** Whether the MSEL hides people's names on the Assessor View. */
   private get hidesNames(): boolean {
     return !!this.msel?.hideNamesOnAssessorView;
@@ -1551,11 +1583,9 @@ export class AssessorViewComponent
     return stmts;
   }
 
-  // onDone runs once the statements are in, or once reading them failed
-  private loadAllStatements(onDone?: () => void) {
+  private loadAllStatements() {
     if (this.statementsLoading || !this.msel.id) return;
     this.statementsLoading = true;
-    const hidingNames = this.hidesNames;
     this.loadingStatements.add('_all');
 
     const baseUrl = this.apiUrl.endsWith('/') ? this.apiUrl : this.apiUrl + '/';
@@ -1565,31 +1595,25 @@ export class AssessorViewComponent
       })
       .subscribe({
         next: (response) => {
-          if (this.restartStatementsIfStale(onDone)) return;
+          if (this.restartStatementsIfStale()) return;
           const statements = response?.statements || response || [];
           this.allMselStatements = Array.isArray(statements) ? statements : [];
-          this.statementsHidingNames = hidingNames;
           this.allMselStatements.sort((a, b) =>
             (a.timestamp || '').localeCompare(b.timestamp || ''),
           );
           this.statementsLoaded = true;
-          this.statementsFailed = false;
           this.statementsLoading = false;
           this.loadingStatements.delete('_all');
           this.filterToCurrentSession();
           this.distributeStatements();
           this.buildVerbList();
-          onDone?.();
         },
         error: () => {
-          if (this.restartStatementsIfStale(onDone)) return;
+          if (this.restartStatementsIfStale()) return;
           this.allMselStatements = [];
-          this.statementsHidingNames = hidingNames;
           this.statementsLoaded = true;
-          this.statementsFailed = true;
           this.statementsLoading = false;
           this.loadingStatements.delete('_all');
-          onDone?.();
         },
       });
   }
@@ -1608,16 +1632,13 @@ export class AssessorViewComponent
     }
   }
 
-  /**
-   * When a read was under way as names were hidden or shown, drops its answer and reads again. onDone (a print
-   * waiting on the read) carries over to the new read.
-   */
-  private restartStatementsIfStale(onDone?: () => void): boolean {
+  /** When a read was under way as names were hidden or shown, drops its answer and reads again. */
+  private restartStatementsIfStale(): boolean {
     if (!this.statementsStale) return false;
     this.statementsStale = false;
     this.statementsLoading = false;
     this.statementsLoaded = false;
-    this.loadAllStatements(onDone);
+    this.loadAllStatements();
     return true;
   }
 
@@ -1628,23 +1649,7 @@ export class AssessorViewComponent
   }
 
   private filterToCurrentSession() {
-    let launchTimestamp = '';
-    for (const stmt of this.allMselStatements) {
-      const verb = stmt.verb?.id || '';
-      const platform = (stmt.context?.platform || '').toLowerCase();
-      if (
-        platform === 'blueprint' &&
-        verb.endsWith('/launched') &&
-        (stmt.timestamp || '') > launchTimestamp
-      ) {
-        launchTimestamp = stmt.timestamp || '';
-      }
-    }
-    if (launchTimestamp) {
-      this.allMselStatements = this.allMselStatements.filter(
-        (s) => (s.timestamp || '') >= launchTimestamp,
-      );
-    }
+    this.allMselStatements = currentSession(this.allMselStatements);
   }
 
   private distributeStatements() {
@@ -1802,7 +1807,7 @@ export class AssessorViewComponent
       return;
 
     for (const stmt of this.allMselStatements) {
-      const assertion = this.readAssertion(stmt);
+      const assertion = this.readAssertion(stmt, this.eventStatements);
       if (!assertion) continue;
       const { contextKey, teamId, scoreRaw } = assertion;
       const mc = { competency: assertion.competency };
@@ -1857,8 +1862,11 @@ export class AssessorViewComponent
 
   // A competency assertion statement as the view reads it: what it was made on (an event, a group or a move), the
   // MSEL competency it rates, and for which team. Anything else, or an assertion on a competency the MSEL doesn't
-  // have, is null.
-  private readAssertion(stmt: XApiStatement): AssessmentAssertion | null {
+  // have, is null. eventIds are the events an assertion may be made on.
+  private readAssertion(
+    stmt: XApiStatement,
+    eventIds: { has(id: string): boolean },
+  ): AssessmentAssertion | null {
     const verbId = stmt.verb?.id || '';
     if (
       verbId !== 'https://w3id.org/xapi/tla/verbs/asserted' &&
@@ -1880,7 +1888,7 @@ export class AssessorViewComponent
     );
     if (eventGrouping) {
       contextKey = eventGrouping.id.split('scenarioevents/').pop();
-      if (!this.eventStatements.has(contextKey)) contextKey = null;
+      if (!eventIds.has(contextKey)) contextKey = null;
     }
     if (!contextKey) {
       const groupGrouping = grouping.find((g) =>
@@ -2968,41 +2976,64 @@ export class AssessorViewComponent
 
   // --- Printed assessment report ---
 
-  // Reads the statements and the MSEL image, draws the report into the print-only area, then prints it the way the
-  // MSEL Playbook does: the area is copied into the page body, printed, and the page reloads. The statements are read
-  // afresh, so ratings saved since they were last read are in the report.
+  /**
+   * Prints the assessment report. The print reads its own statements, whatever the view has read, so ratings saved
+   * since are in it, and the MSEL image beside them. It then draws the report into the print-only area and prints it
+   * the way the MSEL Playbook does: the area is copied into the page body, printed, and the page reloads. The API
+   * leaves names out of the statements for whoever the MSEL hides them from, so if the MSEL hides or shows names at
+   * any point before the page prints, the print starts again rather than print names read the other way.
+   */
   printReport() {
-    if (this.printing || this.statementsLoading) return;
-    const draw = () => {
-      this.mselImageDataService
-        .imageUrl(this.msel)
-        .pipe(take(1), takeUntil(this.unsubscribe$))
-        .subscribe((url) => {
-          this.reportImageUrl = url;
-          this.report = this.buildAssessmentReport();
-          this.printedAt = new Date();
-          this.printing = true;
-          // the setting the report's statements were read under, whatever it is now
-          const hidingNames = this.statementsHidingNames;
-          // a short wait so Angular draws the report before it is copied
-          setTimeout(() => {
-            // names hidden or shown meanwhile: the report was drawn the other way, so start again once the
-            // statements read for the change are in
-            if (this.hidesNames !== hidingNames) {
-              this.printing = false;
-              const restart = () =>
-                this.statementsLoading
-                  ? setTimeout(restart, 100)
-                  : this.printReport();
-              restart();
-              return;
-            }
-            this.printDocument();
-          }, 250);
-        });
+    if (this.printPending || !this.msel?.id) return;
+    this.printPending = true;
+    const setting = this.namesSettingChanges;
+    const startAgain = () => {
+      this.printing = false;
+      this.printPending = false;
+      this.printReport();
     };
-    this.statementsLoaded = false;
-    this.loadAllStatements(draw);
+    const baseUrl = this.apiUrl.endsWith('/') ? this.apiUrl : this.apiUrl + '/';
+    forkJoin({
+      statements: this.http
+        .get<{ statements?: XApiStatement[] } | XApiStatement[] | null>(
+          `${baseUrl}api/xapi/statements`,
+          {
+            params: { mselId: this.msel.id },
+          },
+        )
+        .pipe(
+          map((response): XApiStatement[] => {
+            const list = Array.isArray(response)
+              ? response
+              : response?.statements;
+            return Array.isArray(list) ? list : [];
+          }),
+          catchError(() => of(null)),
+        ),
+      image: this.mselImageDataService.imageUrl(this.msel).pipe(
+        take(1),
+        catchError(() => of(null)),
+      ),
+    })
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(({ statements, image }) => {
+        if (this.namesSettingChanges !== setting) {
+          startAgain();
+          return;
+        }
+        this.reportImageUrl = image;
+        this.report = this.buildAssessmentReport(statements);
+        this.printedAt = new Date();
+        this.printing = true;
+        // a short wait so Angular draws the report before it is copied
+        setTimeout(() => {
+          if (this.namesSettingChanges !== setting) {
+            startAgain();
+            return;
+          }
+          this.printDocument();
+        }, 250);
+      });
   }
 
   protected printDocument() {
@@ -3036,11 +3067,18 @@ export class AssessorViewComponent
    * competency. Then each of the MSEL's teams gets its assessed injects in time order and the injects it was not
    * assessed on.
    */
-  buildAssessmentReport(): AssessmentReport {
-    // the statements are in time order, so the last one read for a competency, team and context is the latest
+  buildAssessmentReport(statements: XApiStatement[] | null): AssessmentReport {
+    // the current session's statements in time order, so the last one read for a competency, team and context is
+    // the latest; null when they could not be read
+    const read = currentSession(
+      [...(statements ?? [])].sort((a, b) =>
+        (a.timestamp || '').localeCompare(b.timestamp || ''),
+      ),
+    );
+    const mselEventIds = new Set(this.mselScenarioEvents.map((e) => e.id));
     const latestByKey = new Map<string, AssessmentAssertion>();
-    for (const stmt of this.allMselStatements) {
-      const assertion = this.readAssertion(stmt);
+    for (const stmt of read) {
+      const assertion = this.readAssertion(stmt, mselEventIds);
       if (assertion) {
         latestByKey.set(
           `${assertion.contextKey}:${assertion.competency.id}:${assertion.teamId}`,
@@ -3230,7 +3268,7 @@ export class AssessorViewComponent
         ...new Set(assertions.map((a) => a.assessor).filter((a) => a)),
       ].sort(),
       injectCount: events.length,
-      statementsUnavailable: this.statementsFailed,
+      statementsUnavailable: statements === null,
     };
   }
 
