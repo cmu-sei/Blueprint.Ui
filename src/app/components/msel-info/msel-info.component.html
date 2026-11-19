@@ -808,6 +808,51 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   }}</a>
                 </div>
               </div>
+              <!-- Facilitator View URL -->
+              <div class="url-form-field">
+                <div class="editor-label">
+                  Facilitator View URL
+                  <div class="field-hint">
+                    Use this URL for direct access to the Facilitator View
+                  </div>
+                </div>
+                <div class="url-button-link">
+                  <button
+                    mat-icon-button
+                    ngxClipboard
+                    [cbContent]="facilitatorUrl"
+                    (click)="$event.stopPropagation()"
+                    title="Copy Facilitator View URL:  {{ facilitatorUrl }}"
+                  >
+                    <mat-icon class="mdi-24px" fontIcon="mdi-content-copy" />
+                  </button>
+                  <a target="_blank" href="{{ facilitatorUrl }}">{{
+                    facilitatorUrl
+                  }}</a>
+                </div>
+              </div>
+              <!-- Tasks Page URL -->
+              <div class="url-form-field">
+                <div class="editor-label">
+                  Tasks Page URL
+                  <div class="field-hint">
+                    Participants run the tasks marked for them here. Add it as a
+                    Player application to give it to them
+                  </div>
+                </div>
+                <div class="url-button-link">
+                  <button
+                    mat-icon-button
+                    ngxClipboard
+                    [cbContent]="tasksUrl"
+                    (click)="$event.stopPropagation()"
+                    title="Copy Tasks Page URL:  {{ tasksUrl }}"
+                  >
+                    <mat-icon class="mdi-24px" fontIcon="mdi-content-copy" />
+                  </button>
+                  <a target="_blank" href="{{ tasksUrl }}">{{ tasksUrl }}</a>
+                </div>
+              </div>
               <!-- Competencies summary -->
               <div class="competency-section">
                 <div class="section-header">

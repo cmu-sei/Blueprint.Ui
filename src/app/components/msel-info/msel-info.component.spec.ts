@@ -637,6 +637,28 @@ describe('MselInfoComponent', () => {
    * Interacts with: UserService.getUser (stub), real UserDataService.
    * Data: createdBy user-creator, not in the user store.
    */
+  /**
+   * Verifies: the Config tab offers the direct links to the Facilitator View and the participants' Tasks page, beside the Assessor View's.
+   * Interacts with: the URLs set when the MSEL loads.
+   * Data: the MSEL msel-1.
+   */
+  it('links the Facilitator View and the Tasks page', async () => {
+    await renderInfo({ permissions: [SystemPermission.EditMsels] });
+
+    expect(
+      screen.getByRole('link', { name: /facilitate\/\?msel=msel-1$/ }),
+    ).toHaveAttribute(
+      'href',
+      expect.stringMatching(/facilitate\/\?msel=msel-1$/),
+    );
+    expect(
+      screen.getByRole('link', { name: /msel\/msel-1\/tasks$/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /^Copy Facilitator View URL/ }),
+    ).toBeInTheDocument();
+  });
+
   it('shows the creator name', async () => {
     await renderInfo({ permissions: [SystemPermission.EditMsels] });
 

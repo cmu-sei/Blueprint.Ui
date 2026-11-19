@@ -252,6 +252,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   viewUrl: string;
   starterUrl: string;
   assessorUrl: string;
+  facilitatorUrl: string;
+  tasksUrl: string;
   mselPages: MselPage[] = [];
   newMselPage = {} as MselPage;
   changedMselPage = {} as MselPage;
@@ -305,6 +307,10 @@ export class MselInfoComponent implements OnDestroy, OnInit {
               document.baseURI + 'starter/?msel=' + this.msel.id;
             this.assessorUrl =
               document.baseURI + 'assess/?msel=' + this.msel.id;
+            this.facilitatorUrl =
+              document.baseURI + 'facilitate/?msel=' + this.msel.id;
+            this.tasksUrl =
+              document.baseURI + 'msel/' + this.msel.id + '/tasks';
             this.mselPageDataService.loadByMsel(msel.id);
             this.mselCompetencyDataService.loadByMsel(msel.id);
             // the Caster warning needs to know whether any application opens the VM UI
