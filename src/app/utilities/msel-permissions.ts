@@ -33,6 +33,15 @@ export function canEditScoringModel(
   return hasEditMsels || !!msel?.hasRole(userId, '').owner || isEditor;
 }
 
+// The API's rule for a MSEL's copy of its Caster directory (CasterExportService): the same as for its scoring model.
+export function canEditCasterCopy(
+  msel: MselPlus | undefined,
+  userId: string,
+  hasEditMsels: boolean,
+): boolean {
+  return canEditScoringModel(msel, userId, hasEditMsels);
+}
+
 // Pushing, Pulling and Deployed are set only by pushing and pulling integrations.
 const PIPELINE_STATUSES: MselItemStatus[] = [
   MselItemStatus.Pushing,
