@@ -1333,11 +1333,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     [config]="editorConfig"
                   />
                 } @else {
+                  <!-- the MSEL's marking above and below the page, as the page's own view shows it -->
+                  <app-marking-banner [banner]="pageBanner" />
                   <angular-editor
                     [placeholder]="'Content'"
                     [ngModel]="page.content"
                     [config]="viewConfig"
                   />
+                  <app-marking-banner [banner]="pageBanner" />
                 }
               </div>
             </div>

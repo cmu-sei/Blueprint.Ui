@@ -609,6 +609,34 @@ describe('MselInfoComponent', () => {
   );
 
   /**
+   * Verifies: a page shown on its tab carries the MSEL's marking above and below it, as the page's own view does, and
+   * a MSEL with no marking shows none.
+   * Interacts with: pageBanner, markingBanner, MarkingBannerComponent.
+   * Data: page Read Ahead of a MSEL marked TLP:AMBER, then of one with no marking.
+   */
+  it.each([
+    {
+      label: 'TLP:AMBER',
+      mselExtra: { articleMarking: 'Tlp', articleMarkingText: 'AMBER' },
+      banners: 2,
+    },
+    { label: 'no marking', mselExtra: {}, banners: 0 },
+  ])('shows a page with $label', async ({ mselExtra, banners }) => {
+    await renderInfo({ mselExtra });
+
+    await openPage();
+
+    // by selector: naming a role reads computed styles, which jsdom cannot compute for the editor's stylesheet
+    const marks = document.querySelectorAll(
+      '[role="note"][aria-label="Marking"]',
+    );
+    expect(marks).toHaveLength(banners);
+    if (banners) {
+      expect(marks[0]).toHaveTextContent('TLP:AMBER');
+    }
+  });
+
+  /**
    * Verifies: a page's Delete button is offered and works without any MSEL permission or role (current behavior).
    * Interacts with: CrucibleDialogService.confirm (stub, confirms), MselPageService.deleteMselPage (stub).
    * Data: no system permission; MSEL role Viewer; page Read Ahead.

@@ -115,9 +115,12 @@ import { DatePipe, formatDate } from '@angular/common';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
 import {
   CLASSIFICATION_MAX_LENGTH,
+  MarkingBanner,
   MSEL_MARKINGS,
   TLP_LEVELS,
+  markingBanner,
 } from '../../utilities/msel-marking';
+import { MarkingBannerComponent } from '../marking-banner/marking-banner.component';
 import {
   normalizeScoringModel,
   scoringModelCounts,
@@ -129,6 +132,7 @@ import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
   templateUrl: './msel-info.component.html',
   styleUrls: ['./msel-info.component.scss'],
   imports: [
+    MarkingBannerComponent,
     IntegrationStatusComponent,
     MatTabGroup,
     MatTab,
@@ -206,6 +210,15 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   /** Asks the MSEL page to open another rail tab, by name. */
   readonly openTab = output<string>();
   msel = new MselPlus();
+
+  /** The MSEL's marking, drawn above and below its pages. */
+  get pageBanner(): MarkingBanner | null {
+    return markingBanner(
+      this.msel?.articleMarking,
+      this.msel?.articleMarkingText,
+      this.msel?.name,
+    );
+  }
   originalMsel = new MselPlus();
   expandedScenarioEventIds: string[] = [];
   sortedScenarioEvents: ScenarioEvent[];
