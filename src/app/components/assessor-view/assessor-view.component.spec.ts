@@ -811,32 +811,8 @@ describe('AssessorViewComponent', () => {
       req.params.get('mselId') === 'msel-1';
 
     // the report exercise, rendered with its print spied on, for a test that answers the reads itself
-    async function renderForPrint() {
-      vi.stubEnv('TZ', 'America/New_York');
-      const rendered = await renderAssessorView({
-        msel: REPORT_MSEL,
-        moves: REPORT_MOVES,
-        fields: REPORT_FIELDS,
-        events: REPORT_EVENTS,
-        values: REPORT_VALUES,
-        mselCompetencies: REPORT_COMPETENCIES,
-        proficiencyLevels: LEVELS,
-      });
-      const printDocument = vi
-        .spyOn(
-          rendered.fixture.componentInstance as unknown as {
-            printDocument(): void;
-          },
-          'printDocument',
-        )
-        .mockImplementation(() => undefined);
-      return { ...rendered, printDocument };
-    }
-
-    async function printReport(
-      statements: unknown[] | 'unavailable',
+    async function renderForPrint(
       overrides: Parameters<typeof renderAssessorView>[0] = {},
-      beforePrinting?: (view: AssessorViewComponent) => void,
     ) {
       vi.stubEnv('TZ', 'America/New_York');
       const rendered = await renderAssessorView({
@@ -857,6 +833,16 @@ describe('AssessorViewComponent', () => {
           'printDocument',
         )
         .mockImplementation(() => undefined);
+      return { ...rendered, printDocument };
+    }
+
+    async function printReport(
+      statements: unknown[] | 'unavailable',
+      overrides: Parameters<typeof renderAssessorView>[0] = {},
+      beforePrinting?: (view: AssessorViewComponent) => void,
+    ) {
+      const rendered = await renderForPrint(overrides);
+      const { printDocument } = rendered;
       beforePrinting?.(rendered.fixture.componentInstance);
 
       await userEvent.click(
