@@ -25,6 +25,7 @@ api/invitation.service.ts
 api/lmt.service.ts
 api/move.service.ts
 api/msel.service.ts
+api/mselCasterExport.service.ts
 api/mselCompetency.service.ts
 api/mselExecution.service.ts
 api/mselImage.service.ts
@@ -165,6 +166,11 @@ model/moveEdit.ts
 model/msel.ts
 model/mselAdvanceForm.ts
 model/mselAdvanceResult.ts
+model/mselCasterExport.ts
+model/mselCasterExportDirectory.ts
+model/mselCasterExportEntry.ts
+model/mselCasterExportFile.ts
+model/mselCasterImportResult.ts
 model/mselCompetency.ts
 model/mselCreate.ts
 model/mselEdit.ts

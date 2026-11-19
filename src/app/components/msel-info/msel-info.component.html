@@ -590,7 +590,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                       (cut)="isChanged = true"
                       (change)="
                         isChanged = true;
-                        $event.checked && loadCasterDirectories()
+                        $event.checked && loadCasterDirectories();
+                        $event.checked && loadCasterCopy()
                       "
                       (paste)="isChanged = true"
                       (keypress)="isChanged = true"
@@ -601,52 +602,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     <div class="integration-details">
                       <div class="integration-field">
                         <span class="integration-label">Directory:</span>
-                        @if (
-                          casterDirectoryList.length > 0 &&
-                          !integrationsLocked() &&
-                          canEditMsel()
-                        ) {
-                          <mat-form-field class="integration-select">
-                            <mat-select
-                              [(ngModel)]="msel.casterDirectoryId"
-                              (selectionChange)="isChanged = true"
-                            >
-                              <mat-option [value]="null" />
-                              @for (
-                                directory of casterDirectoryList;
-                                track directory.id
-                              ) {
-                                <mat-option [value]="directory.id">
-                                  {{ casterDirectoryLabel(directory) }}
-                                </mat-option>
-                              }
-                            </mat-select>
-                          </mat-form-field>
-                        }
-                        @if (
-                          casterDirectoryList.length === 0 ||
-                          integrationsLocked() ||
-                          !canEditMsel()
-                        ) {
-                          @if (msel.casterDirectoryId) {
-                            <span
-                              class="integration-guid"
-                              [title]="msel.casterDirectoryId"
-                              >{{ msel.casterDirectoryId }}</span
-                            >
-                            @if (
-                              selectedCasterDirectory || casterDirectoryName
-                            ) {
-                              <span class="integration-name">{{
-                                selectedCasterDirectory
-                                  ? casterDirectoryLabel(
-                                      selectedCasterDirectory
-                                    )
-                                  : casterDirectoryName
-                              }}</span>
-                            }
-                          }
-                        }
+                        <span class="integration-summary">{{
+                          casterSummary()
+                        }}</span>
                         @if (getCasterDirectoryUrl()) {
                           <a
                             [href]="getCasterDirectoryUrl()"
@@ -660,6 +618,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
                             />
                           </a>
                         }
+                        <button
+                          mat-stroked-button
+                          class="integration-tab-link"
+                          (click)="openTab.emit('Caster')"
+                        >
+                          Open the Caster tab
+                        </button>
                       </div>
                       @if (!msel.isTemplate && msel.casterWorkspaceId) {
                         <div class="integration-field">

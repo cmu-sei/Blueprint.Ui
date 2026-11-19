@@ -50,7 +50,11 @@ import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { CiteService } from 'src/app/generated/blueprint.api';
 import { PlayerService } from 'src/app/generated/blueprint.api';
-import { CasterService } from 'src/app/generated/blueprint.api';
+import {
+  CasterService,
+  MselCasterExport,
+  MselCasterExportService,
+} from 'src/app/generated/blueprint.api';
 import { CasterDirectory } from 'src/app/generated/blueprint.api/model/casterDirectory';
 import { PlayerApplication } from 'src/app/generated/blueprint.api/model/playerApplication';
 import { PlayerApplicationDataService } from 'src/app/data/player-application/player-application-data.service';
@@ -174,6 +178,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   private citeService = inject(CiteService);
   private playerService = inject(PlayerService);
   private casterService = inject(CasterService);
+  private mselCasterExportService = inject(MselCasterExportService);
   private playerApplicationDataService = inject(PlayerApplicationDataService);
   private playerApplicationQuery = inject(PlayerApplicationQuery);
   private mselPageDataService = inject(MselPageDataService);
@@ -231,6 +236,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   // needs one or the other, and the Config tab summarizes what it has.
   authoredScoringModel: MselScoringModel | null = null;
   casterDirectoryList: CasterDirectory[] = [];
+  // the copy of a Caster directory the MSEL carries, which the push imports when no directory is linked
+  casterCopy: MselCasterExport | null = null;
+  private casterCopyRequestedFor = '';
   casterDirectoryError = '';
   private casterDirectoriesRequested = false;
   playerApplicationList: PlayerApplication[] = [];
@@ -340,6 +348,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           this.loadMselImage();
           if (this.msel.useCaster) {
             this.loadCasterDirectories();
+            this.loadCasterCopy();
           }
         }
       });
@@ -1296,9 +1305,58 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     if (!this.msel.useCaster) return '';
     if (!this.msel.usePlayer)
       return 'Caster requires Player: the VMs are added to the Player view and its teams.';
-    if (!this.msel.casterDirectoryId)
-      return 'Select the Caster directory to deploy.';
+    if (!this.msel.casterDirectoryId && !this.casterCopy)
+      return 'Select the Caster directory to deploy on the Caster tab.';
+    // a launch deploys the template's directory and never imports a copy
+    if (!this.msel.casterDirectoryId && this.msel.isTemplate)
+      return 'Import the copy into Caster on the Caster tab before this template can be launched.';
     return '';
+  }
+
+  // "Project / Directory", the copy the push imports, or "not set"
+  casterSummary(): string {
+    if (this.msel.casterDirectoryId) {
+      const directory = this.selectedCasterDirectory;
+      return directory
+        ? this.casterDirectoryLabel(directory)
+        : this.casterDirectoryName || this.msel.casterDirectoryId;
+    }
+    if (this.casterCopy) {
+      const path = (this.casterCopy.directories || [])
+        .map((d) => d.name)
+        .join(' / ');
+      return this.msel.isTemplate
+        ? `a copy of ${this.casterCopy.projectName} / ${path}, which must be imported into Caster before the template can be launched`
+        : `a copy of ${this.casterCopy.projectName} / ${path}, which the push imports as a new Caster project`;
+    }
+    return 'not set';
+  }
+
+  // once per MSEL, and only for a MSEL that uses Caster
+  loadCasterCopy() {
+    const mselId = this.msel.id;
+    if (this.casterCopyRequestedFor === mselId) {
+      return;
+    }
+    this.casterCopyRequestedFor = mselId;
+    this.casterCopy = null;
+    this.mselCasterExportService
+      .getMselCasterExport(mselId)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe({
+        next: (copy) => {
+          // the answer for a MSEL the user has since left is not this one's
+          if (this.msel.id !== mselId) {
+            return;
+          }
+          this.casterCopy = copy || null;
+        },
+        error: (error) =>
+          console.error(
+            'Failed to load the MSEL copy of its Caster directory:',
+            error,
+          ),
+      });
   }
 
   casterVmAppWarningMessage(): string {
