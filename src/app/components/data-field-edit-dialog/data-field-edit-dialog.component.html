@@ -173,6 +173,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
           ><br />
         </div>
       </div>
+      <div class="data-field-detail" (click)="$event.stopPropagation()">
+        <div class="single-detail">
+          <mat-checkbox
+            [(ngModel)]="data.dataField.onFacilitatorView"
+            [disabled]="!data.canEdit"
+            class="bottom-margin"
+            >Facilitator View</mat-checkbox
+          ><br />
+        </div>
+      </div>
     }
     @if (!data.dataField.isTemplate) {
       <div class="data-field-detail" (click)="$event.stopPropagation()">
