@@ -24,8 +24,11 @@ export interface MselAdvanceDialogData {
   /** The integrations the start moves: the MSEL's CITE evaluation and Gallery exhibit. */
   hasCite: boolean;
   hasGallery: boolean;
-  /** The manual tasks it can run, in order, each with "Event 4 › 1. Snapshot web-01". */
-  tasks: { task: AutomationTask; label: string }[];
+  /**
+   * The manual tasks it can run, in order, each with "Event 4 › 1. Snapshot web-01", and why one cannot run again
+   * when it cannot: it runs once and has succeeded.
+   */
+  tasks: { task: AutomationTask; label: string; cannotRun?: string }[];
 }
 
 /**
@@ -71,9 +74,13 @@ export interface MselAdvanceDialogData {
             @for (t of data.tasks; track t.task.id) {
               <mat-checkbox
                 [checked]="chosen.has(t.task.id)"
+                [disabled]="!!t.cannotRun"
                 (change)="choose(t.task.id, $event.checked)"
-                >{{ t.label }}</mat-checkbox
-              >
+                >{{ t.label }}
+                @if (t.cannotRun) {
+                  <span class="advance-note">({{ t.cannotRun }})</span>
+                }
+              </mat-checkbox>
             }
           </div>
         } @else {
@@ -106,7 +113,9 @@ export class MselAdvanceDialogComponent {
   readonly title = this.isGroup
     ? `Start Move ${this.data.moveNumber} · Group ${this.data.groupNumber}`
     : `Start Move ${this.data.moveNumber}`;
-  readonly chosen = new Set(this.data.tasks.map((t) => t.task.id));
+  readonly chosen = new Set(
+    this.data.tasks.filter((t) => !t.cannotRun).map((t) => t.task.id),
+  );
   readonly saving = signal(false);
   readonly errorMessage = signal('');
   readonly messages = signal<string[]>([]);

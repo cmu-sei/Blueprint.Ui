@@ -191,6 +191,8 @@ model/organizationCreate.ts
 model/organizationEdit.ts
 model/parameterAttributes.ts
 model/parameterInfo.ts
+model/participantTask.ts
+model/participantTasks.ts
 model/permission.ts
 model/playerApplication.ts
 model/playerApplicationCreate.ts

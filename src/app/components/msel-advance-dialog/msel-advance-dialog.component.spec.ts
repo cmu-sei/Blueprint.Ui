@@ -128,6 +128,34 @@ describe('MselAdvanceDialogComponent', () => {
   });
 
   /**
+   * Verifies: a task that runs once and has succeeded is offered unticked and disabled, with why, and is not sent.
+   * Interacts with: MselExecutionService.startMselMove (stub).
+   * Data: the first task cannot run again.
+   */
+  it('leaves out a task that cannot run again', async () => {
+    const { api } = await renderAdvance({
+      tasks: [
+        { ...TASKS[0], cannotRun: 'it has succeeded, and runs only once' },
+        TASKS[1],
+      ],
+    });
+
+    const once = screen.getByRole('checkbox', { name: /Snapshot web-01/ });
+    expect(once).not.toBeChecked();
+    expect(once).toBeDisabled();
+    expect(
+      screen.getByText('(it has succeeded, and runs only once)'),
+    ).toBeInTheDocument();
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Start Move' }));
+
+    expect(api.startMselMove).toHaveBeenCalledWith('msel-1', 1, {
+      runTaskIds: ['t-2'],
+    });
+  });
+
+  /**
    * Verifies: starting a group moves only Gallery, says when there is no manual task, and names the group.
    * Interacts with: MselExecutionService.startMselGroup (stub).
    * Data: move 1 group 3 with no manual tasks.

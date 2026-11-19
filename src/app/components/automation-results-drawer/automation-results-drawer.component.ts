@@ -26,6 +26,7 @@ const SOURCES: Record<AutomationRunSource, string> = {
   Chain: 'Triggered by another task',
   Rerun: 'Run again',
   GroupStart: 'Started with its group',
+  Participant: 'Run by a participant',
 };
 
 /**

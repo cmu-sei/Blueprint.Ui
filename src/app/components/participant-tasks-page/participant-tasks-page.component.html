@@ -1,0 +1,103 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+-->
+<div class="tasks-page">
+  @if (!hideTopbar) {
+    <app-topbar
+      [title]="page()?.mselName ?? 'Tasks'"
+      [topbarView]="TopbarView.BLUEPRINT_HOME"
+      [imageFilePath]="topbarImage"
+      (urlNavigate)="topBarNavigate($event)"
+    />
+  }
+  <main class="tasks-content">
+    @if (loadFailed()) {
+      <p role="alert" class="tasks-error">
+        The tasks could not be loaded. You may not be on one of this exercise's
+        teams.
+      </p>
+    } @else if (page(); as p) {
+      <div class="tasks-header">
+        <h1 class="tasks-title">
+          <mat-icon fontIcon="mdi-robot-outline" aria-hidden="true" />
+          Tasks
+        </h1>
+        @if (hasScores()) {
+          <p class="tasks-score" aria-live="polite">
+            Score: {{ p.scoreEarned }}/{{ p.score }} ({{
+              p.scoreEarned / p.score | percent
+            }})
+          </p>
+        }
+      </div>
+      @if (!p.isDeployed) {
+        <p class="tasks-note">The exercise is not running.</p>
+      } @else if (p.automationPaused) {
+        <p class="tasks-note">
+          The exercise's automation is paused, so tasks cannot be run.
+        </p>
+      }
+      @if (errorMessage()) {
+        <p role="alert" class="tasks-error">{{ errorMessage() }}</p>
+      }
+      @if (p.tasks.length === 0) {
+        <p class="tasks-note">There are no tasks for you to run.</p>
+      } @else {
+        <table class="tasks-table">
+          <thead>
+            <tr>
+              <th scope="col">Status</th>
+              @if (hasScores()) {
+                <th scope="col">Score</th>
+              }
+              <th scope="col">Task</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (task of p.tasks; track task.id) {
+              <tr>
+                <td><app-automation-status-chip [status]="task.status" /></td>
+                @if (hasScores()) {
+                  <td>
+                    @if (task.totalScore > 0) {
+                      {{ task.totalScoreEarned }}/{{ task.totalScore }}
+                    }
+                  </td>
+                }
+                <td>
+                  <div class="tasks-task">
+                    <span [matTooltip]="task.cannotRunReason ?? ''">
+                      <button
+                        matIconButton
+                        type="button"
+                        [attr.aria-label]="'Run ' + task.name"
+                        [disabled]="!task.canRun || running().has(task.id)"
+                        (click)="run(task)"
+                      >
+                        <mat-icon fontIcon="mdi-play" />
+                      </button>
+                    </span>
+                    <span>
+                      <span class="tasks-name">{{ task.name }}</span>
+                      @if (task.description) {
+                        <span class="tasks-note">
+                          — {{ task.description }}</span
+                        >
+                      }
+                      @if (!task.canRun && task.cannotRunReason) {
+                        <span class="tasks-note tasks-reason">{{
+                          task.cannotRunReason
+                        }}</span>
+                      }
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    }
+  </main>
+</div>

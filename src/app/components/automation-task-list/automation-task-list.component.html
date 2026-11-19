@@ -44,6 +44,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
                 class="drag-handle"
                 fontIcon="mdi-drag"
                 aria-label="Drag to reorder"
+                aria-hidden="false"
                 (click)="$event.stopPropagation()"
               />
             }
@@ -53,6 +54,18 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
             <span class="panel-summary"
               >{{ actionLabel(draft) }} · {{ summary(draft) }}</span
             >
+            @if (draft.score > 0) {
+              <span class="panel-disabled">{{ draft.score }} pts</span>
+            }
+            @if (draft.userExecutable) {
+              <mat-icon
+                class="mdi-18px"
+                fontIcon="mdi-account-arrow-right-outline"
+                role="img"
+                aria-hidden="false"
+                aria-label="Participants can run it"
+              />
+            }
             @if (!draft.enabled) {
               <span class="panel-disabled">Disabled</span>
             }
@@ -61,6 +74,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
                 class="panel-error"
                 fontIcon="mdi-alert-circle-outline"
                 role="img"
+                aria-hidden="false"
                 [attr.aria-label]="'Task ' + (i + 1) + ' needs attention'"
               />
             }
@@ -222,6 +236,33 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
               [disabled]="!canEdit()"
               >Repeatable</mat-checkbox
             >
+          </div>
+
+          <div class="task-row">
+            <mat-form-field class="task-seconds">
+              <mat-label>Score</mat-label>
+              <input
+                matInput
+                type="number"
+                min="0"
+                [(ngModel)]="draft.score"
+                (ngModelChange)="touch()"
+                [disabled]="!canEdit()"
+              />
+              <mat-hint>Earned when its newest run succeeds</mat-hint>
+            </mat-form-field>
+            <mat-checkbox
+              [(ngModel)]="draft.userExecutable"
+              (ngModelChange)="touch()"
+              [disabled]="!canEdit()"
+              >Participants can run it</mat-checkbox
+            >
+            @if (draft.userExecutable) {
+              <span class="automation-hint"
+                >Offered on the MSEL's Tasks page, by its name and description
+                only.</span
+              >
+            }
           </div>
 
           <div class="task-row">

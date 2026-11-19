@@ -19,7 +19,8 @@ export const AutomationRunSource = {
     Schedule: 'Schedule',
     Chain: 'Chain',
     Rerun: 'Rerun',
-    GroupStart: 'GroupStart'
+    GroupStart: 'GroupStart',
+    Participant: 'Participant'
 } as const;
 export type AutomationRunSource = typeof AutomationRunSource[keyof typeof AutomationRunSource];
 

@@ -117,6 +117,8 @@ export class SignalRService implements OnDestroy {
   private presenceActors: PresenceActor[] = [];
   private presenceColorMap = ['primary', 'accent', 'green', 'orange', 'purple'];
   actors$ = new BehaviorSubject<PresenceActor[]>([]);
+  /** The MSELs whose Tasks page was told its tasks or score changed, by id. */
+  readonly participantTasksChanged$ = new Subject<string>();
 
   constructor() {
     this.authService.user$.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
@@ -185,6 +187,28 @@ export class SignalRService implements OnDestroy {
     this.mselId = '';
     this.presenceActors = [];
     this.actors$.next([]);
+  }
+
+  /**
+   * Joins a MSEL's Tasks page group, which is told only that the MSEL's participant tasks or score changed; it waits
+   * for the connection as selectMsel does. A reconnect replaces the connection, so the page joins again then.
+   */
+  public joinParticipantTasks(mselId: string) {
+    if (this.hubConnection?.state !== signalR.HubConnectionState.Connected) {
+      setTimeout(() => this.joinParticipantTasks(mselId), 500);
+      return;
+    }
+    this.hubConnection.invoke('JoinParticipantTasks', mselId).catch(() => {
+      // the page reads its tasks on load anyway; it only misses live updates
+    });
+  }
+
+  public leaveParticipantTasks(mselId: string) {
+    if (this.hubConnection?.state === signalR.HubConnectionState.Connected) {
+      this.hubConnection.invoke('LeaveParticipantTasks', mselId).catch(() => {
+        // the server drops the group with the connection
+      });
+    }
   }
 
   public selectMsel(mselId: string) {
@@ -313,6 +337,9 @@ export class SignalRService implements OnDestroy {
     );
     this.hubConnection.on('AutomationResultDeleted', (id: string) => {
       this.automationRunDataService.deleteResult(id);
+    });
+    this.hubConnection.on('ParticipantTasksChanged', (mselId: string) => {
+      this.participantTasksChanged$.next(mselId);
     });
   }
 

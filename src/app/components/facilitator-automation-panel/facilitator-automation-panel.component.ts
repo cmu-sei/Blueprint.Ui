@@ -12,6 +12,7 @@ import { AutomationRunDataService } from 'src/app/data/automation-run/automation
 import { isFinal, triggerSummary } from 'src/app/utilities/automation-tasks';
 import {
   DeploymentRuns,
+  TaskScore,
   canCancel,
   cannotRerun,
   cannotRun,
@@ -43,7 +44,20 @@ export class FacilitatorAutomationPanelComponent {
   readonly canAct = input(false);
   /** The names of the MSEL's tasks, by id, for naming a trigger. */
   readonly taskNames = input<Map<string, string>>(new Map());
+  /** Each task's points, by id. */
+  readonly scores = input<Map<string, TaskScore>>(new Map());
   readonly history = output<AutomationTask>();
+
+  /** Whether any of the event's tasks offers points, so the panel has a Score column. */
+  hasScores(): boolean {
+    return this.tasks().some(
+      (t) => (this.scores().get(t.id)?.totalScore ?? 0) > 0,
+    );
+  }
+
+  score(task: AutomationTask): TaskScore | undefined {
+    return this.scores().get(task.id);
+  }
 
   readonly errorMessage = signal('');
 

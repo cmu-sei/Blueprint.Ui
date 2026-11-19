@@ -210,3 +210,93 @@ export function manualTasksOf(
     ),
   );
 }
+
+/** A task's points: its own, and with the tasks its outcome triggers. */
+export interface TaskScore {
+  score: number;
+  totalScore: number;
+  scoreEarned: number;
+  totalScoreEarned: number;
+}
+
+export interface MselScore {
+  score: number;
+  scoreEarned: number;
+  tasks: Map<string, TaskScore>;
+}
+
+const chainTriggers: AutomationTrigger[] = [
+  AutomationTrigger.OnSuccess,
+  AutomationTrigger.OnFailure,
+  AutomationTrigger.OnCompletion,
+  AutomationTrigger.OnExpiration,
+];
+
+/**
+ * Scores a deployment's tasks as the API's AutomationScoring does, and as Steamfitter scored a scenario's: a task earns
+ * its points when its newest run succeeded, and the most a chain can earn takes the best way each run can go.
+ */
+export function scoreTasks(
+  tasks: AutomationTask[],
+  runs: DeploymentRuns,
+): MselScore {
+  const ids = new Set(tasks.map((t) => t.id));
+  const triggeredBy = (t: AutomationTask) =>
+    t.triggerTaskId &&
+    ids.has(t.triggerTaskId) &&
+    chainTriggers.includes(t.triggerCondition)
+      ? t.triggerTaskId
+      : null;
+  const children = new Map<string, AutomationTask[]>();
+  tasks.forEach((t) => {
+    const parent = triggeredBy(t);
+    if (parent) children.set(parent, [...(children.get(parent) ?? []), t]);
+  });
+  const scores = new Map<string, TaskScore>();
+
+  const score = (task: AutomationTask, path: Set<string>): TaskScore => {
+    const known = scores.get(task.id);
+    if (known) return known;
+    const own = task.enabled ? Math.max(0, task.score ?? 0) : 0;
+    const earned =
+      runs.latest(task.id)?.status === AutomationStatus.Succeeded ? own : 0;
+    // the writer refuses a loop; one in old data counts each task once
+    const kids = (children.get(task.id) ?? [])
+      .filter((c) => !path.has(c.id))
+      .map((c) => ({ task: c, score: score(c, new Set([...path, c.id])) }));
+    const sum = (trigger: AutomationTrigger) =>
+      kids
+        .filter((k) => k.task.triggerCondition === trigger)
+        .reduce((total, k) => total + k.score.totalScore, 0);
+    const completion =
+      sum(AutomationTrigger.OnCompletion) +
+      Math.max(
+        sum(AutomationTrigger.OnSuccess),
+        sum(AutomationTrigger.OnFailure),
+      );
+    const result: TaskScore = {
+      score: own,
+      totalScore:
+        own + Math.max(completion, sum(AutomationTrigger.OnExpiration)),
+      scoreEarned: earned,
+      totalScoreEarned:
+        earned + kids.reduce((total, k) => total + k.score.totalScoreEarned, 0),
+    };
+    scores.set(task.id, result);
+    return result;
+  };
+
+  const roots = tasks.filter((t) => !triggeredBy(t));
+  roots.forEach((r) => score(r, new Set([r.id])));
+  tasks
+    .filter((t) => !scores.has(t.id))
+    .forEach((t) => score(t, new Set([t.id])));
+  return {
+    score: roots.reduce((total, r) => total + scores.get(r.id).totalScore, 0),
+    scoreEarned: roots.reduce(
+      (total, r) => total + scores.get(r.id).totalScoreEarned,
+      0,
+    ),
+    tasks: scores,
+  };
+}

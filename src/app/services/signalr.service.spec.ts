@@ -733,6 +733,27 @@ describe('SignalRService', () => {
     });
 
     /**
+     * Verifies: a Tasks page joins and leaves its participant group, and the group's change signal reaches the page with the MSEL's id.
+     * Interacts with: FakeHubConnection.invoke ('JoinParticipantTasks', 'LeaveParticipantTasks') and trigger, participantTasksChanged$.
+     * Data: msel-1's Tasks page; ParticipantTasksChanged for msel-1.
+     */
+    it('joins a Tasks page and passes on its change signal', async () => {
+      const { service, hub } = await connect();
+      const changed = recordEmissions(service.participantTasksChanged$);
+
+      service.joinParticipantTasks('msel-1');
+      hub.trigger('ParticipantTasksChanged', 'msel-1');
+      service.leaveParticipantTasks('msel-1');
+
+      expect(hub.invoke).toHaveBeenCalledWith('JoinParticipantTasks', 'msel-1');
+      expect(hub.invoke).toHaveBeenCalledWith(
+        'LeaveParticipantTasks',
+        'msel-1',
+      );
+      expect(changed).toEqual(['msel-1']);
+    });
+
+    /**
      * Verifies: a newcomer is added and greeted back, a greeting updates an existing actor in place, and a departure removes the actor.
      * Interacts with: FakeHubConnection.trigger (PresenceArrived/Greeted/Departed) and invoke ('Greet'), SignalRService.actors$.
      * Data: msel-1 selected; Carol arrives, Carol greets under a new display name, Dave greets, Carol departs.

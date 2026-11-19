@@ -15,7 +15,7 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
-import { DeploymentRuns } from 'src/app/utilities/facilitation';
+import { DeploymentRuns, TaskScore } from 'src/app/utilities/facilitation';
 import { FacilitatorAutomationPanelComponent } from './facilitator-automation-panel.component';
 
 const TASKS: AutomationTask[] = [
@@ -57,7 +57,10 @@ const RUNS: AutomationRun[] = [
   },
 ];
 
-async function renderPanel(canAct = true) {
+async function renderPanel(
+  canAct = true,
+  scores = new Map<string, TaskScore>(),
+) {
   const api = {
     runAutomationTask: vi.fn<
       (id: string, form?: AutomationRunForm) => Observable<AutomationRun>
@@ -88,6 +91,7 @@ async function renderPanel(canAct = true) {
       runs: new DeploymentRuns(RUNS, 'dep-1'),
       canAct,
       taskNames: new Map(TASKS.map((t) => [t.id, t.name])),
+      scores,
     },
   });
   const opened: AutomationTask[] = [];
@@ -186,6 +190,28 @@ describe('FacilitatorAutomationPanelComponent', () => {
   });
 
   /**
+   * Verifies: once a task offers points the panel has a Score column, with each scored task's earned and possible points; without any it has none.
+   * Interacts with: the scores input.
+   * Data: t-1 earned 10 of 30; then no scores.
+   */
+  it('shows the points of the tasks that offer them', async () => {
+    await renderPanel(
+      true,
+      new Map([
+        [
+          't-1',
+          { score: 10, totalScore: 30, scoreEarned: 10, totalScoreEarned: 10 },
+        ],
+      ]),
+    );
+
+    expect(
+      screen.getByRole('columnheader', { name: 'Score' }),
+    ).toBeInTheDocument();
+    expect(row('Snapshot web-01').getByText('10/30')).toBeInTheDocument();
+  });
+
+  /**
    * Verifies: read-only, there is no Run, Rerun or Cancel, only History.
    * Interacts with: canAct.
    * Data: canAct false.
@@ -193,6 +219,9 @@ describe('FacilitatorAutomationPanelComponent', () => {
   it('offers only the history without the right to act', async () => {
     await renderPanel(false);
 
+    expect(
+      screen.queryByRole('columnheader', { name: 'Score' }),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: /^(Run|Rerun|Cancel) / }),
     ).not.toBeInTheDocument();

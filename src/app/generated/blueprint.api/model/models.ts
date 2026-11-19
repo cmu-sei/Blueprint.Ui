@@ -141,6 +141,8 @@ export * from './organizationCreate';
 export * from './organizationEdit';
 export * from './parameterAttributes';
 export * from './parameterInfo';
+export * from './participantTask';
+export * from './participantTasks';
 export * from './permission';
 export * from './playerApplication';
 export * from './playerApplicationCreate';

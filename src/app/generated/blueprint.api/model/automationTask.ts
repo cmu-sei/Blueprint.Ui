@@ -45,6 +45,8 @@ export interface AutomationTask {
     triggerTaskId?: string | null;
     enabled?: boolean;
     repeatable?: boolean;
+    score?: number;
+    userExecutable?: boolean;
 }
 export namespace AutomationTask {
 }

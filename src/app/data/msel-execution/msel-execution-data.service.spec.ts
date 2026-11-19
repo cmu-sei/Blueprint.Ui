@@ -80,6 +80,42 @@ describe('MselExecutionDataService', () => {
   });
 
   /**
+   * Verifies: the API's numbers, which it sends as strings, are stored as numbers, so the current move compares with a move's number.
+   * Interacts with: updateStore.
+   * Data: an execution with its current move, group and positions as strings, and none current.
+   */
+  it('stores the numbers as numbers', () => {
+    const { service } = setup();
+    service.updateStore(
+      execution({
+        currentMoveNumber: '2' as unknown as number,
+        currentGroupNumber: '1' as unknown as number,
+        positions: [
+          {
+            scenarioEventId: 'se-1',
+            moveNumber: '2' as unknown as number,
+            groupNumber: '1' as unknown as number,
+          },
+        ],
+      }),
+    );
+
+    const stored = service.get('msel-1');
+    expect(stored.currentMoveNumber).toBe(2);
+    expect(stored.currentGroupNumber).toBe(1);
+    expect(stored.positions[0]).toEqual({
+      scenarioEventId: 'se-1',
+      moveNumber: 2,
+      groupNumber: 1,
+    });
+
+    service.updateStore(
+      execution({ currentMoveNumber: null, currentGroupNumber: null }),
+    );
+    expect(service.get('msel-1').currentMoveNumber).toBeNull();
+  });
+
+  /**
    * Verifies: starting a move or group sends the manual tasks chosen to run and stores the position the API answers; pausing stores the pause.
    * Interacts with: MselExecutionService.startMselMove / startMselGroup / setMselAutomationPaused (stubs).
    * Data: msel-1 moved to move 2 running t-1 then t-2; group 3 of move 2 with none; paused.

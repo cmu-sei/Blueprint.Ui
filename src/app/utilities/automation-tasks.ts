@@ -75,6 +75,8 @@ export function draftFromTask(task: AutomationTask): AutomationTaskDraft {
     triggerTaskId: task.triggerTaskId,
     enabled: task.enabled,
     repeatable: task.repeatable,
+    score: Number(task.score ?? 0),
+    userExecutable: !!task.userExecutable,
     storedSecretKeys: [...(task.secretParameterKeys ?? [])],
     secretChanges: {},
   };
@@ -97,6 +99,8 @@ export function newDraft(
     triggerTaskId: null,
     enabled: true,
     repeatable: false,
+    score: 0,
+    userExecutable: false,
     storedSecretKeys: [],
     secretChanges: {},
   };
@@ -160,6 +164,8 @@ export function toFields(draft: AutomationTaskDraft): AutomationTaskFields {
       : null,
     enabled: draft.enabled,
     repeatable: draft.repeatable,
+    score: draft.score ?? 0,
+    userExecutable: !!draft.userExecutable,
   };
 }
 
@@ -224,6 +230,9 @@ export function taskErrors(
       errors.push(`${name} must be from 0 seconds to 7 days.`);
     }
   });
+  if (!(+(draft.score ?? 0) >= 0 && +(draft.score ?? 0) <= 100000)) {
+    errors.push('The score must be from 0 to 100000.');
+  }
   return errors;
 }
 

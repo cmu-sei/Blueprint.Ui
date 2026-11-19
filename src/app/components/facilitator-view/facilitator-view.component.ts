@@ -82,8 +82,10 @@ import {
   manualTasksOf,
   moveState,
   nextMove,
+  MselScore,
   relativeTime,
   runCounts,
+  scoreTasks,
 } from 'src/app/utilities/facilitation';
 import {
   MoveAndGroupNumbers,
@@ -184,9 +186,11 @@ export class FacilitatorViewComponent implements ScenarioEventView {
   taskNames = new Map<string, string>();
   private exerciseRuns: AutomationRun[] = [];
   deploymentRuns = new DeploymentRuns([], null);
+  scoring: MselScore = { score: 0, scoreEarned: 0, tasks: new Map() };
   userNames = new Map<string, string>();
   onlyEventsWithTasks = this.uiDataService.getFacilitatorOnlyEventsWithTasks();
   readonly sections = new MselSectionExpansion();
+  private sectionsOpened = false;
   drawerTask: AutomationTask | null = null;
   showSearch = false;
   showRealTime = this.uiDataService.useRealTime();
@@ -265,9 +269,14 @@ export class FacilitatorViewComponent implements ScenarioEventView {
       .selectAll()
       .pipe(takeUntilDestroyed())
       .subscribe((moves) => {
-        this.moveList = [...moves].sort(
-          (a, b) => +a.moveNumber - +b.moveNumber,
-        );
+        // the API sends the numbers as strings
+        this.moveList = moves
+          .map((m) => ({
+            ...m,
+            moveNumber: Number(m.moveNumber),
+            deltaSeconds: Number(m.deltaSeconds ?? 0),
+          }))
+          .sort((a, b) => a.moveNumber - b.moveNumber);
         this.renumber();
         this.positionsChanged.next();
       });
@@ -312,6 +321,7 @@ export class FacilitatorViewComponent implements ScenarioEventView {
           );
         this.tasksByEvent = byEvent;
         this.taskNames = new Map(tasks.map((t) => [t.id, t.name]));
+        this.rescore();
         if (this.drawerTask) {
           this.drawerTask =
             tasks.find((t) => t.id === this.drawerTask.id) ?? this.drawerTask;
@@ -390,6 +400,10 @@ export class FacilitatorViewComponent implements ScenarioEventView {
       this.exerciseRuns,
       this.msel.deploymentId,
     );
+    this.rescore();
+  }
+  private rescore() {
+    this.scoring = scoreTasks(this.allTasks, this.deploymentRuns);
   }
 
   get canAct(): boolean {
@@ -401,11 +415,15 @@ export class FacilitatorViewComponent implements ScenarioEventView {
   }
 
   get currentMove(): number | null | undefined {
-    return this.execution?.currentMoveNumber ?? this.msel.currentMoveNumber;
+    const current =
+      this.execution?.currentMoveNumber ?? this.msel.currentMoveNumber;
+    return current == null ? current : Number(current);
   }
 
   get currentGroup(): number | null | undefined {
-    return this.execution?.currentGroupNumber ?? this.msel.currentGroupNumber;
+    const current =
+      this.execution?.currentGroupNumber ?? this.msel.currentGroupNumber;
+    return current == null ? current : Number(current);
   }
 
   private get position(): MselExecution {
@@ -448,6 +466,19 @@ export class FacilitatorViewComponent implements ScenarioEventView {
    * The events stay in time order, the order the moves and groups run in.
    */
   get displayRows(): MselSectionRow[] {
+    const rows = this.buildRows();
+    // a facilitator works through the moves and groups, so they start open; the events start closed
+    if (!this.sectionsOpened && rows.some((r) => r.type === 'event')) {
+      this.sectionsOpened = true;
+      rows.forEach((r) => {
+        if (r.type === 'move') this.sections.moveNumbers.add(r.moveNumber);
+        if (r.type === 'group') this.sections.groupKeys.add(r.groupKey);
+      });
+    }
+    return rows;
+  }
+
+  private buildRows(): MselSectionRow[] {
     const rows = buildSectionRows(
       this.displayedScenarioEvents,
       this.moveAndGroupNumbers,
@@ -568,6 +599,10 @@ export class FacilitatorViewComponent implements ScenarioEventView {
       return {
         task,
         label: `${this.eventLabel(task.scenarioEventId)} › ${index + 1}. ${task.name}`,
+        cannotRun:
+          !task.repeatable && this.deploymentRuns.hasSucceeded(task.id)
+            ? 'it has succeeded, and runs only once'
+            : undefined,
       };
     });
     this.dialog.open(MselAdvanceDialogComponent, {

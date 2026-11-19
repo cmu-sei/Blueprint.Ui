@@ -15,6 +15,9 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
         <th scope="col">VM</th>
         <th scope="col">Ran</th>
         <th scope="col">Output</th>
+        @if (hasScores()) {
+          <th scope="col">Score</th>
+        }
         <th scope="col"><span class="cdk-visually-hidden">Actions</span></th>
       </tr>
     </thead>
@@ -35,6 +38,13 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
           <td class="panel-output" [title]="output(latestRun)">
             {{ output(latestRun) }}
           </td>
+          @if (hasScores()) {
+            <td>
+              @if (score(task)?.totalScore > 0) {
+                {{ score(task).totalScoreEarned }}/{{ score(task).totalScore }}
+              }
+            </td>
+          }
           <td class="panel-actions">
             @if (canCancel(latestRun)) {
               <button

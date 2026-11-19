@@ -260,6 +260,37 @@ describe('AutomationTaskListComponent', () => {
   });
 
   /**
+   * Verifies: a task's points and whether participants can run it are set on its panel, and its header shows both.
+   * Interacts with: the Score field, the Participants can run it checkbox, the panel header.
+   * Data: one notification; 25 points; participants can run it.
+   */
+  it('sets the score and whether participants run it', async () => {
+    const { drafts, changes } = await renderList([
+      notify('t-1', 'Notify Blue'),
+    ]);
+    const user = userEvent.setup();
+
+    await user.click(header(/1\. Notify Blue/));
+    const score = screen.getByRole('spinbutton', { name: 'Score' });
+    await user.clear(score);
+    await user.type(score, '25');
+    await user.click(
+      screen.getByRole('checkbox', { name: 'Participants can run it' }),
+    );
+
+    expect(drafts[0]).toEqual(
+      expect.objectContaining({ score: 25, userExecutable: true }),
+    );
+    expect(changes.count).toBeGreaterThan(0);
+    expect(header(/1\. Notify Blue/)).toHaveTextContent('25 pts');
+    expect(
+      within(header(/1\. Notify Blue/)).getByRole('img', {
+        name: 'Participants can run it',
+      }),
+    ).toBeInTheDocument();
+  });
+
+  /**
    * Verifies: read-only, there is no Add Task, Delete or drag handle, the fields are disabled, and Test Task is absent without the right to test.
    * Interacts with: canEdit, canTest.
    * Data: canEdit and canTest false; one notification.

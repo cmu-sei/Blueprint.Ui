@@ -37,6 +37,11 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
         status="Pending"
         [label]="counts.waiting + ' waiting'"
       />
+      @if (scoring.score > 0) {
+        <span class="summary-now"
+          >Score {{ scoring.scoreEarned }}/{{ scoring.score }}</span
+        >
+      }
       @if (next; as n) {
         <span class="summary-next">Next: {{ n.label }} ({{ n.detail }})</span>
       }
@@ -373,6 +378,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
                         [runs]="deploymentRuns"
                         [canAct]="canAct"
                         [taskNames]="taskNames"
+                        [scores]="scoring.tasks"
                         (history)="openHistory($event)"
                       />
                     } @else {

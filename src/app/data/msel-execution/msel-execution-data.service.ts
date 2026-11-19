@@ -68,8 +68,21 @@ export class MselExecutionDataService {
       .pipe(tap((execution) => this.updateStore(execution)));
   }
 
+  /** An execution from the API or a test; the API sends its numbers as strings, which are made numbers here. */
   updateStore(execution: MselExecution | undefined) {
     if (!execution?.mselId) return;
+    const toNumber = (n: unknown) =>
+      n === null || n === undefined || n === '' ? null : Number(n);
+    execution = {
+      ...execution,
+      currentMoveNumber: toNumber(execution.currentMoveNumber),
+      currentGroupNumber: toNumber(execution.currentGroupNumber),
+      positions: (execution.positions ?? []).map((p) => ({
+        ...p,
+        moveNumber: Number(p.moveNumber),
+        groupNumber: Number(p.groupNumber),
+      })),
+    };
     execution.startTime = execution.startTime
       ? new Date(execution.startTime)
       : null;

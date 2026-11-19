@@ -83,26 +83,28 @@ const MSEL: Msel = {
   showTimeOnFacilitatorView: true,
   showIntegrationTargetOnFacilitatorView: false,
 };
+// the API sends its numbers as strings
+const n = (value: number) => `${value}` as unknown as number;
 const MOVES: Move[] = [
   {
     id: 'm-0',
     mselId: 'msel-1',
-    moveNumber: 0,
-    deltaSeconds: 0,
+    moveNumber: n(0),
+    deltaSeconds: n(0),
     description: 'Setup',
   },
   {
     id: 'm-1',
     mselId: 'msel-1',
-    moveNumber: 1,
-    deltaSeconds: 900,
+    moveNumber: n(1),
+    deltaSeconds: n(900),
     description: 'Initial Access',
   },
   {
     id: 'm-2',
     mselId: 'msel-1',
-    moveNumber: 2,
-    deltaSeconds: 3600,
+    moveNumber: n(2),
+    deltaSeconds: n(3600),
     description: 'Defacement',
   },
 ];
@@ -137,6 +139,7 @@ const TITLE: DataField = {
   displayOrder: 1,
   onFacilitatorView: true,
 };
+// t-2's points come as a string, as the API sends them
 const TASKS: AutomationTask[] = [
   {
     id: 't-1',
@@ -181,13 +184,13 @@ const RUNS: AutomationRun[] = [
 // the server's numbering, which differs from the client's on purpose: se-2 is in group 1
 const EXECUTION: MselExecution = {
   mselId: 'msel-1',
-  currentMoveNumber: 1,
-  currentGroupNumber: 0,
+  currentMoveNumber: n(1),
+  currentGroupNumber: n(0),
   automationPaused: false,
   positions: [
-    { scenarioEventId: 'se-1', moveNumber: 1, groupNumber: 0 },
-    { scenarioEventId: 'se-2', moveNumber: 1, groupNumber: 1 },
-    { scenarioEventId: 'se-3', moveNumber: 2, groupNumber: 0 },
+    { scenarioEventId: 'se-1', moveNumber: n(1), groupNumber: n(0) },
+    { scenarioEventId: 'se-2', moveNumber: n(1), groupNumber: n(1) },
+    { scenarioEventId: 'se-3', moveNumber: n(2), groupNumber: n(0) },
   ],
 };
 
@@ -213,9 +216,15 @@ async function renderView(
     canFacilitate?: boolean;
     msel?: Partial<Msel>;
     fields?: DataField[];
+    tasks?: AutomationTask[];
   } = {},
 ) {
-  const { canFacilitate = true, msel = {}, fields = [TITLE] } = options;
+  const {
+    canFacilitate = true,
+    msel = {},
+    fields = [TITLE],
+    tasks = TASKS,
+  } = options;
   const executionApi = {
     getMselExecution: vi.fn(() => of(structuredClone(EXECUTION))),
     setMselAutomationPaused: vi.fn<
@@ -266,7 +275,7 @@ async function renderView(
           value: 'Portal defaced',
         },
       ]),
-      seeded(AutomationTaskStore, TASKS),
+      seeded(AutomationTaskStore, tasks),
       seeded(AutomationRunStore, RUNS),
     ],
     inputs: { canFacilitate, loggedInUserId: 'user-me' },
@@ -294,6 +303,20 @@ describe('FacilitatorViewComponent', () => {
     expect(screen.getByText(/Now: Move 1 · Group 0/)).toBeInTheDocument();
     expect(screen.getByText('1 failed')).toBeInTheDocument();
     expect(screen.getByText(/Next: Move 2 at \+01:00:00/)).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: the summary shows the exercise's score once a task offers points, earned as the newest runs went.
+   * Interacts with: scoreTasks, the task and run stores.
+   * Data: t-1 offers 10 and failed; t-2 offers 5, as the string "5", and has not run.
+   */
+  it('shows the exercise score', async () => {
+    const tasks = structuredClone(TASKS);
+    tasks[0].score = 10;
+    tasks[1].score = '5' as unknown as number;
+    await renderView({ tasks });
+
+    expect(screen.getByText('Score 0/15')).toBeInTheDocument();
   });
 
   /**

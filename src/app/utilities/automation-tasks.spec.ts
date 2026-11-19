@@ -90,6 +90,22 @@ describe('automation task drafts', () => {
    * Verifies: what a save sends carries the secrets this edit changed and no trigger task for a trigger that names none.
    * Data: an SSH draft setting its Password, at event time with a stale trigger task id.
    */
+  it('toFields sends the score and whether participants run it, as numbers and booleans', () => {
+    // the API sends numbers as strings
+    const draft = draftFromTask({
+      id: 't-1',
+      score: '25' as unknown as number,
+      userExecutable: true,
+    });
+
+    expect(toFields(draft)).toEqual(
+      expect.objectContaining({ score: 25, userExecutable: true }),
+    );
+    expect(toFields(newDraft(SSH))).toEqual(
+      expect.objectContaining({ score: 0, userExecutable: false }),
+    );
+  });
+
   it('toFields sends the secret changes and drops a stale trigger', () => {
     const fields = toFields(
       ssh({

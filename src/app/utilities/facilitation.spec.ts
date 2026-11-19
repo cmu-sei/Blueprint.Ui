@@ -20,6 +20,7 @@ import {
   nextMove,
   relativeTime,
   runCounts,
+  scoreTasks,
 } from './facilitation';
 
 const task = (
@@ -289,5 +290,90 @@ describe('the exercise timeline', () => {
     expect(
       manualTasksOf(['se-2', 'se-1'], tasksByEvent).map((t) => t.id),
     ).toEqual(['d', 'a']);
+  });
+});
+
+describe('scoreTasks', () => {
+  const scored = (
+    id: string,
+    score: number,
+    trigger: AutomationTrigger = AutomationTrigger.Manual,
+    after?: string,
+  ): AutomationTask => ({
+    id,
+    name: id,
+    enabled: true,
+    score,
+    triggerCondition: trigger,
+    triggerTaskId: after,
+  });
+
+  /**
+   * Verifies: a task's possible points take the better of its success and failure branches, with what follows on completion, unless what follows on expiration is more; the same case the API's AutomationScoringTests pins.
+   * Data: root 10; on success 20 (then 4 more on its success), on failure 5, on completion 3, on expiration 15.
+   */
+  it('takes the best way each run can go', () => {
+    const tasks = [
+      scored('root', 10),
+      scored('success', 20, AutomationTrigger.OnSuccess, 'root'),
+      scored('failure', 5, AutomationTrigger.OnFailure, 'root'),
+      scored('completion', 3, AutomationTrigger.OnCompletion, 'root'),
+      scored('expiration', 15, AutomationTrigger.OnExpiration, 'root'),
+      scored('afterSuccess', 4, AutomationTrigger.OnSuccess, 'success'),
+    ];
+
+    const result = scoreTasks(tasks, new DeploymentRuns([], 'dep-2'));
+
+    expect(result.tasks.get('root').totalScore).toBe(37);
+    expect(result.tasks.get('success').totalScore).toBe(24);
+    expect(result).toEqual(
+      expect.objectContaining({ score: 37, scoreEarned: 0 }),
+    );
+  });
+
+  /**
+   * Verifies: a task earns its points when its newest run in the deployment succeeded, and the earned total adds what the tasks it triggers earned; a disabled task offers none of its own; points sent as strings count as numbers.
+   * Data: root 10 then on success 20, both succeeded; 7 failed; a disabled 9; root's points sent as "10".
+   */
+  it('earns the points of the tasks that succeeded', () => {
+    const tasks = [
+      { ...scored('root', 0), score: '10' as unknown as number },
+      scored('success', 20, AutomationTrigger.OnSuccess, 'root'),
+      scored('failed', 7),
+      { ...scored('off', 9), enabled: false },
+    ];
+    const runs = new DeploymentRuns(
+      [
+        run('a', 'root', AutomationStatus.Succeeded),
+        run('b', 'success', AutomationStatus.Succeeded),
+        run('c', 'failed', AutomationStatus.Failed),
+      ],
+      'dep-2',
+    );
+
+    const result = scoreTasks(tasks, runs);
+
+    expect(result).toEqual(
+      expect.objectContaining({ score: 37, scoreEarned: 30 }),
+    );
+    expect(result.tasks.get('root').totalScoreEarned).toBe(30);
+    expect(result.tasks.get('off').totalScore).toBe(0);
+  });
+
+  /**
+   * Verifies: a loop, which the API refuses, counts each task once rather than recursing forever.
+   * Data: a after b after a, one point each.
+   */
+  it('copes with a loop', () => {
+    const result = scoreTasks(
+      [
+        scored('a', 1, AutomationTrigger.OnSuccess, 'b'),
+        scored('b', 1, AutomationTrigger.OnSuccess, 'a'),
+      ],
+      new DeploymentRuns([], 'dep-2'),
+    );
+
+    expect(result.score).toBe(0);
+    expect(result.tasks.get('a').totalScore).toBe(2);
   });
 });

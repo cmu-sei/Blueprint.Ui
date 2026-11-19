@@ -44,6 +44,14 @@ export interface AutomationTaskFields {
     triggerTaskId?: string | null;
     enabled?: boolean;
     repeatable?: boolean;
+    /**
+     * The points the exercise earns when the task\'s newest run succeeds; 0 is not scored.
+     */
+    score?: number;
+    /**
+     * Whether a participant can run it on the MSEL\'s Tasks page.
+     */
+    userExecutable?: boolean;
 }
 export namespace AutomationTaskFields {
 }
