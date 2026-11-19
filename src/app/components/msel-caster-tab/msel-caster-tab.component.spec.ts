@@ -116,7 +116,7 @@ async function renderTab(
     getCasterDirectories: vi.fn(() => of(structuredClone(directories))),
   } satisfies ApiStub<CasterService>;
   const copyApi = {
-    getMselCasterExport: vi.fn(() => copyAnswer()),
+    getMselCasterExport: vi.fn((_id: string) => copyAnswer()),
     captureMselCasterExport: vi.fn(() =>
       of<MselCasterExport>({
         ...structuredClone(COPY),
@@ -613,6 +613,11 @@ describe('MselCasterTabComponent', () => {
     const { fixture, copyApi } = await renderTab({ copy: COPY });
     const deleted = new Subject<unknown>();
     copyApi.deleteMselCasterExport.mockReturnValue(deleted);
+    // msel-2's read is still open when msel-1's delete answers
+    const nextRead = new Subject<MselCasterExport | null>();
+    copyApi.getMselCasterExport.mockImplementation((id: string) =>
+      id === 'msel-2' ? nextRead : of(structuredClone(COPY)),
+    );
 
     await userEvent.setup().click(button('Delete the Copy'));
     const store = TestBed.inject(MselStore);
@@ -621,10 +626,11 @@ describe('MselCasterTabComponent', () => {
     fixture.detectChanges();
     deleted.next(null);
     deleted.complete();
+    nextRead.next({ ...structuredClone(COPY), projectName: 'Second Topology' });
     fixture.detectChanges();
 
     expect(copyApi.getMselCasterExport).toHaveBeenLastCalledWith('msel-2');
-    expect(screen.getByText('Topology')).toBeInTheDocument();
+    expect(screen.getByText('Second Topology')).toBeInTheDocument();
     expect(screen.queryByText('No copy is stored.')).not.toBeInTheDocument();
   });
 
