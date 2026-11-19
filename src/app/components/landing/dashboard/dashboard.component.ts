@@ -25,6 +25,10 @@ import {
 } from '../../capability-dialog/capability-dialog.component';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { assessableMsels, canAssess } from 'src/app/utilities/assessable-msels';
+import {
+  canViewFacilitator,
+  facilitatableMsels,
+} from 'src/app/utilities/facilitator-msels';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
@@ -135,6 +139,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
   joinMselList: Msel[] = [];
   buildMselList: Msel[] = [];
   assessMselList: Msel[] = [];
+  facilitateMselList: Msel[] = [];
   imageFilePath = '';
   userList: User[] = [];
   topbarText = 'Event Dashboard';
@@ -154,6 +159,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
   loadFailed = false;
   canCreateMsels = false;
   hasAssessorRole = false;
+  hasFacilitatorRole = false;
 
   // the user has events to build, or may create one
   get canBuild(): boolean {
@@ -249,6 +255,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
         );
         this.isSystemAdmin = this.canCreateMsels;
         this.checkForAssessorRole(msels);
+        this.checkForFacilitatorRole(msels);
         this.isStarted = true;
       });
   }
@@ -264,6 +271,24 @@ export class DashboardComponent implements OnDestroy, OnInit {
       msels,
       currentUserId,
       this.isSystemAdmin,
+    );
+  }
+
+  // The FACILITATE card shows for anyone who can open some MSEL's Facilitator View, and opens when one of those is
+  // running.
+  checkForFacilitatorRole(msels: Msel[]) {
+    const currentUserId = this.currentUserQuery.getValue()?.id;
+    const canViewAll = this.permissionDataService.hasPermission(
+      SystemPermission.ViewMsels,
+    );
+    this.hasFacilitatorRole = msels.some(
+      (msel) =>
+        !msel.isTemplate && canViewFacilitator(msel, currentUserId, canViewAll),
+    );
+    this.facilitateMselList = facilitatableMsels(
+      msels,
+      currentUserId,
+      canViewAll,
     );
   }
 
