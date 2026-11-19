@@ -605,6 +605,30 @@ describe('MselCasterTabComponent', () => {
   });
 
   /**
+   * Verifies: a delete that answers after the user has moved to another MSEL leaves that MSEL's copy as it is, and does not cancel its read.
+   * Interacts with: Delete the Copy, MselCasterExportService.deleteMselCasterExport (stub, answers late), MselStore.setActive, copyKnown.
+   * Data: MSEL role Owner; msel-1 with a copy is deleted, then msel-2, which also has a copy, becomes active before the delete answers.
+   */
+  it('keeps the next MSEL copy when a delete answers after a MSEL switch', async () => {
+    const { fixture, copyApi } = await renderTab({ copy: COPY });
+    const deleted = new Subject<unknown>();
+    copyApi.deleteMselCasterExport.mockReturnValue(deleted);
+
+    await userEvent.setup().click(button('Delete the Copy'));
+    const store = TestBed.inject(MselStore);
+    store.add({ ...msel([MselRole.Owner]), id: 'msel-2' });
+    store.setActive('msel-2');
+    fixture.detectChanges();
+    deleted.next(null);
+    deleted.complete();
+    fixture.detectChanges();
+
+    expect(copyApi.getMselCasterExport).toHaveBeenLastCalledWith('msel-2');
+    expect(screen.getByText('Topology')).toBeInTheDocument();
+    expect(screen.queryByText('No copy is stored.')).not.toBeInTheDocument();
+  });
+
+  /**
    * Verifies: Delete the Copy asks first, then deletes it.
    * Interacts with: Delete the Copy, CrucibleDialogService.confirm (stub, confirms), MselCasterExportService.deleteMselCasterExport (stub).
    * Data: MSEL role Owner; a pending MSEL linked to dir-1 with a copy.
