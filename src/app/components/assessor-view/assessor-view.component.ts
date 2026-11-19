@@ -3002,11 +3002,12 @@ export class AssessorViewComponent
           },
         )
         .pipe(
-          map((response): XApiStatement[] => {
+          // an answer with no list of statements is read as unreadable, so the report says so rather than show none
+          map((response): XApiStatement[] | null => {
             const list = Array.isArray(response)
               ? response
               : response?.statements;
-            return Array.isArray(list) ? list : [];
+            return Array.isArray(list) ? list : null;
           }),
           catchError(() => of(null)),
         ),

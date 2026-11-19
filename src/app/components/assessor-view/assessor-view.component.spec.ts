@@ -1144,6 +1144,31 @@ describe('AssessorViewComponent', () => {
     });
 
     /**
+     * Verifies: an answer with no list of statements is reported as unreadable, not printed as an exercise with no
+     * assessments.
+     * Interacts with: printReport (answer check), buildAssessmentReport (statementsUnavailable).
+     * Data: GET api/xapi/statements answers an object with no statements.
+     */
+    it('says the statements could not be read when the answer holds none', async () => {
+      const { fixture, printDocument } = await renderForPrint();
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      );
+      TestBed.inject(HttpTestingController)
+        .expectOne(isStatementsRead)
+        .flush({ more: 'unexpected' });
+      fixture.detectChanges();
+      await vi.waitFor(() => expect(printDocument).toHaveBeenCalledTimes(1));
+      fixture.detectChanges();
+
+      expect(
+        within(section('Cover')).getByText(
+          /^The xAPI statements could not be read/,
+        ),
+      ).toBeInTheDocument();
+    });
+
+    /**
      * Verifies: with names hidden from the start and the statements unreadable, the report prints once, from the one
      * failed read, rather than starting again for a names setting it did not read under.
      * Interacts with: loadAllStatements error path, statementsHidingNames, printReport.
