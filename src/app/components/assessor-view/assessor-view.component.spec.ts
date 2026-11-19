@@ -1544,6 +1544,54 @@ describe('AssessorViewComponent', () => {
     });
 
     /**
+     * Verifies: a scale read still under way for the last MSEL, answering after the next MSEL's, does not replace the
+     * next MSEL's levels.
+     * Interacts with: loadProficiencyScale (read counter), CompetencyFrameworkService and ProficiencyScaleService
+     * (stubs, the last MSEL's framework answering late).
+     * Data: the last MSEL's scale names score 3 Expert A; the next one's names it Novice B.
+     */
+    it("keeps the next MSEL's scale when the last one's answers late", async () => {
+      const { fixture, frameworkApi, scaleApi } = await renderAssessorView({
+        msel: REPORT_MSEL,
+        mselCompetencies: REPORT_COMPETENCIES,
+        proficiencyLevels: LEVELS,
+      });
+      const view = fixture.componentInstance as unknown as {
+        proficiencyScale: unknown;
+        proficiencyLevels: ProficiencyLevel[];
+        loadProficiencyScale(): void;
+      };
+      scaleApi.getProficiencyScale.mockImplementation((id: string) =>
+        of<ProficiencyScale>({
+          id,
+          proficiencyLevels: [
+            {
+              id: `${id}-3`,
+              proficiencyScaleId: id,
+              name: id === 'scale-a' ? 'Expert A' : 'Novice B',
+              value: 3,
+              displayOrder: 1,
+            },
+          ],
+        }),
+      );
+      // the last MSEL's scale read, under way
+      const late = new Subject<CompetencyFramework>();
+      frameworkApi.getCompetencyFramework.mockReturnValueOnce(late);
+      view.proficiencyScale = null;
+      view.loadProficiencyScale();
+
+      const store = TestBed.inject(MselStore);
+      store.add({ ...REPORT_MSEL, id: 'msel-2', name: 'Other Exercise' });
+      store.setActive('msel-2');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      late.next({ id: 'fw-a', defaultProficiencyScaleId: 'scale-a' });
+
+      expect(view.proficiencyLevels.map((l) => l.name)).toEqual(['Novice B']);
+    });
+
+    /**
      * Verifies: Print Assessment Report waits for the MSEL's competencies, which the report reads ratings by: it is
      * disabled while they load and enabled once they are in.
      * Interacts with: reportDataReady, MselCompetencyStore loading.

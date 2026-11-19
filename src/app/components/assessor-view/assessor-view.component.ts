@@ -437,6 +437,8 @@ export class AssessorViewComponent
   proficiencyScale: ProficiencyScale | null = null;
   /** Whether the proficiency scale has been read, or there is none to read: the report counts ratings by its levels. */
   private proficiencyScaleSettled = false;
+  /** Counts the scale reads begun or abandoned, so an answer for a MSEL since left is dropped. */
+  private proficiencyScaleRead = 0;
   proficiencyLevels: ProficiencyLevel[] = [];
   eventRatings = new Map<
     string,
@@ -521,6 +523,7 @@ export class AssessorViewComponent
             this.proficiencyScale = null;
             this.proficiencyLevels = [];
             this.proficiencyScaleSettled = false;
+            this.proficiencyScaleRead++;
           }
           if (hidingChanged) {
             this.namesSettingChanges++;
@@ -2338,12 +2341,17 @@ export class AssessorViewComponent
       return;
     }
 
-    const settle = () => (this.proficiencyScaleSettled = true);
+    const read = ++this.proficiencyScaleRead;
+    const current = () => read === this.proficiencyScaleRead;
+    const settle = () => {
+      if (current()) this.proficiencyScaleSettled = true;
+    };
     this.competencyFrameworkService
       .getCompetencyFramework(firstComp.competencyFrameworkId)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe({
         next: (fw) => {
+          if (!current()) return;
           if (!fw?.defaultProficiencyScaleId) {
             settle();
             return;
@@ -2353,6 +2361,7 @@ export class AssessorViewComponent
             .pipe(takeUntil(this.unsubscribe$))
             .subscribe({
               next: (scale) => {
+                if (!current()) return;
                 this.proficiencyScale = scale;
                 this.proficiencyLevels = (scale?.proficiencyLevels || []).sort(
                   (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0),
