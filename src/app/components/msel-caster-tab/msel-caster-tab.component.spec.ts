@@ -116,7 +116,9 @@ async function renderTab(
     getCasterDirectories: vi.fn(() => of(structuredClone(directories))),
   } satisfies ApiStub<CasterService>;
   const copyApi = {
-    getMselCasterExport: vi.fn((_id: string) => copyAnswer()),
+    getMselCasterExport: vi.fn<
+      (id: string) => Observable<MselCasterExport | null>
+    >(() => copyAnswer()),
     captureMselCasterExport: vi.fn(() =>
       of<MselCasterExport>({
         ...structuredClone(COPY),
