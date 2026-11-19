@@ -1566,13 +1566,13 @@
   },
   "src/app/components/msel-contributors/msel-contributors.component.html": {
     "@angular-eslint/template/click-events-have-key-events": {
-      "count": 4
+      "count": 3
     },
     "@angular-eslint/template/eqeqeq": {
       "count": 1
     },
     "@angular-eslint/template/interactive-supports-focus": {
-      "count": 4
+      "count": 3
     }
   },
   "src/app/components/msel-contributors/msel-contributors.component.ts": {

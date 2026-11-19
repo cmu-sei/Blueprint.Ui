@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -125,8 +125,6 @@ async function renderTest(
 }
 
 describe('AutomationTestDialogComponent', () => {
-  afterEach(() => vi.useRealTimers());
-
   /**
    * Verifies: the dialog offers the user's Player views by name with the MSEL's test view chosen, and previews the VMs the task's mask matches there.
    * Interacts with: PlayerService.getMyPlayerViews and AutomationService.previewAutomationTaskVms (stubs).
@@ -167,9 +165,9 @@ describe('AutomationTestDialogComponent', () => {
    * Data: saved task t-1 with the chain included; a result on WS-01 that succeeds; an earlier failed test.
    */
   it('runs the test and follows its results', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
+    // real timers: a fake clock installed with shouldAdvanceTime left later suites unable to fake Date
     const { automationApi, runs, fixture } = await renderTest();
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const user = userEvent.setup();
 
     expect(screen.getByText(/Previous tests:/)).toHaveTextContent('Failed');
     await user.click(
@@ -190,7 +188,12 @@ describe('AutomationTestDialogComponent', () => {
     );
     expect(screen.getByRole('button', { name: 'Running…' })).toBeDisabled();
 
-    await vi.advanceTimersByTimeAsync(2000);
+    // the dialog asks the API for the run every two seconds
+    await vi.waitFor(
+      () =>
+        expect(automationApi.getAutomationRun).toHaveBeenCalledWith('test-1'),
+      { timeout: 4000 },
+    );
     runs.next({
       id: 'test-1',
       kind: AutomationRunKind.Test,

@@ -178,21 +178,18 @@ describe('ParticipantTasksPageComponent', () => {
    * Data: a signal for msel-2, then for msel-1.
    */
   it('reads the tasks again when told they changed', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
-    try {
-      const { api, changed } = await renderPage();
-      api.getParticipantTasks.mockClear();
+    // real timers: a fake clock installed with shouldAdvanceTime left later suites unable to fake Date
+    const { api, changed } = await renderPage();
+    api.getParticipantTasks.mockClear();
 
-      changed.next('msel-2');
-      await vi.advanceTimersByTimeAsync(400);
-      expect(api.getParticipantTasks).not.toHaveBeenCalled();
+    changed.next('msel-2');
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(api.getParticipantTasks).not.toHaveBeenCalled();
 
-      changed.next('msel-1');
-      await vi.advanceTimersByTimeAsync(400);
-      expect(api.getParticipantTasks).toHaveBeenCalledWith('msel-1');
-    } finally {
-      vi.useRealTimers();
-    }
+    changed.next('msel-1');
+    await vi.waitFor(() =>
+      expect(api.getParticipantTasks).toHaveBeenCalledWith('msel-1'),
+    );
   });
 
   /**
