@@ -1,0 +1,86 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+-->
+<section class="drawer" [attr.aria-label]="'History of ' + label()">
+  <header class="drawer-header">
+    <h2 class="drawer-title">{{ label() }}</h2>
+    <button
+      matIconButton
+      type="button"
+      aria-label="Close the history"
+      (click)="closed.emit()"
+    >
+      <mat-icon fontIcon="mdi-close" />
+    </button>
+  </header>
+  @if (errorMessage()) {
+    <p role="alert" class="drawer-error">{{ errorMessage() }}</p>
+  }
+  @if (history().length === 0) {
+    <p class="drawer-note">The task has not run in this deployment.</p>
+  }
+  @for (run of history(); track run.id) {
+    <article class="run">
+      <div class="run-header">
+        <app-automation-status-chip [status]="run.status" />
+        <span class="drawer-note"
+          >{{ source(run) }} · {{ who(run) }} ·
+          {{ run.startedAt ?? run.dueAt | date: 'medium' }}</span
+        >
+        <span class="run-actions">
+          @if (canCancel(run)) {
+            <button matButton type="button" (click)="cancel(run)">
+              Cancel
+            </button>
+          } @else if (canAct()) {
+            <button
+              matButton
+              type="button"
+              (click)="rerun(run)"
+              [disabled]="!!cannotRerun(run)"
+              [matTooltip]="cannotRerun(run)"
+            >
+              Rerun
+            </button>
+          }
+        </span>
+      </div>
+      @if (run.statusDetail) {
+        <p class="drawer-note">{{ run.statusDetail }}</p>
+      }
+      @if (run.cancelRequested && !run.endedAt) {
+        <p class="drawer-note">Cancelling…</p>
+      }
+      @for (r of run.results ?? []; track r.id) {
+        <div class="result">
+          <div class="result-header">
+            <app-automation-status-chip [status]="r.status" [compact]="true" />
+            <span
+              >Iteration {{ r.iteration
+              }}{{ r.vmName ? ' · ' + r.vmName : '' }} ·
+              {{ r.statusAt | date: 'mediumTime' }}</span
+            >
+          </div>
+          @if (r.actualOutput) {
+            <pre
+              class="result-output"
+              [class.collapsed]="!expandedOutputs.has(r.id)"
+              >{{ r.actualOutput }}</pre>
+            <button
+              matButton
+              type="button"
+              class="result-more"
+              (click)="toggleOutput(r.id)"
+            >
+              {{ expandedOutputs.has(r.id) ? 'Less' : 'More' }}
+            </button>
+            @if (r.outputTruncated) {
+              <span class="drawer-note">The output was cut short.</span>
+            }
+          }
+        </div>
+      }
+    </article>
+  }
+</section>

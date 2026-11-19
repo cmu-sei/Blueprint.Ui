@@ -1,0 +1,142 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+
+:host {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+}
+
+.container {
+  flex: 1;
+  height: 100%;
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.facilitator-summary,
+.facilitator-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+}
+
+.facilitator-summary {
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.summary-now {
+  font-weight: 600;
+}
+
+.summary-next,
+.facilitator-note {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.summary-paused,
+.facilitator-error {
+  color: var(--mat-sys-error);
+}
+
+.summary-pause {
+  margin-left: auto;
+}
+
+.facilitator-note,
+.facilitator-error {
+  margin: 4px 16px;
+}
+
+.search-field {
+  min-width: 260px;
+}
+
+.tableFixHead thead th {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background-color: var(--mat-sys-background);
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+tr {
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+th,
+td {
+  padding: 4px 6px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.expand-col {
+  width: 48px;
+}
+
+.row-num-col {
+  width: 32px;
+  text-align: right;
+}
+
+.move-header-row td {
+  padding: 8px;
+  background-color: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+  border-top: 2px solid var(--mat-sys-primary);
+}
+
+.move-header-row.move-completed td {
+  background-color: var(--mat-sys-surface-container-high);
+  color: var(--mat-sys-on-surface);
+  border-top-color: var(--mat-sys-outline);
+}
+
+.group-header-row td {
+  background-color: var(--mat-sys-surface-container);
+}
+
+.section-header-content {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.section-label {
+  font-weight: 700;
+}
+
+.section-status {
+  font-style: italic;
+}
+
+.section-action {
+  margin-left: auto;
+}
+
+.detail-row > td {
+  padding: 0;
+}
+
+.detail-note {
+  padding: 8px 16px;
+}
+
+.history-drawer {
+  border-left: 1px solid var(--mat-sys-outline-variant);
+}
