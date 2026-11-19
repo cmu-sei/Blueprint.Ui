@@ -1,18 +1,11 @@
 // Copyright 2023 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
-import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
+import { DOCUMENT } from '@angular/common';
 import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Subject, Observable, of } from 'rxjs';
-import {
-  catchError,
-  distinctUntilChanged,
-  filter,
-  map,
-  switchMap,
-  takeUntil,
-} from 'rxjs/operators';
-import { MselPage, MselService } from 'src/app/generated/blueprint.api';
+import { Subject, Observable } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { MselPage } from 'src/app/generated/blueprint.api';
 import { MselPageDataService } from 'src/app/data/msel-page/msel-page-data.service';
 import { MselPageQuery } from 'src/app/data/msel-page/msel-page.query';
 import { SafeHtml } from '@angular/platform-browser';
@@ -21,12 +14,13 @@ import { VIEW_CONFIG } from 'src/app/utilities/editor-config';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { FormsModule } from '@angular/forms';
 import { MarkingBanner, markingBanner } from 'src/app/utilities/msel-marking';
+import { MarkingBannerComponent } from 'src/app/components/marking-banner/marking-banner.component';
 
 @Component({
   selector: 'app-msel-pageapp',
   templateUrl: './msel-page.component.html',
   styleUrls: ['./msel-page.component.scss'],
-  imports: [AngularEditorModule, FormsModule, NgTemplateOutlet],
+  imports: [AngularEditorModule, FormsModule, MarkingBannerComponent],
 })
 export class MselPageComponent implements OnDestroy {
   private activatedRoute = inject(ActivatedRoute);
@@ -34,7 +28,6 @@ export class MselPageComponent implements OnDestroy {
   private mselPageQuery = inject(MselPageQuery);
   private settingsService = inject(ComnSettingsService);
   private _document = inject<HTMLDocument>(DOCUMENT);
-  private mselService = inject(MselService);
 
   safeContent: SafeHtml = '';
   mselPage: MselPage = {} as MselPage;
@@ -64,29 +57,15 @@ export class MselPageComponent implements OnDestroy {
       .subscribe((mselPage) => {
         if (mselPage) {
           this.mselPage = mselPage;
+          // the page carries its MSEL's marking, as its readers may not be allowed to read the MSEL
+          this.banner.set(
+            markingBanner(
+              mselPage.articleMarking,
+              mselPage.articleMarkingText,
+              mselPage.mselName,
+            ),
+          );
         }
-      });
-    // the marking of the page's MSEL; a page whose MSEL cannot be read shows none
-    (this.mselPageQuery.selectActive() as Observable<MselPage>)
-      .pipe(
-        map((mselPage) => mselPage?.mselId),
-        filter((mselId) => !!mselId),
-        distinctUntilChanged(),
-        switchMap((mselId) =>
-          this.mselService.getMsel(mselId).pipe(catchError(() => of(null))),
-        ),
-        takeUntil(this.unsubscribe$),
-      )
-      .subscribe((msel) => {
-        this.banner.set(
-          msel
-            ? markingBanner(
-                msel.articleMarking,
-                msel.articleMarkingText,
-                msel.name,
-              )
-            : null,
-        );
       });
   }
 

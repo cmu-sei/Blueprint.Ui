@@ -5,16 +5,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ActivatedRoute } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { Observable, of, throwError } from 'rxjs';
+import { of } from 'rxjs';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import { within } from '@testing-library/angular';
-import {
-  Msel,
-  MselPage,
-  MselPageService,
-  MselService,
-} from 'src/app/generated/blueprint.api';
+import { MselPage, MselPageService } from 'src/app/generated/blueprint.api';
 import { MselPageComponent } from './msel-page.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
@@ -27,26 +22,19 @@ const PAGE: MselPage = {
   content: '<p>Welcome to the exercise</p>',
 };
 
-async function renderMselPage(
-  marking: Partial<Msel> = {},
-  getMsel?: () => Observable<Msel>,
-) {
+async function renderMselPage(marking: Partial<MselPage> = {}) {
+  // the page carries its MSEL's marking and name; the MSEL itself is not read
   const pageApi = {
-    getMselPage: vi.fn(() => of(structuredClone(PAGE))),
-  } satisfies ApiStub<MselPageService>;
-  const mselApi = {
-    getMsel: vi.fn(
-      getMsel ??
-        (() => of<Msel>({ id: 'msel-1', name: 'Deep Bite', ...marking })),
+    getMselPage: vi.fn(() =>
+      of(structuredClone({ ...PAGE, mselName: 'Deep Bite', ...marking })),
     ),
-  } satisfies ApiStub<MselService>;
+  } satisfies ApiStub<MselPageService>;
   const { route } = activatedRouteStub({}, { id: 'page-1' });
   const rendered = await renderComponent(MselPageComponent, {
     imports: [AngularEditorModule],
     declarations: [MselPageComponent],
     providers: [
       { provide: MselPageService, useValue: pageApi },
-      { provide: MselService, useValue: mselApi },
       { provide: ActivatedRoute, useValue: route },
       {
         provide: ComnSettingsService,
@@ -62,7 +50,7 @@ async function renderMselPage(
   });
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
-  return { ...rendered, pageApi, mselApi };
+  return { ...rendered, pageApi };
 }
 
 describe('MselPageComponent', () => {
@@ -102,22 +90,21 @@ describe('MselPageComponent', () => {
 
   /**
    * Verifies: a page of a MSEL with no marking, or with None, has no banner.
-   * Interacts with: MselService.getMsel (stub), markingBanner.
+   * Interacts with: MselPageService.getMselPage (stub, carrying the marking), markingBanner.
    * Data: the MSEL of page-1 with no marking set, then with None.
    */
   it.each([
     { label: 'no marking set', marking: {} },
     { label: 'None', marking: { articleMarking: 'None' } },
   ])('draws no banner for a MSEL with $label', async ({ marking }) => {
-    const { mselApi } = await renderMselPage(marking);
+    await renderMselPage(marking);
 
-    expect(mselApi.getMsel).toHaveBeenCalledWith('msel-1');
     expect(banners()).toHaveLength(0);
   });
 
   /**
    * Verifies: the MSEL's marking is drawn above and below the page's content, in the words and colours of the Gallery article banner.
-   * Interacts with: MselService.getMsel (stub), markingBanner, the banner template.
+   * Interacts with: MselPageService.getMselPage (stub, carrying the marking), markingBanner, MarkingBannerComponent.
    * Data: the MSEL Deep Bite of page-1, marked with an exercise banner, TLP:AMBER, TLP with a level it does not know, and a SECRET classification.
    */
   it.each([
@@ -179,15 +166,15 @@ describe('MselPageComponent', () => {
       const page = (
         fixture.nativeElement as HTMLElement
       ).querySelector<HTMLElement>('.page');
-      expect(page.firstElementChild).toBe(top);
-      expect(page.lastElementChild).toBe(bottom);
+      expect(page.firstElementChild).toBe(top.parentElement);
+      expect(page.lastElementChild).toBe(bottom.parentElement);
       expect(page).toHaveTextContent('Welcome to the exercise');
     },
   );
 
   /**
    * Verifies: a classification marking with no words, which the API saves as none, draws no banner.
-   * Interacts with: MselService.getMsel (stub), markingBanner.
+   * Interacts with: MselPageService.getMselPage (stub, carrying the marking), markingBanner.
    * Data: the MSEL of page-1 marked Classification with blank text.
    */
   it('draws no banner for a classification with no words', async () => {
@@ -200,16 +187,18 @@ describe('MselPageComponent', () => {
   });
 
   /**
-   * Verifies: when the page's MSEL cannot be read the page is still shown, without a banner.
-   * Interacts with: MselService.getMsel (stub failing).
-   * Data: page-1, whose MSEL read is refused.
+   * Verifies: the banner comes with the page, so a reader allowed the page but not its MSEL, such as a member of one
+   * of the MSEL's units, still sees it: the MSEL is never read (no MselService is provided).
+   * Interacts with: MselPageService.getMselPage (stub), markingBanner.
+   * Data: page-1 of a SECRET-marked MSEL.
    */
-  it('shows the page without a banner when its MSEL cannot be read', async () => {
-    const { fixture } = await renderMselPage({}, () =>
-      throwError(() => new Error('403')),
-    );
+  it('draws the banner from the page alone, without reading its MSEL', async () => {
+    const { fixture } = await renderMselPage({
+      articleMarking: 'Classification',
+      articleMarkingText: 'SECRET',
+    });
 
-    expect(banners()).toHaveLength(0);
+    expect(banners()).toHaveLength(2);
     expect(fixture.nativeElement).toHaveTextContent('Welcome to the exercise');
   });
 });

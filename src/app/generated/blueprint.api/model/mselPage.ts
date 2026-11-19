@@ -22,5 +22,8 @@ export interface MselPage {
     content?: string | null;
     allCanView?: boolean;
     includeInPlaybook?: boolean;
+    articleMarking?: string | null;
+    articleMarkingText?: string | null;
+    mselName?: string | null;
 }
 
