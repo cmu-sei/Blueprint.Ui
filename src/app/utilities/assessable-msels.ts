@@ -47,7 +47,11 @@ export function canViewAssessor(
 
 // Every role the user holds on the MSEL counts. The MSEL's creator is its Owner: the API adds that
 // role to the MSELs it answers, and this counts it even where a MSEL arrives without it.
-function holdsRole(msel: Msel, userId: string, roles: MselRole[]): boolean {
+export function holdsRole(
+  msel: Msel,
+  userId: string,
+  roles: MselRole[],
+): boolean {
   if (!userId) {
     return false;
   }

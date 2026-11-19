@@ -1,0 +1,154 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+-->
+<div class="parameter-grid">
+  @for (p of parameters(); track p.key) {
+    @switch (p.inputType) {
+      @case ('checkbox') {
+        <mat-checkbox
+          class="parameter-checkbox"
+          [checked]="value(p.key) === 'true'"
+          (change)="setValue(p.key, $event.checked)"
+          [disabled]="!canEdit()"
+        >
+          {{ label(p) }}
+        </mat-checkbox>
+      }
+      @case ('select') {
+        <mat-form-field>
+          <mat-label>{{ label(p) }}</mat-label>
+          <mat-select
+            [value]="value(p.key)"
+            (valueChange)="setValue(p.key, $event)"
+            [disabled]="!canEdit()"
+            [required]="p.required"
+          >
+            @for (choice of p.choices ?? []; track choice.key) {
+              <mat-option [value]="choice.key">{{
+                choice.display || choice.key
+              }}</mat-option>
+            }
+          </mat-select>
+          @if (p.hint) {
+            <mat-hint>{{ p.hint }}</mat-hint>
+          }
+        </mat-form-field>
+      }
+      @case ('textArea') {
+        <mat-form-field class="wide">
+          <mat-label>{{ label(p) }}</mat-label>
+          <textarea
+            matInput
+            rows="3"
+            [ngModel]="value(p.key)"
+            (ngModelChange)="setValue(p.key, $event)"
+            [disabled]="!canEdit()"
+            [required]="p.required"
+          ></textarea>
+          @if (p.hint) {
+            <mat-hint>{{ p.hint }}</mat-hint>
+          }
+        </mat-form-field>
+      }
+      @case ('html') {
+        <mat-form-field class="wide">
+          <mat-label>{{ label(p) }}</mat-label>
+          <textarea
+            matInput
+            rows="4"
+            [ngModel]="value(p.key)"
+            (ngModelChange)="setValue(p.key, $event)"
+            [disabled]="!canEdit()"
+            [required]="p.required"
+          ></textarea>
+          <mat-hint>{{ p.hint || 'HTML' }}</mat-hint>
+        </mat-form-field>
+      }
+      @default {
+        <mat-form-field [class.wide]="p.inputType !== 'number'">
+          <mat-label>{{ label(p) }}</mat-label>
+          <input
+            matInput
+            [type]="p.inputType === 'number' ? 'number' : 'text'"
+            [placeholder]="
+              p.inputType === 'datetime' ? 'YYYY-MM-DDTHH:MM:SSZ' : ''
+            "
+            [ngModel]="value(p.key)"
+            (ngModelChange)="setValue(p.key, $event)"
+            [disabled]="!canEdit()"
+            [required]="p.required"
+          />
+          @if (p.hint) {
+            <mat-hint>{{ p.hint }}</mat-hint>
+          }
+        </mat-form-field>
+      }
+    }
+  }
+  @for (p of secrets(); track p.key) {
+    <div class="secret wide">
+      @if (isStored(p.key)) {
+        <span class="secret-label">{{ label(p) }}</span>
+        <span class="secret-state">•••• stored</span>
+        @if (canEdit()) {
+          <button
+            matButton
+            type="button"
+            (click)="replace(p.key)"
+            [attr.aria-label]="'Replace ' + label(p)"
+          >
+            Replace
+          </button>
+          <button
+            matButton
+            type="button"
+            (click)="clear(p.key)"
+            [attr.aria-label]="'Clear ' + label(p)"
+          >
+            Clear
+          </button>
+        }
+      } @else if (isCleared(p.key)) {
+        <span class="secret-label">{{ label(p) }}</span>
+        <span class="secret-state">Cleared when the event is saved</span>
+        @if (canEdit()) {
+          <button
+            matButton
+            type="button"
+            (click)="keep(p.key)"
+            [attr.aria-label]="'Keep ' + label(p)"
+          >
+            Undo
+          </button>
+        }
+      } @else {
+        <mat-form-field class="secret-input">
+          <mat-label>{{ label(p) }}</mat-label>
+          <input
+            matInput
+            type="password"
+            autocomplete="new-password"
+            [ngModel]="secretValue(p.key)"
+            (ngModelChange)="setSecret(p.key, $event)"
+            [disabled]="!canEdit()"
+            [required]="p.required"
+          />
+          <mat-hint>{{
+            p.hint || 'Stored encrypted, and never shown again'
+          }}</mat-hint>
+        </mat-form-field>
+        @if (canEdit() && draft().storedSecretKeys.includes(p.key)) {
+          <button
+            matButton
+            type="button"
+            (click)="keep(p.key)"
+            [attr.aria-label]="'Keep the stored ' + label(p)"
+          >
+            Keep Stored
+          </button>
+        }
+      }
+    </div>
+  }
+</div>

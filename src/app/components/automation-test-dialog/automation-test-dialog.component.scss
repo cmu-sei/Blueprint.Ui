@@ -1,0 +1,50 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+
+.test-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.test-task,
+.test-view {
+  min-width: 260px;
+}
+
+.test-note {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.test-error {
+  color: var(--mat-sys-error);
+}
+
+.test-run-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.test-results {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+
+  th,
+  td {
+    text-align: left;
+    vertical-align: top;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+  }
+}
+
+.test-output {
+  margin: 0;
+  max-height: 160px;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-family: monospace;
+}

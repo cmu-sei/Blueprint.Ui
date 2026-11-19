@@ -369,7 +369,11 @@ describe('ScenarioEventDataService', () => {
       const { service } = setup();
       const v = view({
         mselScenarioEvents: [
-          event({ id: 's', deltaSeconds: 1, integrationTarget: 'Notification' }),
+          event({
+            id: 's',
+            deltaSeconds: 1,
+            integrationTarget: 'Notification',
+          }),
           event({ id: 'none', deltaSeconds: 2 }),
           event({ id: 'g', deltaSeconds: 3, integrationTarget: 'Gallery' }),
         ],

@@ -1,0 +1,36 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+
+.parameter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  column-gap: 16px;
+  align-items: start;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.parameter-checkbox {
+  padding-top: 12px;
+}
+
+.secret {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+}
+
+.secret-input {
+  flex: 1;
+}
+
+.secret-label {
+  min-width: 120px;
+}
+
+.secret-state {
+  color: var(--mat-sys-on-surface-variant);
+}

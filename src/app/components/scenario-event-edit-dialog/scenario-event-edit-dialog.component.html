@@ -65,32 +65,35 @@ project root for license information or contact permission@sei.cmu.edu for full 
         }
         <!-- Tabs -->
         <span class="single-edit-dialog">
-          @if (
-            (showDefaultTab() || data.useGallery) &&
-            data.scenarioEvent.scenarioEventType === eventType.Inject
-          ) {
-            <mat-tab-group
-              mat-stretch-tabs
-              class="full-width"
-              mat-align-tabs="start"
-              [selectedIndex]="selectedTab"
-              (selectedTabChange)="tabChange($event)"
-              style="margin-bottom: 20px"
-            >
-              @if (showDefaultTab()) {
-                <mat-tab label="Default" />
+          <mat-tab-group
+            mat-stretch-tabs
+            class="full-width"
+            mat-align-tabs="start"
+            [selectedIndex]="selectedTab"
+            (selectedTabChange)="tabChange($event)"
+            style="margin-bottom: 20px"
+          >
+            @for (label of tabLabels(); track label) {
+              @if (label === 'Automation') {
+                <mat-tab label="Automation">
+                  <ng-template mat-tab-label>
+                    Automation ({{ automationTasks.length }})
+                  </ng-template>
+                  <app-automation-task-list
+                    [drafts]="automationTasks"
+                    [canEdit]="data.isEditor && !data.isEditingRestricted"
+                    [canTest]="!!data.canTest"
+                    [triggerOptions]="data.triggerOptions ?? []"
+                    [latestTests]="data.latestTests ?? emptyRuns"
+                    (changed)="tasksChanged = true"
+                    (test)="openTest($event)"
+                  />
+                </mat-tab>
+              } @else {
+                <mat-tab [label]="label" />
               }
-              <mat-tab label="All" />
-              @if (
-                data.useGallery &&
-                data.scenarioEvent.integrationTarget?.includes(
-                  integrationTarget.Gallery
-                )
-              ) {
-                <mat-tab label="Gallery Article" />
-              }
-            </mat-tab-group>
-          }
+            }
+          </mat-tab-group>
           @if (selectedTabName !== 'Automation') {
             <span>
               <!-- event start time (deltaSeconds) -->

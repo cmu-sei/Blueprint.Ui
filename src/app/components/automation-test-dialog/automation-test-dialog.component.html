@@ -1,0 +1,163 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+-->
+<crucible-dialog
+  [dialogTitle]="'Test Automation — ' + data.eventLabel"
+  [hideDefaultActions]="true"
+>
+  <div crucibleDialogContent>
+    <div class="test-options">
+      @if (data.tasks.length > 1) {
+        <mat-form-field class="test-task">
+          <mat-label>Task</mat-label>
+          <mat-select [value]="taskId()" (valueChange)="setTask($event)">
+            @for (t of data.tasks; track t.id) {
+              <mat-option [value]="t.id">{{ taskLabel(t) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      } @else if (task()) {
+        <p class="test-task-name">{{ taskLabel(task()) }}</p>
+      }
+      <mat-form-field class="test-view">
+        <mat-label>Player view</mat-label>
+        <mat-select
+          [value]="playerViewId()"
+          (valueChange)="setView($event)"
+          [disabled]="!views()?.length"
+        >
+          @for (v of views() ?? []; track v.id) {
+            <mat-option [value]="v.id">{{ v.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-checkbox
+        [checked]="includeChain()"
+        (change)="includeChain.set($event.checked)"
+        [disabled]="!isSaved()"
+        >Also run the saved tasks chained after it</mat-checkbox
+      >
+    </div>
+
+    @if (viewsError()) {
+      <p role="alert" class="test-error">{{ viewsError() }}</p>
+    } @else if (views()?.length === 0) {
+      <p class="test-note">
+        You have no Player views to test against. A test runs on a view you can
+        see in Player.
+      </p>
+    }
+
+    @if (definition()?.requiresVm) {
+      <p class="test-note">
+        @if (preview()?.error) {
+          <span class="test-error">{{ preview().error }}</span>
+        } @else if (preview()) {
+          VM mask "{{ task().vmMask }}" →
+          @if ((preview().vms?.length ?? 0) === 0) {
+            <span class="test-error">no VM in this view matches.</span>
+          } @else {
+            {{ preview().vms.length }} VM{{
+              preview().vms.length === 1 ? '' : 's'
+            }}:
+            @for (vm of preview().vms; track vm.id; let last = $last) {
+              {{ vm.name }}{{ last ? '' : ', ' }}
+            }
+          }
+        }
+      </p>
+    }
+
+    <p class="test-note">
+      <mat-icon
+        class="mdi-18px"
+        fontIcon="mdi-alert-outline"
+        aria-hidden="true"
+      />
+      @if (definition()?.isDryRunWhenTested) {
+        This action only describes what it would do in a test: it changes the
+        MSEL's CITE evaluation or Gallery exhibit only once the MSEL is pushed.
+      } @else {
+        This action runs for real: VM, SSH, email and http actions reach the
+        systems they name.
+      }
+      @if (touchesDeployedView()) {
+        <span class="test-error"
+          >This is the view of the deployed exercise.</span
+        >
+      }
+    </p>
+
+    @if (errorMessage()) {
+      <p role="alert" class="test-error">{{ errorMessage() }}</p>
+    }
+
+    @if (run$ | async; as run) {
+      <div class="test-run" aria-live="polite">
+        <div class="test-run-status">
+          <app-automation-status-chip [status]="run.status" />
+          @if (run.statusDetail) {
+            <span class="test-note">{{ run.statusDetail }}</span>
+          }
+        </div>
+        @if ((run.results ?? []).length > 0) {
+          <table class="test-results">
+            <thead>
+              <tr>
+                <th scope="col">Iteration</th>
+                <th scope="col">VM</th>
+                <th scope="col">Status</th>
+                <th scope="col">Output</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of run.results; track r.id) {
+                <tr>
+                  <td>{{ r.iteration }}</td>
+                  <td>{{ r.vmName || '—' }}</td>
+                  <td><app-automation-status-chip [status]="r.status" /></td>
+                  <td>
+                    <pre class="test-output">{{ r.actualOutput }}</pre>
+                    @if (r.outputTruncated) {
+                      <span class="test-note">(truncated)</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    }
+
+    @if (previous$ | async; as previous) {
+      @if (previous.length > 0) {
+        <p class="test-note">
+          Previous tests:
+          @for (p of previous; track p.id; let last = $last) {
+            {{ p.dateCreated | date: 'shortTime' }}
+            <app-automation-status-chip [status]="p.status" />{{
+              last ? '' : ' · '
+            }}
+          }
+        </p>
+      }
+    }
+    <p class="test-note">
+      Test runs are not part of the exercise's history. Only the newest are
+      kept.
+    </p>
+  </div>
+  <div crucibleDialogActions>
+    <button matButton="outlined" type="button" mat-dialog-close>Close</button>
+    <button
+      matButton="filled"
+      type="button"
+      (click)="runTest()"
+      [disabled]="!canRun()"
+    >
+      {{ running() ? 'Running…' : 'Run Test' }}
+    </button>
+  </div>
+</crucible-dialog>

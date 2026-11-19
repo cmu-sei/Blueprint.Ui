@@ -23,6 +23,7 @@ import { XApiService as AppXApiService } from '../services/xapi/xapi.service';
 
 // 2. Every generated API service under src/app/generated/blueprint.api.
 import {
+  AutomationService,
   CardService,
   CardTeamService,
   CasterService,
@@ -44,6 +45,7 @@ import {
   LmtService,
   MoveService,
   MselCompetencyService,
+  MselExecutionService,
   MselPageService,
   MselScoringModelService,
   MselService,
@@ -91,6 +93,7 @@ export function getDefaultProviders(
     // Generated API services: one `unstubbed(...)` per service. A test that
     // needs an endpoint passes `{ provide: XService, useValue: xApi }` built
     // with `satisfies ApiStub<XService>`.
+    unstubbed(AutomationService),
     unstubbed(CardService),
     unstubbed(CardTeamService),
     unstubbed(CasterService),
@@ -112,6 +115,7 @@ export function getDefaultProviders(
     unstubbed(LmtService),
     unstubbed(MoveService),
     unstubbed(MselCompetencyService),
+    unstubbed(MselExecutionService),
     unstubbed(MselPageService),
     unstubbed(MselScoringModelService),
     unstubbed(MselService),

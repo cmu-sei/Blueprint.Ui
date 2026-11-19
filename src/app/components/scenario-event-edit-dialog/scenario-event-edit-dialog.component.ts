@@ -2,14 +2,38 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 import { Component, OnDestroy, OnInit, inject, output } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { MatTabLabel } from '@angular/material/tabs';
+import {
+  AutomationTaskDraft,
+  taskErrors,
+  toFields,
+  triggerLoops,
+} from 'src/app/utilities/automation-tasks';
+import { AutomationActionDataService } from 'src/app/data/automation-action/automation-action-data.service';
+import {
+  AutomationTaskListComponent,
+  AutomationTriggerOption,
+} from '../automation-task-list/automation-task-list.component';
+import {
+  AutomationTestDialogComponent,
+  AutomationTestDialogData,
+} from '../automation-test-dialog/automation-test-dialog.component';
 import { Subject } from 'rxjs';
 import {
+  AutomationRun,
+  AutomationTaskFields,
+  Card,
   DataField,
   DataFieldType,
   EventType,
   MselItemStatus,
   MselRole,
+  Move,
   ScenarioEvent,
+  Team,
+  Unit,
+  User,
 } from 'src/app/generated/blueprint.api';
 import { Sort } from '@angular/material/sort';
 import {
@@ -31,6 +55,48 @@ import { MatTabGroup, MatTab } from '@angular/material/tabs';
 import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
 import { DataValueComponent } from '../data-value/data-value.component';
 
+/** What the scenario event list opens the dialog with. */
+export interface ScenarioEventEditDialogData {
+  /** The event being edited; a save sends automationTasks only once they changed. */
+  scenarioEvent: ScenarioEvent & { automationTasks?: AutomationTaskFields[] };
+  integrationTargetOptions: string[];
+  dataFields: DataField[];
+  organizationList: string[];
+  teamList: Team[];
+  unitList: Unit[];
+  moveList: Move[];
+  cardList: Card[];
+  gallerySourceTypes: string[];
+  galleryItemStatuses: string[];
+  isNew: boolean;
+  isOwner: boolean;
+  isApprover: boolean;
+  isEditor: boolean;
+  isContentDeveloper?: boolean;
+  isEditingRestricted: boolean;
+  showScenarioEventType: boolean;
+  useCite: boolean;
+  useGallery: boolean;
+  userList: User[];
+  mselStartTime: Date;
+  mselId?: string;
+  /** The event's tasks as drafts, copies of them for a copied event. */
+  automationTasks?: AutomationTaskDraft[];
+  /** Which of the tasks are saved, and so can be tested with their history. */
+  savedTaskIds?: string[];
+  /** The tasks of the MSEL's other events, which a task here can be triggered by. */
+  triggerOptions?: AutomationTriggerOption[];
+  /** The triggers of the other events' tasks, for finding a loop. */
+  otherTriggers?: Map<string, string | null>;
+  latestTests?: Map<string, AutomationRun>;
+  canTest?: boolean;
+  eventLabel?: string;
+  testPlayerViewId?: string | null;
+  deployedPlayerViewId?: string | null;
+  /** The tab to open on, as the Automation column opens it. */
+  initialTab?: string;
+}
+
 @Component({
   selector: 'app-scenario-event-edit-dialog',
   templateUrl: './scenario-event-edit-dialog.component.html',
@@ -48,10 +114,14 @@ import { DataValueComponent } from '../data-value/data-value.component';
     DurationEditComponent,
     DataValueComponent,
     MatInput,
+    MatTabLabel,
+    AutomationTaskListComponent,
   ],
 })
 export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
-  data = inject(MAT_DIALOG_DATA);
+  data = inject<ScenarioEventEditDialogData>(MAT_DIALOG_DATA);
+  private dialog = inject(MatDialog);
+  private actionData = inject(AutomationActionDataService);
 
   readonly editComplete = output<any>();
   sort: Sort = { active: '', direction: '' };
@@ -93,6 +163,10 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   selectedTabName = '';
   currentFilterBy = 'all';
   integrationTarget = IntegrationTarget;
+  // the event's tasks as this edit leaves them; sent with the event only once changed
+  automationTasks: AutomationTaskDraft[] = [];
+  tasksChanged = false;
+  readonly emptyRuns = new Map<string, AutomationRun>();
 
   ngOnInit() {
     if (!this.data.isNew && this.showDefaultTab()) {
@@ -100,6 +174,77 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     } else {
       this.sortedDataFields = this.getFilteredDataFields('all');
     }
+    this.automationTasks = this.data.automationTasks ?? [];
+    // a copied event's tasks are new, so they are sent even if left as they are
+    this.tasksChanged = !!this.data.isNew && this.automationTasks.length > 0;
+    this.actionData.load();
+    const initial = this.tabLabels().indexOf(this.data.initialTab);
+    if (initial >= 0) {
+      this.selectedTab = initial;
+      this.selectedTabName = this.data.initialTab;
+    }
+  }
+
+  /** The tabs, in order. An event that is not an inject has its details and its automation. */
+  tabLabels(): string[] {
+    const labels: string[] = [];
+    if (this.data.scenarioEvent.scenarioEventType === EventType.Inject) {
+      if (this.showDefaultTab()) {
+        labels.push('Default');
+      }
+      labels.push('All');
+      if (
+        this.data.useGallery &&
+        this.data.scenarioEvent.integrationTarget?.includes(
+          IntegrationTarget.Gallery,
+        )
+      ) {
+        labels.push('Gallery Article');
+      }
+    } else {
+      labels.push('Details');
+    }
+    labels.push('Automation');
+    return labels;
+  }
+
+  /** What is wrong with the tasks, which keeps Save disabled: the dialog closes on Save. */
+  automationErrors(): string[] {
+    if (!this.tasksChanged) {
+      return [];
+    }
+    const known = new Set([
+      ...this.automationTasks.map((t) => t.id),
+      ...(this.data.triggerOptions ?? []).map((o) => o.id),
+    ]);
+    const errors = this.automationTasks.flatMap((t) =>
+      taskErrors(t, this.actionData.get(t.action), known),
+    );
+    const loops = triggerLoops(
+      this.automationTasks,
+      this.data.otherTriggers ?? new Map(),
+    );
+    return [
+      ...errors,
+      ...loops.map((name) => `${name}: its triggers lead back to it.`),
+    ];
+  }
+
+  openTest(draft: AutomationTaskDraft) {
+    this.dialog.open(AutomationTestDialogComponent, {
+      width: '900px',
+      maxWidth: '90vw',
+      data: {
+        mselId: this.data.mselId,
+        scenarioEventId: this.data.scenarioEvent.id,
+        eventLabel: this.data.eventLabel,
+        tasks: this.automationTasks,
+        taskId: draft.id,
+        savedTaskIds: this.data.savedTaskIds ?? [],
+        playerViewId: this.data.testPlayerViewId,
+        deployedPlayerViewId: this.data.deployedPlayerViewId,
+      } satisfies AutomationTestDialogData,
+    });
   }
 
   trackByFn(index, item) {
@@ -161,6 +306,10 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     if (!saveChanges) {
       this.editComplete.emit({ saveChanges: false, organization: null });
     } else {
+      if (this.tasksChanged) {
+        this.data.scenarioEvent.automationTasks =
+          this.automationTasks.map(toFields);
+      }
       this.editComplete.emit({
         saveChanges: saveChanges,
         scenarioEvent: this.data.scenarioEvent,
@@ -169,9 +318,16 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   }
 
   tabChange(event) {
+    this.selectedTabName = event.tab.textLabel;
+    if (event.tab.textLabel === 'Automation') {
+      return;
+    }
+    if (event.tab.textLabel === 'Details') {
+      this.scenarioEventTypeChange();
+      return;
+    }
     const injectData = event.tab.textLabel.toLowerCase().replace(' ', '');
     this.sortedDataFields = this.getFilteredDataFields(injectData);
-    this.selectedTabName = event.tab.textLabel;
   }
 
   scenarioEventTypeChange() {
@@ -190,12 +346,12 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
         );
         break;
       case 'gallery':
-        filteredList = (this.data.dataFields as DataField[]).filter(
+        filteredList = this.data.dataFields.filter(
           (x) => !!x.galleryArticleParameter,
         );
         break;
       default:
-        filteredList = (this.data.dataFields as DataField[]).slice();
+        filteredList = this.data.dataFields.slice();
         break;
     }
     filteredList = filteredList.sort((a, b) =>
@@ -224,6 +380,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
 
   hasBadData(): boolean {
     return (
+      this.automationErrors().length > 0 ||
       (this.data.scenarioEvent.scenarioEventType === this.eventType.Inject &&
         this.getScenarioTypeDataFields().length === 0) ||
       // only the values on screen that can be changed, since Save must not wait on one that can't be fixed

@@ -2099,19 +2099,19 @@
       "count": 1
     },
     "@typescript-eslint/no-unsafe-argument": {
-      "count": 3
+      "count": 2
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 9
+      "count": 3
     },
     "@typescript-eslint/no-unsafe-call": {
-      "count": 10
+      "count": 2
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 38
+      "count": 8
     },
     "@typescript-eslint/no-unsafe-return": {
-      "count": 7
+      "count": 2
     },
     "@typescript-eslint/prefer-optional-chain": {
       "count": 1
