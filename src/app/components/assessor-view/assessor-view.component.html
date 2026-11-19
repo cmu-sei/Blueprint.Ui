@@ -171,7 +171,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     class="header-button no-print"
                     title="Print Assessment Report"
                     aria-label="Print Assessment Report"
-                    [disabled]="printPending"
+                    [disabled]="printPending || !reportDataReady()"
                   >
                     <mat-icon class="mdi-24px" fontIcon="mdi-printer" />
                   </button>

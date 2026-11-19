@@ -435,6 +435,8 @@ export class AssessorViewComponent
   mselCompetencies: MselCompetency[] = [];
   teamCompetencies: TeamCompetency[] = [];
   proficiencyScale: ProficiencyScale | null = null;
+  /** Whether the proficiency scale has been read, or there is none to read: the report counts ratings by its levels. */
+  private proficiencyScaleSettled = false;
   proficiencyLevels: ProficiencyLevel[] = [];
   eventRatings = new Map<
     string,
@@ -932,6 +934,7 @@ export class AssessorViewComponent
   printPending = false;
   /** Counts the MSEL hiding or showing names, so a print can tell the setting changed at any point while it ran. */
   private namesSettingChanges = 0;
+  private printTimer: ReturnType<typeof setTimeout> | undefined;
   report: AssessmentReport | null = null;
   reportImageUrl: string | null = null;
   printedAt: Date | null = null;
@@ -2326,24 +2329,46 @@ export class AssessorViewComponent
   private loadProficiencyScale() {
     if (this.mselCompetencies.length === 0 || this.proficiencyScale) return;
     const firstComp = this.mselCompetencies[0]?.competency;
-    if (!firstComp?.competencyFrameworkId) return;
+    if (!firstComp?.competencyFrameworkId) {
+      this.proficiencyScaleSettled = true;
+      return;
+    }
 
+    const settle = () => (this.proficiencyScaleSettled = true);
     this.competencyFrameworkService
       .getCompetencyFramework(firstComp.competencyFrameworkId)
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((fw) => {
-        if (fw?.defaultProficiencyScaleId) {
+      .subscribe({
+        next: (fw) => {
+          if (!fw?.defaultProficiencyScaleId) {
+            settle();
+            return;
+          }
           this.proficiencyScaleService
             .getProficiencyScale(fw.defaultProficiencyScaleId)
             .pipe(takeUntil(this.unsubscribe$))
-            .subscribe((scale) => {
-              this.proficiencyScale = scale;
-              this.proficiencyLevels = (scale?.proficiencyLevels || []).sort(
-                (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0),
-              );
+            .subscribe({
+              next: (scale) => {
+                this.proficiencyScale = scale;
+                this.proficiencyLevels = (scale?.proficiencyLevels || []).sort(
+                  (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0),
+                );
+                settle();
+              },
+              error: settle,
             });
-        }
+        },
+        error: settle,
       });
+  }
+
+  /**
+   * Whether the MSEL's competencies and their proficiency scale are in, which the report reads ratings by: until then a
+   * print would find no competency for any rating.
+   */
+  reportDataReady(): boolean {
+    if (this.mselCompetencyQuery.getValue().loading) return false;
+    return this.mselCompetencies.length === 0 || this.proficiencyScaleSettled;
   }
 
   private loadCompetencyFrameworks() {
@@ -2984,12 +3009,17 @@ export class AssessorViewComponent
    * any point before the page prints, the print starts again rather than print names read the other way.
    */
   printReport() {
-    if (this.printPending || !this.msel?.id) return;
+    if (this.printPending || !this.msel?.id || !this.reportDataReady()) return;
     this.printPending = true;
     const setting = this.namesSettingChanges;
-    const startAgain = () => {
+    // a print is of the MSEL it was asked for: if another MSEL is shown meanwhile, it is dropped
+    const mselId = this.msel.id;
+    const stop = () => {
       this.printing = false;
       this.printPending = false;
+    };
+    const startAgain = () => {
+      stop();
       this.printReport();
     };
     const baseUrl = this.apiUrl.endsWith('/') ? this.apiUrl : this.apiUrl + '/';
@@ -3018,6 +3048,10 @@ export class AssessorViewComponent
     })
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(({ statements, image }) => {
+        if (this.msel?.id !== mselId) {
+          stop();
+          return;
+        }
         if (this.namesSettingChanges !== setting) {
           startAgain();
           return;
@@ -3026,8 +3060,13 @@ export class AssessorViewComponent
         this.report = this.buildAssessmentReport(statements);
         this.printedAt = new Date();
         this.printing = true;
-        // a short wait so Angular draws the report before it is copied
-        setTimeout(() => {
+        // a short wait so Angular draws the report before it is copied; cancelled if the view goes first
+        this.printTimer = setTimeout(() => {
+          this.printTimer = undefined;
+          if (this.msel?.id !== mselId) {
+            stop();
+            return;
+          }
           if (this.namesSettingChanges !== setting) {
             startAgain();
             return;
@@ -3169,16 +3208,29 @@ export class AssessorViewComponent
           ]);
       }
       for (const [objective, ids] of byObjective) {
-        // a rating of a whole move or group counts for the objectives of the injects in it
-        const keys = new Set(ids);
+        // a rating of a whole move or group counts for an objective when one of the objective's injects in it
+        // exercises the competency rated
+        const competenciesIn = new Map<string, Set<string>>();
         for (const id of ids) {
           const nums = this.eventMoveAndGroup[id];
-          if (nums) {
-            keys.add(`move-${+nums[0]}`);
-            keys.add(`group-${+nums[0]}-${+nums[1]}`);
+          if (!nums) continue;
+          const exercised = (this.baseEventCompetencies.get(id) ?? []).map(
+            (c) => c.id,
+          );
+          for (const key of [
+            `move-${+nums[0]}`,
+            `group-${+nums[0]}-${+nums[1]}`,
+          ]) {
+            const set = competenciesIn.get(key) ?? new Set<string>();
+            exercised.forEach((c) => set.add(c));
+            competenciesIn.set(key, set);
           }
         }
-        const rated = assertions.filter((a) => keys.has(a.contextKey));
+        const rated = assertions.filter(
+          (a) =>
+            ids.includes(a.contextKey) ||
+            !!competenciesIn.get(a.contextKey)?.has(a.competency.id),
+        );
         objectiveRows.push({
           code: '',
           name: objective,
@@ -3358,6 +3410,7 @@ export class AssessorViewComponent
     };
   }
   ngOnDestroy() {
+    clearTimeout(this.printTimer);
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
   }

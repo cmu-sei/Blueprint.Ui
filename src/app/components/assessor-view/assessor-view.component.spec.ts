@@ -49,6 +49,7 @@ import { DataFieldStore } from 'src/app/data/data-field/data-field.store';
 import { DataValueStore } from 'src/app/data/data-value/data-value.store';
 import { MoveStore } from 'src/app/data/move/move.store';
 import { MselStore } from 'src/app/data/msel/msel.store';
+import { MselCompetencyStore } from 'src/app/data/msel-competency/msel-competency.store';
 import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import { ScenarioEventStore } from 'src/app/data/scenario-event/scenario-event.store';
 import { TeamStore } from 'src/app/data/team/team.store';
@@ -1427,6 +1428,116 @@ describe('AssessorViewComponent', () => {
       again.flush({ statements: STATEMENTS });
       fixture.detectChanges();
       await vi.waitFor(() => expect(printDocument).toHaveBeenCalledTimes(1));
+    });
+
+    /**
+     * Verifies: a rating of a whole move counts for an objective only when one of the objective's injects in the move
+     * exercises the competency rated.
+     * Interacts with: buildAssessmentReport (objective rows), baseEventCompetencies.
+     * Data: move 2 holds Ransom note (K-2, objective Contain ransomware) and Press call (no competencies, objective
+     * Brief the press); Blue is rated on K-2 for the whole move.
+     */
+    it("counts a whole move's rating only for the objectives whose injects exercise it", async () => {
+      await printReport(STATEMENTS, {
+        fields: [
+          ...REPORT_FIELDS,
+          {
+            id: 'df-obj',
+            mselId: 'msel-1',
+            name: 'Objectives',
+            dataType: DataFieldType.String,
+            displayOrder: 4,
+            isAssessorVisible: false,
+          },
+        ],
+        values: [
+          ...REPORT_VALUES,
+          value('se-3', 'df-obj', 'Contain ransomware'),
+          value('se-4', 'df-obj', 'Brief the press'),
+        ],
+      });
+
+      expect(
+        tableRows(
+          within(section('Results')).getByLabelText('Results by objective'),
+        ),
+      ).toEqual([
+        ['Contain ransomware', '1', '1', '1', '1', '0'],
+        ['Brief the press', '1', '0', '0', '0', '0'],
+      ]);
+    });
+
+    /**
+     * Verifies: a print is of the MSEL it was asked for: when another MSEL is shown before its statements come, it
+     * prints nothing, and Print is offered again.
+     * Interacts with: printReport (MSEL check), MselStore (another MSEL made active), printDocument (spy).
+     * Data: the report exercise; a second MSEL made active while the read is under way.
+     */
+    it('prints nothing when another MSEL is shown before its statements come', async () => {
+      const { fixture, printDocument } = await renderForPrint();
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      );
+      const read = TestBed.inject(HttpTestingController).expectOne(
+        isStatementsRead,
+      );
+      const store = TestBed.inject(MselStore);
+      store.add({ ...REPORT_MSEL, id: 'msel-2', name: 'Other Exercise' });
+      store.setActive('msel-2');
+      fixture.detectChanges();
+
+      read.flush({ statements: STATEMENTS });
+      await new Promise((r) => setTimeout(r, 400));
+
+      expect(printDocument).not.toHaveBeenCalled();
+      expect(
+        (fixture.componentInstance as unknown as { printPending: boolean })
+          .printPending,
+      ).toBe(false);
+    });
+
+    /**
+     * Verifies: when the view goes while the report waits to be printed, the print does not happen, so it cannot copy
+     * an empty area over the page that replaced the view.
+     * Interacts with: printReport (timer), ngOnDestroy, printDocument (spy).
+     * Data: the report exercise; the view destroyed right after the statements come.
+     */
+    it('does not print when the view goes before the print', async () => {
+      const { fixture, printDocument } = await renderForPrint();
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      );
+      TestBed.inject(HttpTestingController)
+        .expectOne(isStatementsRead)
+        .flush({ statements: STATEMENTS });
+
+      fixture.destroy();
+      await new Promise((r) => setTimeout(r, 400));
+
+      expect(printDocument).not.toHaveBeenCalled();
+    });
+
+    /**
+     * Verifies: Print Assessment Report waits for the MSEL's competencies, which the report reads ratings by: it is
+     * disabled while they load and enabled once they are in.
+     * Interacts with: reportDataReady, MselCompetencyStore loading.
+     * Data: the report exercise; the competencies loading, then loaded.
+     */
+    it('offers the print once the competencies are in', async () => {
+      const { fixture } = await renderForPrint();
+      const store = TestBed.inject(MselCompetencyStore);
+
+      store.setLoading(true);
+      fixture.detectChanges();
+      expect(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      ).toBeDisabled();
+
+      store.setLoading(false);
+      fixture.detectChanges();
+      expect(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      ).toBeEnabled();
     });
 
     /**
