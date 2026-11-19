@@ -3,7 +3,6 @@
  Released under a MIT (SEI)-style license. See LICENSE.md in the
  project root for license information.
 */
-
 /**
  * Blueprint API
  *
@@ -13,16 +12,18 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { ViewStatus } from './viewStatus';
 
 
-export const SteamfitterIntegrationType = {
-    Notification: 'Notification',
-    Email: 'Email',
-    SituationUpdate: 'SituationUpdate',
-    HttpGet: 'http_get',
-    HttpPost: 'http_post',
-    HttpPut: 'http_put',
-    HttpDelete: 'http_delete'
-} as const;
-export type SteamfitterIntegrationType = typeof SteamfitterIntegrationType[keyof typeof SteamfitterIntegrationType];
+export interface View { 
+    id?: string;
+    name?: string | null;
+    description?: string | null;
+    status?: ViewStatus;
+    canManage?: boolean;
+    parentViewId?: string | null;
+}
+export namespace View {
+}
+
 

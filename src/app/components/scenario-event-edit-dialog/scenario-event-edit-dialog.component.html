@@ -66,7 +66,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <!-- Tabs -->
         <span class="single-edit-dialog">
           @if (
-            (showDefaultTab() || data.useGallery || data.useSteamfitter) &&
+            (showDefaultTab() || data.useGallery) &&
             data.scenarioEvent.scenarioEventType === eventType.Inject
           ) {
             <mat-tab-group
@@ -89,22 +89,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
               ) {
                 <mat-tab label="Gallery Article" />
               }
-              @if (
-                data.useSteamfitter &&
-                data.scenarioEvent.integrationTarget?.includes(
-                  integrationTarget.Steamfitter
-                )
-              ) {
-                <mat-tab label="Steamfitter Task">
-                  <app-steamfitter-task
-                    [scenarioEvent]="data.scenarioEvent"
-                    [canEdit]="data.isEditor"
-                  />
-                </mat-tab>
-              }
             </mat-tab-group>
           }
-          @if (selectedTabName !== 'Steamfitter Task') {
+          @if (selectedTabName !== 'Automation') {
             <span>
               <!-- event start time (deltaSeconds) -->
               @if (

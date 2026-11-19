@@ -1660,13 +1660,13 @@
       "count": 3
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 6
+      "count": 5
     },
     "@typescript-eslint/no-unsafe-call": {
-      "count": 4
+      "count": 3
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 15
+      "count": 13
     },
     "@typescript-eslint/no-unsafe-return": {
       "count": 1
@@ -2105,10 +2105,10 @@
       "count": 9
     },
     "@typescript-eslint/no-unsafe-call": {
-      "count": 11
+      "count": 10
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 41
+      "count": 38
     },
     "@typescript-eslint/no-unsafe-return": {
       "count": 7
@@ -2304,19 +2304,6 @@
     },
     "@typescript-eslint/no-unsafe-member-access": {
       "count": 3
-    }
-  },
-  "src/app/components/steamfitter-task/steamfitter-task.component.spec.ts": {
-    "@typescript-eslint/no-unnecessary-type-assertion": {
-      "count": 1
-    }
-  },
-  "src/app/components/steamfitter-task/steamfitter-task.component.ts": {
-    "@angular-eslint/prefer-signals": {
-      "count": 1
-    },
-    "@typescript-eslint/no-empty-function": {
-      "count": 1
     }
   },
   "src/app/components/team-add-dialog/team-add-dialog.component.ts": {
@@ -2989,7 +2976,7 @@
       "count": 2
     },
     "@typescript-eslint/no-explicit-any": {
-      "count": 5
+      "count": 4
     },
     "@typescript-eslint/no-floating-promises": {
       "count": 1
@@ -3001,13 +2988,10 @@
       "count": 3
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 8
+      "count": 4
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 21
-    },
-    "@typescript-eslint/no-unsafe-return": {
-      "count": 1
+      "count": 12
     },
     "@typescript-eslint/no-unused-vars": {
       "count": 11
@@ -3559,10 +3543,10 @@
       "count": 1
     },
     "@typescript-eslint/no-unsafe-argument": {
-      "count": 7
+      "count": 6
     },
     "@typescript-eslint/no-unsafe-member-access": {
-      "count": 7
+      "count": 6
     }
   },
   "src/app/utilities/sort-by-pipe.spec.ts": {

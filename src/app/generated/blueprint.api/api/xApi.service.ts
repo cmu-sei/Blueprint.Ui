@@ -112,7 +112,7 @@ export class XApiService extends BaseService {
 
     /**
      * Gets xAPI statements for an MSEL from the LRS
-     * Queries the LRS for xAPI statements related to the MSEL\&#39;s integrations. When source is omitted, queries all configured integrations (Blueprint, CITE, Steamfitter, Player, Gallery). When source is specified, queries only that integration\&#39;s activity ID.
+     * Queries the LRS for xAPI statements related to the MSEL\&#39;s integrations. When source is omitted, queries all configured integrations (Blueprint, CITE, Player, Gallery). When source is specified, queries only that integration\&#39;s activity ID.
      * @param mselId 
      * @param since 
      * @param until 

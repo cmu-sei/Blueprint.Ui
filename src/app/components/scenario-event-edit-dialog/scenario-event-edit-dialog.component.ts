@@ -28,7 +28,6 @@ import { MatSelect } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatTabGroup, MatTab } from '@angular/material/tabs';
-import { SteamfitterTaskComponent } from '../steamfitter-task/steamfitter-task.component';
 import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
 import { DataValueComponent } from '../data-value/data-value.component';
 
@@ -46,7 +45,6 @@ import { DataValueComponent } from '../data-value/data-value.component';
     MatOption,
     MatTabGroup,
     MatTab,
-    SteamfitterTaskComponent,
     DurationEditComponent,
     DataValueComponent,
     MatInput,
@@ -163,10 +161,6 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     if (!saveChanges) {
       this.editComplete.emit({ saveChanges: false, organization: null });
     } else {
-      if (!this.data.scenarioEvent.integrationTarget?.includes('Steamfitter')) {
-        this.data.scenarioEvent.steamfitterTask = null;
-        this.data.scenarioEvent.steamfitterTaskId = null;
-      }
       this.editComplete.emit({
         saveChanges: saveChanges,
         scenarioEvent: this.data.scenarioEvent,

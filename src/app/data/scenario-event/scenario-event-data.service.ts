@@ -23,11 +23,9 @@ import { take, tap } from 'rxjs/operators';
 import { ipSortKey } from 'src/app/utilities/ip-address';
 import { getTimezoneAbbr } from 'src/app/utilities/timezone-abbr';
 
-export type IntegrationTarget =
-  'Gallery' | 'Steamfitter' | 'Email' | 'Notification';
+export type IntegrationTarget = 'Gallery' | 'Email' | 'Notification';
 export const IntegrationTarget = {
   Gallery: 'Gallery' as IntegrationTarget,
-  Steamfitter: 'Steamfitter' as IntegrationTarget,
   Email: 'Email' as IntegrationTarget,
   Notification: 'Notification' as IntegrationTarget,
 };

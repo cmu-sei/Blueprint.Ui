@@ -363,13 +363,13 @@ describe('ScenarioEventDataService', () => {
     /**
      * Verifies: a column sort on Integration Target orders on the event's own integrationTarget, which is not a data value, and can be reversed.
      * Interacts with: ScenarioEventDataService.updateScenarioEventViewDisplayedEvents.
-     * Data: targets "Steamfitter", none, "Gallery" on events at 1, 2, 3 seconds; sort integrationTarget asc then desc.
+     * Data: targets "Notification", none, "Gallery" on events at 1, 2, 3 seconds; sort integrationTarget asc then desc.
      */
     it('sorts displayed events on the integration target', () => {
       const { service } = setup();
       const v = view({
         mselScenarioEvents: [
-          event({ id: 's', deltaSeconds: 1, integrationTarget: 'Steamfitter' }),
+          event({ id: 's', deltaSeconds: 1, integrationTarget: 'Notification' }),
           event({ id: 'none', deltaSeconds: 2 }),
           event({ id: 'g', deltaSeconds: 3, integrationTarget: 'Gallery' }),
         ],

@@ -3,7 +3,6 @@
  Released under a MIT (SEI)-style license. See LICENSE.md in the
  project root for license information.
 */
-
 /**
  * Blueprint API
  *
@@ -13,37 +12,41 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { SteamfitterIntegrationType } from './steamfitterIntegrationType';
-import { SteamfitterTaskTrigger } from './steamfitterTaskTrigger';
-import { ScenarioEvent } from './scenarioEvent';
-import { SteamfitterTaskAction } from './steamfitterTaskAction';
+import { AutomationTrigger } from './automationTrigger';
+import { AutomationAction } from './automationAction';
+import { AutomationIterationTermination } from './automationIterationTermination';
 
 
-export interface SteamfitterTask { 
+/**
+ * An automation task of a scenario event. Its secret parameters are never returned: Blueprint.Api.ViewModels.AutomationTask.SecretParameterKeys names those it stores.
+ */
+export interface AutomationTask { 
     dateCreated?: Date;
     dateModified?: Date | null;
     createdBy?: string;
     modifiedBy?: string | null;
     id?: string;
+    mselId?: string;
     scenarioEventId?: string;
-    scenarioEvent?: ScenarioEvent;
-    taskType?: SteamfitterIntegrationType;
+    displayOrder?: number;
     name?: string | null;
     description?: string | null;
-    action?: SteamfitterTaskAction;
-    vmMask?: string | null;
-    apiUrl?: string | null;
+    action?: AutomationAction;
     actionParameters?: { [key: string]: string | null; } | null;
+    secretParameterKeys?: Array<string> | null;
+    vmMask?: string | null;
     expectedOutput?: string | null;
     expirationSeconds?: number;
     delaySeconds?: number;
     intervalSeconds?: number;
     iterations?: number;
-    triggerCondition?: SteamfitterTaskTrigger;
-    userExecutable?: boolean;
+    iterationTermination?: AutomationIterationTermination;
+    triggerCondition?: AutomationTrigger;
+    triggerTaskId?: string | null;
+    enabled?: boolean;
     repeatable?: boolean;
 }
-export namespace SteamfitterTask {
+export namespace AutomationTask {
 }
 
 

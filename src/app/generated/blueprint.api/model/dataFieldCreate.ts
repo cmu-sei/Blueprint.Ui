@@ -38,6 +38,7 @@ export interface DataFieldCreate {
     isInformationField?: boolean;
     isFacilitationField?: boolean;
     isAssessorVisible?: boolean;
+    onFacilitatorView?: boolean;
     id?: string;
     mselId?: string | null;
     injectTypeId?: string | null;

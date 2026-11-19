@@ -31,7 +31,6 @@ import {
   MselUnit,
   Move,
   ScenarioEvent,
-  SteamfitterScenarioStartMode,
   SystemPermission,
   Team,
   User,
@@ -243,21 +242,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     MselItemStatus.Complete,
     MselItemStatus.Archived,
   ];
-  // Steamfitter runs no task until its scenario is started
-  readonly steamfitterStartModes: {
-    value: SteamfitterScenarioStartMode;
-    label: string;
-  }[] = [
-    { value: SteamfitterScenarioStartMode.Manual, label: 'Manually' },
-    {
-      value: SteamfitterScenarioStartMode.OnPush,
-      label: 'When the push finishes',
-    },
-    {
-      value: SteamfitterScenarioStartMode.AtStartTime,
-      label: 'At the MSEL start time',
-    },
-  ];
   educationalLevels: string[] = ['Beginner', 'Intermediate', 'Advanced'];
   educationalUses: string[] = [
     'Assessment',
@@ -289,8 +273,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   galleryExhibitName = '';
   citeEvaluationName = '';
   citeScoringModelName = '';
-  steamfitterScenarioName = '';
-  steamfitterScenarioStatus = '';
   casterDirectoryName = '';
   casterWorkspaceName = '';
   integrationRequested = '';
@@ -1272,29 +1254,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     return `${baseUrl}?evaluation=${this.msel.citeEvaluationId}`;
   }
 
-  // whether the pushed scenario has been started, which tells a facilitator whether its tasks will run
-  steamfitterScenarioStatusLabel(): string {
-    switch (this.steamfitterScenarioStatus) {
-      case 'Ready':
-        return 'Not started';
-      case 'Active':
-        return 'Started';
-      case 'Ended':
-        return 'Ended';
-      default:
-        return '';
-    }
-  }
-
-  getSteamfitterScenarioUrl(): string {
-    if (!this.msel.steamfitterScenarioId) return '';
-    let baseUrl = this.settingsService.settings.SteamfitterUrl || '';
-    if (baseUrl && baseUrl.slice(-1) !== '/') {
-      baseUrl = baseUrl + '/';
-    }
-    return `${baseUrl}scenario/${this.msel.steamfitterScenarioId}`;
-  }
-
   casterDirectoryLabel(directory: CasterDirectory): string {
     return `${directory.projectName} / ${directory.name}`;
   }
@@ -1352,7 +1311,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     }
 
     // One call to Blueprint's own API, which reads each name from the application that owns it.
-    // The browser cannot read them itself: Player, Gallery, CITE and Steamfitter each allow only
+    // The browser cannot read them itself: Player, Gallery, CITE and Caster each allow only
     // their own UI's origin, so fetching a name directly from here is blocked by CORS before the
     // request is even sent. Blueprint forwards this user's own token for each lookup, so nothing
     // is revealed that the user could not have read.
@@ -1366,9 +1325,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           this.galleryExhibitName = names.galleryExhibitName || '';
           this.citeEvaluationName = names.citeEvaluationName || '';
           this.citeScoringModelName = names.citeScoringModelName || '';
-          this.steamfitterScenarioName = names.steamfitterScenarioName || '';
-          this.steamfitterScenarioStatus =
-            names.steamfitterScenarioStatus || '';
           this.casterDirectoryName = names.casterDirectoryName || '';
           this.casterWorkspaceName = names.casterWorkspaceName || '';
         },
@@ -1408,8 +1364,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     this.galleryExhibitName = '';
     this.citeEvaluationName = '';
     this.citeScoringModelName = '';
-    this.steamfitterScenarioName = '';
-    this.steamfitterScenarioStatus = '';
     this.casterDirectoryName = '';
     this.casterWorkspaceName = '';
   }

@@ -310,7 +310,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     (msel.usePlayer ||
                       msel.useCite ||
                       msel.useGallery ||
-                      msel.useSteamfitter ||
                       msel.useCaster) &&
                     !msel.isTemplate
                   ) {
@@ -319,7 +318,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         (!msel.playerViewId &&
                           !msel.citeEvaluationId &&
                           !msel.galleryCollectionId &&
-                          !msel.steamfitterScenarioId &&
                           !msel.casterWorkspaceId &&
                           !msel.isTemplate) ||
                         pushStatus
@@ -353,7 +351,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         (msel.playerViewId ||
                           msel.citeEvaluationId ||
                           msel.galleryCollectionId ||
-                          msel.steamfitterScenarioId ||
                           msel.casterWorkspaceId) &&
                         !pushStatus
                       ) {
@@ -583,79 +580,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     }}</span>
                   </div>
                 }
-
-                <!-- Steamfitter Integration -->
-                <div class="integration-row">
-                  <div class="integration-checkbox-cell">
-                    <mat-checkbox
-                      [disabled]="integrationsLocked() || !canEditMsel()"
-                      [(ngModel)]="msel.useSteamfitter"
-                      (cut)="isChanged = true"
-                      (change)="isChanged = true"
-                      (paste)="isChanged = true"
-                      (keypress)="isChanged = true"
-                      >Steamfitter</mat-checkbox
-                    >
-                  </div>
-                  @if (msel.useSteamfitter) {
-                    <div class="integration-details">
-                      <!-- not locked with the other settings: when the scenario starts changes nothing the push built -->
-                      <div class="integration-field">
-                        <span class="integration-label"
-                          >Start the scenario:</span
-                        >
-                        <mat-form-field class="integration-select">
-                          <mat-select
-                            [(ngModel)]="msel.steamfitterScenarioStartMode"
-                            [disabled]="!canEditMsel()"
-                            aria-label="Start the scenario"
-                            (selectionChange)="isChanged = true"
-                          >
-                            @for (
-                              startMode of steamfitterStartModes;
-                              track startMode.value
-                            ) {
-                              <mat-option [value]="startMode.value">
-                                {{ startMode.label }}
-                              </mat-option>
-                            }
-                          </mat-select>
-                        </mat-form-field>
-                      </div>
-                      @if (!msel.isTemplate && msel.steamfitterScenarioId) {
-                        <div class="integration-field">
-                          <span class="integration-label">Scenario:</span>
-                          <span
-                            class="integration-guid"
-                            [title]="msel.steamfitterScenarioId"
-                            >{{ msel.steamfitterScenarioId }}</span
-                          >
-                          @if (steamfitterScenarioName) {
-                            <span class="integration-name">{{
-                              steamfitterScenarioName
-                            }}</span>
-                          }
-                          @if (steamfitterScenarioStatusLabel()) {
-                            <span class="integration-name"
-                              >({{ steamfitterScenarioStatusLabel() }})</span
-                            >
-                          }
-                          <a
-                            [href]="getSteamfitterScenarioUrl()"
-                            target="_blank"
-                            class="integration-link"
-                            title="Open in Steamfitter"
-                          >
-                            <mat-icon
-                              class="mdi-18px"
-                              fontIcon="mdi-open-in-new"
-                            />
-                          </a>
-                        </div>
-                      }
-                    </div>
-                  }
-                </div>
 
                 <!-- Caster Integration -->
                 <div class="integration-row">

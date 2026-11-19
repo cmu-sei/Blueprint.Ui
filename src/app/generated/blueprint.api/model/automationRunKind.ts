@@ -3,7 +3,6 @@
  Released under a MIT (SEI)-style license. See LICENSE.md in the
  project root for license information.
 */
-
 /**
  * Blueprint API
  *
@@ -15,11 +14,9 @@
  */
 
 
-export const SteamfitterTaskAction = {
-    HttpGet: 'http_get',
-    HttpPost: 'http_post',
-    HttpPut: 'http_put',
-    HttpDelete: 'http_delete'
+export const AutomationRunKind = {
+    Exercise: 'Exercise',
+    Test: 'Test'
 } as const;
-export type SteamfitterTaskAction = typeof SteamfitterTaskAction[keyof typeof SteamfitterTaskAction];
+export type AutomationRunKind = typeof AutomationRunKind[keyof typeof AutomationRunKind];
 

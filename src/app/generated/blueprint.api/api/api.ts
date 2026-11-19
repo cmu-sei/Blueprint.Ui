@@ -4,6 +4,8 @@
  project root for license information.
 */
 
+export * from './automation.service';
+import { AutomationService } from './automation.service';
 export * from './card.service';
 import { CardService } from './card.service';
 export * from './cardTeam.service';
@@ -48,6 +50,8 @@ export * from './msel.service';
 import { MselService } from './msel.service';
 export * from './mselCompetency.service';
 import { MselCompetencyService } from './mselCompetency.service';
+export * from './mselExecution.service';
+import { MselExecutionService } from './mselExecution.service';
 export * from './mselImage.service';
 import { MselImageService } from './mselImage.service';
 export * from './mselPage.service';
@@ -92,4 +96,4 @@ export * from './userTeamRole.service';
 import { UserTeamRoleService } from './userTeamRole.service';
 export * from './xApi.service';
 import { XApiService } from './xApi.service';
-export const APIS = [CardService, CardTeamService, CasterService, CatalogService, CatalogInjectService, CatalogUnitService, CiteService, CiteActionService, CiteDutyService, CompetencyFrameworkService, DataFieldService, DataOptionService, DataValueService, GroupService, HealthCheckService, InjectService, InjectTypeService, InvitationService, LmtService, MoveService, MselService, MselCompetencyService, MselImageService, MselPageService, MselScoringModelService, MselUnitService, OrganizationService, PlayerService, PlayerApplicationService, PlayerApplicationTeamService, ProficiencyLevelService, ProficiencyScaleService, ScenarioEventService, SystemPermissionsService, SystemRolesService, TeamService, TeamCompetencyService, TeamUserService, UnitService, UnitUserService, UserService, UserMselRoleService, UserTeamRoleService, XApiService];
+export const APIS = [AutomationService, CardService, CardTeamService, CasterService, CatalogService, CatalogInjectService, CatalogUnitService, CiteService, CiteActionService, CiteDutyService, CompetencyFrameworkService, DataFieldService, DataOptionService, DataValueService, GroupService, HealthCheckService, InjectService, InjectTypeService, InvitationService, LmtService, MoveService, MselService, MselCompetencyService, MselExecutionService, MselImageService, MselPageService, MselScoringModelService, MselUnitService, OrganizationService, PlayerService, PlayerApplicationService, PlayerApplicationTeamService, ProficiencyLevelService, ProficiencyScaleService, ScenarioEventService, SystemPermissionsService, SystemRolesService, TeamService, TeamCompetencyService, TeamUserService, UnitService, UnitUserService, UserService, UserMselRoleService, UserTeamRoleService, XApiService];

@@ -3,7 +3,6 @@
  Released under a MIT (SEI)-style license. See LICENSE.md in the
  project root for license information.
 */
-
 /**
  * Blueprint API
  *
@@ -15,13 +14,8 @@
  */
 
 
-export const SteamfitterTaskTrigger = {
-    Time: 'Time',
-    Success: 'Success',
-    Failure: 'Failure',
-    Completion: 'Completion',
-    Expiration: 'Expiration',
-    Manual: 'Manual'
-} as const;
-export type SteamfitterTaskTrigger = typeof SteamfitterTaskTrigger[keyof typeof SteamfitterTaskTrigger];
+export interface AutomationParameterChoice { 
+    key?: string | null;
+    display?: string | null;
+}
 

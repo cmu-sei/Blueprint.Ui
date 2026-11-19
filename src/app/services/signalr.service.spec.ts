@@ -15,6 +15,8 @@ import {
   SignalRService,
 } from './signalr.service';
 import { HubReconnectService } from './hub-reconnect.service';
+import { AutomationRunQuery } from '../data/automation-run/automation-run.query';
+import { AutomationTaskQuery } from '../data/automation-task/automation-task.query';
 import { CardQuery } from '../data/card/card.query';
 import { CatalogQuery } from '../data/catalog/catalog.query';
 import { CiteActionQuery } from '../data/cite-action/cite-action.query';
@@ -412,6 +414,12 @@ describe('SignalRService', () => {
     const cases: Array<
       [string, ProviderToken<EntityLookup>, Record<string, unknown>]
     > = [
+      [
+        'AutomationTask',
+        AutomationTaskQuery,
+        { name: 'Power on WS-01', scenarioEventId: 'se-1' },
+      ],
+      ['AutomationRun', AutomationRunQuery, { status: 'Running' }],
       ['Card', CardQuery, { name: 'Breach Card', mselId: 'msel-1' }],
       ['Catalog', CatalogQuery, { name: 'Ransomware Catalog' }],
       ['CiteAction', CiteActionQuery, { description: 'Isolate the host' }],
@@ -454,6 +462,60 @@ describe('SignalRService', () => {
         expect(query.hasEntity(id)).toBe(false);
       },
     );
+
+    /**
+     * Verifies: a run's results arrive on their own and attach to it, newest iteration first; a run broadcast, which carries no results, keeps them; AutomationResultDeleted removes one; a result of a run the store lacks is dropped.
+     * Interacts with: FakeHubConnection.trigger, AutomationRunDataService, AutomationRunQuery.
+     * Data: run run-1 with results res-1 (iteration 1) and res-2 (iteration 2), a status update to run-1, and res-x of run-9.
+     */
+    it('AutomationResult events attach results to their run', async () => {
+      const { hub } = await connect();
+      const query = TestBed.inject(AutomationRunQuery);
+
+      hub.trigger(
+        'AutomationRunCreated',
+        { id: 'run-1', status: 'Running', results: [] },
+        null,
+      );
+      hub.trigger(
+        'AutomationResultCreated',
+        { id: 'res-1', runId: 'run-1', iteration: 1, status: 'Succeeded' },
+        null,
+      );
+      hub.trigger(
+        'AutomationResultCreated',
+        { id: 'res-2', runId: 'run-1', iteration: 2, status: 'Running' },
+        null,
+      );
+      hub.trigger(
+        'AutomationRunUpdated',
+        { id: 'run-1', status: 'Succeeded', results: [] },
+        ['status'],
+      );
+      hub.trigger(
+        'AutomationResultUpdated',
+        { id: 'res-2', runId: 'run-1', iteration: 2, status: 'Succeeded' },
+        ['status'],
+      );
+      hub.trigger(
+        'AutomationResultCreated',
+        { id: 'res-x', runId: 'run-9', iteration: 1 },
+        null,
+      );
+
+      const run = query.getEntity('run-1');
+      expect(run.status).toBe('Succeeded');
+      expect(run.results.map((r) => `${r.id}:${r.status}`)).toEqual([
+        'res-2:Succeeded',
+        'res-1:Succeeded',
+      ]);
+      expect(query.hasEntity('run-9')).toBe(false);
+
+      hub.trigger('AutomationResultDeleted', 'res-1');
+      expect(query.getEntity('run-1').results.map((r) => r.id)).toEqual([
+        'res-2',
+      ]);
+    });
 
     /**
      * Verifies: DataField events route templates and MSEL fields to their own stores, and DataFieldDeleted removes from both.

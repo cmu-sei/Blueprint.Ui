@@ -46,7 +46,6 @@ import {
   MselRole,
   Organization,
   ScenarioEvent,
-  SteamfitterTask,
   SystemPermission,
   Team,
   Unit,
@@ -257,9 +256,6 @@ export class ScenarioEventListComponent
           const options = [];
           if (msel.useGallery) {
             options.push(IntegrationTarget.Gallery);
-          }
-          if (msel.useSteamfitter) {
-            options.push(IntegrationTarget.Steamfitter);
           }
           this.integrationTargetOptions = options;
           // in case the dataFields were received before the msel
@@ -700,7 +696,6 @@ export class ScenarioEventListComponent
       scenarioEventType: EventType.Inject,
       deltaSeconds: this.maxScenarioEventStartSeconds,
     } as ScenarioEvent;
-    this.makeSteamfitterTask(newScenarioEvent, uuidv4());
     this.mselDataFields.forEach((df) => {
       newScenarioEvent.dataValues.push({
         dataFieldId: df.id,
@@ -726,14 +721,6 @@ export class ScenarioEventListComponent
       }
       editScenarioEvent.dataValues.push({ ...dataValue });
     });
-    if (scenarioEvent.steamfitterTaskId) {
-      editScenarioEvent.steamfitterTask = { ...scenarioEvent.steamfitterTask };
-      editScenarioEvent.steamfitterTask.actionParameters = {
-        ...scenarioEvent.steamfitterTask.actionParameters,
-      };
-    } else {
-      this.makeSteamfitterTask(editScenarioEvent, null);
-    }
     this.displayEditDialog(editScenarioEvent);
   }
 
@@ -752,13 +739,6 @@ export class ScenarioEventListComponent
           value: dv.value,
         });
       });
-    if (scenarioEvent.steamfitterTaskId) {
-      newScenarioEvent.steamfitterTask = { ...scenarioEvent.steamfitterTask };
-      newScenarioEvent.steamfitterTaskId = null;
-      newScenarioEvent.steamfitterTask.id = null;
-    } else {
-      this.makeSteamfitterTask(newScenarioEvent, uuidv4());
-    }
     this.displayEditDialog(newScenarioEvent);
   }
 
@@ -797,7 +777,6 @@ export class ScenarioEventListComponent
         showScenarioEventType: !this.isStarterMsel(),
         useCite: this.msel.useCite,
         useGallery: this.msel.useGallery,
-        useSteamfitter: this.msel.useSteamfitter,
         userList: this.mselUsers,
         mselStartTime: this.msel.startTime,
       },
@@ -810,23 +789,6 @@ export class ScenarioEventListComponent
       this.isAddingScenarioEvent = false;
       dialogRef.close();
     });
-  }
-
-  makeSteamfitterTask(scenarioEvent: ScenarioEvent, newId: string) {
-    const steamfitterTask = {
-      expectedOutput: '',
-      expirationSeconds: 120,
-      triggerCondition: 'Manual',
-      userExecutable: true,
-      repeatable: false,
-      actionParameters: {},
-      scenarioEventId: scenarioEvent.id,
-    } as SteamfitterTask;
-    if (newId) {
-      steamfitterTask.id = newId;
-      scenarioEvent.steamfitterTaskId = newId;
-    }
-    scenarioEvent.steamfitterTask = steamfitterTask;
   }
 
   saveDataValue(

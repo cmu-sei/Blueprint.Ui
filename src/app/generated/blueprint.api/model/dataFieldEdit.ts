@@ -35,6 +35,7 @@ export interface DataFieldEdit {
     isInformationField?: boolean;
     isFacilitationField?: boolean;
     isAssessorVisible?: boolean;
+    onFacilitatorView?: boolean;
 }
 export namespace DataFieldEdit {
 }

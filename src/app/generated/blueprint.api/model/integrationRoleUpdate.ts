@@ -18,6 +18,5 @@
 export interface IntegrationRoleUpdate { 
     citeEvaluationRole?: string | null;
     galleryExhibitRole?: string | null;
-    steamfitterScenarioRole?: string | null;
 }
 

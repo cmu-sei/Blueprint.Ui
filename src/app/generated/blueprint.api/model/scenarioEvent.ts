@@ -15,7 +15,6 @@
  */
 import { DataValue } from './dataValue';
 import { EventType } from './eventType';
-import { SteamfitterTask } from './steamfitterTask';
 
 
 export interface ScenarioEvent { 
@@ -34,8 +33,6 @@ export interface ScenarioEvent {
     injectId?: string | null;
     integrationTarget?: string | null;
     information?: string | null;
-    steamfitterTaskId?: string | null;
-    steamfitterTask?: SteamfitterTask;
 }
 export namespace ScenarioEvent {
 }

@@ -11,7 +11,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 import { screen } from '@testing-library/angular';
-import userEvent from '@testing-library/user-event';
 import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
 import {
   DataField,
@@ -19,12 +18,10 @@ import {
   EventType,
   ScenarioEvent,
 } from 'src/app/generated/blueprint.api';
-import { IntegrationTarget } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventEditDialogComponent } from './scenario-event-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { DataValueComponent } from '../data-value/data-value.component';
 import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
-import { SteamfitterTaskComponent } from '../steamfitter-task/steamfitter-task.component';
 
 @Component({ selector: 'app-data-value', template: '' })
 class DataValueStub {
@@ -54,11 +51,6 @@ class DurationEditStub {
   readonly postScript = input<string>(undefined);
   readonly change = output<number>();
 }
-@Component({ selector: 'app-steamfitter-task', template: '' })
-class SteamfitterTaskStub {
-  readonly scenarioEvent = input<ScenarioEvent>(undefined);
-  readonly canEdit = input<boolean>(undefined);
-}
 
 const TITLE: DataField = {
   id: 'df-title',
@@ -73,8 +65,6 @@ interface Roles {
   isApprover?: boolean;
   isOwner?: boolean;
   isEditingRestricted?: boolean;
-  // The event targets Steamfitter and the MSEL uses it, so the Steamfitter Task tab is offered.
-  steamfitter?: boolean;
   // A When (DateTime) field holding this value, shown on the All tab only while Title is on the Default tab.
   when?: string;
   titleOnDefaultTab?: boolean;
@@ -94,7 +84,6 @@ function dialogData(roles: Roles = {}) {
     isApprover = false,
     isOwner = false,
     isEditingRestricted = false,
-    steamfitter = false,
     when,
     titleOnDefaultTab = false,
   } = roles;
@@ -123,14 +112,6 @@ function dialogData(roles: Roles = {}) {
               },
             ]),
       ],
-      integrationTarget: steamfitter
-        ? IntegrationTarget.Steamfitter
-        : undefined,
-      steamfitterTask: {
-        id: 'task-1',
-        name: steamfitter ? 'Ping the VM' : 'Unused task',
-      },
-      steamfitterTaskId: 'task-1',
     } as ScenarioEvent,
     integrationTargetOptions: [],
     dataFields: [
@@ -152,7 +133,6 @@ function dialogData(roles: Roles = {}) {
     showScenarioEventType: !isEditingRestricted,
     useCite: false,
     useGallery: false,
-    useSteamfitter: steamfitter,
     userList: [],
     mselStartTime: new Date('2026-01-01T12:00:00Z'),
   };
@@ -171,7 +151,6 @@ async function renderEventEdit(roles: Roles = {}) {
     childStubs: [
       { replace: DataValueComponent, with: DataValueStub },
       { replace: DurationEditComponent, with: DurationEditStub },
-      { replace: SteamfitterTaskComponent, with: SteamfitterTaskStub },
     ],
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
   });
@@ -194,39 +173,31 @@ function child<T>(
 
 describe('ScenarioEventEditDialogComponent', () => {
   /**
-   * Verifies: an editor can save, edit the values, start time, metadata and Steamfitter task; the values are approvable only for an approver.
-   * Interacts with: crucible-dialog submit state, DataValueStub, DurationEditStub and SteamfitterTaskStub inputs, the Steamfitter Task tab.
-   * Data: isEditor true (isApprover false); an Inject with a Title value that targets Steamfitter.
+   * Verifies: an editor can save, edit the values, start time and metadata; the values are approvable only for an approver.
+   * Interacts with: crucible-dialog submit state, DataValueStub and DurationEditStub inputs.
+   * Data: isEditor true (isApprover false); an Inject with a Title value.
    */
   it('lets an editor edit the event', async () => {
-    const { fixture } = await renderEventEdit({
-      isEditor: true,
-      steamfitter: true,
-    });
-    const user = userEvent.setup();
+    const { fixture } = await renderEventEdit({ isEditor: true });
 
     expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
     expect(child(fixture, DataValueStub).canEdit()).toBe(true);
     expect(child(fixture, DataValueStub).canApprove()).toBe(false);
     expect(child(fixture, DurationEditStub).canEdit()).toBe(true);
     expect(screen.getByRole('textbox', { name: 'Row Metadata' })).toBeEnabled();
-    await user.click(screen.getByText('Steamfitter Task'));
-    expect(child(fixture, SteamfitterTaskStub).canEdit()).toBe(true);
   });
 
   /**
-   * Verifies: without the editor role Save is disabled and the values, start time, metadata and Steamfitter task are read-only, even for an approver who owns the event.
-   * Interacts with: crucible-dialog submit state, DataValueStub, DurationEditStub and SteamfitterTaskStub inputs, the Steamfitter Task tab.
-   * Data: isEditor false; isApprover and isOwner true (near miss); an Inject that targets Steamfitter.
+   * Verifies: without the editor role Save is disabled and the values, start time and metadata are read-only, even for an approver who owns the event.
+   * Interacts with: crucible-dialog submit state, DataValueStub and DurationEditStub inputs.
+   * Data: isEditor false; isApprover and isOwner true (near miss); an Inject.
    */
   it('makes the event read-only without the editor role', async () => {
     const { fixture } = await renderEventEdit({
       isEditor: false,
       isApprover: true,
       isOwner: true,
-      steamfitter: true,
     });
-    const user = userEvent.setup();
 
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
     expect(child(fixture, DataValueStub).canEdit()).toBe(false);
@@ -234,8 +205,6 @@ describe('ScenarioEventEditDialogComponent', () => {
     expect(
       screen.getByRole('textbox', { name: 'Row Metadata' }),
     ).toBeDisabled();
-    await user.click(screen.getByText('Steamfitter Task'));
-    expect(child(fixture, SteamfitterTaskStub).canEdit()).toBe(false);
   });
 
   /**
@@ -295,22 +264,6 @@ describe('ScenarioEventEditDialogComponent', () => {
       ).toHaveAttribute('aria-disabled', disabled);
     },
   );
-
-  /**
-   * Verifies: saving an event that does not target Steamfitter drops its Steamfitter task.
-   * Interacts with: crucible-dialog submit, handleEditComplete, editComplete output.
-   * Data: isEditor true; no integration target; a stray Steamfitter task.
-   */
-  it('drops the Steamfitter task when saving a non-Steamfitter event', async () => {
-    const { results } = await renderEventEdit({ isEditor: true });
-    const user = userEvent.setup();
-
-    await user.click(screen.getByRole('button', { name: 'Save' }));
-
-    expect(results).toHaveLength(1);
-    expect(results[0].scenarioEvent.steamfitterTask).toBeNull();
-    expect(results[0].scenarioEvent.steamfitterTaskId).toBeNull();
-  });
 
   /**
    * Verifies: a DateTime value that is not a date disables Save only when it is on screen and can be edited, so Save never waits on a value that can't be fixed; a value of only spaces is empty.

@@ -8,7 +8,6 @@ const SETTINGS = {
   PlayerUrl: 'http://player.example/',
   CiteUrl: 'http://cite.example/',
   GalleryUrl: 'http://gallery.example',
-  SteamfitterUrl: 'http://steamfitter.example//',
   CasterUrl: 'http://caster.example/',
   VmUrl: 'http://vm.example/',
 };
@@ -45,11 +44,21 @@ describe('playerAppIconUrl', () => {
    * Interacts with: playerAppIconUrl, window.location.origin.
    * Data: SETTINGS, whose URLs end in zero, one or two slashes; icons '<placeholder>/assets/icon.png'.
    */
+  /**
+   * Verifies: {steamfitterUrl}, which the push no longer fills, becomes empty, so the rest of the path is relative to Player.
+   * Interacts with: playerAppIconUrl.
+   * Data: SETTINGS; icon '{steamfitterUrl}/assets/icon.png'.
+   */
+  it('empties {steamfitterUrl}', () => {
+    expect(playerAppIconUrl('{steamfitterUrl}/assets/icon.png', SETTINGS)).toBe(
+      'http://player.example/assets/icon.png',
+    );
+  });
+
   it.each([
     { placeholder: '{playerUrl}', base: 'http://player.example' },
     { placeholder: '{citeUrl}', base: 'http://cite.example' },
     { placeholder: '{galleryUrl}', base: 'http://gallery.example' },
-    { placeholder: '{steamfitterUrl}', base: 'http://steamfitter.example' },
     { placeholder: '{casterUrl}', base: 'http://caster.example' },
     { placeholder: '{vmUrl}', base: 'http://vm.example' },
     { placeholder: '{blueprintUrl}', base: window.location.origin },
