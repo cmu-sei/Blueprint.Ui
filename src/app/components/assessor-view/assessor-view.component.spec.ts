@@ -497,7 +497,7 @@ async function renderAssessorView(
       canChooseFields,
     },
   });
-  return { ...rendered, poolApi, citeApi };
+  return { ...rendered, poolApi, citeApi, frameworkApi, scaleApi };
 }
 
 function values(fixture: ComponentFixture<unknown>): DataValueStub[] {
@@ -1515,6 +1515,32 @@ describe('AssessorViewComponent', () => {
       await new Promise((r) => setTimeout(r, 400));
 
       expect(printDocument).not.toHaveBeenCalled();
+    });
+
+    /**
+     * Verifies: when another MSEL is shown in the same view, its proficiency scale is read for it rather than the last
+     * MSEL's kept, so its ratings are read by its own levels.
+     * Interacts with: the active MSEL subscription (scale reset), loadProficiencyScale, ProficiencyScaleService (stub).
+     * Data: the report exercise, then a second MSEL made active.
+     */
+    it("reads the next MSEL's proficiency scale when another MSEL is shown", async () => {
+      const { fixture, scaleApi } = await renderAssessorView({
+        msel: REPORT_MSEL,
+        mselCompetencies: REPORT_COMPETENCIES,
+        proficiencyLevels: LEVELS,
+      });
+      const reads = scaleApi.getProficiencyScale.mock.calls.length;
+      expect(reads).toBeGreaterThan(0);
+
+      const store = TestBed.inject(MselStore);
+      store.add({ ...REPORT_MSEL, id: 'msel-2', name: 'Other Exercise' });
+      store.setActive('msel-2');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(scaleApi.getProficiencyScale.mock.calls.length).toBeGreaterThan(
+        reads,
+      );
     });
 
     /**

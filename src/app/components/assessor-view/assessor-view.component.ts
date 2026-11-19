@@ -517,6 +517,10 @@ export class AssessorViewComponent
           if (mselChanged) {
             this.resetTeamResponses();
             this.resetAssertionTeams();
+            // another MSEL's competencies may use another scale: it is read again with them
+            this.proficiencyScale = null;
+            this.proficiencyLevels = [];
+            this.proficiencyScaleSettled = false;
           }
           if (hidingChanged) {
             this.namesSettingChanges++;
