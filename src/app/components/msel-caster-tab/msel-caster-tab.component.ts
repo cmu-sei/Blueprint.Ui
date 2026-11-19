@@ -278,7 +278,7 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
       return 'No directory is linked. Import the copy into Caster before this template can be launched: a launch deploys the linked directory and never imports a copy.';
     }
     if (this.copy) {
-      return "No directory is linked, so the push imports the copy into Caster as a new project, as you, links the MSEL to it, and creates a workspace there. You need Caster's Create Projects permission.";
+      return "No directory is linked, so the push imports the copy into Caster as a new project, as you, links the MSEL to it, and creates a workspace there. You need Caster's Create Projects permission. To see first what the import changes to fit Caster, such as a renamed directory, use Import into Caster before pushing.";
     }
     return 'Link a Caster directory, or upload a MSEL file that carries a copy of one, before pushing.';
   }
@@ -414,11 +414,12 @@ export class MselCasterTabComponent implements OnInit, OnDestroy {
               const notes = [...(result.warnings ?? [])];
               if (result.lockedFiles?.length) {
                 notes.push(
-                  `Caster did not import these locked files: ${result.lockedFiles.join(', ')}`,
+                  `Caster did not import these locked files: ${result.lockedFiles.join(', ')}.`,
                 );
               }
               if (notes.length) {
-                this.showMessage('Imported With Changes', notes.join('\n'));
+                // the dialog shows its message as one paragraph, so the notes are sentences joined by spaces
+                this.showMessage('Imported With Changes', notes.join(' '));
               }
             },
             error: (err) => {

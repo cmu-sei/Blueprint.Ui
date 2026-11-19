@@ -578,6 +578,33 @@ describe('MselCasterTabComponent', () => {
   });
 
   /**
+   * Verifies: several renames and the locked files read as sentences in the one-paragraph dialog.
+   * Interacts with: Import into Caster, MselCasterExportService.importMselCasterExport (stub, two warnings and a locked file), CrucibleDialogService.confirm (stub).
+   * Data: MSEL role Owner; a pending MSEL with no directory and a copy; the import renames two directories and holds back a.tf.
+   */
+  it('joins several import notes as sentences', async () => {
+    const { fixture, copyApi, confirm } = await renderTab({ copy: COPY });
+    copyApi.importMselCasterExport.mockReturnValue(
+      of<MselCasterImportResult>({
+        casterDirectoryId: 'dir-new',
+        lockedFiles: ['a.tf'],
+        warnings: ['First rename.', 'Second rename.'],
+        msel: { ...msel([MselRole.Owner]), casterDirectoryId: 'dir-new' },
+      }),
+    );
+
+    await userEvent.setup().click(button('Import into Caster'));
+    fixture.detectChanges();
+
+    expect(confirm).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        message:
+          'First rename. Second rename. Caster did not import these locked files: a.tf.',
+      }),
+    );
+  });
+
+  /**
    * Verifies: Delete the Copy asks first, then deletes it.
    * Interacts with: Delete the Copy, CrucibleDialogService.confirm (stub, confirms), MselCasterExportService.deleteMselCasterExport (stub).
    * Data: MSEL role Owner; a pending MSEL linked to dir-1 with a copy.
