@@ -125,6 +125,7 @@ export * from './mselTechniqueCountermeasures';
 export * from './mselTechniqueUpgrade';
 export * from './mselUnit';
 export * from './mselUnitCreate';
+export * from './network';
 export * from './organization';
 export * from './organizationCreate';
 export * from './organizationEdit';

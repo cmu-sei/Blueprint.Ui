@@ -13,6 +13,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { Network } from './network';
 
 
 export interface TeamEdit { 
@@ -24,5 +25,7 @@ export interface TeamEdit {
     canTeamLeaderInvite?: boolean;
     canTeamMemberInvite?: boolean;
     casterTeamVariable?: string | null;
+    domain?: string | null;
+    networks?: Array<Network> | null;
 }
 
