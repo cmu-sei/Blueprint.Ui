@@ -34,11 +34,22 @@ export class MselExecutionDataService {
     return this.executions$.value[mselId];
   }
 
+  // per MSEL, the newest read or action: an answer to an older read, overtaken by a newer read or a start or pause, is
+  // dropped rather than put back over what came after it
+  private readonly sequence: Record<string, number> = {};
+  private next(mselId: string): number {
+    this.sequence[mselId] = (this.sequence[mselId] ?? 0) + 1;
+    return this.sequence[mselId];
+  }
+
   load(mselId: string) {
+    const asked = this.next(mselId);
     this.mselExecutionService
       .getMselExecution(mselId)
       .pipe(take(1))
-      .subscribe((execution) => this.updateStore(execution));
+      .subscribe((execution) => {
+        if (this.sequence[mselId] === asked) this.updateStore(execution);
+      });
   }
 
   startMove(
@@ -46,6 +57,7 @@ export class MselExecutionDataService {
     moveNumber: number,
     runTaskIds: string[],
   ): Observable<MselAdvanceResult> {
+    this.next(mselId);
     return this.mselExecutionService
       .startMselMove(mselId, moveNumber, { runTaskIds })
       .pipe(tap((result) => this.updateStore(result.execution)));
@@ -57,12 +69,14 @@ export class MselExecutionDataService {
     groupNumber: number,
     runTaskIds: string[],
   ): Observable<MselAdvanceResult> {
+    this.next(mselId);
     return this.mselExecutionService
       .startMselGroup(mselId, moveNumber, groupNumber, { runTaskIds })
       .pipe(tap((result) => this.updateStore(result.execution)));
   }
 
   setPaused(mselId: string, paused: boolean): Observable<MselExecution> {
+    this.next(mselId);
     return this.mselExecutionService
       .setMselAutomationPaused(mselId, { paused })
       .pipe(tap((execution) => this.updateStore(execution)));

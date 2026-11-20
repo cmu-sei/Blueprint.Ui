@@ -184,6 +184,23 @@ export function hasSecret(draft: AutomationTaskDraft, key: string): boolean {
  * What is wrong with a draft, as the API would say before it refuses the save. Checked here so the dialog, which
  * closes on Save, keeps the author's work.
  */
+/**
+ * Whether a date and time is one the API reads: Date.parse alone takes 2026-02-30 for March 2, which the API refuses,
+ * so a date's year, month and day must come back as written.
+ */
+function isRealDateTime(value: string): boolean {
+  if (Number.isNaN(Date.parse(value))) return false;
+  const day = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+  if (!day) return true;
+  const [year, month, date] = [+day[1], +day[2], +day[3]];
+  const parsed = new Date(Date.UTC(year, month - 1, date));
+  return (
+    parsed.getUTCFullYear() === year &&
+    parsed.getUTCMonth() === month - 1 &&
+    parsed.getUTCDate() === date
+  );
+}
+
 export function taskErrors(
   draft: AutomationTaskDraft,
   definition: AutomationActionDefinition | undefined,
@@ -215,10 +232,7 @@ export function taskErrors(
       const name = p.display || p.key;
       if (p.inputType === 'number' && !/^-?\d+$/.test(value)) {
         errors.push(`${name} must be a whole number.`);
-      } else if (
-        p.inputType === 'datetime' &&
-        Number.isNaN(Date.parse(value))
-      ) {
+      } else if (p.inputType === 'datetime' && !isRealDateTime(value)) {
         errors.push(`${name} must be a date and time.`);
       } else if (p.inputType === 'checkbox' && !/^(true|false)$/i.test(value)) {
         errors.push(`${name} must be true or false.`);

@@ -7,7 +7,7 @@ import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { Observable, of } from 'rxjs';
+import { Observable, Subject, of } from 'rxjs';
 import {
   AutomationPausedForm,
   AutomationRun,
@@ -517,7 +517,15 @@ describe('FacilitatorViewComponent', () => {
    * Data: unpaused at move 1; the MSEL then paused at move 2.
    */
   it('follows another facilitator through the MSEL', async () => {
-    const { fixture } = await renderView();
+    const { executionApi, fixture } = await renderView();
+    // the read the update asks for answers the server's state after it
+    executionApi.getMselExecution.mockReturnValue(
+      of({
+        ...structuredClone(EXECUTION),
+        automationPaused: true,
+        currentMoveNumber: n(2),
+      }),
+    );
 
     TestBed.inject(MselStore).update('msel-1', {
       automationPaused: true,
@@ -530,6 +538,31 @@ describe('FacilitatorViewComponent', () => {
     expect(
       screen.getByRole('button', { name: 'Resume Automation' }),
     ).toBeInTheDocument();
+    expect(screen.getByText(/Now: Move 2 · Group 0/)).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a read of the execution that was asked for before another facilitator's start, and answers after it, does not put the earlier move back.
+   * Interacts with: MselExecutionDataService.load (one read in flight), the MSEL's update, the read that update asks for.
+   * Data: an older read answering move 1 late; the MSEL updated to move 2, whose read answers move 2.
+   */
+  it('keeps a live start over an older read of the execution', async () => {
+    const { executionApi, fixture } = await renderView();
+    const older = new Subject<MselExecution>();
+    executionApi.getMselExecution
+      .mockReturnValueOnce(older)
+      .mockReturnValue(
+        of({ ...structuredClone(EXECUTION), currentMoveNumber: n(2) }),
+      );
+
+    TestBed.inject(MselExecutionDataService).load('msel-1');
+    TestBed.inject(MselStore).update('msel-1', {
+      currentMoveNumber: 2,
+      currentGroupNumber: 0,
+    });
+    older.next(structuredClone(EXECUTION));
+    fixture.detectChanges();
+
     expect(screen.getByText(/Now: Move 2 · Group 0/)).toBeInTheDocument();
   });
 

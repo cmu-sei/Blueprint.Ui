@@ -32,13 +32,16 @@ export class AutomationRunDataService {
   /** Replaces the MSEL's runs of the kind with the API's, newest 2000 first. */
   loadByMsel(mselId: string, kind: AutomationRunKind) {
     this.store.setLoading(true);
-    // a run that arrives over SignalR while the list is read is newer than the answer, and is kept
-    const asked = Date.now();
+    // A run that arrives over SignalR while the list is read is newer than the answer: it is neither removed for being
+    // missing from it nor written over by it. What arrives meanwhile is recorded, rather than compared by clock.
+    const touched = new Set<string>();
+    this.loadsInFlight.add(touched);
     this.automationService
       .getAutomationRunsByMsel(mselId, kind)
       .pipe(take(1))
       .subscribe({
         next: (runs) => {
+          this.loadsInFlight.delete(touched);
           runs.forEach((r) => this.setAsDates(r));
           const answered = new Set(runs.map((r) => r.id));
           this.store.remove(
@@ -46,12 +49,13 @@ export class AutomationRunDataService {
               r.mselId === mselId &&
               r.kind === kind &&
               !answered.has(r.id) &&
-              !(r.dateCreated && new Date(r.dateCreated).valueOf() >= asked),
+              !touched.has(r.id),
           );
-          this.store.upsertMany(runs);
+          this.store.upsertMany(runs.filter((r) => !touched.has(r.id)));
           this.store.setLoading(false);
         },
         error: (error) => {
+          this.loadsInFlight.delete(touched);
           this.store.setLoading(false);
           throw error;
         },
@@ -94,7 +98,11 @@ export class AutomationRunDataService {
   }
 
   /** A run from the API or a broadcast. One with no results keeps those the store has. */
+  // the runs each list read in flight has seen updated since it was asked for
+  private readonly loadsInFlight = new Set<Set<string>>();
+
   updateStore(run: AutomationRun) {
+    this.loadsInFlight.forEach((touched) => touched.add(run.id));
     this.setAsDates(run);
     const existing = this.query.getEntity(run.id);
     const results =

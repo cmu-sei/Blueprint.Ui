@@ -232,14 +232,21 @@ export class FacilitatorViewComponent implements ScenarioEventView {
           this.execution &&
           (before.automationPaused !== msel.automationPaused ||
             before.currentMoveNumber !== msel.currentMoveNumber ||
-            before.currentGroupNumber !== msel.currentGroupNumber)
+            before.currentGroupNumber !== msel.currentGroupNumber ||
+            String(before.currentGroupStartedAt ?? '') !==
+              String(msel.currentGroupStartedAt ?? ''))
         ) {
           this.execution = {
             ...this.execution,
             automationPaused: msel.automationPaused,
             currentMoveNumber: msel.currentMoveNumber,
             currentGroupNumber: msel.currentGroupNumber,
+            currentGroupStartedAt: msel.currentGroupStartedAt
+              ? new Date(msel.currentGroupStartedAt)
+              : null,
           };
+          // and the execution is read again, so an older read's answer cannot put the earlier position back
+          this.executionData.load(msel.id);
         }
         this.rebuildRuns();
         if (changed && msel.id) {

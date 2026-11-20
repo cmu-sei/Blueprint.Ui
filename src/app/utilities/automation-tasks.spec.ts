@@ -271,6 +271,14 @@ describe('taskErrors', () => {
       definition: SSH,
       error: 'Situation time must be a date and time.',
     },
+    {
+      label: 'a day the month does not have',
+      draft: ssh({
+        actionParameters: { Hosts: 'h', At: '2026-02-30T10:00:00Z' },
+      }),
+      definition: SSH,
+      error: 'Situation time must be a date and time.',
+    },
   ])('names $label', ({ draft, definition, error }) => {
     expect(taskErrors(draft, definition, known)).toContain(error);
   });

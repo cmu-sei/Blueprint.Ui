@@ -120,12 +120,35 @@ describe('AutomationRunDataService', () => {
     api.getAutomationRunsByMsel.mockReturnValue(answer);
 
     service.loadByMsel('msel-1', AutomationRunKind.Exercise);
-    service.updateStore(run({ id: 'arrived', dateCreated: new Date() }));
+    // created long ago by the server's clock, which a clock comparison would have dropped
+    service.updateStore(
+      run({ id: 'arrived', dateCreated: new Date('2020-01-01T00:00:00Z') }),
+    );
     answer.next([run({ id: 'answered' })]);
 
     expect(query.hasEntity('arrived')).toBe(true);
     expect(query.hasEntity('answered')).toBe(true);
     expect(query.hasEntity('stale')).toBe(false);
+  });
+
+  /**
+   * Verifies: a run's newer state, broadcast while the list is read, is not written over by the older state in the answer.
+   * Interacts with: loadByMsel (stub answering later), updateStore.
+   * Data: run-1 Running in the answer; a broadcast that it Succeeded arrives first.
+   */
+  it('loadByMsel keeps a run updated while it loads', () => {
+    const { service, query, api } = setup();
+    service.updateStore(run({ id: 'run-1', status: AutomationStatus.Running }));
+    const answer = new Subject<AutomationRun[]>();
+    api.getAutomationRunsByMsel.mockReturnValue(answer);
+
+    service.loadByMsel('msel-1', AutomationRunKind.Exercise);
+    service.updateStore(
+      run({ id: 'run-1', status: AutomationStatus.Succeeded }),
+    );
+    answer.next([run({ id: 'run-1', status: AutomationStatus.Running })]);
+
+    expect(query.getEntity('run-1').status).toBe(AutomationStatus.Succeeded);
   });
 
   /**
