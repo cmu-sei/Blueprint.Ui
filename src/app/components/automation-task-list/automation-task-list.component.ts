@@ -167,11 +167,6 @@ export class AutomationTaskListComponent {
   duplicate(draft: AutomationTaskDraft) {
     const [copy] = copyDrafts([draft]);
     copy.name = `${draft.name} (copy)`;
-    // a copy of a task that triggered itself would trigger its original
-    if (copy.triggerTaskId === draft.id) {
-      copy.triggerTaskId = null;
-      copy.triggerCondition = AutomationTrigger.Manual;
-    }
     const list = this.drafts();
     list.splice(list.indexOf(draft) + 1, 0, copy);
     this.expandedId = copy.id;

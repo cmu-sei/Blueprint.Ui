@@ -31,7 +31,6 @@ function task(overrides: Partial<AutomationTask> = {}): AutomationTask {
 function setup() {
   const api = {
     getAutomationTasksByMsel: vi.fn(() => of<AutomationTask[]>([])),
-    getAutomationTasksByScenarioEvent: vi.fn(() => of<AutomationTask[]>([])),
   } satisfies ApiStub<AutomationService>;
   TestBed.configureTestingModule({
     providers: [{ provide: AutomationService, useValue: api }],
@@ -74,28 +73,6 @@ describe('AutomationTaskDataService', () => {
     expect(query.getAll()).toEqual([]);
     expect(query.getValue().loading).toBe(false);
     expect(errors).toEqual([failure]);
-  });
-
-  /**
-   * Verifies: loadByScenarioEvent refreshes one event's tasks, dropping one the event no longer has and leaving another event's alone.
-   * Interacts with: AutomationService.getAutomationTasksByScenarioEvent (stub), AutomationTaskQuery.
-   * Data: t-1 and t-2 on se-1, t-3 on se-2; the API now answers only t-2 (renamed) for se-1.
-   */
-  it('loadByScenarioEvent replaces only that event tasks', () => {
-    const { service, query, api } = setup();
-    service.updateStore(task());
-    service.updateStore(task({ id: 't-2', name: 'Notify' }));
-    service.updateStore(
-      task({ id: 't-3', scenarioEventId: 'se-2', name: 'Other' }),
-    );
-    api.getAutomationTasksByScenarioEvent.mockReturnValue(
-      of([task({ id: 't-2', name: 'Notify Blue' })]),
-    );
-
-    service.loadByScenarioEvent('se-1');
-
-    expect(api.getAutomationTasksByScenarioEvent).toHaveBeenCalledWith('se-1');
-    expect(names(query.getAll())).toEqual(['Notify Blue', 'Other']);
   });
 
   /**

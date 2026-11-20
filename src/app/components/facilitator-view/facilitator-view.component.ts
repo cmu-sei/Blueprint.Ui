@@ -192,7 +192,6 @@ export class FacilitatorViewComponent implements ScenarioEventView {
   readonly sections = new MselSectionExpansion();
   private sectionsOpened = false;
   drawerTask: AutomationTask | null = null;
-  showSearch = false;
   showRealTime = this.uiDataService.useRealTime();
   readonly filterChange = new Subject<string>();
   readonly now = signal(new Date());
@@ -717,11 +716,6 @@ export class FacilitatorViewComponent implements ScenarioEventView {
   applyFilter(filterValue: string) {
     this.filterString = filterValue;
     this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
-  }
-
-  setSearch(value: boolean) {
-    if (!value) this.applyFilter('');
-    this.showSearch = value;
   }
 
   setRealTime(value: boolean) {

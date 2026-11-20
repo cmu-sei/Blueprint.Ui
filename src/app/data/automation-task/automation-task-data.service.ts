@@ -42,22 +42,6 @@ export class AutomationTaskDataService {
       });
   }
 
-  /** Refreshes one event's tasks, dropping any the event no longer has. */
-  loadByScenarioEvent(scenarioEventId: string) {
-    this.automationService
-      .getAutomationTasksByScenarioEvent(scenarioEventId)
-      .pipe(take(1))
-      .subscribe((tasks) => {
-        tasks.forEach((t) => this.setAsDates(t));
-        const kept = new Set(tasks.map((t) => t.id));
-        this.store.remove(
-          (t: AutomationTask) =>
-            t.scenarioEventId === scenarioEventId && !kept.has(t.id),
-        );
-        this.store.upsertMany(tasks);
-      });
-  }
-
   updateStore(task: AutomationTask) {
     this.setAsDates(task);
     this.store.upsert(task.id, task);
