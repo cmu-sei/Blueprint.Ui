@@ -57,6 +57,10 @@ import { DurationViewComponent } from '../shared/duration-view/duration-view.com
 import { DatePipe, DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
+import {
+  formatPrintDuration,
+  printFooterCss,
+} from 'src/app/utilities/print-report';
 
 /** Competencies listed together in the print: a framework's, or a team's. */
 export interface PlaybookCompetencyGroup {
@@ -201,34 +205,6 @@ export function imagesReady(
     Promise.all(decoded).then(() => undefined),
     timeout,
   ]).finally(() => clearTimeout(timer));
-}
-
-/**
- * The print footer's MSEL name, as an @page margin box for the "playbook"
- * named page. Margin box content can't read the DOM, so the name is written
- * into a CSS string.
- */
-export function playbookFooterCss(mselName: string): string {
-  const name = (mselName ?? '')
-    .replace(/[\r\n]+/g, ' ')
-    .replace(/\\/g, '\\\\')
-    .replace(/"/g, '\\"');
-  return `@page playbook { @bottom-left { content: "${name}"; } }`;
-}
-
-/** A duration as days, hours and minutes, e.g. "1 day 4 hours 30 minutes". */
-export function formatPlaybookDuration(totalSeconds: number): string {
-  const seconds = Math.max(0, Math.round(+totalSeconds || 0));
-  const parts: [number, string][] = [
-    [Math.floor(seconds / 86400), 'day'],
-    [Math.floor((seconds % 86400) / 3600), 'hour'],
-    [Math.floor((seconds % 3600) / 60), 'minute'],
-  ];
-  const text = parts
-    .filter(([n]) => n > 0)
-    .map(([n, unit]) => `${n} ${unit}${n === 1 ? '' : 's'}`)
-    .join(' ');
-  return text || `${seconds} second${seconds === 1 ? '' : 's'}`;
 }
 
 @Component({
@@ -835,7 +811,7 @@ export class MselPlaybookComponent implements OnDestroy {
   }
 
   formatDuration(totalSeconds: number): string {
-    return formatPlaybookDuration(totalSeconds);
+    return formatPrintDuration(totalSeconds);
   }
 
   // Puts the MSEL name in the print footer; the page number is in the scss.
@@ -847,7 +823,7 @@ export class MselPlaybookComponent implements OnDestroy {
       style.id = id;
       this.document.head.appendChild(style);
     }
-    style.textContent = playbookFooterCss(this.msel.name);
+    style.textContent = printFooterCss('playbook', this.msel.name);
   }
 }
 
