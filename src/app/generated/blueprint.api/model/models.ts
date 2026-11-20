@@ -119,6 +119,7 @@ export * from './mselScoringModelLink';
 export * from './mselScoringOption';
 export * from './mselUnit';
 export * from './mselUnitCreate';
+export * from './network';
 export * from './organization';
 export * from './organizationCreate';
 export * from './organizationEdit';

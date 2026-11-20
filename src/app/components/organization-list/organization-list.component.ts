@@ -196,6 +196,12 @@ export class OrganizationListComponent
         name: organization.name,
         shortName: organization.shortName,
         email: organization.email,
+        domain: organization.domain,
+        // a new organization (a template made a MSEL's, or the other way round) gets its networks as new ones
+        networks: (organization.networks ?? []).map((n) => ({
+          ...n,
+          id: makeTemplate === organization.isTemplate ? n.id : undefined,
+        })),
         summary: organization.summary,
         description: organization.description,
         mselId: makeTemplate ? null : this.msel.id,

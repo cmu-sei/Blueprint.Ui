@@ -168,6 +168,7 @@ model/mselScoringModelLink.ts
 model/mselScoringOption.ts
 model/mselUnit.ts
 model/mselUnitCreate.ts
+model/network.ts
 model/organization.ts
 model/organizationCreate.ts
 model/organizationEdit.ts

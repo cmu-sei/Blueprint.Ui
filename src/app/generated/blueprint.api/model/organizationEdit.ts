@@ -13,6 +13,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { Network } from './network';
 
 
 export interface OrganizationEdit { 
@@ -21,5 +22,7 @@ export interface OrganizationEdit {
     description?: string | null;
     summary?: string | null;
     email?: string | null;
+    domain?: string | null;
+    networks?: Array<Network> | null;
 }
 
