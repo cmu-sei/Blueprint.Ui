@@ -14,7 +14,10 @@ export interface CountermeasureTacticGroup {
  * Groups mappings by tactic in the order the release's framework gives (a tactic it does not list goes after,
  * alphabetically) and ranks each group by weight, then by id.
  */
-export function groupByTactic(countermeasures: TechniqueCountermeasure[] | null | undefined, tacticOrder: string[] = []): CountermeasureTacticGroup[] {
+export function groupByTactic(
+  countermeasures: TechniqueCountermeasure[] | null | undefined,
+  tacticOrder: string[] = [],
+): CountermeasureTacticGroup[] {
   const order = tacticOrder || [];
   const tacticRank = (tactic: string): number => {
     const index = order.indexOf(tactic);
@@ -32,9 +35,14 @@ export function groupByTactic(countermeasures: TechniqueCountermeasure[] | null 
     .sort(([a], [b]) => tacticRank(a) - tacticRank(b) || a.localeCompare(b))
     .map(([tactic, items]) => ({
       tactic,
-      countermeasures: [...items].sort((a, b) =>
-        (b.weight || 0) - (a.weight || 0) ||
-        (a.defensiveTechnique?.externalId || '').localeCompare(b.defensiveTechnique?.externalId || '', undefined, { numeric: true })),
+      countermeasures: [...items].sort(
+        (a, b) =>
+          (b.weight || 0) - (a.weight || 0) ||
+          (a.defensiveTechnique?.externalId || '').localeCompare(
+            b.defensiveTechnique?.externalId || '',
+            undefined,
+            { numeric: true },
+          ),
+      ),
     }));
 }
-

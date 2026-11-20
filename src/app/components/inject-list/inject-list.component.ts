@@ -1,9 +1,29 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, OnInit, inject as inject_1, input, output, viewChild } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  inject as inject_1,
+  input,
+  output,
+  viewChild,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+  MatTableDataSource,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 import {
   animate,
   state,
@@ -47,17 +67,42 @@ import { DataValueComponent } from '../data-value/data-value.component';
 import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
-    selector: 'app-inject-list',
-    templateUrl: './inject-list.component.html',
-    styleUrls: ['./inject-list.component.scss'],
-    animations: [
-        trigger('detailExpand', [
-            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-            state('expanded', style({ height: '*', visibility: 'visible' })),
-            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-        ]),
-    ],
-    imports: [MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, MatMenuItem, MatCellDef, MatCell, MatCheckbox, DataValueComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
+  selector: 'app-inject-list',
+  templateUrl: './inject-list.component.html',
+  styleUrls: ['./inject-list.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state(
+        'collapsed',
+        style({ height: '0px', minHeight: '0', visibility: 'hidden' }),
+      ),
+      state('expanded', style({ height: '*', visibility: 'visible' })),
+      transition(
+        'expanded <=> collapsed',
+        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+      ),
+    ]),
+  ],
+  imports: [
+    MatTable,
+    MatSort,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatIconButton,
+    MatMenuTrigger,
+    MatIcon,
+    MatMenu,
+    MatMenuItem,
+    MatCellDef,
+    MatCell,
+    MatCheckbox,
+    DataValueComponent,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+  ],
 })
 export class InjectListComponent implements OnDestroy, OnInit {
   private catalogQuery = inject_1(CatalogQuery);
@@ -147,7 +192,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((injectTypes) => {
         this.injectTypeList = injectTypes.sort((a, b) =>
-          a.name?.toLowerCase() > b.name?.toLowerCase() ? 1 : -1
+          a.name?.toLowerCase() > b.name?.toLowerCase() ? 1 : -1,
         );
       });
     // subscribe to dataFields
@@ -156,7 +201,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((dataFields) => {
         this.dataFieldList = dataFields.sort((a, b) =>
-          +a.displayOrder > +b.displayOrder ? 1 : -1
+          +a.displayOrder > +b.displayOrder ? 1 : -1,
         );
       });
     // subscribe to filter control changes
@@ -167,7 +212,8 @@ export class InjectListComponent implements OnDestroy, OnInit {
         this.sortChanged(this.sort);
       });
     // subscribe to users
-    this.userQuery.selectAll()
+    this.userQuery
+      .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((users) => {
         this.userList = users;
@@ -185,7 +231,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((catalogs) => {
         this.catalogList = catalogs.sort((a, b) =>
-          a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1
+          a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1,
         );
       });
   }
@@ -212,7 +258,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
   getSortedInjects(injects: Injectm[]) {
     if (injects) {
       injects.sort((a, b) =>
-        this.sortInjects(a, b, this.sort.active, this.sort.direction)
+        this.sortInjects(a, b, this.sort.active, this.sort.direction),
       );
     }
     return injects;
@@ -222,9 +268,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
     const catalog = this.catalog();
     const inject = {
       id: uuidv4(),
-      injectTypeId: catalog.id
-        ? catalog.injectTypeId
-        : this.injectType().id,
+      injectTypeId: catalog.id ? catalog.injectTypeId : this.injectType().id,
     } as Injectm;
     inject.dataValues = this.createNewDataValues(inject.id);
     this.editInject(inject, true);
@@ -245,8 +289,9 @@ export class InjectListComponent implements OnDestroy, OnInit {
     });
     // When in the inject type view (no catalog context), resolve the catalogId from
     // the first catalog that belongs to this inject type.
-    const catalogId = this.catalog().id ||
-      this.catalogList.find(c => c.injectTypeId === this.injectType().id)?.id;
+    const catalogId =
+      this.catalog().id ||
+      this.catalogList.find((c) => c.injectTypeId === this.injectType().id)?.id;
     this.editInject(newInject, true, catalogId);
   }
 
@@ -269,7 +314,10 @@ export class InjectListComponent implements OnDestroy, OnInit {
       if (result.saveChanges && result.inject) {
         // save the inject (add or update)
         if (isNewInject) {
-          this.injectmDataService.add((this.catalog().id || catalogId) as string, result.inject);
+          this.injectmDataService.add(
+            (this.catalog().id || catalogId) as string,
+            result.inject,
+          );
         } else {
           this.injectmDataService.update(result.inject);
         }
@@ -284,8 +332,14 @@ export class InjectListComponent implements OnDestroy, OnInit {
       this.catalogInjectDataService.deleteByIds(catalog.id, injectm.id);
     } else {
       this.dialogService
-        .confirm({ title: 'Delete Inject', message: 'Are you sure that you want to delete ' + injectm.name + '?', confirmText: 'Delete', cancelText: 'Cancel'
-         }).afterClosed().subscribe((result) => {
+        .confirm({
+          title: 'Delete Inject',
+          message: 'Are you sure that you want to delete ' + injectm.name + '?',
+          confirmText: 'Delete',
+          cancelText: 'Cancel',
+        })
+        .afterClosed()
+        .subscribe((result) => {
           if (result) {
             this.injectmDataService.delete(injectm.id);
           }
@@ -296,7 +350,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
   sortChanged(sort: Sort) {
     this.sort = sort;
     this.injectDataSource.data = this.getSortedInjects(
-      this.getFilteredInjects(this.injectList)
+      this.getFilteredInjects(this.injectList),
     );
   }
 
@@ -304,7 +358,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
     if (injects && injects.length > 0 && this.filterString) {
       const filterString = this.filterString?.toLowerCase();
       injects = injects.filter((inject) =>
-        inject.name?.toLowerCase().includes(filterString)
+        inject.name?.toLowerCase().includes(filterString),
       );
     }
     return injects;
@@ -314,7 +368,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
     a: Injectm,
     b: Injectm,
     column: string,
-    direction: string
+    direction: string,
   ) {
     const isAsc = direction !== 'desc';
     switch (column) {
@@ -379,7 +433,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
     let requiredInjectNames = '';
     const requiredInjectIds = [];
     let requiredInject = this.injectList.find(
-      (m) => m.id === injectm.requiresInjectId
+      (m) => m.id === injectm.requiresInjectId,
     );
     while (requiredInject) {
       if (this.selectedInjectIds.some((m) => m === requiredInject.id)) {
@@ -388,7 +442,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
         requiredInjectNames = requiredInject.name + ', ' + requiredInjectNames;
         requiredInjectIds.unshift(requiredInject.id);
         requiredInject = this.injectList.find(
-          (m) => m.id === requiredInject.requiresInjectId
+          (m) => m.id === requiredInject.requiresInjectId,
         );
       }
     }
@@ -400,12 +454,17 @@ export class InjectListComponent implements OnDestroy, OnInit {
     } else {
       if (requiredInjectNames) {
         this.dialogService
-          .confirm({ title: 'Inject Requires Additional Injects', message: 'Adding Inject ' +
-            injectm.name +
-            ' also requires adding inject(s) ' +
-            requiredInjectNames +
-            '.  Add them?'
-           }).afterClosed().subscribe((result) => {
+          .confirm({
+            title: 'Inject Requires Additional Injects',
+            message:
+              'Adding Inject ' +
+              injectm.name +
+              ' also requires adding inject(s) ' +
+              requiredInjectNames +
+              '.  Add them?',
+          })
+          .afterClosed()
+          .subscribe((result) => {
             if (result) {
               requiredInjectIds.forEach((id) => {
                 this.selectedInjectIds.push(id);
@@ -427,7 +486,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
 
   getDisplayedColumns(): string[] {
     const dataFields = this.getDisplayedDataFields().sort((a, b) =>
-      +a.displayOrder < +b.displayOrder ? -1 : 1
+      +a.displayOrder < +b.displayOrder ? -1 : 1,
     );
     const displayedColumns = this.displayedColumns.slice(0);
     dataFields.forEach((df) => {
@@ -448,7 +507,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
 
   getDataValue(inject: Injectm, dataField: DataField): DataValue {
     const dataValue = inject.dataValues.find(
-      (dv) => dv.dataFieldId === dataField.id
+      (dv) => dv.dataFieldId === dataField.id,
     );
     return dataValue ? dataValue : ({} as DataValue);
   }
@@ -509,12 +568,10 @@ export class InjectListComponent implements OnDestroy, OnInit {
   }
 
   getFilteredCatalogs() {
-    return this.catalogList.filter(
-      (m) => {
+    return this.catalogList.filter((m) => {
       const catalog = this.catalog();
       return m.injectTypeId === catalog.injectTypeId && m.id !== catalog.id;
-    }
-    );
+    });
   }
 
   ngOnDestroy() {

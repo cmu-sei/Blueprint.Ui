@@ -5,41 +5,44 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 
 <crucible-dialog
-  [dialogTitle]="(data.citeDuty?.id ? 'Edit CITE Duty' : 'New CITE Duty') + (data.citeDuty?.isTemplate ? ' Template' : '')"
+  [dialogTitle]="
+    (data.citeDuty?.id ? 'Edit CITE Duty' : 'New CITE Duty') +
+    (data.citeDuty?.isTemplate ? ' Template' : '')
+  "
   [submitDisabled]="!errorFree()"
   [guardUnsavedWork]="true"
   (cancel)="handleEditComplete(false)"
   (submit)="handleEditComplete(true)"
 >
   @if (data && data.citeDuty) {
-  <div crucibleDialogContent>
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <mat-label>Name</mat-label>
-          <input matInput [(ngModel)]="data.citeDuty.name" />
-        </mat-form-field>
+    <div crucibleDialogContent>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <mat-label>Name</mat-label>
+            <input matInput [(ngModel)]="data.citeDuty.name" />
+          </mat-form-field>
+        </div>
       </div>
+      @if (!data.citeDuty.isTemplate) {
+        <div class="add-margin">
+          <div>
+            <mat-form-field class="full-width">
+              <mat-label>Team</mat-label>
+              <mat-select placeholder="Team" [(ngModel)]="data.citeDuty.teamId">
+                @if (!data.citeDuty.id && data.teamList.length > 1) {
+                  <mat-option value="">All Teams</mat-option>
+                }
+                @for (team of data.teamList; track team) {
+                  <mat-option [value]="team.id">
+                    {{ team.name }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      }
     </div>
-    @if (!data.citeDuty.isTemplate) {
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <mat-label>Team</mat-label>
-          <mat-select placeholder="Team" [(ngModel)]="data.citeDuty.teamId">
-            @if (!data.citeDuty.id && data.teamList.length > 1) {
-            <mat-option value="">All Teams</mat-option>
-            }
-            @for (team of data.teamList; track team) {
-            <mat-option [value]="team.id">
-              {{ team.name }}
-            </mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-      </div>
-    </div>
-    }
-  </div>
   }
 </crucible-dialog>

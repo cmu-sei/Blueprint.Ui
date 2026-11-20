@@ -6,162 +6,309 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <div class="cssLayoutRowStartCenter">
   <div class="sp-icon">
-    <mat-icon class="mdi-24px" fontIcon="mdi-shield-bug-outline" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
+    <mat-icon
+      class="mdi-24px"
+      fontIcon="mdi-shield-bug-outline"
+      [ngStyle]="{ color: 'var(--mat-sys-primary)' }"
+    ></mat-icon>
   </div>
-  <mat-form-field style="width: 300px; margin-left: 10px;">
+  <mat-form-field style="width: 300px; margin-left: 10px">
     <input matInput [formControl]="filterControl" placeholder="Search" />
     @if (filterString) {
-    <button mat-icon-button matSuffix (click)="filterControl.setValue('')" title="Clear Search">
-      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
-    </button>
+      <button
+        mat-icon-button
+        matSuffix
+        (click)="filterControl.setValue('')"
+        title="Clear Search"
+      >
+        <mat-icon
+          style="transform: scale(0.85)"
+          fontIcon="mdi-close-circle-outline"
+        ></mat-icon>
+      </button>
     }
   </mat-form-field>
   @if (canEdit()) {
-  <mat-form-field style="width: 240px; margin-left: 10px;">
-    <mat-label>Read As</mat-label>
-    <mat-select [formControl]="frameworkControl" title="The framework to read the next file as">
-      <mat-option value="">Match automatically</mat-option>
-      @for (framework of frameworks; track framework.id) {
-      <mat-option [value]="framework.id">{{ framework.name }}</mat-option>
-      }
-    </mat-select>
-    <mat-hint>Only when more than one framework matches</mat-hint>
-  </mat-form-field>
-  <mat-form-field style="width: 260px; margin-left: 10px;">
-    <mat-label>Version</mat-label>
-    <input matInput [formControl]="versionControl" placeholder="From the file" />
-    <mat-hint>Leave blank to use the file's version</mat-hint>
-  </mat-form-field>
+    <mat-form-field style="width: 240px; margin-left: 10px">
+      <mat-label>Read As</mat-label>
+      <mat-select
+        [formControl]="frameworkControl"
+        title="The framework to read the next file as"
+      >
+        <mat-option value="">Match automatically</mat-option>
+        @for (framework of frameworks; track framework.id) {
+          <mat-option [value]="framework.id">{{ framework.name }}</mat-option>
+        }
+      </mat-select>
+      <mat-hint>Only when more than one framework matches</mat-hint>
+    </mat-form-field>
+    <mat-form-field style="width: 260px; margin-left: 10px">
+      <mat-label>Version</mat-label>
+      <input
+        matInput
+        [formControl]="versionControl"
+        placeholder="From the file"
+      />
+      <mat-hint>Leave blank to use the file's version</mat-hint>
+    </mat-form-field>
   }
   @if (isLoading$ | async) {
-  <mat-spinner diameter="28" style="margin-left: 16px;" title="Importing"></mat-spinner>
+    <mat-spinner
+      diameter="28"
+      style="margin-left: 16px"
+      title="Importing"
+    ></mat-spinner>
   }
 </div>
 
 <section class="scrolling-region">
-  <app-admin-technique-frameworks [canEdit]="canEdit()"></app-admin-technique-frameworks>
+  <app-admin-technique-frameworks
+    [canEdit]="canEdit()"
+  ></app-admin-technique-frameworks>
   <h3 class="section-title">Releases</h3>
-  <mat-table [dataSource]="dataSource" matSort matSortActive="releaseDate" matSortDirection="desc" multiTemplateDataRows>
+  <mat-table
+    [dataSource]="dataSource"
+    matSort
+    matSortActive="releaseDate"
+    matSortDirection="desc"
+    multiTemplateDataRows
+  >
     <!-- action column -->
     <ng-container matColumnDef="action">
       <mat-header-cell *matHeaderCellDef class="col-action">
         @if (canEdit()) {
-        <button mat-icon-button title="Import a release file" style="outline: none;"
-          [disabled]="isLoading$ | async" (click)="stixInput.click()">
-          <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
-        </button>
-        } &nbsp;
+          <button
+            mat-icon-button
+            title="Import a release file"
+            style="outline: none"
+            [disabled]="isLoading$ | async"
+            (click)="stixInput.click()"
+          >
+            <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
+          </button>
+        }
+        &nbsp;
       </mat-header-cell>
       <mat-cell *matCellDef="let release" class="col-action">
         @if (canEdit()) {
-        <button mat-icon-button class="msel-action" (click)="editNotice(release)"
-          title="Edit {{ release.name }} {{ release.version }}"
-          [attr.aria-label]="'Edit ' + release.name + ' ' + release.version">
-          <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
-        </button>
-        <button mat-icon-button class="msel-action" (click)="deleteRelease(release)"
-          title="Delete {{ release.name }} {{ release.version }}">
-          <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
-        </button>
-        @if (takesMappings(release)) {
-        <button mat-icon-button class="msel-action" (click)="chooseMappingsFile(release)" [disabled]="isLoading$ | async"
-          title="Import mappings"
-          [attr.aria-label]="'Import mappings for ' + release.name + ' ' + release.version">
-          <mat-icon class="mdi-18px" fontIcon="mdi-swap-horizontal"></mat-icon>
-        </button>
-        }
+          <button
+            mat-icon-button
+            class="msel-action"
+            (click)="editNotice(release)"
+            title="Edit {{ release.name }} {{ release.version }}"
+            [attr.aria-label]="'Edit ' + release.name + ' ' + release.version"
+          >
+            <mat-icon
+              class="mdi-18px"
+              fontIcon="mdi-square-edit-outline"
+            ></mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            class="msel-action"
+            (click)="deleteRelease(release)"
+            title="Delete {{ release.name }} {{ release.version }}"
+          >
+            <mat-icon
+              class="mdi-18px"
+              fontIcon="mdi-trash-can-outline"
+            ></mat-icon>
+          </button>
+          @if (takesMappings(release)) {
+            <button
+              mat-icon-button
+              class="msel-action"
+              (click)="chooseMappingsFile(release)"
+              [disabled]="isLoading$ | async"
+              title="Import mappings"
+              [attr.aria-label]="
+                'Import mappings for ' + release.name + ' ' + release.version
+              "
+            >
+              <mat-icon
+                class="mdi-18px"
+                fontIcon="mdi-swap-horizontal"
+              ></mat-icon>
+            </button>
+          }
         }
       </mat-cell>
     </ng-container>
     <ng-container matColumnDef="name">
-      <mat-header-cell mat-sort-header *matHeaderCellDef class="col-name">Name</mat-header-cell>
-      <mat-cell *matCellDef="let release" class="col-name" [matTooltip]="release.description" matTooltipShowDelay="800">
+      <mat-header-cell mat-sort-header *matHeaderCellDef class="col-name"
+        >Name</mat-header-cell
+      >
+      <mat-cell
+        *matCellDef="let release"
+        class="col-name"
+        [matTooltip]="release.description"
+        matTooltipShowDelay="800"
+      >
         {{ release.name }}
         @if (release.countermeasureCount) {
-        <div class="row-note">{{ release.countermeasureCount }} mappings</div>
+          <div class="row-note">{{ release.countermeasureCount }} mappings</div>
         }
       </mat-cell>
     </ng-container>
     <ng-container matColumnDef="framework">
-      <mat-header-cell mat-sort-header="techniqueFrameworkName" *matHeaderCellDef class="col-small">Framework</mat-header-cell>
+      <mat-header-cell
+        mat-sort-header="techniqueFrameworkName"
+        *matHeaderCellDef
+        class="col-small"
+        >Framework</mat-header-cell
+      >
       <mat-cell *matCellDef="let release" class="col-small">
         @if (release.techniqueFrameworkName) {
-        {{ release.techniqueFrameworkName }}
+          {{ release.techniqueFrameworkName }}
         } @else {
-        <span class="no-framework" title="Imported before frameworks were defined; give it one with its edit button">No framework</span>
+          <span
+            class="no-framework"
+            title="Imported before frameworks were defined; give it one with its edit button"
+            >No framework</span
+          >
         }
       </mat-cell>
     </ng-container>
     <ng-container matColumnDef="domain">
-      <mat-header-cell mat-sort-header *matHeaderCellDef class="col-small">Domain</mat-header-cell>
-      <mat-cell *matCellDef="let release" class="col-small">{{ release.domain }}</mat-cell>
+      <mat-header-cell mat-sort-header *matHeaderCellDef class="col-small"
+        >Domain</mat-header-cell
+      >
+      <mat-cell *matCellDef="let release" class="col-small">{{
+        release.domain
+      }}</mat-cell>
     </ng-container>
     <ng-container matColumnDef="version">
-      <mat-header-cell mat-sort-header *matHeaderCellDef class="col-small">Version</mat-header-cell>
-      <mat-cell *matCellDef="let release" class="col-small">{{ release.version }}</mat-cell>
+      <mat-header-cell mat-sort-header *matHeaderCellDef class="col-small"
+        >Version</mat-header-cell
+      >
+      <mat-cell *matCellDef="let release" class="col-small">{{
+        release.version
+      }}</mat-cell>
     </ng-container>
     <ng-container matColumnDef="releaseDate">
-      <mat-header-cell mat-sort-header *matHeaderCellDef class="col-small">Released</mat-header-cell>
-      <mat-cell *matCellDef="let release" class="col-small">{{ release.releaseDate | date: 'd MMM yyyy' }}</mat-cell>
+      <mat-header-cell mat-sort-header *matHeaderCellDef class="col-small"
+        >Released</mat-header-cell
+      >
+      <mat-cell *matCellDef="let release" class="col-small">{{
+        release.releaseDate | date: 'd MMM yyyy'
+      }}</mat-cell>
     </ng-container>
     <ng-container matColumnDef="tacticCount">
-      <mat-header-cell mat-sort-header *matHeaderCellDef class="col-count">Tactics</mat-header-cell>
-      <mat-cell *matCellDef="let release" class="col-count">{{ release.tacticCount }}</mat-cell>
+      <mat-header-cell mat-sort-header *matHeaderCellDef class="col-count"
+        >Tactics</mat-header-cell
+      >
+      <mat-cell *matCellDef="let release" class="col-count">{{
+        release.tacticCount
+      }}</mat-cell>
     </ng-container>
     <ng-container matColumnDef="techniqueCount">
-      <mat-header-cell mat-sort-header *matHeaderCellDef class="col-count">Techniques</mat-header-cell>
-      <mat-cell *matCellDef="let release" class="col-count">{{ release.techniqueCount }}</mat-cell>
+      <mat-header-cell mat-sort-header *matHeaderCellDef class="col-count"
+        >Techniques</mat-header-cell
+      >
+      <mat-cell *matCellDef="let release" class="col-count">{{
+        release.techniqueCount
+      }}</mat-cell>
     </ng-container>
     <ng-container matColumnDef="expandedDetail">
       <mat-cell *matCellDef="let release" class="col-detail">
         @if (release.id !== expandedId) {
         } @else if (hasNotice(release)) {
-        <app-technique-notice [release]="release"></app-technique-notice>
+          <app-technique-notice [release]="release"></app-technique-notice>
         } @else {
-        <span class="no-notice">This release carries no copyright or terms notice.@if (canEdit()) { Use its edit button to add one.}</span>
+          <span class="no-notice"
+            >This release carries no copyright or terms notice.
+            @if (canEdit()) {
+              Use its edit button to add one.
+            }
+          </span>
         }
       </mat-cell>
     </ng-container>
-    <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: displayedColumns" class="release-row" (click)="rowClicked(row, $event)"
-      [attr.aria-expanded]="row.id === expandedId" [class.expanded]="row.id === expandedId"></mat-row>
-    <mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row" [class.collapsed]="row.id !== expandedId"></mat-row>
+    <mat-header-row
+      *matHeaderRowDef="displayedColumns; sticky: true"
+    ></mat-header-row>
+    <mat-row
+      *matRowDef="let row; columns: displayedColumns"
+      class="release-row"
+      (click)="rowClicked(row, $event)"
+      [attr.aria-expanded]="row.id === expandedId"
+      [class.expanded]="row.id === expandedId"
+    ></mat-row>
+    <mat-row
+      *matRowDef="let row; columns: ['expandedDetail']"
+      class="detail-row"
+      [class.collapsed]="row.id !== expandedId"
+    ></mat-row>
   </mat-table>
   @if (dataSource.data.length === 0) {
-  <div class="empty-text">
-    @if (frameworks.length === 0) {
-    <p>No releases have been imported. Add or import a framework definition above first, then import its release files here.</p>
-    } @else {
-    <p>No releases have been imported. Import a release file of one of the frameworks above.</p>
-    @if (frameworksWithDownloads.length > 0) {
-    <ul>
-      @for (framework of frameworksWithDownloads; track framework.id) {
-      <li><strong>{{ framework.name }}:</strong> {{ framework.settings?.downloadHint }}
-        @if (framework.settings?.downloadUrl) {
-        (<a [href]="framework.settings.downloadUrl" target="_blank" rel="noopener">{{ framework.settings.downloadUrl }}</a>)
+    <div class="empty-text">
+      @if (frameworks.length === 0) {
+        <p>
+          No releases have been imported. Add or import a framework definition
+          above first, then import its release files here.
+        </p>
+      } @else {
+        <p>
+          No releases have been imported. Import a release file of one of the
+          frameworks above.
+        </p>
+        @if (frameworksWithDownloads.length > 0) {
+          <ul>
+            @for (framework of frameworksWithDownloads; track framework.id) {
+              <li>
+                <strong>{{ framework.name }}:</strong>
+                {{ framework.settings?.downloadHint }}
+                @if (framework.settings?.downloadUrl) {
+                  (<a
+                    [href]="framework.settings.downloadUrl"
+                    target="_blank"
+                    rel="noopener"
+                    >{{ framework.settings.downloadUrl }}</a
+                  >)
+                }
+              </li>
+            }
+          </ul>
         }
-      </li>
       }
-    </ul>
-    }
-    }
-  </div>
+    </div>
   }
   @if (canEdit() && releasesWithoutMappings.length > 0) {
-  <div class="hint-text">
-    @for (release of releasesWithoutMappings; track release.id) {
-    <div>
-      {{ release.name }} {{ release.version }} has no mappings yet.
-      @if (release.mappingsDownloadHint) { Download {{ release.mappingsDownloadHint }}}
-      @if (release.mappingsDownloadUrl) {
-      from <a [href]="release.mappingsDownloadUrl" target="_blank" rel="noopener">{{ release.mappingsDownloadUrl }}</a>
+    <div class="hint-text">
+      @for (release of releasesWithoutMappings; track release.id) {
+        <div>
+          {{ release.name }} {{ release.version }} has no mappings yet.
+          @if (release.mappingsDownloadHint) {
+            Download {{ release.mappingsDownloadHint }}
+          }
+          @if (release.mappingsDownloadUrl) {
+            from
+            <a
+              [href]="release.mappingsDownloadUrl"
+              target="_blank"
+              rel="noopener"
+              >{{ release.mappingsDownloadUrl }}</a
+            >
+          }
+          and import it with the row's Import mappings button.
+        </div>
       }
-      and import it with the row's Import mappings button.
     </div>
-    }
-  </div>
   }
 </section>
 
-<input hidden (change)="selectFile($event)" #stixInput type="file" accept=".json,application/json" />
-<input hidden (change)="selectMappingsFile($event)" #mappingsInput type="file" accept=".json,application/json" data-testid="mappings-file" />
+<input
+  hidden
+  (change)="selectFile($event)"
+  #stixInput
+  type="file"
+  accept=".json,application/json"
+/>
+<input
+  hidden
+  (change)="selectMappingsFile($event)"
+  #mappingsInput
+  type="file"
+  accept=".json,application/json"
+  data-testid="mappings-file"
+/>

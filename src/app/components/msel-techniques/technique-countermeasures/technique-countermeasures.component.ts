@@ -8,11 +8,19 @@ import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { TechniqueCountermeasure, TechniqueRelease, MselCountermeasures, MselTechniqueCountermeasures } from 'src/app/generated/blueprint.api';
+import {
+  TechniqueCountermeasure,
+  TechniqueRelease,
+  MselCountermeasures,
+  MselTechniqueCountermeasures,
+} from 'src/app/generated/blueprint.api';
 import { TechniqueReleaseQuery } from 'src/app/data/technique-release/technique-release.query';
 import { MselTechniqueDataService } from 'src/app/data/msel-technique/msel-technique-data.service';
 import { MselTechniqueQuery } from 'src/app/data/msel-technique/msel-technique.query';
-import { CountermeasureTacticGroup, groupByTactic } from 'src/app/utilities/countermeasure-tactics';
+import {
+  CountermeasureTacticGroup,
+  groupByTactic,
+} from 'src/app/utilities/countermeasure-tactics';
 import { relationLabel } from 'src/app/utilities/technique-notices';
 
 /** How many mappings a tactic shows before "Show all". */
@@ -27,7 +35,7 @@ export const TOP_COUNTERMEASURES = 3;
   selector: 'app-technique-countermeasures',
   templateUrl: './technique-countermeasures.component.html',
   styleUrls: ['./technique-countermeasures.component.scss'],
-  imports: [MatButton, MatCheckbox, MatIcon, MatTooltip]
+  imports: [MatButton, MatCheckbox, MatIcon, MatTooltip],
 })
 export class TechniqueCountermeasuresComponent implements OnDestroy {
   private mselTechniqueDataService = inject(MselTechniqueDataService);
@@ -51,9 +59,12 @@ export class TechniqueCountermeasuresComponent implements OnDestroy {
   private unsubscribe$ = new Subject();
 
   constructor() {
-    this.mselTechniqueQuery.selectTechniques('defensive').pipe(takeUntil(this.unsubscribe$)).subscribe(techniques => {
-      this.defensivePoolIds = new Set(techniques.map(t => t.id));
-    });
+    this.mselTechniqueQuery
+      .selectTechniques('defensive')
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((techniques) => {
+        this.defensivePoolIds = new Set(techniques.map((t) => t.id));
+      });
   }
 
   /** The defensive release the mappings come from, once the answer names one. */
@@ -68,7 +79,10 @@ export class TechniqueCountermeasuresComponent implements OnDestroy {
   }
 
   get groups(): CountermeasureTacticGroup[] {
-    return groupByTactic(this.group()?.countermeasures, this.release?.tacticOrder || []);
+    return groupByTactic(
+      this.group()?.countermeasures,
+      this.release?.tacticOrder || [],
+    );
   }
 
   get count(): number {
@@ -102,7 +116,9 @@ export class TechniqueCountermeasuresComponent implements OnDestroy {
 
   /** The countermeasures a tactic shows: its top few, or all of them once asked. */
   visible(group: CountermeasureTacticGroup): TechniqueCountermeasure[] {
-    return this.showAll.has(group.tactic) ? group.countermeasures : group.countermeasures.slice(0, TOP_COUNTERMEASURES);
+    return this.showAll.has(group.tactic)
+      ? group.countermeasures
+      : group.countermeasures.slice(0, TOP_COUNTERMEASURES);
   }
 
   showsAll(group: CountermeasureTacticGroup): boolean {
@@ -132,7 +148,9 @@ export class TechniqueCountermeasuresComponent implements OnDestroy {
 
   private releaseName(releaseId: string): string {
     const release = this.techniqueReleaseQuery.getEntity(releaseId);
-    return release ? `${release.name} ${release.version}` : 'The MSEL\'s defensive release';
+    return release
+      ? `${release.name} ${release.version}`
+      : "The MSEL's defensive release";
   }
 
   ngOnDestroy() {

@@ -37,7 +37,9 @@ describe('moveOrderPushProblems', () => {
   it('names the events that start before the first move', () => {
     expect(
       moveOrderPushProblems([move(1, 600), move(2, 1200)], [0, 300, 700]),
-    ).toEqual(['2 scenario events start before Move 1, so they are in no move.']);
+    ).toEqual([
+      '2 scenario events start before Move 1, so they are in no move.',
+    ]);
     expect(moveOrderPushProblems([move(1, 600)], [0])).toEqual([
       '1 scenario event starts before Move 1, so it is in no move.',
     ]);
@@ -47,7 +49,9 @@ describe('moveOrderPushProblems', () => {
     expect(moveOrderPushProblems([move(0, 0), move(1, 0)], [0])).toEqual([
       'Move 0 and Move 1 start at the same time.',
     ]);
-    expect(moveOrderPushProblems([move(0, 0), move(1, 600)], [0, 700])).toEqual([]);
+    expect(moveOrderPushProblems([move(0, 0), move(1, 600)], [0, 700])).toEqual(
+      [],
+    );
     expect(moveOrderPushProblems([], [-5, 100])).toEqual([]);
   });
 });

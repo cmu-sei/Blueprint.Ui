@@ -5,11 +5,15 @@
 import { Component, inject, output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { ComnSettingsService, CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import {
+  ComnSettingsService,
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
 import {
   DataField,
   DataFieldType,
-  DataOption
+  DataOption,
 } from 'src/app/generated/blueprint.api';
 import { DataOptionEditDialogComponent } from '../data-option-edit-dialog/data-option-edit-dialog.component';
 import { DataOptionImportDialogComponent } from '../data-option-import-dialog/data-option-import-dialog.component';
@@ -25,12 +29,23 @@ import { KeyValuePipe } from '@angular/common';
 import { DataFieldTypeNamePipe } from 'src/app/utilities/data-field-type-name';
 
 @Component({
-    selector: 'app-data-field-edit-dialog',
-    templateUrl: './data-field-edit-dialog.component.html',
-    styleUrls: ['./data-field-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, MatSelect, MatOption, MatCheckbox, KeyValuePipe, DataFieldTypeNamePipe]
+  selector: 'app-data-field-edit-dialog',
+  templateUrl: './data-field-edit-dialog.component.html',
+  styleUrls: ['./data-field-edit-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    FormsModule,
+    MatSelect,
+    MatOption,
+    MatCheckbox,
+    KeyValuePipe,
+    DataFieldTypeNamePipe,
+  ],
 })
-
 export class DataFieldEditDialogComponent {
   dialog = inject(MatDialog);
   data = inject(MAT_DIALOG_DATA);
@@ -39,10 +54,16 @@ export class DataFieldEditDialogComponent {
   readonly editComplete = output<any>();
 
   errorFree() {
-    const base = this.data.dataField.name && this.data.dataField.name.length > 0 &&
+    const base =
+      this.data.dataField.name &&
+      this.data.dataField.name.length > 0 &&
       this.data.dataField.displayOrder > 0;
     if (this.isCompetency()) {
-      return base && this.data.dataField.dataOptions && this.data.dataField.dataOptions.length > 0;
+      return (
+        base &&
+        this.data.dataField.dataOptions &&
+        this.data.dataField.dataOptions.length > 0
+      );
     }
     return base;
   }
@@ -59,7 +80,10 @@ export class DataFieldEditDialogComponent {
         this.data.dataField.isFacilitationField = true;
       }
       // technique fields offer the MSEL's technique pool (attack or defensive), not an option list
-      if (selectedDataType === DataFieldType.AttackTechnique || selectedDataType === DataFieldType.DefensiveTechnique) {
+      if (
+        selectedDataType === DataFieldType.AttackTechnique ||
+        selectedDataType === DataFieldType.DefensiveTechnique
+      ) {
         this.data.dataField.isChosenFromList = false;
         this.data.dataField.isMultiSelect = true;
         this.data.dataField.isFacilitationField = true;
@@ -70,7 +94,7 @@ export class DataFieldEditDialogComponent {
   addDataOption(dataField: DataField) {
     this.addOrEditDataOption({
       displayOrder: this.data.dataField.dataOptions.length + 1,
-      dataFieldId: dataField.id
+      dataFieldId: dataField.id,
     });
   }
 
@@ -85,7 +109,7 @@ export class DataFieldEditDialogComponent {
       maxWidth: '90vw',
       width: 'auto',
       data: {
-        dataOption: dataOption
+        dataOption: dataOption,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -93,7 +117,9 @@ export class DataFieldEditDialogComponent {
         // an id means this data option is being edited
         if (dataOption.id) {
           // update the displayed data options
-          const existingIndex = this.data.dataField.dataOptions.findIndex(x => x.id === dataOption.id);
+          const existingIndex = this.data.dataField.dataOptions.findIndex(
+            (x) => x.id === dataOption.id,
+          );
           this.data.dataField.dataOptions[existingIndex] = dataOption;
         } else {
           // no id means this data option has just been entered
@@ -108,7 +134,9 @@ export class DataFieldEditDialogComponent {
 
   deleteDataOption(dataOption: DataOption) {
     // remove this from the displayed list
-    const index = this.data.dataField.dataOptions.findIndex(x => x.id === dataOption.id);
+    const index = this.data.dataField.dataOptions.findIndex(
+      (x) => x.id === dataOption.id,
+    );
     this.data.dataField.dataOptions.splice(index, 1);
   }
 
@@ -139,7 +167,7 @@ export class DataFieldEditDialogComponent {
       maxWidth: '90vw',
       data: {
         dataFieldId: dataField.id,
-        existingOptions: this.data.dataField.dataOptions
+        existingOptions: this.data.dataField.dataOptions,
       },
     });
     dialogRef.afterClosed().subscribe((result) => {
@@ -162,12 +190,15 @@ export class DataFieldEditDialogComponent {
         data: {
           dataFieldId: this.data.dataField.id,
           dataOptions: this.data.dataField.dataOptions,
-          canEdit: canAddOptions
-        }
+          canEdit: canAddOptions,
+        },
       });
       compDialogRef.afterClosed().subscribe((updatedOptions) => {
         if (updatedOptions) {
-          this.data.dataField = { ...this.data.dataField, dataOptions: updatedOptions };
+          this.data.dataField = {
+            ...this.data.dataField,
+            dataOptions: updatedOptions,
+          };
         }
       });
     } else {
@@ -182,15 +213,16 @@ export class DataFieldEditDialogComponent {
           onEdit: (option: DataOption) => this.editDataOption(option),
           onDelete: (option: DataOption) => this.deleteDataOption(option),
           onAdd: () => this.addDataOption(this.data.dataField),
-          onImport: () => this.importDataOptions(this.data.dataField)
-        }
+          onImport: () => this.importDataOptions(this.data.dataField),
+        },
       });
     }
   }
 
   sortedDataFieldOptions() {
-    return this.data.dataField.dataOptions
-      .sort((a, b) => +a.displayOrder < +b.displayOrder ? -1 : 1);
+    return this.data.dataField.dataOptions.sort((a, b) =>
+      +a.displayOrder < +b.displayOrder ? -1 : 1,
+    );
   }
 
   isCompetency(): boolean {
@@ -199,8 +231,10 @@ export class DataFieldEditDialogComponent {
 
   /** An Attack Technique or Defensive Technique field, whose values come from the MSEL's Techniques tab. */
   isTechniqueField(): boolean {
-    return this.data.dataField.dataType === DataFieldType.AttackTechnique ||
-      this.data.dataField.dataType === DataFieldType.DefensiveTechnique;
+    return (
+      this.data.dataField.dataType === DataFieldType.AttackTechnique ||
+      this.data.dataField.dataType === DataFieldType.DefensiveTechnique
+    );
   }
 
   optionListNotAllowed(): boolean {
@@ -224,10 +258,9 @@ export class DataFieldEditDialogComponent {
       if (this.errorFree) {
         this.editComplete.emit({
           saveChanges: saveChanges,
-          dataField: this.data.dataField
+          dataField: this.data.dataField,
         });
       }
     }
   }
-
 }

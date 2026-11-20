@@ -5,45 +5,68 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 
 <crucible-dialog
-  [dialogTitle]="(data.action === 'add' ? 'Add' : 'Remove') + ' Team from Related'"
+  [dialogTitle]="
+    (data.action === 'add' ? 'Add' : 'Remove') + ' Team from Related'
+  "
   [submitLabel]="'Yes (' + selection.selected.length + ')'"
   cancelLabel="No"
   [submitDisabled]="selection.isEmpty()"
   [guardUnsavedWork]="true"
   (submit)="onConfirm()"
 >
-<div crucibleDialogContent>
-  <p>Also {{ actionVerb }} team {{ data.teamName }} {{ preposition }} the {{ data.competencies.length }}
-    related competenc{{ data.competencies.length === 1 ? 'y' : 'ies' }} on the MSEL?</p>
-  <mat-table [dataSource]="data.competencies" class="propagate-table">
-    <!-- select column -->
-    <ng-container matColumnDef="select">
-      <mat-header-cell *matHeaderCellDef class="col-select">
-        <mat-checkbox (change)="toggleAll()" [checked]="isAllSelected()"
-          [indeterminate]="selection.hasValue() && !isAllSelected()" />
-      </mat-header-cell>
-      <mat-cell *matCellDef="let mc" class="col-select">
-        <mat-checkbox (click)="$event.stopPropagation()" (change)="selection.toggle(mc)"
-          [checked]="selection.isSelected(mc)" />
-      </mat-cell>
-    </ng-container>
-    <!-- idNumber column -->
-    <ng-container matColumnDef="idNumber">
-      <mat-header-cell *matHeaderCellDef class="col-id">ID</mat-header-cell>
-      <mat-cell *matCellDef="let mc" class="col-id">{{ mc.competency?.idNumber }}</mat-cell>
-    </ng-container>
-    <!-- shortName column -->
-    <ng-container matColumnDef="shortName">
-      <mat-header-cell *matHeaderCellDef class="col-name">Name</mat-header-cell>
-      <mat-cell *matCellDef="let mc" class="col-name"
-        [matTooltip]="mc.competency?.description" matTooltipShowDelay="800">
-        {{ mc.competency?.shortName }}
-      </mat-cell>
-    </ng-container>
-    <!-- row definitions -->
-    <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" />
-    <mat-row *matRowDef="let row; columns: displayedColumns;"
-      (click)="selection.toggle(row)" />
-  </mat-table>
-</div>
+  <div crucibleDialogContent>
+    <p>
+      Also {{ actionVerb }} team {{ data.teamName }} {{ preposition }} the
+      {{ data.competencies.length }} related competenc{{
+        data.competencies.length === 1 ? 'y' : 'ies'
+      }}
+      on the MSEL?
+    </p>
+    <mat-table [dataSource]="data.competencies" class="propagate-table">
+      <!-- select column -->
+      <ng-container matColumnDef="select">
+        <mat-header-cell *matHeaderCellDef class="col-select">
+          <mat-checkbox
+            (change)="toggleAll()"
+            [checked]="isAllSelected()"
+            [indeterminate]="selection.hasValue() && !isAllSelected()"
+          />
+        </mat-header-cell>
+        <mat-cell *matCellDef="let mc" class="col-select">
+          <mat-checkbox
+            (click)="$event.stopPropagation()"
+            (change)="selection.toggle(mc)"
+            [checked]="selection.isSelected(mc)"
+          />
+        </mat-cell>
+      </ng-container>
+      <!-- idNumber column -->
+      <ng-container matColumnDef="idNumber">
+        <mat-header-cell *matHeaderCellDef class="col-id">ID</mat-header-cell>
+        <mat-cell *matCellDef="let mc" class="col-id">{{
+          mc.competency?.idNumber
+        }}</mat-cell>
+      </ng-container>
+      <!-- shortName column -->
+      <ng-container matColumnDef="shortName">
+        <mat-header-cell *matHeaderCellDef class="col-name"
+          >Name</mat-header-cell
+        >
+        <mat-cell
+          *matCellDef="let mc"
+          class="col-name"
+          [matTooltip]="mc.competency?.description"
+          matTooltipShowDelay="800"
+        >
+          {{ mc.competency?.shortName }}
+        </mat-cell>
+      </ng-container>
+      <!-- row definitions -->
+      <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" />
+      <mat-row
+        *matRowDef="let row; columns: displayedColumns"
+        (click)="selection.toggle(row)"
+      />
+    </mat-table>
+  </div>
 </crucible-dialog>

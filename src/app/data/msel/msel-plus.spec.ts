@@ -16,7 +16,12 @@ const TEAM_FIELD_ID = 'df-team';
 const EVENT_ID = 'se-1';
 
 function role(userId: string, mselRole: MselRole): UserMselRole {
-  return { id: `${userId}-${mselRole}`, userId, mselId: 'msel-1', role: mselRole };
+  return {
+    id: `${userId}-${mselRole}`,
+    userId,
+    mselId: 'msel-1',
+    role: mselRole,
+  };
 }
 
 // MselPlus is the class the components wrap MSELs in (Object.assign(new
@@ -58,7 +63,9 @@ function mselWithAssignedEvent(
       {
         id: 'unit-red',
         shortName: 'RED',
-        users: inUnit ? [{ id: ME, name: 'Me' }] : [{ id: OTHER, name: 'Other' }],
+        users: inUnit
+          ? [{ id: ME, name: 'Me' }]
+          : [{ id: OTHER, name: 'Other' }],
       },
     ],
   });
@@ -177,7 +184,7 @@ describe('MselPlus.hasRole', () => {
      * Interacts with: MselPlus.hasRole (Team data field → data value → unit membership).
      * Data: ME holds Editor and Approver; se-1 assigned to RED; ME in RED.
      */
-    it('grants MSEL roles on an event assigned to the user\'s unit', () => {
+    it("grants MSEL roles on an event assigned to the user's unit", () => {
       const msel = mselWithAssignedEvent([MselRole.Editor, MselRole.Approver], {
         inUnit: true,
       });
@@ -207,7 +214,7 @@ describe('MselPlus.hasRole', () => {
      * Interacts with: MselPlus.hasRole.
      * Data: ME holds MoveEditor; se-1 assigned to RED; ME not in RED.
      */
-    it('keeps moveEditor on events outside the user\'s unit', () => {
+    it("keeps moveEditor on events outside the user's unit", () => {
       const msel = mselWithAssignedEvent([MselRole.MoveEditor], {
         inUnit: false,
       });
@@ -225,9 +232,16 @@ describe('MselPlus.hasRole', () => {
      */
     it.each([
       { label: 'an unassigned event', assignedTo: 'RED', eventId: 'se-2' },
-      { label: 'an event assigned to an unknown unit', assignedTo: 'BLUE', eventId: EVENT_ID },
+      {
+        label: 'an event assigned to an unknown unit',
+        assignedTo: 'BLUE',
+        eventId: EVENT_ID,
+      },
     ])('grants nothing on $label', ({ assignedTo, eventId }) => {
-      const msel = mselWithAssignedEvent([MselRole.Editor], { inUnit: true, assignedTo });
+      const msel = mselWithAssignedEvent([MselRole.Editor], {
+        inUnit: true,
+        assignedTo,
+      });
 
       expect(msel.hasRole(ME, eventId)).toEqual(NO_ROLES);
     });

@@ -9,32 +9,57 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { fireEvent, screen, waitFor } from '@testing-library/angular';
 import { of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { TechniqueFramework, TechniqueFrameworkService, TechniqueReleaseService } from 'src/app/generated/blueprint.api';
+import {
+  TechniqueFramework,
+  TechniqueFrameworkService,
+  TechniqueReleaseService,
+} from 'src/app/generated/blueprint.api';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
-import { AdminTechniqueFrameworksComponent, definitionsIn } from './admin-technique-frameworks.component';
+import {
+  AdminTechniqueFrameworksComponent,
+  definitionsIn,
+} from './admin-technique-frameworks.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
 
 // definitions as an administrator entered them (test data)
 const ONTOLOGY: TechniqueFramework = {
-  id: 'fw-1', name: 'Defences', domain: 'defences', isDefensive: true, format: 'JsonLdOntology',
-  settings: { match: { property: 'ex:id' }, jsonLd: { idProperty: 'ex:id', techniqueClass: 'ex:T', tacticType: 'ex:A' } },
+  id: 'fw-1',
+  name: 'Defences',
+  domain: 'defences',
+  isDefensive: true,
+  format: 'JsonLdOntology',
+  settings: {
+    match: { property: 'ex:id' },
+    jsonLd: { idProperty: 'ex:id', techniqueClass: 'ex:T', tacticType: 'ex:A' },
+  },
   releaseCount: 2,
 };
 const BUNDLE: TechniqueFramework = {
-  id: 'fw-2', name: 'Attacks', domain: 'attacks', isDefensive: false, format: 'StixBundle',
+  id: 'fw-2',
+  name: 'Attacks',
+  domain: 'attacks',
+  isDefensive: false,
+  format: 'StixBundle',
   settings: { match: { stixDomain: 'attacks' } },
   releaseCount: 0,
 };
 
-async function renderFrameworks(frameworks: TechniqueFramework[], canEdit = true) {
+async function renderFrameworks(
+  frameworks: TechniqueFramework[],
+  canEdit = true,
+) {
   const frameworkApi = {
     getTechniqueFrameworks: vi.fn(() => of(structuredClone(frameworks))),
-    createTechniqueFramework: vi.fn((f: TechniqueFramework) => of({ ...f, id: `fw-new-${f.domain}`, releaseCount: 0 })),
+    createTechniqueFramework: vi.fn((f: TechniqueFramework) =>
+      of({ ...f, id: `fw-new-${f.domain}`, releaseCount: 0 }),
+    ),
     deleteTechniqueFramework: vi.fn(() => of(null)),
   } satisfies ApiStub<TechniqueFrameworkService>;
-  const releaseApi = { getTechniqueReleases: vi.fn(() => of([])) } satisfies ApiStub<TechniqueReleaseService>;
+  const releaseApi = {
+    getTechniqueReleases: vi.fn(() => of([])),
+  } satisfies ApiStub<TechniqueReleaseService>;
   const messages = { displayMessage: vi.fn() };
   const rendered = await renderComponent(AdminTechniqueFrameworksComponent, {
     imports: [MatButtonModule, MatIconModule, MatTableModule, MatTooltipModule],
@@ -58,11 +83,24 @@ describe('definitionsIn', () => {
    */
   it('reads one definition or a list, keeping only the definition', () => {
     expect(definitionsIn(JSON.stringify(ONTOLOGY))).toEqual([
-      { name: 'Defences', description: undefined, domain: 'defences', isDefensive: true, format: 'JsonLdOntology', settings: ONTOLOGY.settings },
+      {
+        name: 'Defences',
+        description: undefined,
+        domain: 'defences',
+        isDefensive: true,
+        format: 'JsonLdOntology',
+        settings: ONTOLOGY.settings,
+      },
     ]);
-    expect(definitionsIn(JSON.stringify([ONTOLOGY, BUNDLE])).map(d => d.domain)).toEqual(['defences', 'attacks']);
-    expect(() => definitionsIn('[]')).toThrow('no technique framework definitions');
-    expect(() => definitionsIn('[1]')).toThrow('no technique framework definitions');
+    expect(
+      definitionsIn(JSON.stringify([ONTOLOGY, BUNDLE])).map((d) => d.domain),
+    ).toEqual(['defences', 'attacks']);
+    expect(() => definitionsIn('[]')).toThrow(
+      'no technique framework definitions',
+    );
+    expect(() => definitionsIn('[1]')).toThrow(
+      'no technique framework definitions',
+    );
   });
 });
 
@@ -75,16 +113,30 @@ describe('AdminTechniqueFrameworksComponent', () => {
   it('lists the definitions by name', async () => {
     await renderFrameworks([ONTOLOGY, BUNDLE]);
 
-    const rows = screen.getAllByRole('row').slice(1).map(r =>
-      Array.from(r.querySelectorAll('[role=cell]')).map(c => c.textContent.trim()).filter(t => t).join(' '));
-    expect(rows).toEqual(['Attacks attacks Attack STIX bundle 0', 'Defences defences Defensive JSON-LD ontology 2']);
-    expect(screen.queryByText(/No technique frameworks are defined/)).not.toBeInTheDocument();
+    const rows = screen
+      .getAllByRole('row')
+      .slice(1)
+      .map((r) =>
+        Array.from(r.querySelectorAll('[role=cell]'))
+          .map((c) => c.textContent.trim())
+          .filter((t) => t)
+          .join(' '),
+      );
+    expect(rows).toEqual([
+      'Attacks attacks Attack STIX bundle 0',
+      'Defences defences Defensive JSON-LD ontology 2',
+    ]);
+    expect(
+      screen.queryByText(/No technique frameworks are defined/),
+    ).not.toBeInTheDocument();
   });
 
   it('says a definition is needed when there are none', async () => {
     await renderFrameworks([]);
 
-    expect(screen.getByText(/No technique frameworks are defined/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/No technique frameworks are defined/),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -96,15 +148,36 @@ describe('AdminTechniqueFrameworksComponent', () => {
     const { frameworkApi, messages, fixture } = await renderFrameworks([]);
     const input = screen.getByTestId('definition-file');
 
-    fireEvent.change(input, { target: { files: [new File([JSON.stringify([ONTOLOGY, BUNDLE])], 'frameworks.json')] } });
-    await waitFor(() => expect(frameworkApi.createTechniqueFramework).toHaveBeenCalledTimes(2));
-    expect(frameworkApi.createTechniqueFramework.mock.calls.map(c => (c[0] as TechniqueFramework).domain)).toEqual(['defences', 'attacks']);
-    expect(frameworkApi.createTechniqueFramework.mock.calls[0][0]).not.toHaveProperty('id');
+    fireEvent.change(input, {
+      target: {
+        files: [
+          new File([JSON.stringify([ONTOLOGY, BUNDLE])], 'frameworks.json'),
+        ],
+      },
+    });
+    await waitFor(() =>
+      expect(frameworkApi.createTechniqueFramework).toHaveBeenCalledTimes(2),
+    );
+    expect(
+      frameworkApi.createTechniqueFramework.mock.calls.map(
+        (c) => (c[0] as TechniqueFramework).domain,
+      ),
+    ).toEqual(['defences', 'attacks']);
+    expect(
+      frameworkApi.createTechniqueFramework.mock.calls[0][0],
+    ).not.toHaveProperty('id');
     fixture.detectChanges();
     expect(screen.getByText('Defences')).toBeInTheDocument();
 
-    fireEvent.change(input, { target: { files: [new File(['[]'], 'empty.json')] } });
-    await waitFor(() => expect(messages.displayMessage).toHaveBeenCalledWith('Import Failed', 'The file holds no technique framework definitions.'));
+    fireEvent.change(input, {
+      target: { files: [new File(['[]'], 'empty.json')] },
+    });
+    await waitFor(() =>
+      expect(messages.displayMessage).toHaveBeenCalledWith(
+        'Import Failed',
+        'The file holds no technique framework definitions.',
+      ),
+    );
   });
 
   /**
@@ -115,15 +188,26 @@ describe('AdminTechniqueFrameworksComponent', () => {
   it('downloads a definition as the JSON an import reads', async () => {
     await renderFrameworks([ONTOLOGY]);
     let blob: Blob;
-    const create = vi.spyOn(window.URL, 'createObjectURL').mockImplementation((b: Blob) => { blob = b; return 'blob:x'; });
+    const create = vi
+      .spyOn(window.URL, 'createObjectURL')
+      .mockImplementation((b: Blob) => {
+        blob = b;
+        return 'blob:x';
+      });
     vi.spyOn(window.URL, 'revokeObjectURL').mockImplementation(() => undefined);
-    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => undefined);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Download Defences as JSON' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Download Defences as JSON' }),
+    );
 
     expect(create).toHaveBeenCalled();
     expect(click).toHaveBeenCalled();
-    expect(definitionsIn(await blob.text())).toEqual(definitionsIn(JSON.stringify(ONTOLOGY)));
+    expect(definitionsIn(await blob.text())).toEqual(
+      definitionsIn(JSON.stringify(ONTOLOGY)),
+    );
     vi.restoreAllMocks();
   });
 
@@ -135,9 +219,17 @@ describe('AdminTechniqueFrameworksComponent', () => {
   it('offers only the download without edit permission', async () => {
     await renderFrameworks([BUNDLE], false);
 
-    expect(screen.getByRole('button', { name: 'Download Attacks as JSON' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Add a technique framework' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Edit Attacks' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Delete Attacks' })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Download Attacks as JSON' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Add a technique framework' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Edit Attacks' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Delete Attacks' }),
+    ).not.toBeInTheDocument();
   });
 });

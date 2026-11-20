@@ -113,7 +113,9 @@ export class SignalRService implements OnDestroy {
   private unitDataService = inject(UnitDataService);
   private organizationDataService = inject(OrganizationDataService);
   private playerApplicationDataService = inject(PlayerApplicationDataService);
-  private playerApplicationTeamDataService = inject(PlayerApplicationTeamDataService);
+  private playerApplicationTeamDataService = inject(
+    PlayerApplicationTeamDataService,
+  );
   private scenarioEventDataService = inject(ScenarioEventDataService);
   private teamDataService = inject(TeamDataService);
   private teamUserDataService = inject(TeamUserDataService);
@@ -187,7 +189,9 @@ export class SignalRService implements OnDestroy {
   /** Joins the area's groups; resolves once the hub has added this connection to them. */
   public join(): Promise<void> {
     if (this.hubConnection.state === signalR.HubConnectionState.Connected) {
-      const joined = this.hubConnection.invoke<void>('Join' + this.applicationArea);
+      const joined = this.hubConnection.invoke<void>(
+        'Join' + this.applicationArea,
+      );
       this.isJoined = true;
       if (this.mselId) {
         setTimeout(() => this.selectMsel(this.mselId), 100);
@@ -219,23 +223,28 @@ export class SignalRService implements OnDestroy {
         });
         this.mselId = mselId;
         // fetch current presence so we don't rely solely on greet-back
-        this.hubConnection.invoke('GetPresence', mselId).then(
-          (actors: { id: string; name: string }[]) => {
+        this.hubConnection
+          .invoke('GetPresence', mselId)
+          .then((actors: { id: string; name: string }[]) => {
             if (actors) {
               for (const actor of actors) {
                 this.updatePresence(actor, true);
               }
             }
-          }
-        ).catch(() => {
-          // Ignore errors during rapid navigation
-        });
+          })
+          .catch(() => {
+            // Ignore errors during rapid navigation
+          });
       }
     }
   }
 
   public clearPresence() {
-    if (this.hubConnection?.state === signalR.HubConnectionState.Connected && this.mselId && this.applicationArea !== ApplicationArea.admin) {
+    if (
+      this.hubConnection?.state === signalR.HubConnectionState.Connected &&
+      this.mselId &&
+      this.applicationArea !== ApplicationArea.admin
+    ) {
       this.hubConnection.invoke('selectMsel', []).catch(() => {
         // Ignore errors during rapid navigation
       });
@@ -257,7 +266,9 @@ export class SignalRService implements OnDestroy {
             setTimeout(() => this.reconnect(), 500);
           } else {
             // Restarting replaced the connection too, so anything sent in between was missed.
-            this.join().then(() => this.hubReconnectService.announceReconnected());
+            this.join().then(() =>
+              this.hubReconnectService.announceReconnected(),
+            );
           }
         });
       });
@@ -458,13 +469,23 @@ export class SignalRService implements OnDestroy {
       this.mselDataService.deleteFromStore(id);
     });
 
-    this.hubConnection.on('IntegrationStatusUpdated', (mselId: string, integrationStatus: string) => {
-      this.mselDataService.updateIntegrationStatus(mselId, integrationStatus);
-    });
+    this.hubConnection.on(
+      'IntegrationStatusUpdated',
+      (mselId: string, integrationStatus: string) => {
+        this.mselDataService.updateIntegrationStatus(mselId, integrationStatus);
+      },
+    );
 
-    this.hubConnection.on('CasterIdsUpdated', (mselId: string, casterWorkspaceId: string, casterRunId: string) => {
-      this.mselDataService.updateCasterIds(mselId, casterWorkspaceId, casterRunId);
-    });
+    this.hubConnection.on(
+      'CasterIdsUpdated',
+      (mselId: string, casterWorkspaceId: string, casterRunId: string) => {
+        this.mselDataService.updateCasterIds(
+          mselId,
+          casterWorkspaceId,
+          casterRunId,
+        );
+      },
+    );
 
     this.hubConnection.on('AiDraftProgress', (progress: AiDraftProgress) => {
       this.aiDraftProgress$.next(progress);
@@ -477,7 +498,6 @@ export class SignalRService implements OnDestroy {
     this.hubConnection.on('AiBuildTakenOver', (takenOver: AiBuildTakenOver) => {
       this.aiBuildTakenOver$.next(takenOver);
     });
-
   }
 
   private addMselUnitHandlers() {
@@ -533,14 +553,14 @@ export class SignalRService implements OnDestroy {
       'OrganizationUpdated',
       (organization: Organization) => {
         this.organizationDataService.updateStore(organization);
-      }
+      },
     );
 
     this.hubConnection.on(
       'OrganizationCreated',
       (organization: Organization) => {
         this.organizationDataService.updateStore(organization);
-      }
+      },
     );
 
     this.hubConnection.on('OrganizationDeleted', (id: string) => {
@@ -553,14 +573,14 @@ export class SignalRService implements OnDestroy {
       'PlayerApplicationUpdated',
       (playerApplication: PlayerApplication) => {
         this.playerApplicationDataService.updateStore(playerApplication);
-      }
+      },
     );
 
     this.hubConnection.on(
       'PlayerApplicationCreated',
       (playerApplication: PlayerApplication) => {
         this.playerApplicationDataService.updateStore(playerApplication);
-      }
+      },
     );
 
     this.hubConnection.on('PlayerApplicationDeleted', (id: string) => {
@@ -573,18 +593,18 @@ export class SignalRService implements OnDestroy {
       'PlayerApplicationTeamUpdated',
       (playerApplicationTeam: PlayerApplicationTeam) => {
         this.playerApplicationTeamDataService.updateStore(
-          playerApplicationTeam
+          playerApplicationTeam,
         );
-      }
+      },
     );
 
     this.hubConnection.on(
       'PlayerApplicationTeamCreated',
       (playerApplicationTeam: PlayerApplicationTeam) => {
         this.playerApplicationTeamDataService.updateStore(
-          playerApplicationTeam
+          playerApplicationTeam,
         );
-      }
+      },
     );
 
     this.hubConnection.on('PlayerApplicationTeamDeleted', (id: string) => {
@@ -597,14 +617,14 @@ export class SignalRService implements OnDestroy {
       'ScenarioEventUpdated',
       (scenarioEvent: ScenarioEvent) => {
         this.scenarioEventDataService.updateStore(scenarioEvent);
-      }
+      },
     );
 
     this.hubConnection.on(
       'ScenarioEventCreated',
       (scenarioEvent: ScenarioEvent) => {
         this.scenarioEventDataService.updateStore(scenarioEvent);
-      }
+      },
     );
 
     this.hubConnection.on('ScenarioEventDeleted', (id: string) => {
@@ -659,14 +679,14 @@ export class SignalRService implements OnDestroy {
       'UserMselRoleCreated',
       (userMselRole: UserMselRole) => {
         this.userMselRoleDataService.updateStore(userMselRole);
-      }
+      },
     );
 
     this.hubConnection.on(
       'UserMselRoleUpdated',
       (userMselRole: UserMselRole) => {
         this.userMselRoleDataService.updateStore(userMselRole);
-      }
+      },
     );
 
     this.hubConnection.on('UserMselRoleDeleted', (id: string) => {
@@ -675,26 +695,37 @@ export class SignalRService implements OnDestroy {
   }
 
   private addPresenceHandlers() {
-    this.hubConnection.on('PresenceArrived', (actor: { id: string; name: string }) => {
-      this.updatePresence(actor, true);
-      // greet back so the newcomer sees us
-      if (this.mselId) {
-        this.hubConnection.invoke('Greet', this.mselId);
-      }
-    });
+    this.hubConnection.on(
+      'PresenceArrived',
+      (actor: { id: string; name: string }) => {
+        this.updatePresence(actor, true);
+        // greet back so the newcomer sees us
+        if (this.mselId) {
+          this.hubConnection.invoke('Greet', this.mselId);
+        }
+      },
+    );
 
-    this.hubConnection.on('PresenceGreeted', (actor: { id: string; name: string }) => {
-      this.updatePresence(actor, true);
-    });
+    this.hubConnection.on(
+      'PresenceGreeted',
+      (actor: { id: string; name: string }) => {
+        this.updatePresence(actor, true);
+      },
+    );
 
-    this.hubConnection.on('PresenceDeparted', (actor: { id: string; name: string }) => {
-      this.presenceActors = this.presenceActors.filter(a => a.id !== actor.id);
-      this.actors$.next([...this.presenceActors]);
-    });
+    this.hubConnection.on(
+      'PresenceDeparted',
+      (actor: { id: string; name: string }) => {
+        this.presenceActors = this.presenceActors.filter(
+          (a) => a.id !== actor.id,
+        );
+        this.actors$.next([...this.presenceActors]);
+      },
+    );
   }
 
   private updatePresence(actor: { id: string; name: string }, online: boolean) {
-    const existing = this.presenceActors.find(a => a.id === actor.id);
+    const existing = this.presenceActors.find((a) => a.id === actor.id);
     if (existing) {
       existing.online = online;
       existing.name = actor.name;
@@ -703,7 +734,10 @@ export class SignalRService implements OnDestroy {
         id: actor.id,
         name: actor.name,
         online,
-        color: this.presenceColorMap[this.presenceActors.length % this.presenceColorMap.length],
+        color:
+          this.presenceColorMap[
+            this.presenceActors.length % this.presenceColorMap.length
+          ],
       });
     }
     this.actors$.next([...this.presenceActors]);
@@ -719,11 +753,11 @@ class RetryPolicy {
   constructor(
     private maxSeconds: number,
     private minJitterSeconds: number,
-    private maxJitterSeconds: number
+    private maxJitterSeconds: number,
   ) {}
 
   nextRetryDelayInMilliseconds(
-    retryContext: signalR.RetryContext
+    retryContext: signalR.RetryContext,
   ): number | null {
     let nextRetrySeconds = Math.pow(2, retryContext.previousRetryCount + 1);
 
@@ -733,7 +767,7 @@ class RetryPolicy {
 
     nextRetrySeconds +=
       Math.floor(
-        Math.random() * (this.maxJitterSeconds - this.minJitterSeconds + 1)
+        Math.random() * (this.maxJitterSeconds - this.minJitterSeconds + 1),
       ) + this.minJitterSeconds; // Add Jitter
 
     return nextRetrySeconds * 1000;

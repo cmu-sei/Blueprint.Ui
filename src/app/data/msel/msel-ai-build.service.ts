@@ -4,8 +4,25 @@
 
 import { Injectable, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { BehaviorSubject, defer, EMPTY, from, Observable, of, Subject, Subscription } from 'rxjs';
-import { catchError, finalize, map, mergeMap, take, tap, toArray } from 'rxjs/operators';
+import {
+  BehaviorSubject,
+  defer,
+  EMPTY,
+  from,
+  Observable,
+  of,
+  Subject,
+  Subscription,
+} from 'rxjs';
+import {
+  catchError,
+  finalize,
+  map,
+  mergeMap,
+  take,
+  tap,
+  toArray,
+} from 'rxjs/operators';
 import {
   MselBuildBuilder,
   MselBuildContent,
@@ -65,7 +82,10 @@ export class MselAiBuildService {
   private signalRService = inject(SignalRService);
   private builds = new Map<string, BehaviorSubject<MselAiBuild>>();
   // who is building each MSEL in a browser tab, this one or another; null when no tab is
-  private builders = new Map<string, BehaviorSubject<MselBuildBuilder | null>>();
+  private builders = new Map<
+    string,
+    BehaviorSubject<MselBuildBuilder | null>
+  >();
   private runs = new Map<string, Subscription>();
   // a MSEL's id when its build finishes, so its page reloads what the finish added
   readonly finished$ = new Subject<string>();
@@ -80,12 +100,20 @@ export class MselAiBuildService {
 
   constructor() {
     this.signalRService.aiDraftProgress$.subscribe((progress) => {
-      const build = progress.mselId ? this.builds.get(progress.mselId)?.value : undefined;
-      if (build?.running && build.step === 'injects' && progress.operation === 'injects') {
+      const build = progress.mselId
+        ? this.builds.get(progress.mselId)?.value
+        : undefined;
+      if (
+        build?.running &&
+        build.step === 'injects' &&
+        progress.operation === 'injects'
+      ) {
         this.patch(build.mselId, { counts: progress.counts ?? {} });
       }
     });
-    this.signalRService.aiBuilderChanged$.subscribe((change) => this.builderSubject(change.mselId).next(change.builder ?? null));
+    this.signalRService.aiBuilderChanged$.subscribe((change) =>
+      this.builderSubject(change.mselId).next(change.builder ?? null),
+    );
     // another tab took the build: this one stops writing, and what it saved stays
     this.signalRService.aiBuildTakenOver$.subscribe((takenOver) => {
       if (!this.isRunning(takenOver.mselId)) {
@@ -93,8 +121,14 @@ export class MselAiBuildService {
       }
       this.runs.get(takenOver.mselId)?.unsubscribe();
       this.runs.delete(takenOver.mselId);
-      const who = takenOver.userName ? `${takenOver.userName} took over` : 'Another tab took over';
-      this.patch(takenOver.mselId, { running: false, step: 'takenOver', errors: [`${who} building this MSEL. What was written here is saved.`] });
+      const who = takenOver.userName
+        ? `${takenOver.userName} took over`
+        : 'Another tab took over';
+      this.patch(takenOver.mselId, {
+        running: false,
+        step: 'takenOver',
+        errors: [`${who} building this MSEL. What was written here is saved.`],
+      });
     });
   }
 
@@ -150,11 +184,19 @@ export class MselAiBuildService {
           next: (created) => {
             this.creates.delete(mselId);
             this.patch(mselId, { running: false });
-            this.created$.next({ requestedId: mselId, mselId: created.msel.id });
+            this.created$.next({
+              requestedId: mselId,
+              mselId: created.msel.id,
+            });
             this.run(created.msel.id);
           },
-          error: (err) => this.patch(mselId, { running: false, step: 'createFailed', errors: [errorMessage(err)] }),
-        })
+          error: (err) =>
+            this.patch(mselId, {
+              running: false,
+              step: 'createFailed',
+              errors: [errorMessage(err)],
+            }),
+        }),
     );
   }
 
@@ -187,10 +229,21 @@ export class MselAiBuildService {
     const run = this.claim(mselId, takeOver)
       .pipe(
         mergeMap(() => this.api.getMselBuildStatus(mselId)),
-        tap((status) => this.patch(mselId, { step: 'injects', planned: status.plannedInjects ?? undefined })),
-        mergeMap((status) => (status.stage === 'Injects' ? this.writeInjects(mselId) : of(status))),
-        mergeMap((status) => (status.stage === 'Articles' ? this.writeArticles(mselId, status) : of(status))),
-        mergeMap((status) => this.finish(mselId, status))
+        tap((status) =>
+          this.patch(mselId, {
+            step: 'injects',
+            planned: status.plannedInjects ?? undefined,
+          }),
+        ),
+        mergeMap((status) =>
+          status.stage === 'Injects' ? this.writeInjects(mselId) : of(status),
+        ),
+        mergeMap((status) =>
+          status.stage === 'Articles'
+            ? this.writeArticles(mselId, status)
+            : of(status),
+        ),
+        mergeMap((status) => this.finish(mselId, status)),
       )
       .subscribe({
         error: (err) => this.stopped(mselId, err, [...this.get(mselId).errors]),
@@ -218,11 +271,13 @@ export class MselAiBuildService {
       this.claim(mselId, false)
         .pipe(
           mergeMap(() => this.api.getMselBuildStatus(mselId)),
-          mergeMap((status) => this.finish(mselId, { ...status, articles: [], profiles: [] }))
+          mergeMap((status) =>
+            this.finish(mselId, { ...status, articles: [], profiles: [] }),
+          ),
         )
         .subscribe({
           error: (err) => this.stopped(mselId, err, []),
-        })
+        }),
     );
   }
 
@@ -233,7 +288,10 @@ export class MselAiBuildService {
     if (this.get(mselId)?.running) {
       this.patch(mselId, { running: false, step: 'stopped' });
       this.release(mselId);
-      this.api.getMselBuildStatus(mselId).subscribe({ next: (remaining) => this.patch(mselId, { remaining }), error: () => {} });
+      this.api.getMselBuildStatus(mselId).subscribe({
+        next: (remaining) => this.patch(mselId, { remaining }),
+        error: () => {},
+      });
     }
   }
 
@@ -244,26 +302,45 @@ export class MselAiBuildService {
     if (!connectionId) {
       return of(null);
     }
-    return this.api.claimMselBuild(mselId, connectionId, takeOver).pipe(tap((builder) => this.noteBuilder(mselId, builder)));
+    return this.api
+      .claimMselBuild(mselId, connectionId, takeOver)
+      .pipe(tap((builder) => this.noteBuilder(mselId, builder)));
   }
 
   // frees the build when this tab has it, so another tab can continue it at once
   private release(mselId: string) {
     const connectionId = this.signalRService.connectionId;
     if (connectionId) {
-      this.api.releaseMselBuild(mselId, connectionId).subscribe({ error: () => {} });
+      this.api
+        .releaseMselBuild(mselId, connectionId)
+        .subscribe({ error: () => {} });
     }
   }
 
   // a run that stopped on an error; another tab having the build is not a failure, and is said so
   private stopped(mselId: string, err: unknown, errors: string[]) {
     this.runs.delete(mselId);
-    if (err instanceof HttpErrorResponse && err.status === 409 && this.get(mselId)?.step === 'claiming') {
-      this.patch(mselId, { running: false, step: 'busy', errors: [errorMessage(err)] });
-      this.api.getMselBuildStatus(mselId).subscribe({ next: (status) => this.noteBuilder(mselId, status.builder), error: () => {} });
+    if (
+      err instanceof HttpErrorResponse &&
+      err.status === 409 &&
+      this.get(mselId)?.step === 'claiming'
+    ) {
+      this.patch(mselId, {
+        running: false,
+        step: 'busy',
+        errors: [errorMessage(err)],
+      });
+      this.api.getMselBuildStatus(mselId).subscribe({
+        next: (status) => this.noteBuilder(mselId, status.builder),
+        error: () => {},
+      });
       return;
     }
-    this.patch(mselId, { running: false, step: 'failed', errors: [...errors, errorMessage(err)] });
+    this.patch(mselId, {
+      running: false,
+      step: 'failed',
+      errors: [...errors, errorMessage(err)],
+    });
     this.release(mselId);
   }
 
@@ -275,34 +352,70 @@ export class MselAiBuildService {
   }
 
   private writeInjects(mselId: string): Observable<MselBuildStatus> {
-    this.patch(mselId, { step: 'injects', stepStarted: Date.now(), counts: {} });
-    return this.api.writeMselInjects(mselId, this.signalRService.connectionId).pipe(tap((status) => this.addWarnings(mselId, status.warnings)));
+    this.patch(mselId, {
+      step: 'injects',
+      stepStarted: Date.now(),
+      counts: {},
+    });
+    return this.api
+      .writeMselInjects(mselId, this.signalRService.connectionId)
+      .pipe(tap((status) => this.addWarnings(mselId, status.warnings)));
   }
 
-  private writeArticles(mselId: string, status: MselBuildStatus): Observable<MselBuildStatus> {
+  private writeArticles(
+    mselId: string,
+    status: MselBuildStatus,
+  ): Observable<MselBuildStatus> {
     // the rows in time order with the articles, then the profiles
-    const items = [...(status.injects ?? []), ...(status.articles ?? []), ...(status.profiles ?? [])];
-    this.patch(mselId, { step: 'articles', stepStarted: Date.now(), written: 0, total: items.length, inProgress: 0, lastDone: undefined });
+    const items = [
+      ...(status.injects ?? []),
+      ...(status.articles ?? []),
+      ...(status.profiles ?? []),
+    ];
+    this.patch(mselId, {
+      step: 'articles',
+      stepStarted: Date.now(),
+      written: 0,
+      total: items.length,
+      inProgress: 0,
+      lastDone: undefined,
+    });
     return from(items).pipe(
       mergeMap(
         (item) =>
           defer(() => {
             // the items being written now, so the first minute of a step is not a silent 0
-            this.patch(mselId, { inProgress: (this.get(mselId).inProgress ?? 0) + 1 });
+            this.patch(mselId, {
+              inProgress: (this.get(mselId).inProgress ?? 0) + 1,
+            });
             return this.writeItem(mselId, item);
           }).pipe(
-            tap(() => this.patch(mselId, { written: this.get(mselId).written + 1, lastDone: item.name || undefined })),
+            tap(() =>
+              this.patch(mselId, {
+                written: this.get(mselId).written + 1,
+                lastDone: item.name || undefined,
+              }),
+            ),
             catchError((err) => {
-              this.patch(mselId, { errors: [...this.get(mselId).errors, `${item.name || 'An article'}: ${errorMessage(err)}`] });
+              this.patch(mselId, {
+                errors: [
+                  ...this.get(mselId).errors,
+                  `${item.name || 'An article'}: ${errorMessage(err)}`,
+                ],
+              });
               return EMPTY;
             }),
-            finalize(() => this.patch(mselId, { inProgress: Math.max(0, (this.get(mselId).inProgress ?? 1) - 1) }))
+            finalize(() =>
+              this.patch(mselId, {
+                inProgress: Math.max(0, (this.get(mselId).inProgress ?? 1) - 1),
+              }),
+            ),
           ),
         // the API writes numbers as strings, and mergeMap takes a string as no limit at all
-        Number(status.parallel) || this.concurrency
+        Number(status.parallel) || this.concurrency,
       ),
       toArray(),
-      mergeMap(() => this.api.getMselBuildStatus(mselId))
+      mergeMap(() => this.api.getMselBuildStatus(mselId)),
     );
   }
 
@@ -311,23 +424,43 @@ export class MselAiBuildService {
   private writeItem(mselId: string, item: MselBuildItem): Observable<unknown> {
     // a row's text has no graphics, so it is saved once, as written
     if (item.kind === 'inject') {
-      return (this.api.writeMselRow(mselId, item.id, this.signalRService.connectionId) as Observable<MselBuildContent>).pipe(
-        tap((written: MselBuildContent) => this.addWarnings(mselId, written?.warnings))
+      return (
+        this.api.writeMselRow(
+          mselId,
+          item.id,
+          this.signalRService.connectionId,
+        ) as Observable<MselBuildContent>
+      ).pipe(
+        tap((written: MselBuildContent) =>
+          this.addWarnings(mselId, written?.warnings),
+        ),
       );
     }
     const isArticle = item.kind === 'article';
     const connectionId = this.signalRService.connectionId;
-    const write = isArticle ? this.api.writeMselArticle(mselId, item.id, connectionId) : this.api.writeMselProfile(mselId, item.id, connectionId);
+    const write = isArticle
+      ? this.api.writeMselArticle(mselId, item.id, connectionId)
+      : this.api.writeMselProfile(mselId, item.id, connectionId);
     return (write as Observable<{ html?: string; warnings?: string[] }>).pipe(
-      tap((written: { html?: string; warnings?: string[] }) => this.addWarnings(mselId, written?.warnings)),
-      mergeMap((written) => from(this.toPng(written.html ?? '')).pipe(map((png) => ({ html: written.html, png })))),
+      tap((written: { html?: string; warnings?: string[] }) =>
+        this.addWarnings(mselId, written?.warnings),
+      ),
+      mergeMap((written) =>
+        from(this.toPng(written.html ?? '')).pipe(
+          map((png) => ({ html: written.html, png })),
+        ),
+      ),
       mergeMap(({ html, png }) =>
         png === html
           ? of(null)
           : isArticle
-            ? this.api.saveMselArticle(mselId, item.id, connectionId, { html: png })
-            : this.api.saveMselProfile(mselId, item.id, connectionId, { html: png })
-      )
+            ? this.api.saveMselArticle(mselId, item.id, connectionId, {
+                html: png,
+              })
+            : this.api.saveMselProfile(mselId, item.id, connectionId, {
+                html: png,
+              }),
+      ),
     );
   }
 
@@ -338,13 +471,19 @@ export class MselAiBuildService {
       return of(status);
     }
     if (status.articles?.length || status.profiles?.length) {
-      this.patch(mselId, { running: false, step: 'stopped', remaining: status });
+      this.patch(mselId, {
+        running: false,
+        step: 'stopped',
+        remaining: status,
+      });
       this.runs.delete(mselId);
       this.release(mselId);
       return of(status);
     }
     this.patch(mselId, { step: 'finish', stepStarted: Date.now() });
-    return this.api.finishMselBuild(mselId, this.signalRService.connectionId).pipe(tap((finished) => this.done(mselId, finished)));
+    return this.api
+      .finishMselBuild(mselId, this.signalRService.connectionId)
+      .pipe(tap((finished) => this.done(mselId, finished)));
   }
 
   private done(mselId: string, status: MselBuildStatus) {
@@ -357,7 +496,9 @@ export class MselAiBuildService {
 
   private addWarnings(mselId: string, warnings: string[]) {
     if (warnings?.length) {
-      this.patch(mselId, { warnings: [...this.get(mselId).warnings, ...warnings] });
+      this.patch(mselId, {
+        warnings: [...this.get(mselId).warnings, ...warnings],
+      });
     }
   }
 
@@ -368,9 +509,14 @@ export class MselAiBuildService {
     return this.builds.get(mselId);
   }
 
-  private builderSubject(mselId: string): BehaviorSubject<MselBuildBuilder | null> {
+  private builderSubject(
+    mselId: string,
+  ): BehaviorSubject<MselBuildBuilder | null> {
     if (!this.builders.has(mselId)) {
-      this.builders.set(mselId, new BehaviorSubject<MselBuildBuilder | null>(null));
+      this.builders.set(
+        mselId,
+        new BehaviorSubject<MselBuildBuilder | null>(null),
+      );
     }
     return this.builders.get(mselId);
   }
@@ -391,11 +537,16 @@ export function errorMessage(err: unknown): string {
   if (err instanceof HttpErrorResponse && err.status === 0) {
     return 'The API could not be reached.';
   }
-  const failure = err as { error?: { title?: string; detail?: string }; message?: string };
+  const failure = err as {
+    error?: { title?: string; detail?: string };
+    message?: string;
+  };
   const title = failure?.error?.title;
   const detail = failure?.error?.detail;
   if (title) {
-    return detail && !detail.startsWith('   at ') ? `${title} ${detail}` : title;
+    return detail && !detail.startsWith('   at ')
+      ? `${title} ${detail}`
+      : title;
   }
   return failure?.message || 'The draft failed.';
 }

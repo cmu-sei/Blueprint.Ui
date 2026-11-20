@@ -25,118 +25,273 @@ import { PermissionDataService } from 'src/app/data/permission/permission-data.s
 import { MselTechniquesComponent } from './msel-techniques.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
-import { permissionApiStubs, PermissionGrants } from 'src/app/test-utils/mock-permission-data.service';
+import {
+  permissionApiStubs,
+  PermissionGrants,
+} from 'src/app/test-utils/mock-permission-data.service';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
 
 const ME = 'user-me';
-const MSEL: Msel = { id: 'msel-1', name: 'Exercise Alpha', createdBy: 'someone-else', userMselRoles: [] };
+const MSEL: Msel = {
+  id: 'msel-1',
+  name: 'Exercise Alpha',
+  createdBy: 'someone-else',
+  userMselRoles: [],
+};
 const T1059: MselTechnique = {
   id: 'mat-1',
   mselId: 'msel-1',
   techniqueId: 'at-1',
-  technique: { id: 'at-1', techniqueReleaseId: 'rel-1', domain: 'enterprise-attack', externalId: 'T1059', name: 'Command and Scripting Interpreter', url: 'https://attack.mitre.org/techniques/T1059' },
+  technique: {
+    id: 'at-1',
+    techniqueReleaseId: 'rel-1',
+    domain: 'enterprise-attack',
+    externalId: 'T1059',
+    name: 'Command and Scripting Interpreter',
+    url: 'https://attack.mitre.org/techniques/T1059',
+  },
 };
-const TERMS_OF_USE = 'https://attack.mitre.org/resources/legal-and-branding/terms-of-use/';
+const TERMS_OF_USE =
+  'https://attack.mitre.org/resources/legal-and-branding/terms-of-use/';
 const D3FEND_TERMS_OF_USE = 'https://d3fend.mitre.org/tou/';
 // What the API's parsers stamp on a release: the notice, the publisher and the terms it carries.
-const COPYRIGHT = '© 2026 The MITRE Corporation. This work is reproduced and distributed with the permission of The MITRE Corporation.';
+const COPYRIGHT =
+  '© 2026 The MITRE Corporation. This work is reproduced and distributed with the permission of The MITRE Corporation.';
 const ENTERPRISE_RELEASE: TechniqueRelease = {
-  id: 'rel-1', domain: 'enterprise-attack', name: 'Enterprise ATT&CK', version: '17.1',
-  source: 'MITRE ATT&CK', termsUrl: TERMS_OF_USE, groupLabel: 'Tactics',
+  id: 'rel-1',
+  domain: 'enterprise-attack',
+  name: 'Enterprise ATT&CK',
+  version: '17.1',
+  source: 'MITRE ATT&CK',
+  termsUrl: TERMS_OF_USE,
+  groupLabel: 'Tactics',
   notice: `${COPYRIGHT}\nMITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation.`,
 };
 const ATLAS_RELEASE: TechniqueRelease = {
-  id: 'rel-1', domain: 'ATLAS', name: 'ATLAS', version: '2026.10',
-  source: 'MITRE ATLAS', termsUrl: TERMS_OF_USE, groupLabel: 'Tactics',
+  id: 'rel-1',
+  domain: 'ATLAS',
+  name: 'ATLAS',
+  version: '2026.10',
+  source: 'MITRE ATLAS',
+  termsUrl: TERMS_OF_USE,
+  groupLabel: 'Tactics',
   notice: `${COPYRIGHT}\nMITRE ATLAS™ is a trademark of The MITRE Corporation.`,
 };
 const D3FEND_RELEASE: TechniqueRelease = {
-  id: 'rel-d3', domain: 'd3fend', isDefensive: true, name: 'MITRE D3FEND', version: '1.6.0',
-  source: 'MITRE D3FEND', termsUrl: D3FEND_TERMS_OF_USE, groupLabel: 'Tactics',
+  id: 'rel-d3',
+  domain: 'd3fend',
+  isDefensive: true,
+  name: 'MITRE D3FEND',
+  version: '1.6.0',
+  source: 'MITRE D3FEND',
+  termsUrl: D3FEND_TERMS_OF_USE,
+  groupLabel: 'Tactics',
   // from its framework definition (test data)
-  mappingRelation: 'countered by', tacticOrder: ['Model', 'Harden', 'Detect', 'Isolate', 'Deceive', 'Evict', 'Restore'],
+  mappingRelation: 'countered by',
+  tacticOrder: [
+    'Model',
+    'Harden',
+    'Detect',
+    'Isolate',
+    'Deceive',
+    'Evict',
+    'Restore',
+  ],
   notice: `${COPYRIGHT}\nMITRE D3FEND™ is a trademark of The MITRE Corporation.`,
 };
 const CAPEC_RELEASE: TechniqueRelease = {
-  id: 'rel-c', domain: 'capec', name: 'MITRE CAPEC', version: '3.9',
-  source: 'MITRE CAPEC', termsUrl: 'https://capec.mitre.org/about/termsofuse.html', groupLabel: 'Categories',
+  id: 'rel-c',
+  domain: 'capec',
+  name: 'MITRE CAPEC',
+  version: '3.9',
+  source: 'MITRE CAPEC',
+  termsUrl: 'https://capec.mitre.org/about/termsofuse.html',
+  groupLabel: 'Categories',
   // from its framework definition (test data)
   weaknessUrlTemplate: 'https://cwe.mitre.org/data/definitions/{id}.html',
   notice: `${COPYRIGHT}\nMITRE CAPEC™ is a trademark of The MITRE Corporation.`,
 };
-const NEXT_ENTERPRISE_RELEASE: TechniqueRelease = { ...ENTERPRISE_RELEASE, id: 'rel-2', version: '18.0' };
-const CUSTOM_RELEASE: TechniqueRelease = { id: 'rel-x', domain: 'acme-ttp', name: 'Acme Techniques', version: '1.0', groupLabel: 'Tactics' };
+const NEXT_ENTERPRISE_RELEASE: TechniqueRelease = {
+  ...ENTERPRISE_RELEASE,
+  id: 'rel-2',
+  version: '18.0',
+};
+const CUSTOM_RELEASE: TechniqueRelease = {
+  id: 'rel-x',
+  domain: 'acme-ttp',
+  name: 'Acme Techniques',
+  version: '1.0',
+  groupLabel: 'Tactics',
+};
 const CUSTOM_TECHNIQUE: MselTechnique = {
-  id: 'mat-x', mselId: 'msel-1', techniqueId: 'at-x',
-  technique: { id: 'at-x', techniqueReleaseId: 'rel-x', domain: 'acme-ttp', externalId: 'AT-100', name: 'Front Door', url: 'https://acme.example/AT-100' },
+  id: 'mat-x',
+  mselId: 'msel-1',
+  techniqueId: 'at-x',
+  technique: {
+    id: 'at-x',
+    techniqueReleaseId: 'rel-x',
+    domain: 'acme-ttp',
+    externalId: 'AT-100',
+    name: 'Front Door',
+    url: 'https://acme.example/AT-100',
+  },
 };
 const CAPEC_66: Technique = {
-  id: 'at-c66', techniqueReleaseId: 'rel-c', domain: 'capec', externalId: 'CAPEC-66', name: 'SQL Injection',
-  tactics: ['capec-248'], platforms: ['Software'], weaknesses: ['CWE-89', 'CWE-1286'], url: 'https://capec.mitre.org/data/definitions/66.html',
+  id: 'at-c66',
+  techniqueReleaseId: 'rel-c',
+  domain: 'capec',
+  externalId: 'CAPEC-66',
+  name: 'SQL Injection',
+  tactics: ['capec-248'],
+  platforms: ['Software'],
+  weaknesses: ['CWE-89', 'CWE-1286'],
+  url: 'https://capec.mitre.org/data/definitions/66.html',
   referenceLinks: [
-    { source: 'WASC', label: 'WASC-19 SQL Injection', url: 'http://projects.webappsec.org/SQL-Injection' },
-    { source: 'OWASP', label: 'SQL Injection', url: 'https://owasp.org/www-community/attacks/SQL_Injection' },
+    {
+      source: 'WASC',
+      label: 'WASC-19 SQL Injection',
+      url: 'http://projects.webappsec.org/SQL-Injection',
+    },
+    {
+      source: 'OWASP',
+      label: 'SQL Injection',
+      url: 'https://owasp.org/www-community/attacks/SQL_Injection',
+    },
   ],
 };
 const CAPEC_8: Technique = {
-  id: 'at-c8', techniqueReleaseId: 'rel-c', domain: 'capec', externalId: 'CAPEC-8', name: 'Buffer Overflow in an API Call',
-  tactics: ['capec-123'], platforms: ['Software'], weaknesses: ['CWE-120'], url: 'https://capec.mitre.org/data/definitions/8.html',
+  id: 'at-c8',
+  techniqueReleaseId: 'rel-c',
+  domain: 'capec',
+  externalId: 'CAPEC-8',
+  name: 'Buffer Overflow in an API Call',
+  tactics: ['capec-123'],
+  platforms: ['Software'],
+  weaknesses: ['CWE-120'],
+  url: 'https://capec.mitre.org/data/definitions/8.html',
 };
 const CAPEC_TERMS_OF_USE = 'https://capec.mitre.org/about/termsofuse.html';
-const CAPEC_66_IN_POOL: MselTechnique = { id: 'mat-c66', mselId: 'msel-1', techniqueId: 'at-c66', technique: CAPEC_66 };
+const CAPEC_66_IN_POOL: MselTechnique = {
+  id: 'mat-c66',
+  mselId: 'msel-1',
+  techniqueId: 'at-c66',
+  technique: CAPEC_66,
+};
 const AML_T0000: Technique = {
-  id: 'at-1', techniqueReleaseId: 'rel-1', domain: 'ATLAS', externalId: 'AML.T0000', name: 'Search Open Technical Databases',
-  tactics: ['reconnaissance'], url: 'https://atlas.mitre.org/techniques/AML.T0000',
+  id: 'at-1',
+  techniqueReleaseId: 'rel-1',
+  domain: 'ATLAS',
+  externalId: 'AML.T0000',
+  name: 'Search Open Technical Databases',
+  tactics: ['reconnaissance'],
+  url: 'https://atlas.mitre.org/techniques/AML.T0000',
 };
-const ATLAS_IN_POOL: MselTechnique = { id: 'mat-1', mselId: 'msel-1', techniqueId: 'at-1', technique: AML_T0000 };
+const ATLAS_IN_POOL: MselTechnique = {
+  id: 'mat-1',
+  mselId: 'msel-1',
+  techniqueId: 'at-1',
+  technique: AML_T0000,
+};
 const D3_CH: Technique = {
-  id: 'at-d3', techniqueReleaseId: 'rel-d3', domain: 'd3fend', isDefensive: true, externalId: 'D3-CH', name: 'Credential Hardening',
-  tactics: ['harden'], url: 'https://d3fend.mitre.org/technique/d3f:CredentialHardening/',
+  id: 'at-d3',
+  techniqueReleaseId: 'rel-d3',
+  domain: 'd3fend',
+  isDefensive: true,
+  externalId: 'D3-CH',
+  name: 'Credential Hardening',
+  tactics: ['harden'],
+  url: 'https://d3fend.mitre.org/technique/d3f:CredentialHardening/',
 };
-const D3_CH_IN_POOL: MselTechnique = { id: 'mat-d3', mselId: 'msel-1', techniqueId: 'at-d3', technique: D3_CH };
-const NO_MAPPINGS: MselCountermeasures = { mselId: 'msel-1', techniqueReleaseId: null, hasMappings: false, techniques: [] };
+const D3_CH_IN_POOL: MselTechnique = {
+  id: 'mat-d3',
+  mselId: 'msel-1',
+  techniqueId: 'at-d3',
+  technique: D3_CH,
+};
+const NO_MAPPINGS: MselCountermeasures = {
+  mselId: 'msel-1',
+  techniqueReleaseId: null,
+  hasMappings: false,
+  techniques: [],
+};
 // D3FEND 1.6.0 counters T1059 with D3-CH, inherited from nothing; D3-CH is in the defensive pool already.
 const T1059_COUNTERED: MselCountermeasures = {
-  mselId: 'msel-1', techniqueReleaseId: 'rel-d3', hasMappings: true,
-  techniques: [{
-    techniqueId: 'at-1', offensiveExternalId: 'T1059', inheritedFrom: null,
-    countermeasures: [{
-      id: 'cm-1', techniqueReleaseId: 'rel-d3', offensiveExternalId: 'T1059', defensiveTechniqueId: 'at-d3', defensiveTechnique: D3_CH,
-      defensiveTactic: 'Harden', rationale: 'hardens Credential; T1059 executes Script', weight: 2,
-    }],
-  }],
+  mselId: 'msel-1',
+  techniqueReleaseId: 'rel-d3',
+  hasMappings: true,
+  techniques: [
+    {
+      techniqueId: 'at-1',
+      offensiveExternalId: 'T1059',
+      inheritedFrom: null,
+      countermeasures: [
+        {
+          id: 'cm-1',
+          techniqueReleaseId: 'rel-d3',
+          offensiveExternalId: 'T1059',
+          defensiveTechniqueId: 'at-d3',
+          defensiveTechnique: D3_CH,
+          defensiveTactic: 'Harden',
+          rationale: 'hardens Credential; T1059 executes Script',
+          weight: 2,
+        },
+      ],
+    },
+  ],
 };
 
 // The notice is behind each release's Copyright & terms link: open the nth one and read the dialog, then close it.
 async function readNotice(index = 0): Promise<HTMLElement> {
-  await userEvent.setup().click(screen.getAllByRole('button', { name: 'Copyright & terms' })[index]);
+  await userEvent
+    .setup()
+    .click(screen.getAllByRole('button', { name: 'Copyright & terms' })[index]);
   return await screen.findByRole('dialog');
 }
 async function closeNotice() {
   await userEvent.setup().click(screen.getByRole('button', { name: 'Close' }));
 }
 
-const attackSection = () => screen.getByLabelText('Attack Techniques release').closest('app-technique-pool') as HTMLElement;
-const defensiveSection = () => screen.getByLabelText('Defensive Techniques release').closest('app-technique-pool') as HTMLElement;
+const attackSection = () =>
+  screen
+    .getByLabelText('Attack Techniques release')
+    .closest('app-technique-pool') as HTMLElement;
+const defensiveSection = () =>
+  screen
+    .getByLabelText('Defensive Techniques release')
+    .closest('app-technique-pool') as HTMLElement;
 
 // With no release imported the Add Techniques browsers stay empty and only the pool can put MITRE content on screen;
 // an imported release is browsed by its family's section as soon as the component loads it.
-async function renderTechniques(pool: MselTechnique[], releases: TechniqueRelease[] = [], techniques: Record<string, Technique[]> = {}, countermeasures: MselCountermeasures = NO_MAPPINGS, grants: PermissionGrants = {}, tactics: Record<string, TechniqueTactic[]> = {}) {
+async function renderTechniques(
+  pool: MselTechnique[],
+  releases: TechniqueRelease[] = [],
+  techniques: Record<string, Technique[]> = {},
+  countermeasures: MselCountermeasures = NO_MAPPINGS,
+  grants: PermissionGrants = {},
+  tactics: Record<string, TechniqueTactic[]> = {},
+) {
   const poolApi = {
     getMselTechniques: vi.fn(() => of(structuredClone(pool))),
     getMselCountermeasures: vi.fn(() => of(structuredClone(countermeasures))),
   } satisfies ApiStub<MselTechniqueService>;
   const releaseApi = {
     getTechniqueReleases: vi.fn(() => of(structuredClone(releases))),
-    getTechniqueTactics: vi.fn((id: string) => of<TechniqueTactic[]>(structuredClone(tactics[id] ?? []))),
-    getTechniques: vi.fn((id: string) => of(structuredClone(techniques[id] ?? []))),
+    getTechniqueTactics: vi.fn((id: string) =>
+      of<TechniqueTactic[]>(structuredClone(tactics[id] ?? [])),
+    ),
+    getTechniques: vi.fn((id: string) =>
+      of(structuredClone(techniques[id] ?? [])),
+    ),
   } satisfies ApiStub<TechniqueReleaseService>;
   // The sections load the permissions themselves in ngOnInit, so the real service is provided over the
   // stubbed endpoint, without priming it.
   const permissionApis = permissionApiStubs(grants);
   const rendered = await renderComponent(MselTechniquesComponent, {
     providers: [
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: MselTechniqueService, useValue: poolApi },
       { provide: TechniqueReleaseService, useValue: releaseApi },
@@ -168,10 +323,18 @@ describe('MselTechniquesComponent', () => {
 
     expect(poolApi.getMselTechniques).toHaveBeenCalledTimes(1);
     expect(poolApi.getMselTechniques).toHaveBeenCalledWith('msel-1');
-    expect(screen.queryByRole('heading', { name: /Techniques/ })).not.toBeInTheDocument();
-    expect(screen.getByLabelText('Attack Techniques release')).toBeInTheDocument();
-    expect(screen.getByLabelText('Defensive Techniques release')).toBeInTheDocument();
-    expect(screen.getAllByText(/No releases have been imported/)).toHaveLength(2);
+    expect(
+      screen.queryByRole('heading', { name: /Techniques/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Attack Techniques release'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Defensive Techniques release'),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText(/No releases have been imported/)).toHaveLength(
+      2,
+    );
   });
 
   /**
@@ -183,17 +346,34 @@ describe('MselTechniquesComponent', () => {
   it('attributes MITRE when the pool lists techniques', async () => {
     await renderTechniques([T1059], [ENTERPRISE_RELEASE]);
 
-    expect(screen.getByRole('link', { name: 'T1059' })).toHaveAttribute('title', 'Open T1059 on attack.mitre.org');
+    expect(screen.getByRole('link', { name: 'T1059' })).toHaveAttribute(
+      'title',
+      'Open T1059 on attack.mitre.org',
+    );
     // the link sits with the pinned release it covers, not at the foot of the tab, and nothing is shown until it is opened
-    expect(screen.getAllByRole('button', { name: 'Copyright & terms' })).toHaveLength(1);
-    expect(within(attackSection()).getByLabelText('Pinned releases')).toContainElement(screen.getByRole('button', { name: 'Copyright & terms' }));
+    expect(
+      screen.getAllByRole('button', { name: 'Copyright & terms' }),
+    ).toHaveLength(1);
+    expect(
+      within(attackSection()).getByLabelText('Pinned releases'),
+    ).toContainElement(
+      screen.getByRole('button', { name: 'Copyright & terms' }),
+    );
     expect(screen.queryByText(/The MITRE Corporation/)).not.toBeInTheDocument();
     const dialog = within(await readNotice());
-    expect(dialog.getByText(/© 2026 The MITRE Corporation/)).toBeInTheDocument();
-    expect(dialog.getByText(/MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation/)).toBeInTheDocument();
+    expect(
+      dialog.getByText(/© 2026 The MITRE Corporation/),
+    ).toBeInTheDocument();
+    expect(
+      dialog.getByText(
+        /MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation/,
+      ),
+    ).toBeInTheDocument();
     expect(dialog.queryByText(/MITRE ATLAS/)).not.toBeInTheDocument();
     expect(dialog.queryByText(/MITRE D3FEND/)).not.toBeInTheDocument();
-    const terms = dialog.getByRole('link', { name: 'MITRE ATT&CK Terms of Use' });
+    const terms = dialog.getByRole('link', {
+      name: 'MITRE ATT&CK Terms of Use',
+    });
     expect(terms).toHaveAttribute('href', TERMS_OF_USE);
     expect(terms).toHaveAttribute('target', '_blank');
     expect(terms).toHaveAttribute('rel', 'noopener');
@@ -208,7 +388,9 @@ describe('MselTechniquesComponent', () => {
     await renderTechniques([], [ENTERPRISE_RELEASE]);
 
     expect(screen.getAllByText(/No techniques yet/)).toHaveLength(2);
-    expect(screen.queryByRole('button', { name: 'Copyright & terms' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Copyright & terms' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -218,14 +400,30 @@ describe('MselTechniquesComponent', () => {
    * Data: the ATLAS 2026.10 release imported, AML.T0000 in its pool and in the (collapsed) browser.
    */
   it('also credits MITRE ATLAS when the techniques are from an ATLAS release', async () => {
-    const { releaseApi } = await renderTechniques([ATLAS_IN_POOL], [ATLAS_RELEASE], { 'rel-1': [AML_T0000] });
+    const { releaseApi } = await renderTechniques(
+      [ATLAS_IN_POOL],
+      [ATLAS_RELEASE],
+      { 'rel-1': [AML_T0000] },
+    );
 
     expect(releaseApi.getTechniques).toHaveBeenCalledWith('rel-1');
-    expect(screen.getByRole('link', { name: 'AML.T0000' })).toHaveAttribute('href', 'https://atlas.mitre.org/techniques/AML.T0000');
-    expect(screen.getByRole('link', { name: 'AML.T0000' })).toHaveAttribute('title', 'Open AML.T0000 on atlas.mitre.org');
+    expect(screen.getByRole('link', { name: 'AML.T0000' })).toHaveAttribute(
+      'href',
+      'https://atlas.mitre.org/techniques/AML.T0000',
+    );
+    expect(screen.getByRole('link', { name: 'AML.T0000' })).toHaveAttribute(
+      'title',
+      'Open AML.T0000 on atlas.mitre.org',
+    );
     const dialog = within(await readNotice());
-    expect(dialog.queryByText(/ATT&CK and ATT&CK are registered trademarks/)).not.toBeInTheDocument();
-    expect(dialog.getByText(/MITRE ATLAS™ is a trademark of The MITRE Corporation\./)).toBeInTheDocument();
+    expect(
+      dialog.queryByText(/ATT&CK and ATT&CK are registered trademarks/),
+    ).not.toBeInTheDocument();
+    expect(
+      dialog.getByText(
+        /MITRE ATLAS™ is a trademark of The MITRE Corporation\./,
+      ),
+    ).toBeInTheDocument();
     expect(dialog.queryByText(/MITRE D3FEND/)).not.toBeInTheDocument();
   });
 
@@ -237,7 +435,9 @@ describe('MselTechniquesComponent', () => {
    * Data: MITRE CAPEC 3.9 imported with CAPEC-66 (CWE-89, CWE-1286, WASC and OWASP links) and CAPEC-8 (CWE-120).
    */
   it('browses a CAPEC release by its weaknesses and credits MITRE CAPEC', async () => {
-    await renderTechniques([], [CAPEC_RELEASE], { 'rel-c': [CAPEC_66, CAPEC_8] });
+    await renderTechniques([], [CAPEC_RELEASE], {
+      'rel-c': [CAPEC_66, CAPEC_8],
+    });
     const attack = within(attackSection());
 
     expect(attack.getByText('Categories')).toBeInTheDocument();
@@ -245,22 +445,51 @@ describe('MselTechniquesComponent', () => {
     expect(attack.getByText('Weaknesses')).toBeInTheDocument();
     expect(attack.getByText('See also')).toBeInTheDocument();
     expect(attack.queryByText('Platforms')).not.toBeInTheDocument();
-    expect(attack.getByRole('link', { name: 'CAPEC-66' })).toHaveAttribute('title', 'Open CAPEC-66 on capec.mitre.org');
-    expect(attack.getByRole('link', { name: 'CWE-89' })).toHaveAttribute('href', 'https://cwe.mitre.org/data/definitions/89.html');
-    expect(attack.getByRole('link', { name: 'CWE-1286' })).toHaveAttribute('href', 'https://cwe.mitre.org/data/definitions/1286.html');
-    expect(attack.getByRole('link', { name: 'WASC' })).toHaveAttribute('href', 'http://projects.webappsec.org/SQL-Injection');
-    expect(attack.getByRole('link', { name: 'OWASP' })).toHaveAttribute('href', 'https://owasp.org/www-community/attacks/SQL_Injection');
+    expect(attack.getByRole('link', { name: 'CAPEC-66' })).toHaveAttribute(
+      'title',
+      'Open CAPEC-66 on capec.mitre.org',
+    );
+    expect(attack.getByRole('link', { name: 'CWE-89' })).toHaveAttribute(
+      'href',
+      'https://cwe.mitre.org/data/definitions/89.html',
+    );
+    expect(attack.getByRole('link', { name: 'CWE-1286' })).toHaveAttribute(
+      'href',
+      'https://cwe.mitre.org/data/definitions/1286.html',
+    );
+    expect(attack.getByRole('link', { name: 'WASC' })).toHaveAttribute(
+      'href',
+      'http://projects.webappsec.org/SQL-Injection',
+    );
+    expect(attack.getByRole('link', { name: 'OWASP' })).toHaveAttribute(
+      'href',
+      'https://owasp.org/www-community/attacks/SQL_Injection',
+    );
     const dialog = within(await readNotice());
-    expect(dialog.getByText(/MITRE CAPEC™ is a trademark of The MITRE Corporation\./)).toBeInTheDocument();
+    expect(
+      dialog.getByText(
+        /MITRE CAPEC™ is a trademark of The MITRE Corporation\./,
+      ),
+    ).toBeInTheDocument();
     expect(dialog.queryByText(/MITRE ATLAS/)).not.toBeInTheDocument();
-    expect(dialog.getByRole('link', { name: 'MITRE CAPEC Terms of Use' })).toHaveAttribute('href', CAPEC_TERMS_OF_USE);
-    expect(dialog.queryByText(/ATT&CK and ATT&CK are registered trademarks/)).not.toBeInTheDocument();
+    expect(
+      dialog.getByRole('link', { name: 'MITRE CAPEC Terms of Use' }),
+    ).toHaveAttribute('href', CAPEC_TERMS_OF_USE);
+    expect(
+      dialog.queryByText(/ATT&CK and ATT&CK are registered trademarks/),
+    ).not.toBeInTheDocument();
     await closeNotice();
 
-    fireEvent.input(attack.getByPlaceholderText('Search techniques'), { target: { value: 'cwe-120' } });
+    fireEvent.input(attack.getByPlaceholderText('Search techniques'), {
+      target: { value: 'cwe-120' },
+    });
 
-    expect(await attack.findByRole('link', { name: 'CAPEC-8' })).toBeInTheDocument();
-    expect(attack.queryByRole('link', { name: 'CAPEC-66' })).not.toBeInTheDocument();
+    expect(
+      await attack.findByRole('link', { name: 'CAPEC-8' }),
+    ).toBeInTheDocument();
+    expect(
+      attack.queryByRole('link', { name: 'CAPEC-66' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -269,12 +498,36 @@ describe('MselTechniquesComponent', () => {
    * Interacts with: TechniquePoolComponent.getTacticNames/loadTacticNames, TechniqueReleaseService.getTechniqueTactics (stub).
    * Data: a pool holding T1059 (Enterprise ATT&CK, Execution) and CAPEC-66 (MITRE CAPEC, Command Injection).
    */
-  it('names each pool technique\'s groups from its own release', async () => {
-    const t1059: MselTechnique = { ...T1059, technique: { ...T1059.technique, tactics: ['execution'] } };
-    await renderTechniques([t1059, CAPEC_66_IN_POOL], [ENTERPRISE_RELEASE, CAPEC_RELEASE], {}, NO_MAPPINGS, {}, {
-      'rel-1': [{ id: 'tac-1', techniqueReleaseId: 'rel-1', shortName: 'execution', name: 'Execution' }],
-      'rel-c': [{ id: 'tac-c', techniqueReleaseId: 'rel-c', shortName: 'capec-248', name: 'Command Injection' }],
-    });
+  it("names each pool technique's groups from its own release", async () => {
+    const t1059: MselTechnique = {
+      ...T1059,
+      technique: { ...T1059.technique, tactics: ['execution'] },
+    };
+    await renderTechniques(
+      [t1059, CAPEC_66_IN_POOL],
+      [ENTERPRISE_RELEASE, CAPEC_RELEASE],
+      {},
+      NO_MAPPINGS,
+      {},
+      {
+        'rel-1': [
+          {
+            id: 'tac-1',
+            techniqueReleaseId: 'rel-1',
+            shortName: 'execution',
+            name: 'Execution',
+          },
+        ],
+        'rel-c': [
+          {
+            id: 'tac-c',
+            techniqueReleaseId: 'rel-c',
+            shortName: 'capec-248',
+            name: 'Command Injection',
+          },
+        ],
+      },
+    );
     const attack = within(attackSection());
 
     expect(await attack.findByText('Command Injection')).toBeInTheDocument();
@@ -290,22 +543,36 @@ describe('MselTechniquesComponent', () => {
    */
   it('shows the first four weaknesses of a pattern and the rest on request', async () => {
     const capec1: Technique = {
-      ...CAPEC_8, id: 'at-c1', externalId: 'CAPEC-1', name: 'Accessing Functionality Not Properly Constrained by ACLs',
-      weaknesses: ['CWE-276', 'CWE-285', 'CWE-434', 'CWE-693', 'CWE-732', 'CWE-1191'],
+      ...CAPEC_8,
+      id: 'at-c1',
+      externalId: 'CAPEC-1',
+      name: 'Accessing Functionality Not Properly Constrained by ACLs',
+      weaknesses: [
+        'CWE-276',
+        'CWE-285',
+        'CWE-434',
+        'CWE-693',
+        'CWE-732',
+        'CWE-1191',
+      ],
     };
     await renderTechniques([], [CAPEC_RELEASE], { 'rel-c': [capec1, CAPEC_8] });
     const attack = within(attackSection());
     const user = userEvent.setup();
 
     expect(attack.getByRole('link', { name: 'CWE-693' })).toBeInTheDocument();
-    expect(attack.queryByRole('link', { name: 'CWE-732' })).not.toBeInTheDocument();
+    expect(
+      attack.queryByRole('link', { name: 'CWE-732' }),
+    ).not.toBeInTheDocument();
     expect(attack.getAllByRole('button', { name: /more$/ })).toHaveLength(1);
 
     await user.click(attack.getByRole('button', { name: '+2 more' }));
     expect(attack.getByRole('link', { name: 'CWE-1191' })).toBeInTheDocument();
 
     await user.click(attack.getByRole('button', { name: 'show fewer' }));
-    expect(attack.queryByRole('link', { name: 'CWE-732' })).not.toBeInTheDocument();
+    expect(
+      attack.queryByRole('link', { name: 'CWE-732' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -315,7 +582,9 @@ describe('MselTechniquesComponent', () => {
    * Data: Enterprise ATT&CK 17.1 imported with T1059.
    */
   it('keeps the ATT&CK labels, and gives no CAPEC notice, for an ATT&CK release', async () => {
-    await renderTechniques([], [ENTERPRISE_RELEASE], { 'rel-1': [T1059.technique] });
+    await renderTechniques([], [ENTERPRISE_RELEASE], {
+      'rel-1': [T1059.technique],
+    });
     const attack = within(attackSection());
 
     expect(attack.getByText('Tactics')).toBeInTheDocument();
@@ -323,7 +592,9 @@ describe('MselTechniquesComponent', () => {
     expect(attack.queryByText('Weaknesses')).not.toBeInTheDocument();
     const dialog = within(await readNotice());
     expect(dialog.queryByText(/MITRE CAPEC/)).not.toBeInTheDocument();
-    expect(dialog.queryByRole('link', { name: 'MITRE CAPEC Terms of Use' })).not.toBeInTheDocument();
+    expect(
+      dialog.queryByRole('link', { name: 'MITRE CAPEC Terms of Use' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -333,27 +604,57 @@ describe('MselTechniquesComponent', () => {
    * Data: T1059 and D3-CH in the pool; Enterprise ATT&CK 17.1 and MITRE D3FEND 1.6.0 imported.
    */
   it('credits MITRE D3FEND and its terms of use when the defensive pool lists techniques', async () => {
-    await renderTechniques([T1059, D3_CH_IN_POOL], [ENTERPRISE_RELEASE, D3FEND_RELEASE]);
+    await renderTechniques(
+      [T1059, D3_CH_IN_POOL],
+      [ENTERPRISE_RELEASE, D3FEND_RELEASE],
+    );
 
-    expect(within(attackSection()).getByRole('link', { name: 'T1059' })).toBeInTheDocument();
-    expect(within(attackSection()).queryByRole('link', { name: 'D3-CH' })).not.toBeInTheDocument();
-    expect(within(attackSection()).getByText('MSEL Techniques (1)')).toBeInTheDocument();
-    const d3ch = within(defensiveSection()).getByRole('link', { name: 'D3-CH' });
-    expect(d3ch).toHaveAttribute('href', 'https://d3fend.mitre.org/technique/d3f:CredentialHardening/');
+    expect(
+      within(attackSection()).getByRole('link', { name: 'T1059' }),
+    ).toBeInTheDocument();
+    expect(
+      within(attackSection()).queryByRole('link', { name: 'D3-CH' }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(attackSection()).getByText('MSEL Techniques (1)'),
+    ).toBeInTheDocument();
+    const d3ch = within(defensiveSection()).getByRole('link', {
+      name: 'D3-CH',
+    });
+    expect(d3ch).toHaveAttribute(
+      'href',
+      'https://d3fend.mitre.org/technique/d3f:CredentialHardening/',
+    );
     expect(d3ch).toHaveAttribute('title', 'Open D3-CH on d3fend.mitre.org');
-    expect(within(defensiveSection()).getByText('MSEL Techniques (1)')).toBeInTheDocument();
+    expect(
+      within(defensiveSection()).getByText('MSEL Techniques (1)'),
+    ).toBeInTheDocument();
     // each pinned release has its own link under its row: ATT&CK's, then D3FEND's
-    expect(screen.getAllByRole('button', { name: 'Copyright & terms' })).toHaveLength(2);
+    expect(
+      screen.getAllByRole('button', { name: 'Copyright & terms' }),
+    ).toHaveLength(2);
     const d3fend = within(await readNotice(1));
-    expect(d3fend.getByText(/MITRE D3FEND™ is a trademark of The MITRE Corporation\./)).toBeInTheDocument();
+    expect(
+      d3fend.getByText(
+        /MITRE D3FEND™ is a trademark of The MITRE Corporation\./,
+      ),
+    ).toBeInTheDocument();
     expect(d3fend.queryByText(/MITRE ATLAS/)).not.toBeInTheDocument();
-    const terms = d3fend.getByRole('link', { name: 'MITRE D3FEND Terms of Use' });
+    const terms = d3fend.getByRole('link', {
+      name: 'MITRE D3FEND Terms of Use',
+    });
     expect(terms).toHaveAttribute('href', D3FEND_TERMS_OF_USE);
     expect(terms).toHaveAttribute('target', '_blank');
     expect(terms).toHaveAttribute('rel', 'noopener');
-    expect(d3fend.queryByRole('link', { name: 'MITRE ATT&CK Terms of Use' })).not.toBeInTheDocument();
+    expect(
+      d3fend.queryByRole('link', { name: 'MITRE ATT&CK Terms of Use' }),
+    ).not.toBeInTheDocument();
     await closeNotice();
-    expect(within(await readNotice(0)).getByRole('link', { name: 'MITRE ATT&CK Terms of Use' })).toHaveAttribute('href', TERMS_OF_USE);
+    expect(
+      within(await readNotice(0)).getByRole('link', {
+        name: 'MITRE ATT&CK Terms of Use',
+      }),
+    ).toHaveAttribute('href', TERMS_OF_USE);
   });
 
   /**
@@ -363,25 +664,51 @@ describe('MselTechniquesComponent', () => {
    * Data: Enterprise ATT&CK 17.1 and MITRE D3FEND 1.6.0 imported; an empty pool.
    */
   it('offers each section only its own releases', async () => {
-    const { fixture, releaseApi } = await renderTechniques([], [ENTERPRISE_RELEASE, D3FEND_RELEASE], { 'rel-1': [T1059.technique], 'rel-d3': [D3_CH] });
+    const { fixture, releaseApi } = await renderTechniques(
+      [],
+      [ENTERPRISE_RELEASE, D3FEND_RELEASE],
+      { 'rel-1': [T1059.technique], 'rel-d3': [D3_CH] },
+    );
     const loader = TestbedHarnessEnvironment.loader(fixture);
-    const attackSelect = await loader.getHarness(MatSelectHarness.with({ selector: '[aria-label="Attack Techniques release"]' }));
-    const defensiveSelect = await loader.getHarness(MatSelectHarness.with({ selector: '[aria-label="Defensive Techniques release"]' }));
+    const attackSelect = await loader.getHarness(
+      MatSelectHarness.with({
+        selector: '[aria-label="Attack Techniques release"]',
+      }),
+    );
+    const defensiveSelect = await loader.getHarness(
+      MatSelectHarness.with({
+        selector: '[aria-label="Defensive Techniques release"]',
+      }),
+    );
 
     expect(releaseApi.getTechniques).toHaveBeenCalledWith('rel-1');
     expect(releaseApi.getTechniques).toHaveBeenCalledWith('rel-d3');
     expect(await attackSelect.getValueText()).toBe('Enterprise ATT&CK 17.1');
     expect(await defensiveSelect.getValueText()).toBe('MITRE D3FEND 1.6.0');
     await attackSelect.open();
-    expect(await Promise.all((await attackSelect.getOptions()).map(o => o.getText()))).toEqual(['Enterprise ATT&CK 17.1']);
+    expect(
+      await Promise.all(
+        (await attackSelect.getOptions()).map((o) => o.getText()),
+      ),
+    ).toEqual(['Enterprise ATT&CK 17.1']);
     await attackSelect.close();
     await defensiveSelect.open();
-    expect(await Promise.all((await defensiveSelect.getOptions()).map(o => o.getText()))).toEqual(['MITRE D3FEND 1.6.0']);
+    expect(
+      await Promise.all(
+        (await defensiveSelect.getOptions()).map((o) => o.getText()),
+      ),
+    ).toEqual(['MITRE D3FEND 1.6.0']);
     await defensiveSelect.close();
     expect(within(attackSection()).getByText('Platforms')).toBeInTheDocument();
-    expect(within(defensiveSection()).queryByText('Platforms')).not.toBeInTheDocument();
-    expect(within(defensiveSection()).getByRole('link', { name: 'D3-CH' })).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Copyright & terms' })).toHaveLength(2);
+    expect(
+      within(defensiveSection()).queryByText('Platforms'),
+    ).not.toBeInTheDocument();
+    expect(
+      within(defensiveSection()).getByRole('link', { name: 'D3-CH' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByRole('button', { name: 'Copyright & terms' }),
+    ).toHaveLength(2);
   });
   /**
    * Verifies: each pooled attack technique gets a Countered by row loaded for the MSEL once, the defensive pool
@@ -392,20 +719,37 @@ describe('MselTechniquesComponent', () => {
    * Data: T1059 and D3-CH in the pool; D3FEND 1.6.0 imported with D3-CH countering T1059.
    */
   it('lists what counters each pooled attack technique', async () => {
-    const { poolApi } = await renderTechniques([T1059, D3_CH_IN_POOL], [ENTERPRISE_RELEASE, D3FEND_RELEASE], {}, T1059_COUNTERED);
+    const { poolApi } = await renderTechniques(
+      [T1059, D3_CH_IN_POOL],
+      [ENTERPRISE_RELEASE, D3FEND_RELEASE],
+      {},
+      T1059_COUNTERED,
+    );
 
     expect(poolApi.getMselCountermeasures).toHaveBeenCalledTimes(1);
     expect(poolApi.getMselCountermeasures).toHaveBeenCalledWith('msel-1');
-    const toggle = within(attackSection()).getByRole('button', { name: 'Countered by, T1059' });
+    const toggle = within(attackSection()).getByRole('button', {
+      name: 'Countered by, T1059',
+    });
     expect(toggle).toHaveTextContent('Countered by (1)');
-    expect(within(defensiveSection()).queryByRole('button', { name: /Countered by/ })).not.toBeInTheDocument();
+    expect(
+      within(defensiveSection()).queryByRole('button', {
+        name: /Countered by/,
+      }),
+    ).not.toBeInTheDocument();
 
     fireEvent.click(toggle);
 
     expect(within(attackSection()).getByText('Harden')).toBeInTheDocument();
-    expect(within(attackSection()).getByText('Credential Hardening')).toBeInTheDocument();
-    expect(within(attackSection()).getByTitle("In this MSEL's defensive techniques")).toBeInTheDocument();
-    expect(within(attackSection()).queryByRole('checkbox', { name: 'Add D3-CH' })).not.toBeInTheDocument();
+    expect(
+      within(attackSection()).getByText('Credential Hardening'),
+    ).toBeInTheDocument();
+    expect(
+      within(attackSection()).getByTitle("In this MSEL's defensive techniques"),
+    ).toBeInTheDocument();
+    expect(
+      within(attackSection()).queryByRole('checkbox', { name: 'Add D3-CH' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -414,11 +758,19 @@ describe('MselTechniquesComponent', () => {
    * Data: T1059 in the pool; Enterprise ATT&CK 17.1 the only release.
    */
   it('says when no defensive release is there to map to', async () => {
-    await renderTechniques([T1059], [ENTERPRISE_RELEASE], { 'rel-1': [T1059.technique] });
+    await renderTechniques([T1059], [ENTERPRISE_RELEASE], {
+      'rel-1': [T1059.technique],
+    });
 
-    fireEvent.click(within(attackSection()).getByRole('button', { name: 'Mapped to, T1059' }));
+    fireEvent.click(
+      within(attackSection()).getByRole('button', { name: 'Mapped to, T1059' }),
+    );
 
-    expect(screen.getByText('No defensive release has been imported. An administrator imports one on the Technique Frameworks page.')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'No defensive release has been imported. An administrator imports one on the Technique Frameworks page.',
+      ),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -429,24 +781,41 @@ describe('MselTechniquesComponent', () => {
    * Data: T1059 (enterprise 17.1), CAPEC-66 (capec 3.9) and D3-CH (d3fend 1.6.0) in the pool.
    */
   it('holds a technique of every domain in one pool and pins each domain to its own release', async () => {
-    await renderTechniques([T1059, CAPEC_66_IN_POOL, D3_CH_IN_POOL], [ENTERPRISE_RELEASE, CAPEC_RELEASE, D3FEND_RELEASE]);
+    await renderTechniques(
+      [T1059, CAPEC_66_IN_POOL, D3_CH_IN_POOL],
+      [ENTERPRISE_RELEASE, CAPEC_RELEASE, D3FEND_RELEASE],
+    );
     const attack = within(attackSection());
 
     expect(attack.getByText('MSEL Techniques (2)')).toBeInTheDocument();
-    const pinned = within(attackSection().querySelector('.pinned-releases') as HTMLElement);
+    const pinned = within(
+      attackSection().querySelector('.pinned-releases') as HTMLElement,
+    );
     expect(pinned.getByText('Enterprise ATT&CK 17.1')).toBeInTheDocument();
     expect(pinned.getByText('MITRE CAPEC 3.9')).toBeInTheDocument();
-    expect(attack.getByText('enterprise-attack', { selector: '.domain-tag' })).toBeInTheDocument();
-    expect(attack.getByText('capec', { selector: '.domain-tag' })).toBeInTheDocument();
-    expect(within(defensiveSection()).queryByText('d3fend', { selector: '.domain-tag' })).not.toBeInTheDocument();
+    expect(
+      attack.getByText('enterprise-attack', { selector: '.domain-tag' }),
+    ).toBeInTheDocument();
+    expect(
+      attack.getByText('capec', { selector: '.domain-tag' }),
+    ).toBeInTheDocument();
+    expect(
+      within(defensiveSection()).queryByText('d3fend', {
+        selector: '.domain-tag',
+      }),
+    ).not.toBeInTheDocument();
     // each of the three pinned releases has its own link, and opens its own notice
-    expect(screen.getAllByRole('button', { name: 'Copyright & terms' })).toHaveLength(3);
+    expect(
+      screen.getAllByRole('button', { name: 'Copyright & terms' }),
+    ).toHaveLength(3);
     // the attack section lists its pinned domains alphabetically (capec, then enterprise-attack), the defensive one follows
     const capec = within(await readNotice(0));
     expect(capec.getByText(/MITRE CAPEC™ is a trademark/)).toBeInTheDocument();
     expect(capec.queryByText(/MITRE D3FEND/)).not.toBeInTheDocument();
     await closeNotice();
-    expect(within(await readNotice(2)).getByText(/MITRE D3FEND™ is a trademark/)).toBeInTheDocument();
+    expect(
+      within(await readNotice(2)).getByText(/MITRE D3FEND™ is a trademark/),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -468,18 +837,36 @@ describe('MselTechniquesComponent', () => {
    */
   it('offers to upgrade one domain on its own row and leaves the others alone', async () => {
     const { fixture } = await renderTechniques(
-      [T1059, CAPEC_66_IN_POOL], [ENTERPRISE_RELEASE, NEXT_ENTERPRISE_RELEASE, CAPEC_RELEASE],
-      { 'rel-1': [T1059.technique], 'rel-2': [T1059.technique] }, NO_MAPPINGS, { system: [SystemPermission.ManageMsels] });
+      [T1059, CAPEC_66_IN_POOL],
+      [ENTERPRISE_RELEASE, NEXT_ENTERPRISE_RELEASE, CAPEC_RELEASE],
+      { 'rel-1': [T1059.technique], 'rel-2': [T1059.technique] },
+      NO_MAPPINGS,
+      { system: [SystemPermission.ManageMsels] },
+    );
     const loader = TestbedHarnessEnvironment.loader(fixture);
-    const select = await loader.getHarness(MatSelectHarness.with({ selector: '[aria-label="Attack Techniques release"]' }));
+    const select = await loader.getHarness(
+      MatSelectHarness.with({
+        selector: '[aria-label="Attack Techniques release"]',
+      }),
+    );
 
     await select.open();
     await select.clickOptions({ text: /18\.0/ });
 
     const attack = within(attackSection());
-    expect(await attack.findByRole('button', { name: /Upgrade enterprise-attack to 18\.0/ })).toBeInTheDocument();
-    expect(attack.queryByRole('button', { name: /Upgrade capec/ })).not.toBeInTheDocument();
-    expect(attack.getByText(/This MSEL's enterprise-attack techniques are from Enterprise ATT&CK 17\.1/)).toBeInTheDocument();
+    expect(
+      await attack.findByRole('button', {
+        name: /Upgrade enterprise-attack to 18\.0/,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      attack.queryByRole('button', { name: /Upgrade capec/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      attack.getByText(
+        /This MSEL's enterprise-attack techniques are from Enterprise ATT&CK 17\.1/,
+      ),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -491,9 +878,15 @@ describe('MselTechniquesComponent', () => {
   it('shows no notice for a custom release that carries none', async () => {
     await renderTechniques([CUSTOM_TECHNIQUE], [CUSTOM_RELEASE]);
 
-    expect(within(attackSection()).getByRole('link', { name: 'AT-100' })).toBeInTheDocument();
-    expect(attackSection().closest('.content-area')?.querySelector('.attribution')).toBeNull();
+    expect(
+      within(attackSection()).getByRole('link', { name: 'AT-100' }),
+    ).toBeInTheDocument();
+    expect(
+      attackSection().closest('.content-area')?.querySelector('.attribution'),
+    ).toBeNull();
     expect(screen.queryByText(/The MITRE Corporation/)).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /Terms of Use/ })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: /Terms of Use/ }),
+    ).not.toBeInTheDocument();
   });
 });

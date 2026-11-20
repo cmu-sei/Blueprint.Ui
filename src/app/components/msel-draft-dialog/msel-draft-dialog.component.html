@@ -5,455 +5,878 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 
 <crucible-dialog dialogTitle="Draft MSEL with AI" [hideDefaultActions]="true">
-
-<div crucibleDialogContent>
-  @if (!result) {
-  <p class="hint">
-    Describe the exercise. First the design is written: the scenario, objectives, moves, teams and cards, with a few
-    questions for you. Nothing is saved until you review it and select Create MSEL; then the injects, articles and
-    profiles are written into the new MSEL.
-  </p>
-  <mat-form-field class="full-width">
-    <mat-label>Template</mat-label>
-    <mat-select [(ngModel)]="templateMselId" (ngModelChange)="templateChanged()" [disabled]="isDrafting">
-      @for (template of data.templates; track template.id) {
-      <mat-option [value]="template.id">{{ template.name }}</mat-option>
-      }
-    </mat-select>
-    @if (!data.templates.length) {
-    <mat-hint>No templates are available. Mark a MSEL as a template first.</mat-hint>
-    }
-  </mat-form-field>
-  <mat-form-field class="full-width">
-    <mat-label>Competency frameworks</mat-label>
-    <mat-select [(ngModel)]="competencyFrameworkIds" multiple [disabled]="isDrafting">
-      @for (framework of competencyFrameworks; track framework.id) {
-      <mat-option [value]="framework.id">{{ framework.name }}</mat-option>
-      }
-    </mat-select>
-    <mat-hint>Competencies are assigned only from these. With none chosen, the template's competencies are used.</mat-hint>
-  </mat-form-field>
-  <mat-form-field class="full-width">
-    <mat-label>Exercise description</mat-label>
-    <textarea matInput [(ngModel)]="prompt" rows="7" [disabled]="isDrafting"
-      placeholder="Audience, length, scenario, objectives, organizations to simulate, competencies to exercise"></textarea>
-  </mat-form-field>
-  <details class="design">
-    <summary>Design choices (optional)</summary>
-    <p class="hint">The choices that change an exercise most. The draft decides any you leave open and says what it chose.</p>
-    <div class="design-grid">
-      <mat-form-field>
-        <mat-label>Format</mat-label>
-        <mat-select [(ngModel)]="design.format" [disabled]="isDrafting">
-          <mat-option value="Auto">Let the draft decide</mat-option>
-          <mat-option value="Discussion">Discussion (tabletop)</mat-option>
-          <mat-option value="Functional">Functional (hands-on in the range)</mat-option>
-          <mat-option value="Hybrid">Hybrid</mat-option>
-        </mat-select>
-      </mat-form-field>
-      @if (templateUsesCite) {
-      <mat-form-field>
-        <mat-label>CITE assessment</mat-label>
-        <mat-select [(ngModel)]="design.citeAssessment" [disabled]="isDrafting">
-          <mat-option value="Auto">Let the model choose</mat-option>
-          @if (templateHasScoringModel) {
-          <mat-option value="Template">Keep the template's scoring model</mat-option>
-          }
-          <mat-option value="QuestionsByMove">Questions by move</mat-option>
-          <mat-option value="MissionImpact">DoD CTT mission impact matrix</mat-option>
-          <mat-option value="Likelihood">DoD CTT likelihood matrix</mat-option>
-          <mat-option value="Nciss">CISA NCISS</mat-option>
-          <mat-option value="None">None</mat-option>
-        </mat-select>
-      </mat-form-field>
-      }
-      @if (templateUsesGallery) {
-      <mat-form-field>
-        <mat-label>Gallery cards</mat-label>
-        <mat-select [(ngModel)]="design.cardGrouping" [disabled]="isDrafting">
-          <mat-option value="Auto">Let the draft decide</mat-option>
-          <mat-option value="Sources">By source or thread</mat-option>
-          <mat-option value="Organizations">By organization</mat-option>
-          <mat-option value="Sectors">By critical infrastructure sector</mat-option>
-          <mat-option value="Countries">By country</mat-option>
-          <mat-option value="Terrain">By network segment and key cyber terrain</mat-option>
-        </mat-select>
-      </mat-form-field>
-      }
-      <mat-form-field>
-        <mat-label>Number of moves</mat-label>
-        <input matInput type="number" min="1" max="12" [(ngModel)]="design.moves" [disabled]="isDrafting" />
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Length (minutes)</mat-label>
-        <input matInput type="number" min="15" [(ngModel)]="design.durationMinutes" [disabled]="isDrafting" />
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Scenario time covered</mat-label>
-        <input matInput [(ngModel)]="design.scenarioSpan" [disabled]="isDrafting" placeholder="e.g. three days" />
-      </mat-form-field>
-    </div>
-    <mat-form-field class="full-width">
-      <mat-label>Critical infrastructure sectors</mat-label>
-      <mat-select [(ngModel)]="design.sectors" multiple [disabled]="isDrafting">
-        @for (sector of sectors; track sector) {
-        <mat-option [value]="sector">{{ sector }}</mat-option>
-        }
-      </mat-select>
-      <mat-hint>The CISA sectors the exercise covers. With none chosen, the draft decides.</mat-hint>
-    </mat-form-field>
-    <mat-form-field class="full-width">
-      <mat-label>Participant structure</mat-label>
-      <input matInput [(ngModel)]="design.structure" [disabled]="isDrafting"
-        placeholder="e.g. one combined staff, functional cells, parallel national teams" />
-    </mat-form-field>
-    @if (templateUsesGallery) {
-    <div class="design-grid">
-      <mat-form-field>
-        <mat-label>Article marking</mat-label>
-        <mat-select [(ngModel)]="design.marking" [disabled]="isDrafting">
-          <mat-option value="Exercise">Exercise banner</mat-option>
-          <mat-option value="Tlp">TLP</mat-option>
-          <mat-option value="Classification">Classification banner</mat-option>
-          <mat-option value="None">None</mat-option>
-        </mat-select>
-      </mat-form-field>
-      @if (design.marking === 'Tlp') {
-      <mat-form-field>
-        <mat-label>TLP level</mat-label>
-        <mat-select [(ngModel)]="design.markingText" [disabled]="isDrafting">
-          @for (level of tlpLevels; track level) {
-          <mat-option [value]="level">TLP:{{ level }}</mat-option>
+  <div crucibleDialogContent>
+    @if (!result) {
+      <p class="hint">
+        Describe the exercise. First the design is written: the scenario,
+        objectives, moves, teams and cards, with a few questions for you.
+        Nothing is saved until you review it and select Create MSEL; then the
+        injects, articles and profiles are written into the new MSEL.
+      </p>
+      <mat-form-field class="full-width">
+        <mat-label>Template</mat-label>
+        <mat-select
+          [(ngModel)]="templateMselId"
+          (ngModelChange)="templateChanged()"
+          [disabled]="isDrafting"
+        >
+          @for (template of data.templates; track template.id) {
+            <mat-option [value]="template.id">{{ template.name }}</mat-option>
           }
         </mat-select>
+        @if (!data.templates.length) {
+          <mat-hint
+            >No templates are available. Mark a MSEL as a template
+            first.</mat-hint
+          >
+        }
       </mat-form-field>
-      }
-      @if (design.marking === 'Classification') {
-      <mat-form-field>
-        <mat-label>Classification banner text</mat-label>
-        <input matInput [(ngModel)]="design.markingText" [disabled]="isDrafting" placeholder="UNCLASSIFIED // FOR EXERCISE USE ONLY" />
+      <mat-form-field class="full-width">
+        <mat-label>Competency frameworks</mat-label>
+        <mat-select
+          [(ngModel)]="competencyFrameworkIds"
+          multiple
+          [disabled]="isDrafting"
+        >
+          @for (framework of competencyFrameworks; track framework.id) {
+            <mat-option [value]="framework.id">{{ framework.name }}</mat-option>
+          }
+        </mat-select>
+        <mat-hint
+          >Competencies are assigned only from these. With none chosen, the
+          template's competencies are used.</mat-hint
+        >
       </mat-form-field>
-      }
-    </div>
-    }
-    <mat-checkbox [(ngModel)]="design.profilePages" [disabled]="isDrafting">Add Team Profiles and Organization Profiles pages</mat-checkbox>
-  </details>
-  @if (isDrafting) {
-  <div class="drafting" aria-live="polite">
-    <mat-spinner diameter="32"></mat-spinner>
-    <div>
-      <p><strong>Writing the design.</strong> {{ progressText }} <span class="elapsed" title="Time drafting">{{ elapsed }}</span></p>
-      <p class="hint">This usually takes a minute or two. The injects are written after you review the design. Stop discards this design; your description and choices stay.</p>
-    </div>
-  </div>
-  }
-  @if (errorMessage) {
-  <ng-container *ngTemplateOutlet="error"></ng-container>
-  }
-  } @else {
-  <mat-tab-group [(selectedIndex)]="selectedTab" animationDuration="0ms" mat-stretch-tabs="false" class="review-tabs">
-    @if (result.questions?.length) {
-    <mat-tab [label]="'Questions (' + result.questions.length + ')'">
-      <p class="hint tab-hint">What would change this exercise most. Each answer starts as the suggestion; change any you
-        disagree with. The injects are written to your answers.</p>
-      @for (question of result.questions; track question.id; let i = $index) {
-      <div class="question">
-        <p class="question-text"><strong>{{ question.question }}</strong></p>
-        @if (question.why) {
-        <p class="hint">{{ question.why }}</p>
-        }
-        <mat-form-field class="full-width">
-          <mat-label>Your answer</mat-label>
-          <textarea matInput rows="2" [(ngModel)]="answers[i]" [attr.aria-label]="question.question"></textarea>
-          @if (question.suggested && answers[i] !== question.suggested) {
-          <mat-hint>Suggested: {{ question.suggested }}
-            <button matButton type="button" class="inline-button" (click)="answers[i] = question.suggested">Use it</button>
-          </mat-hint>
-          }
-        </mat-form-field>
-      </div>
-      }
-    </mat-tab>
-    }
-
-    <mat-tab label="Design">
-      <div class="tab-body">
-        <mat-form-field class="full-width">
-          <mat-label>Name</mat-label>
-          <input matInput [(ngModel)]="result.draft.name" />
-        </mat-form-field>
-        <mat-form-field class="full-width">
-          <mat-label>Description</mat-label>
-          <textarea matInput [(ngModel)]="result.draft.description" rows="3"></textarea>
-        </mat-form-field>
-        @if (result.draft.scenario) {
-        <mat-form-field class="full-width">
-          <mat-label>The problem</mat-label>
-          <textarea matInput [(ngModel)]="result.draft.scenario.problem" rows="2"></textarea>
-          <mat-hint>What the participants face when the exercise starts.</mat-hint>
-        </mat-form-field>
-        <mat-form-field class="full-width">
-          <mat-label>Premise</mat-label>
-          <textarea matInput [(ngModel)]="result.draft.scenario.premise" rows="3"></textarea>
-          <mat-hint>How the situation came about: the backstory participants are given.</mat-hint>
-        </mat-form-field>
-        @if (result.draft.scenario.sectors?.length) {
-        <p class="field-line"><strong>Critical infrastructure sectors:</strong> {{ result.draft.scenario.sectors.join(', ') }}</p>
-        }
-        <mat-form-field class="full-width">
-          <mat-label>Escalation ceiling</mat-label>
-          <input matInput [(ngModel)]="result.draft.scenario.escalationCeiling" />
-          <mat-hint>The furthest the scenario may go, which no inject passes, e.g. no loss of life. In the Facilitator Guide.</mat-hint>
-        </mat-form-field>
-        }
-        <h3 class="section-title">Objectives</h3>
-        <p class="hint">On the Exercise Overview page participants see, and checked in the after-action review.</p>
-        <table class="design-table" aria-label="Objectives">
-          <thead>
-            <tr><th></th><th>Task</th><th>Condition</th><th>Standard</th><th></th></tr>
-          </thead>
-          <tbody>
-            @for (objective of result.draft.objectives; track objective; let i = $index) {
-            <tr>
-              <td class="narrow"><strong>{{ objective.id }}</strong></td>
-              <td><textarea class="cell-input" rows="2" [(ngModel)]="objective.task" [attr.aria-label]="objective.id + ' task'"></textarea></td>
-              <td><textarea class="cell-input" rows="2" [(ngModel)]="objective.condition" [attr.aria-label]="objective.id + ' condition'"></textarea></td>
-              <td><textarea class="cell-input" rows="2" [(ngModel)]="objective.standard" [attr.aria-label]="objective.id + ' standard'"></textarea></td>
-              <td class="narrow">
-                <button mat-icon-button type="button" [title]="'Remove ' + objective.id" (click)="removeObjective(i)">
-                  <mat-icon fontIcon="mdi-close"></mat-icon>
-                </button>
-              </td>
-            </tr>
-            }
-          </tbody>
-        </table>
-        <button matButton type="button" class="add-row" (click)="addObjective()">
-          <mat-icon fontIcon="mdi-plus"></mat-icon> Add objective
-        </button>
-        @if (citeModelNote) {
-        <p class="hint">{{ citeModelNote }}</p>
-        }
-        @if (result.warnings?.length || result.draft.plannerNotes?.length) {
-        <h3 class="section-title">Check before creating</h3>
-        <ul class="message-list">
-          @for (warning of result.warnings; track $index) {
-          <li>
-            <mat-icon fontIcon="mdi-alert-outline"></mat-icon>
-            <span>{{ warning }}</span>
-          </li>
-          }
-          @for (note of result.draft.plannerNotes; track $index) {
-          <li>
-            <mat-icon fontIcon="mdi-information-outline"></mat-icon>
-            <span>{{ note }}</span>
-          </li>
-          }
-        </ul>
-        }
-      </div>
-    </mat-tab>
-
-    <mat-tab [label]="'Moves (' + (result.draft.moves?.length ?? 0) + ')'">
-      <p class="hint tab-hint">Each move starts on the exercise clock, which runs in real time, and opens at a scenario
-        time, which can jump ahead between moves. The MSEL also gets a pre-exercise move 0, from doors open until STARTEX,
-        and a hot wash after ENDEX; these moves become moves 1 and on.</p>
-      <table class="design-table" aria-label="Moves">
-        <thead>
-          <tr><th>Move</th><th>Starts (minutes)</th><th>Scenario time</th><th>Title</th><th>Purpose</th><th></th></tr>
-        </thead>
-        <tbody>
-          @for (move of result.draft.moves; track move) {
-          <tr>
-            <td class="narrow"><strong>{{ move.moveNumber }}</strong></td>
-            <td class="narrow">
-              <input class="cell-input minutes" type="number" min="0" [(ngModel)]="move.startMinutes" (change)="sortMoves()"
-                [attr.aria-label]="'Move ' + move.moveNumber + ' starts'" [title]="formatMinutes(move.startMinutes) + ' on the exercise clock'" />
-            </td>
-            <td class="time">
-              @if (move.situationTime) {
-              {{ move.situationTime | date: 'dd MMM yyyy HH:mm' }} {{ move.situationTime | timezoneAbbr }}
-              }
-            </td>
-            <td><textarea class="cell-input" rows="2" [(ngModel)]="move.description" [attr.aria-label]="'Move ' + move.moveNumber + ' title'"></textarea></td>
-            <td><textarea class="cell-input" rows="2" [(ngModel)]="move.purpose" [attr.aria-label]="'Move ' + move.moveNumber + ' purpose'"></textarea></td>
-            <td class="narrow">
-              <button mat-icon-button type="button" [title]="'Remove move ' + move.moveNumber" (click)="removeMove(move)">
-                <mat-icon fontIcon="mdi-close"></mat-icon>
-              </button>
-            </td>
-          </tr>
-          }
-        </tbody>
-      </table>
-      <button matButton type="button" class="add-row" (click)="addMove()">
-        <mat-icon fontIcon="mdi-plus"></mat-icon> Add move
-      </button>
-    </mat-tab>
-
-    <mat-tab [label]="'Teams and organizations (' + teamsAndOrganizations.length + ')'">
-      @if (result.draft.design?.profilePages !== false) {
-      <p class="hint tab-hint">A profile is written for each, and they go on the Team Profiles and Organization Profiles
-        pages every participant can see.</p>
-      }
-      <table class="design-table" aria-label="Teams and organizations">
-        <thead>
-          <tr><th></th><th>Short name</th><th>Name</th><th>Description</th><th></th></tr>
-        </thead>
-        <tbody>
-          @for (owner of teamsAndOrganizations; track owner) {
-          <tr>
-            <td class="narrow kind">{{ isTeam(owner) ? 'Team' : 'Organization' }}</td>
-            <td class="short"><input class="cell-input" [(ngModel)]="owner.shortName" [attr.aria-label]="owner.name + ' short name'" /></td>
-            <td><input class="cell-input" [(ngModel)]="owner.name" [attr.aria-label]="owner.shortName + ' name'" /></td>
-            <td>
-              <textarea class="cell-input" rows="2" [(ngModel)]="owner.description" [attr.aria-label]="owner.shortName + ' description'"></textarea>
-              @if (!isTeam(owner)) {
-              <div class="facts">
-                <label class="fact" title="The CISA critical infrastructure sector the organization belongs to, or none for a news outlet, the adversary or exercise control. It shapes what the organization does and knows in the articles.">
-                  <span class="fact-label">Sector</span>
-                  <select class="cell-input" [(ngModel)]="$any(owner).sector" [attr.aria-label]="owner.shortName + ' sector'">
-                    <option [ngValue]="null">No sector</option>
-                    @for (sector of sectors; track sector) {
-                    <option [ngValue]="sector">{{ sector }}</option>
-                    }
-                  </select>
-                </label>
-                <label class="fact" title="How many people the organization has: Small under 100, Medium to 999, Large to 9,999, Enterprise 10,000 or more. It keeps its staff, systems and reach in scale across the articles.">
-                  <span class="fact-label">Size</span>
-                  <select class="cell-input" [(ngModel)]="$any(owner).size" [attr.aria-label]="owner.shortName + ' size'">
-                    <option [ngValue]="null">Size</option>
-                    @for (size of sizes; track size) {
-                    <option [ngValue]="size">{{ size }}</option>
-                    }
-                  </select>
-                </label>
-                <label class="fact" title="What the organization does within its sector, such as a regional acute-care hospital or a municipal wastewater utility. The articles and profiles are written to it.">
-                  <span class="fact-label">Industry</span>
-                  <input class="cell-input" [(ngModel)]="$any(owner).industry" [attr.aria-label]="owner.shortName + ' industry'" placeholder="e.g. regional wastewater utility" />
-                </label>
-                <label class="fact" title="The country the organization is in; fictional where the scenario's geography is.">
-                  <span class="fact-label">Country</span>
-                  <input class="cell-input" [(ngModel)]="$any(owner).country" [attr.aria-label]="owner.shortName + ' country'" placeholder="Country" />
-                </label>
-              </div>
-              }
-              @if (isTeam(owner) && templateUsesCite) {
-              <div class="duties" [title]="'The CITE duties members of ' + owner.shortName + ' pick from, such as Incident Lead or Scribe'">
-                <span class="fact-label">CITE duties</span>
-                <mat-chip-set [attr.aria-label]="owner.shortName + ' CITE duties'">
-                  @for (duty of $any(owner).duties ?? []; track duty) {
-                  <mat-chip (removed)="removeDuty(owner, duty)">
-                    {{ duty }}
-                    <button matChipRemove type="button" [attr.aria-label]="'Remove duty ' + duty"><mat-icon fontIcon="mdi-close"></mat-icon></button>
-                  </mat-chip>
-                  }
-                </mat-chip-set>
-                <input class="cell-input add-input" [attr.aria-label]="'Add a CITE duty to ' + owner.shortName" placeholder="Add a duty and press Enter"
-                  (keydown.enter)="addDuty(owner, $any($event.target)); $event.preventDefault()" (blur)="addDuty(owner, $any($event.target))" />
-              </div>
-              }
-              @if (isTeam(owner) && (($any(owner).competencies?.length) || availableCompetencies(owner).length)) {
-              <div class="competencies" [title]="'The competencies ' + owner.shortName + ' is expected to demonstrate, from the chosen frameworks'">
-                <span class="fact-label">Competencies</span>
-                <ng-container *ngTemplateOutlet="competencyChips; context: { owner: owner }"></ng-container>
-                @if (availableCompetencies(owner).length) {
-                <select class="cell-input add-input" [attr.aria-label]="'Add a competency to ' + owner.shortName" [ngModel]="''"
-                  (ngModelChange)="addCompetency(owner, $event)">
-                  <option value="">Add a competency…</option>
-                  @for (competency of availableCompetencies(owner); track competency.idNumber) {
-                  <option [value]="competency.idNumber">{{ competency.idNumber }}: {{ competency.shortName }}</option>
-                  }
-                </select>
+      <mat-form-field class="full-width">
+        <mat-label>Exercise description</mat-label>
+        <textarea
+          matInput
+          [(ngModel)]="prompt"
+          rows="7"
+          [disabled]="isDrafting"
+          placeholder="Audience, length, scenario, objectives, organizations to simulate, competencies to exercise"
+        ></textarea>
+      </mat-form-field>
+      <details class="design">
+        <summary>Design choices (optional)</summary>
+        <p class="hint">
+          The choices that change an exercise most. The draft decides any you
+          leave open and says what it chose.
+        </p>
+        <div class="design-grid">
+          <mat-form-field>
+            <mat-label>Format</mat-label>
+            <mat-select [(ngModel)]="design.format" [disabled]="isDrafting">
+              <mat-option value="Auto">Let the draft decide</mat-option>
+              <mat-option value="Discussion">Discussion (tabletop)</mat-option>
+              <mat-option value="Functional"
+                >Functional (hands-on in the range)</mat-option
+              >
+              <mat-option value="Hybrid">Hybrid</mat-option>
+            </mat-select>
+          </mat-form-field>
+          @if (templateUsesCite) {
+            <mat-form-field>
+              <mat-label>CITE assessment</mat-label>
+              <mat-select
+                [(ngModel)]="design.citeAssessment"
+                [disabled]="isDrafting"
+              >
+                <mat-option value="Auto">Let the model choose</mat-option>
+                @if (templateHasScoringModel) {
+                  <mat-option value="Template"
+                    >Keep the template's scoring model</mat-option
+                  >
                 }
+                <mat-option value="QuestionsByMove"
+                  >Questions by move</mat-option
+                >
+                <mat-option value="MissionImpact"
+                  >DoD CTT mission impact matrix</mat-option
+                >
+                <mat-option value="Likelihood"
+                  >DoD CTT likelihood matrix</mat-option
+                >
+                <mat-option value="Nciss">CISA NCISS</mat-option>
+                <mat-option value="None">None</mat-option>
+              </mat-select>
+            </mat-form-field>
+          }
+          @if (templateUsesGallery) {
+            <mat-form-field>
+              <mat-label>Gallery cards</mat-label>
+              <mat-select
+                [(ngModel)]="design.cardGrouping"
+                [disabled]="isDrafting"
+              >
+                <mat-option value="Auto">Let the draft decide</mat-option>
+                <mat-option value="Sources">By source or thread</mat-option>
+                <mat-option value="Organizations">By organization</mat-option>
+                <mat-option value="Sectors"
+                  >By critical infrastructure sector</mat-option
+                >
+                <mat-option value="Countries">By country</mat-option>
+                <mat-option value="Terrain"
+                  >By network segment and key cyber terrain</mat-option
+                >
+              </mat-select>
+            </mat-form-field>
+          }
+          <mat-form-field>
+            <mat-label>Number of moves</mat-label>
+            <input
+              matInput
+              type="number"
+              min="1"
+              max="12"
+              [(ngModel)]="design.moves"
+              [disabled]="isDrafting"
+            />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Length (minutes)</mat-label>
+            <input
+              matInput
+              type="number"
+              min="15"
+              [(ngModel)]="design.durationMinutes"
+              [disabled]="isDrafting"
+            />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Scenario time covered</mat-label>
+            <input
+              matInput
+              [(ngModel)]="design.scenarioSpan"
+              [disabled]="isDrafting"
+              placeholder="e.g. three days"
+            />
+          </mat-form-field>
+        </div>
+        <mat-form-field class="full-width">
+          <mat-label>Critical infrastructure sectors</mat-label>
+          <mat-select
+            [(ngModel)]="design.sectors"
+            multiple
+            [disabled]="isDrafting"
+          >
+            @for (sector of sectors; track sector) {
+              <mat-option [value]="sector">{{ sector }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint
+            >The CISA sectors the exercise covers. With none chosen, the draft
+            decides.</mat-hint
+          >
+        </mat-form-field>
+        <mat-form-field class="full-width">
+          <mat-label>Participant structure</mat-label>
+          <input
+            matInput
+            [(ngModel)]="design.structure"
+            [disabled]="isDrafting"
+            placeholder="e.g. one combined staff, functional cells, parallel national teams"
+          />
+        </mat-form-field>
+        @if (templateUsesGallery) {
+          <div class="design-grid">
+            <mat-form-field>
+              <mat-label>Article marking</mat-label>
+              <mat-select [(ngModel)]="design.marking" [disabled]="isDrafting">
+                <mat-option value="Exercise">Exercise banner</mat-option>
+                <mat-option value="Tlp">TLP</mat-option>
+                <mat-option value="Classification"
+                  >Classification banner</mat-option
+                >
+                <mat-option value="None">None</mat-option>
+              </mat-select>
+            </mat-form-field>
+            @if (design.marking === 'Tlp') {
+              <mat-form-field>
+                <mat-label>TLP level</mat-label>
+                <mat-select
+                  [(ngModel)]="design.markingText"
+                  [disabled]="isDrafting"
+                >
+                  @for (level of tlpLevels; track level) {
+                    <mat-option [value]="level">TLP:{{ level }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            }
+            @if (design.marking === 'Classification') {
+              <mat-form-field>
+                <mat-label>Classification banner text</mat-label>
+                <input
+                  matInput
+                  [(ngModel)]="design.markingText"
+                  [disabled]="isDrafting"
+                  placeholder="UNCLASSIFIED // FOR EXERCISE USE ONLY"
+                />
+              </mat-form-field>
+            }
+          </div>
+        }
+        <mat-checkbox [(ngModel)]="design.profilePages" [disabled]="isDrafting"
+          >Add Team Profiles and Organization Profiles pages</mat-checkbox
+        >
+      </details>
+      @if (isDrafting) {
+        <div class="drafting" aria-live="polite">
+          <mat-spinner diameter="32"></mat-spinner>
+          <div>
+            <p>
+              <strong>Writing the design.</strong> {{ progressText }}
+              <span class="elapsed" title="Time drafting">{{ elapsed }}</span>
+            </p>
+            <p class="hint">
+              This usually takes a minute or two. The injects are written after
+              you review the design. Stop discards this design; your description
+              and choices stay.
+            </p>
+          </div>
+        </div>
+      }
+      @if (errorMessage) {
+        <ng-container *ngTemplateOutlet="error"></ng-container>
+      }
+    } @else {
+      <mat-tab-group
+        [(selectedIndex)]="selectedTab"
+        animationDuration="0ms"
+        mat-stretch-tabs="false"
+        class="review-tabs"
+      >
+        @if (result.questions?.length) {
+          <mat-tab [label]="'Questions (' + result.questions.length + ')'">
+            <p class="hint tab-hint">
+              What would change this exercise most. Each answer starts as the
+              suggestion; change any you disagree with. The injects are written
+              to your answers.
+            </p>
+            @for (
+              question of result.questions;
+              track question.id;
+              let i = $index
+            ) {
+              <div class="question">
+                <p class="question-text">
+                  <strong>{{ question.question }}</strong>
+                </p>
+                @if (question.why) {
+                  <p class="hint">{{ question.why }}</p>
+                }
+                <mat-form-field class="full-width">
+                  <mat-label>Your answer</mat-label>
+                  <textarea
+                    matInput
+                    rows="2"
+                    [(ngModel)]="answers[i]"
+                    [attr.aria-label]="question.question"
+                  ></textarea>
+                  @if (
+                    question.suggested && answers[i] !== question.suggested
+                  ) {
+                    <mat-hint
+                      >Suggested: {{ question.suggested }}
+                      <button
+                        matButton
+                        type="button"
+                        class="inline-button"
+                        (click)="answers[i] = question.suggested"
+                      >
+                        Use it
+                      </button>
+                    </mat-hint>
+                  }
+                </mat-form-field>
               </div>
+            }
+          </mat-tab>
+        }
+
+        <mat-tab label="Design">
+          <div class="tab-body">
+            <mat-form-field class="full-width">
+              <mat-label>Name</mat-label>
+              <input matInput [(ngModel)]="result.draft.name" />
+            </mat-form-field>
+            <mat-form-field class="full-width">
+              <mat-label>Description</mat-label>
+              <textarea
+                matInput
+                [(ngModel)]="result.draft.description"
+                rows="3"
+              ></textarea>
+            </mat-form-field>
+            @if (result.draft.scenario) {
+              <mat-form-field class="full-width">
+                <mat-label>The problem</mat-label>
+                <textarea
+                  matInput
+                  [(ngModel)]="result.draft.scenario.problem"
+                  rows="2"
+                ></textarea>
+                <mat-hint
+                  >What the participants face when the exercise
+                  starts.</mat-hint
+                >
+              </mat-form-field>
+              <mat-form-field class="full-width">
+                <mat-label>Premise</mat-label>
+                <textarea
+                  matInput
+                  [(ngModel)]="result.draft.scenario.premise"
+                  rows="3"
+                ></textarea>
+                <mat-hint
+                  >How the situation came about: the backstory participants are
+                  given.</mat-hint
+                >
+              </mat-form-field>
+              @if (result.draft.scenario.sectors?.length) {
+                <p class="field-line">
+                  <strong>Critical infrastructure sectors:</strong>
+                  {{ result.draft.scenario.sectors.join(', ') }}
+                </p>
               }
-            </td>
-            <td class="narrow">
-              <button mat-icon-button type="button" [title]="'Remove ' + owner.shortName" (click)="removeOwner(owner)">
-                <mat-icon fontIcon="mdi-close"></mat-icon>
-              </button>
-            </td>
-          </tr>
-          }
-        </tbody>
-      </table>
-      <button matButton type="button" class="add-row" (click)="addTeam()">
-        <mat-icon fontIcon="mdi-plus"></mat-icon> Add team
-      </button>
-      <button matButton type="button" class="add-row" (click)="addOrganization()">
-        <mat-icon fontIcon="mdi-plus"></mat-icon> Add organization
-      </button>
-    </mat-tab>
+              <mat-form-field class="full-width">
+                <mat-label>Escalation ceiling</mat-label>
+                <input
+                  matInput
+                  [(ngModel)]="result.draft.scenario.escalationCeiling"
+                />
+                <mat-hint
+                  >The furthest the scenario may go, which no inject passes,
+                  e.g. no loss of life. In the Facilitator Guide.</mat-hint
+                >
+              </mat-form-field>
+            }
+            <h3 class="section-title">Objectives</h3>
+            <p class="hint">
+              On the Exercise Overview page participants see, and checked in the
+              after-action review.
+            </p>
+            <table class="design-table" aria-label="Objectives">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Task</th>
+                  <th>Condition</th>
+                  <th>Standard</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (
+                  objective of result.draft.objectives;
+                  track objective;
+                  let i = $index
+                ) {
+                  <tr>
+                    <td class="narrow">
+                      <strong>{{ objective.id }}</strong>
+                    </td>
+                    <td>
+                      <textarea
+                        class="cell-input"
+                        rows="2"
+                        [(ngModel)]="objective.task"
+                        [attr.aria-label]="objective.id + ' task'"
+                      ></textarea>
+                    </td>
+                    <td>
+                      <textarea
+                        class="cell-input"
+                        rows="2"
+                        [(ngModel)]="objective.condition"
+                        [attr.aria-label]="objective.id + ' condition'"
+                      ></textarea>
+                    </td>
+                    <td>
+                      <textarea
+                        class="cell-input"
+                        rows="2"
+                        [(ngModel)]="objective.standard"
+                        [attr.aria-label]="objective.id + ' standard'"
+                      ></textarea>
+                    </td>
+                    <td class="narrow">
+                      <button
+                        mat-icon-button
+                        type="button"
+                        [title]="'Remove ' + objective.id"
+                        (click)="removeObjective(i)"
+                      >
+                        <mat-icon fontIcon="mdi-close"></mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            <button
+              matButton
+              type="button"
+              class="add-row"
+              (click)="addObjective()"
+            >
+              <mat-icon fontIcon="mdi-plus"></mat-icon> Add objective
+            </button>
+            @if (citeModelNote) {
+              <p class="hint">{{ citeModelNote }}</p>
+            }
+            @if (result.warnings?.length || result.draft.plannerNotes?.length) {
+              <h3 class="section-title">Check before creating</h3>
+              <ul class="message-list">
+                @for (warning of result.warnings; track $index) {
+                  <li>
+                    <mat-icon fontIcon="mdi-alert-outline"></mat-icon>
+                    <span>{{ warning }}</span>
+                  </li>
+                }
+                @for (note of result.draft.plannerNotes; track $index) {
+                  <li>
+                    <mat-icon fontIcon="mdi-information-outline"></mat-icon>
+                    <span>{{ note }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        </mat-tab>
 
-    @if (result.draft.cards?.length || templateUsesGallery) {
-    <mat-tab [label]="'Gallery cards (' + (result.draft.cards?.length ?? 0) + ')'">
-      <p class="hint tab-hint">The cards on the Gallery wall. Each article is written for one of them.</p>
-      <table class="design-table" aria-label="Gallery cards">
-        <thead>
-          <tr><th>Name</th><th>Description</th><th></th></tr>
-        </thead>
-        <tbody>
-          @for (card of result.draft.cards; track card; let i = $index) {
-          <tr>
-            <td class="short"><input class="cell-input" [(ngModel)]="card.name" aria-label="Card name" /></td>
-            <td><textarea class="cell-input" rows="2" [(ngModel)]="card.description" [attr.aria-label]="card.name + ' description'"></textarea></td>
-            <td class="narrow">
-              <button mat-icon-button type="button" [title]="'Remove ' + card.name" (click)="removeCard(i)">
-                <mat-icon fontIcon="mdi-close"></mat-icon>
-              </button>
-            </td>
-          </tr>
+        <mat-tab [label]="'Moves (' + (result.draft.moves?.length ?? 0) + ')'">
+          <p class="hint tab-hint">
+            Each move starts on the exercise clock, which runs in real time, and
+            opens at a scenario time, which can jump ahead between moves. The
+            MSEL also gets a pre-exercise move 0, from doors open until STARTEX,
+            and a hot wash after ENDEX; these moves become moves 1 and on.
+          </p>
+          <table class="design-table" aria-label="Moves">
+            <thead>
+              <tr>
+                <th>Move</th>
+                <th>Starts (minutes)</th>
+                <th>Scenario time</th>
+                <th>Title</th>
+                <th>Purpose</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (move of result.draft.moves; track move) {
+                <tr>
+                  <td class="narrow">
+                    <strong>{{ move.moveNumber }}</strong>
+                  </td>
+                  <td class="narrow">
+                    <input
+                      class="cell-input minutes"
+                      type="number"
+                      min="0"
+                      [(ngModel)]="move.startMinutes"
+                      (change)="sortMoves()"
+                      [attr.aria-label]="'Move ' + move.moveNumber + ' starts'"
+                      [title]="
+                        formatMinutes(move.startMinutes) +
+                        ' on the exercise clock'
+                      "
+                    />
+                  </td>
+                  <td class="time">
+                    @if (move.situationTime) {
+                      {{ move.situationTime | date: 'dd MMM yyyy HH:mm' }}
+                      {{ move.situationTime | timezoneAbbr }}
+                    }
+                  </td>
+                  <td>
+                    <textarea
+                      class="cell-input"
+                      rows="2"
+                      [(ngModel)]="move.description"
+                      [attr.aria-label]="'Move ' + move.moveNumber + ' title'"
+                    ></textarea>
+                  </td>
+                  <td>
+                    <textarea
+                      class="cell-input"
+                      rows="2"
+                      [(ngModel)]="move.purpose"
+                      [attr.aria-label]="'Move ' + move.moveNumber + ' purpose'"
+                    ></textarea>
+                  </td>
+                  <td class="narrow">
+                    <button
+                      mat-icon-button
+                      type="button"
+                      [title]="'Remove move ' + move.moveNumber"
+                      (click)="removeMove(move)"
+                    >
+                      <mat-icon fontIcon="mdi-close"></mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <button matButton type="button" class="add-row" (click)="addMove()">
+            <mat-icon fontIcon="mdi-plus"></mat-icon> Add move
+          </button>
+        </mat-tab>
+
+        <mat-tab
+          [label]="
+            'Teams and organizations (' + teamsAndOrganizations.length + ')'
+          "
+        >
+          @if (result.draft.design?.profilePages !== false) {
+            <p class="hint tab-hint">
+              A profile is written for each, and they go on the Team Profiles
+              and Organization Profiles pages every participant can see.
+            </p>
           }
-        </tbody>
-      </table>
-      <button matButton type="button" class="add-row" (click)="addCard()">
-        <mat-icon fontIcon="mdi-plus"></mat-icon> Add card
-      </button>
-    </mat-tab>
+          <table class="design-table" aria-label="Teams and organizations">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Short name</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (owner of teamsAndOrganizations; track owner) {
+                <tr>
+                  <td class="narrow kind">
+                    {{ isTeam(owner) ? 'Team' : 'Organization' }}
+                  </td>
+                  <td class="short">
+                    <input
+                      class="cell-input"
+                      [(ngModel)]="owner.shortName"
+                      [attr.aria-label]="owner.name + ' short name'"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      class="cell-input"
+                      [(ngModel)]="owner.name"
+                      [attr.aria-label]="owner.shortName + ' name'"
+                    />
+                  </td>
+                  <td>
+                    <textarea
+                      class="cell-input"
+                      rows="2"
+                      [(ngModel)]="owner.description"
+                      [attr.aria-label]="owner.shortName + ' description'"
+                    ></textarea>
+                    @if (!isTeam(owner)) {
+                      <div class="facts">
+                        <label
+                          class="fact"
+                          title="The CISA critical infrastructure sector the organization belongs to, or none for a news outlet, the adversary or exercise control. It shapes what the organization does and knows in the articles."
+                        >
+                          <span class="fact-label">Sector</span>
+                          <select
+                            class="cell-input"
+                            [(ngModel)]="$any(owner).sector"
+                            [attr.aria-label]="owner.shortName + ' sector'"
+                          >
+                            <option [ngValue]="null">No sector</option>
+                            @for (sector of sectors; track sector) {
+                              <option [ngValue]="sector">{{ sector }}</option>
+                            }
+                          </select>
+                        </label>
+                        <label
+                          class="fact"
+                          title="How many people the organization has: Small under 100, Medium to 999, Large to 9,999, Enterprise 10,000 or more. It keeps its staff, systems and reach in scale across the articles."
+                        >
+                          <span class="fact-label">Size</span>
+                          <select
+                            class="cell-input"
+                            [(ngModel)]="$any(owner).size"
+                            [attr.aria-label]="owner.shortName + ' size'"
+                          >
+                            <option [ngValue]="null">Size</option>
+                            @for (size of sizes; track size) {
+                              <option [ngValue]="size">{{ size }}</option>
+                            }
+                          </select>
+                        </label>
+                        <label
+                          class="fact"
+                          title="What the organization does within its sector, such as a regional acute-care hospital or a municipal wastewater utility. The articles and profiles are written to it."
+                        >
+                          <span class="fact-label">Industry</span>
+                          <input
+                            class="cell-input"
+                            [(ngModel)]="$any(owner).industry"
+                            [attr.aria-label]="owner.shortName + ' industry'"
+                            placeholder="e.g. regional wastewater utility"
+                          />
+                        </label>
+                        <label
+                          class="fact"
+                          title="The country the organization is in; fictional where the scenario's geography is."
+                        >
+                          <span class="fact-label">Country</span>
+                          <input
+                            class="cell-input"
+                            [(ngModel)]="$any(owner).country"
+                            [attr.aria-label]="owner.shortName + ' country'"
+                            placeholder="Country"
+                          />
+                        </label>
+                      </div>
+                    }
+                    @if (isTeam(owner) && templateUsesCite) {
+                      <div
+                        class="duties"
+                        [title]="
+                          'The CITE duties members of ' +
+                          owner.shortName +
+                          ' pick from, such as Incident Lead or Scribe'
+                        "
+                      >
+                        <span class="fact-label">CITE duties</span>
+                        <mat-chip-set
+                          [attr.aria-label]="owner.shortName + ' CITE duties'"
+                        >
+                          @for (duty of $any(owner).duties ?? []; track duty) {
+                            <mat-chip (removed)="removeDuty(owner, duty)">
+                              {{ duty }}
+                              <button
+                                matChipRemove
+                                type="button"
+                                [attr.aria-label]="'Remove duty ' + duty"
+                              >
+                                <mat-icon fontIcon="mdi-close"></mat-icon>
+                              </button>
+                            </mat-chip>
+                          }
+                        </mat-chip-set>
+                        <input
+                          class="cell-input add-input"
+                          [attr.aria-label]="
+                            'Add a CITE duty to ' + owner.shortName
+                          "
+                          placeholder="Add a duty and press Enter"
+                          (keydown.enter)="
+                            addDuty(owner, $any($event.target));
+                            $event.preventDefault()
+                          "
+                          (blur)="addDuty(owner, $any($event.target))"
+                        />
+                      </div>
+                    }
+                    @if (
+                      isTeam(owner) &&
+                      ($any(owner).competencies?.length ||
+                        availableCompetencies(owner).length)
+                    ) {
+                      <div
+                        class="competencies"
+                        [title]="
+                          'The competencies ' +
+                          owner.shortName +
+                          ' is expected to demonstrate, from the chosen frameworks'
+                        "
+                      >
+                        <span class="fact-label">Competencies</span>
+                        <ng-container
+                          *ngTemplateOutlet="
+                            competencyChips;
+                            context: { owner: owner }
+                          "
+                        ></ng-container>
+                        @if (availableCompetencies(owner).length) {
+                          <select
+                            class="cell-input add-input"
+                            [attr.aria-label]="
+                              'Add a competency to ' + owner.shortName
+                            "
+                            [ngModel]="''"
+                            (ngModelChange)="addCompetency(owner, $event)"
+                          >
+                            <option value="">Add a competency…</option>
+                            @for (
+                              competency of availableCompetencies(owner);
+                              track competency.idNumber
+                            ) {
+                              <option [value]="competency.idNumber">
+                                {{ competency.idNumber }}:
+                                {{ competency.shortName }}
+                              </option>
+                            }
+                          </select>
+                        }
+                      </div>
+                    }
+                  </td>
+                  <td class="narrow">
+                    <button
+                      mat-icon-button
+                      type="button"
+                      [title]="'Remove ' + owner.shortName"
+                      (click)="removeOwner(owner)"
+                    >
+                      <mat-icon fontIcon="mdi-close"></mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <button matButton type="button" class="add-row" (click)="addTeam()">
+            <mat-icon fontIcon="mdi-plus"></mat-icon> Add team
+          </button>
+          <button
+            matButton
+            type="button"
+            class="add-row"
+            (click)="addOrganization()"
+          >
+            <mat-icon fontIcon="mdi-plus"></mat-icon> Add organization
+          </button>
+        </mat-tab>
+
+        @if (result.draft.cards?.length || templateUsesGallery) {
+          <mat-tab
+            [label]="
+              'Gallery cards (' + (result.draft.cards?.length ?? 0) + ')'
+            "
+          >
+            <p class="hint tab-hint">
+              The cards on the Gallery wall. Each article is written for one of
+              them.
+            </p>
+            <table class="design-table" aria-label="Gallery cards">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (card of result.draft.cards; track card; let i = $index) {
+                  <tr>
+                    <td class="short">
+                      <input
+                        class="cell-input"
+                        [(ngModel)]="card.name"
+                        aria-label="Card name"
+                      />
+                    </td>
+                    <td>
+                      <textarea
+                        class="cell-input"
+                        rows="2"
+                        [(ngModel)]="card.description"
+                        [attr.aria-label]="card.name + ' description'"
+                      ></textarea>
+                    </td>
+                    <td class="narrow">
+                      <button
+                        mat-icon-button
+                        type="button"
+                        [title]="'Remove ' + card.name"
+                        (click)="removeCard(i)"
+                      >
+                        <mat-icon fontIcon="mdi-close"></mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            <button matButton type="button" class="add-row" (click)="addCard()">
+              <mat-icon fontIcon="mdi-plus"></mat-icon> Add card
+            </button>
+          </mat-tab>
+        }
+      </mat-tab-group>
+      @if (errorMessage) {
+        <ng-container *ngTemplateOutlet="error"></ng-container>
+      }
     }
-  </mat-tab-group>
-  @if (errorMessage) {
-  <ng-container *ngTemplateOutlet="error"></ng-container>
-  }
-  }
-</div>
-
-<ng-template #error>
-  <div class="error-message" role="alert">
-    <mat-icon fontIcon="mdi-alert-circle-outline"></mat-icon>
-    <span>{{ errorMessage }}</span>
   </div>
-</ng-template>
 
-<ng-template #competencyChips let-owner="owner">
-  <mat-chip-set aria-label="Competencies">
-    @for (idNumber of owner.competencies; track idNumber) {
-    <mat-chip [matTooltip]="competencyName(idNumber)" (removed)="removeCompetency(owner, idNumber)">
-      {{ idNumber }}
-      <button matChipRemove [attr.aria-label]="'Remove ' + idNumber">
-        <mat-icon fontIcon="mdi-close"></mat-icon>
+  <ng-template #error>
+    <div class="error-message" role="alert">
+      <mat-icon fontIcon="mdi-alert-circle-outline"></mat-icon>
+      <span>{{ errorMessage }}</span>
+    </div>
+  </ng-template>
+
+  <ng-template #competencyChips let-owner="owner">
+    <mat-chip-set aria-label="Competencies">
+      @for (idNumber of owner.competencies; track idNumber) {
+        <mat-chip
+          [matTooltip]="competencyName(idNumber)"
+          (removed)="removeCompetency(owner, idNumber)"
+        >
+          {{ idNumber }}
+          <button matChipRemove [attr.aria-label]="'Remove ' + idNumber">
+            <mat-icon fontIcon="mdi-close"></mat-icon>
+          </button>
+        </mat-chip>
+      }
+    </mat-chip-set>
+  </ng-template>
+
+  <ng-container crucibleDialogActions>
+    @if (!result) {
+      @if (isDrafting) {
+        <button matButton="outlined" type="button" (click)="cancelDraft()">
+          Stop
+        </button>
+      } @else {
+        <button matButton="outlined" type="button" (click)="close()">
+          Cancel
+        </button>
+      }
+      <button
+        matButton="filled"
+        type="button"
+        (click)="draft()"
+        [disabled]="!canDraft"
+      >
+        Draft
       </button>
-    </mat-chip>
+    } @else {
+      <span class="actions-hint"
+        >The injects, articles and profiles are written into the MSEL next, in a
+        few minutes. You can keep working.</span
+      >
+      <button
+        matButton="outlined"
+        type="button"
+        (click)="close()"
+        [disabled]="isCreating"
+      >
+        Discard
+      </button>
+      <button
+        matButton="outlined"
+        type="button"
+        (click)="startOver()"
+        [disabled]="isCreating"
+      >
+        Edit description
+      </button>
+      <button
+        matButton="filled"
+        type="button"
+        (click)="create()"
+        [disabled]="!canCreate"
+      >
+        {{ isCreating ? 'Creating...' : 'Create MSEL' }}
+      </button>
     }
-  </mat-chip-set>
-</ng-template>
-
-<ng-container crucibleDialogActions>
-  @if (!result) {
-  @if (isDrafting) {
-  <button matButton="outlined" type="button" (click)="cancelDraft()">Stop</button>
-  } @else {
-  <button matButton="outlined" type="button" (click)="close()">Cancel</button>
-  }
-  <button matButton="filled" type="button" (click)="draft()" [disabled]="!canDraft">Draft</button>
-  } @else {
-  <span class="actions-hint">The injects, articles and profiles are written into the MSEL next, in a few minutes. You can keep working.</span>
-  <button matButton="outlined" type="button" (click)="close()" [disabled]="isCreating">Discard</button>
-  <button matButton="outlined" type="button" (click)="startOver()" [disabled]="isCreating">Edit description</button>
-  <button matButton="filled" type="button" (click)="create()" [disabled]="!canCreate">
-    {{ isCreating ? 'Creating...' : 'Create MSEL' }}
-  </button>
-  }
-</ng-container>
+  </ng-container>
 </crucible-dialog>

@@ -11,15 +11,24 @@ import { MselImageDataService } from './msel-image-data.service';
 
 const MONDAY = new Date('2026-10-19T12:00:00Z');
 const TUESDAY = new Date('2026-10-20T12:00:00Z');
-const card = (imageDateModified?: Date | null): Msel => ({ id: 'msel-1', name: 'Exercise Alpha', imageDateModified });
+const card = (imageDateModified?: Date | null): Msel => ({
+  id: 'msel-1',
+  name: 'Exercise Alpha',
+  imageDateModified,
+});
 
-function setup(getMselImage = vi.fn(() => of(new Blob(['image'], { type: 'image/png' })))) {
+function setup(
+  getMselImage = vi.fn(() => of(new Blob(['image'], { type: 'image/png' }))),
+) {
   const imageApi = {
     getMselImage,
     setMselImage: vi.fn(() => of<Msel>(card(TUESDAY))),
     deleteMselImage: vi.fn(() => of<Msel>(card(null))),
   } satisfies ApiStub<MselImageService>;
-  const mselData = { updateImageDateModified: vi.fn() } satisfies Pick<MselDataService, 'updateImageDateModified'>;
+  const mselData = { updateImageDateModified: vi.fn() } satisfies Pick<
+    MselDataService,
+    'updateImageDateModified'
+  >;
   TestBed.configureTestingModule({
     providers: [
       { provide: MselImageService, useValue: imageApi },
@@ -59,10 +68,14 @@ describe('MselImageDataService', () => {
     const { service, imageApi } = setup();
 
     expect(await firstValueFrom(service.imageUrl(card(MONDAY)))).toBe('blob:1');
-    expect(await firstValueFrom(service.imageUrl(card(new Date(MONDAY))))).toBe('blob:1');
+    expect(await firstValueFrom(service.imageUrl(card(new Date(MONDAY))))).toBe(
+      'blob:1',
+    );
     expect(imageApi.getMselImage).toHaveBeenCalledTimes(1);
 
-    expect(await firstValueFrom(service.imageUrl(card(TUESDAY)))).toBe('blob:2');
+    expect(await firstValueFrom(service.imageUrl(card(TUESDAY)))).toBe(
+      'blob:2',
+    );
     expect(imageApi.getMselImage).toHaveBeenCalledTimes(2);
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:1');
   });

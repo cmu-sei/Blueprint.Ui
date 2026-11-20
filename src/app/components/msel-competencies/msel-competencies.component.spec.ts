@@ -43,14 +43,26 @@ import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.serv
 import { unstubbed } from 'src/app/test-utils/unstubbed';
 
 const ME = 'user-me';
-const BLUE: Team = { id: 'team-1', mselId: 'msel-1', name: 'Blue Team', shortName: 'BLUE' };
+const BLUE: Team = {
+  id: 'team-1',
+  mselId: 'msel-1',
+  name: 'Blue Team',
+  shortName: 'BLUE',
+};
 const POOL: MselCompetency = {
   id: 'mc-1',
   mselId: 'msel-1',
   competencyId: 'c-1',
-  competency: { id: 'c-1', competencyFrameworkId: 'fw-1', idNumber: 'K0001', shortName: 'Networking' },
+  competency: {
+    id: 'c-1',
+    competencyFrameworkId: 'fw-1',
+    idNumber: 'K0001',
+    shortName: 'Networking',
+  },
 };
-const ALL_BUT_MANAGE_MSELS = Object.values(SystemPermission).filter((p) => p !== SystemPermission.ManageMsels);
+const ALL_BUT_MANAGE_MSELS = Object.values(SystemPermission).filter(
+  (p) => p !== SystemPermission.ManageMsels,
+);
 
 function msel(myRoles: MselRole[] = []): Msel {
   return {
@@ -58,11 +70,18 @@ function msel(myRoles: MselRole[] = []): Msel {
     name: 'Exercise Alpha',
     createdBy: 'someone-else',
     teams: [BLUE],
-    userMselRoles: myRoles.map((role, i) => ({ id: `umr-${i}`, userId: ME, mselId: 'msel-1', role })),
+    userMselRoles: myRoles.map((role, i) => ({
+      id: `umr-${i}`,
+      userId: ME,
+      mselId: 'msel-1',
+      role,
+    })),
   };
 }
 
-async function renderCompetencies(overrides: { permissions?: SystemPermission[]; myRoles?: MselRole[] } = {}) {
+async function renderCompetencies(
+  overrides: { permissions?: SystemPermission[]; myRoles?: MselRole[] } = {},
+) {
   const { permissions = [], myRoles = [] } = overrides;
   const poolApi = {
     getMselCompetencies: vi.fn(() => of(structuredClone([POOL]))),
@@ -70,10 +89,16 @@ async function renderCompetencies(overrides: { permissions?: SystemPermission[];
   } satisfies ApiStub<MselCompetencyService>;
   const teamCompetencyApi = {
     getMselTeamCompetencies: vi.fn(() => of<TeamCompetency[]>([])),
-    createTeamCompetency: vi.fn((tc: TeamCompetency) => of<TeamCompetency>({ ...tc, id: 'tc-1' })),
+    createTeamCompetency: vi.fn((tc: TeamCompetency) =>
+      of<TeamCompetency>({ ...tc, id: 'tc-1' }),
+    ),
   } satisfies ApiStub<TeamCompetencyService>;
   const frameworkApi = {
-    getCompetencyFrameworks: vi.fn(() => of<CompetencyFramework[]>([{ id: 'fw-1', name: 'NICE', version: '2.1.0' }])),
+    getCompetencyFrameworks: vi.fn(() =>
+      of<CompetencyFramework[]>([
+        { id: 'fw-1', name: 'NICE', version: '2.1.0' },
+      ]),
+    ),
   } satisfies ApiStub<CompetencyFrameworkService>;
   // The user confirms every dialog.
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
@@ -99,7 +124,10 @@ async function renderCompetencies(overrides: { permissions?: SystemPermission[];
     ],
     declarations: [MselCompetenciesComponent],
     providers: [
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: MselCompetencyService, useValue: poolApi },
       { provide: TeamCompetencyService, useValue: teamCompetencyApi },
@@ -121,7 +149,8 @@ async function renderCompetencies(overrides: { permissions?: SystemPermission[];
   return { ...rendered, poolApi, teamCompetencyApi, confirm };
 }
 
-const poolTable = () => within(document.querySelector('.pool-table-scroll') as HTMLElement);
+const poolTable = () =>
+  within(document.querySelector('.pool-table-scroll') as HTMLElement);
 // Inside the expanded pool row, queries go by title: jsdom's CSS engine throws on
 // the component's `border: 1px solid var(...)` rules when a role query computes styles there.
 async function expandK0001() {
@@ -137,17 +166,25 @@ describe('MselCompetenciesComponent', () => {
    * Data: K0001 Networking in the pool.
    */
   it('lists the competency pool', async () => {
-    const { poolApi, teamCompetencyApi } = await renderCompetencies({ permissions: [SystemPermission.ManageMsels] });
+    const { poolApi, teamCompetencyApi } = await renderCompetencies({
+      permissions: [SystemPermission.ManageMsels],
+    });
 
     expect(poolApi.getMselCompetencies).toHaveBeenCalledWith('msel-1');
-    expect(teamCompetencyApi.getMselTeamCompetencies).toHaveBeenCalledWith('msel-1');
+    expect(teamCompetencyApi.getMselTeamCompetencies).toHaveBeenCalledWith(
+      'msel-1',
+    );
     expect(poolTable().getByText('K0001')).toBeInTheDocument();
     expect(poolTable().getByText('Knowledge')).toBeInTheDocument();
   });
 
   // The users who may edit the pool: ManageMsels, or the Owner role.
   const EDITORS = [
-    { label: 'with ManageMsels', permissions: [SystemPermission.ManageMsels], myRoles: [] },
+    {
+      label: 'with ManageMsels',
+      permissions: [SystemPermission.ManageMsels],
+      myRoles: [],
+    },
     { label: 'as the MSEL owner', permissions: [], myRoles: [MselRole.Owner] },
   ];
 
@@ -156,26 +193,40 @@ describe('MselCompetenciesComponent', () => {
    * Interacts with: real PermissionDataService over SystemPermissionsService (stub), MselPlus.hasRole.
    * Data: ManageMsels with no role; or the Owner role. K0001 in the pool.
    */
-  it.each(EDITORS)('edits the competency pool $label', async ({ permissions, myRoles }) => {
-    await renderCompetencies({ permissions, myRoles });
+  it.each(EDITORS)(
+    'edits the competency pool $label',
+    async ({ permissions, myRoles }) => {
+      await renderCompetencies({ permissions, myRoles });
 
-    expect(screen.getByLabelText('Competency Framework')).toHaveAttribute('aria-disabled', 'false');
-    expect(poolTable().getByTitle('Remove from MSEL')).toBeInTheDocument();
-  });
+      expect(screen.getByLabelText('Competency Framework')).toHaveAttribute(
+        'aria-disabled',
+        'false',
+      );
+      expect(poolTable().getByTitle('Remove from MSEL')).toBeInTheDocument();
+    },
+  );
 
   /**
    * Verifies: with ManageMsels, or as the owner, a team can be assigned to a pooled competency.
    * Interacts with: the expanded pool row, TeamCompetencyService.createTeamCompetency (stub).
    * Data: ManageMsels with no role; or the Owner role. BLUE not yet assigned to K0001.
    */
-  it.each(EDITORS)('assigns a team to a competency $label', async ({ permissions, myRoles }) => {
-    const { teamCompetencyApi } = await renderCompetencies({ permissions, myRoles });
+  it.each(EDITORS)(
+    'assigns a team to a competency $label',
+    async ({ permissions, myRoles }) => {
+      const { teamCompetencyApi } = await renderCompetencies({
+        permissions,
+        myRoles,
+      });
 
-    const user = await expandK0001();
-    await user.click(poolTable().getByTitle('Add BLUE'));
+      const user = await expandK0001();
+      await user.click(poolTable().getByTitle('Add BLUE'));
 
-    expect(teamCompetencyApi.createTeamCompetency).toHaveBeenCalledWith(expect.objectContaining({ teamId: 'team-1', competencyId: 'c-1' }));
-  });
+      expect(teamCompetencyApi.createTeamCompetency).toHaveBeenCalledWith(
+        expect.objectContaining({ teamId: 'team-1', competencyId: 'c-1' }),
+      );
+    },
+  );
 
   /**
    * Verifies: without ManageMsels and not the owner the pool is read-only: no framework choice, no Remove, and team assignment is disabled.
@@ -183,10 +234,18 @@ describe('MselCompetenciesComponent', () => {
    * Data: every permission but ManageMsels (near miss: EditMsels); MSEL roles Editor and Approver.
    */
   it('lists the competency pool read-only without ManageMsels or ownership', async () => {
-    await renderCompetencies({ permissions: ALL_BUT_MANAGE_MSELS, myRoles: [MselRole.Editor, MselRole.Approver] });
+    await renderCompetencies({
+      permissions: ALL_BUT_MANAGE_MSELS,
+      myRoles: [MselRole.Editor, MselRole.Approver],
+    });
 
-    expect(screen.getByLabelText('Competency Framework')).toHaveAttribute('aria-disabled', 'true');
-    expect(poolTable().queryByTitle('Remove from MSEL')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Competency Framework')).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    expect(
+      poolTable().queryByTitle('Remove from MSEL'),
+    ).not.toBeInTheDocument();
     await expandK0001();
     expect(poolTable().getByTitle('Add BLUE')).toBeDisabled();
   });
@@ -197,13 +256,17 @@ describe('MselCompetenciesComponent', () => {
    * Data: ManageMsels; K0001.
    */
   it('removes a competency after confirmation', async () => {
-    const { fixture, poolApi, confirm } = await renderCompetencies({ permissions: [SystemPermission.ManageMsels] });
+    const { fixture, poolApi, confirm } = await renderCompetencies({
+      permissions: [SystemPermission.ManageMsels],
+    });
     const user = userEvent.setup();
 
     expect(poolTable().getByText('K0001')).toBeInTheDocument();
     await user.click(poolTable().getByTitle('Remove from MSEL'));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Remove Competency' }));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Remove Competency' }),
+    );
     expect(poolApi.deleteMselCompetency).toHaveBeenCalledWith('mc-1');
     fixture.detectChanges();
     expect(poolTable().queryByText('K0001')).not.toBeInTheDocument();

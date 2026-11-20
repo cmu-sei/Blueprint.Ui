@@ -6,7 +6,10 @@ import { Component, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
-import { dialogRefStub, dismissedDialogRefStub } from 'src/app/test-utils/dialog-refs';
+import {
+  dialogRefStub,
+  dismissedDialogRefStub,
+} from 'src/app/test-utils/dialog-refs';
 import { DataValueDraftDialogComponent } from 'src/app/components/data-value-draft-dialog/data-value-draft-dialog.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -15,7 +18,12 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
-import { DataField, DataFieldType, EventType, ScenarioEvent } from 'src/app/generated/blueprint.api';
+import {
+  DataField,
+  DataFieldType,
+  EventType,
+  ScenarioEvent,
+} from 'src/app/generated/blueprint.api';
 import { IntegrationTarget } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventEditDialogComponent } from './scenario-event-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
@@ -60,8 +68,20 @@ class SteamfitterTaskStub {
   readonly canEdit = input<boolean>(undefined);
 }
 
-const TITLE: DataField = { id: 'df-title', name: 'Title', dataType: DataFieldType.String, displayOrder: 1, onScenarioEventList: true };
-const BODY: DataField = { id: 'df-body', name: 'Description', dataType: DataFieldType.Html, displayOrder: 2, onScenarioEventList: true };
+const TITLE: DataField = {
+  id: 'df-title',
+  name: 'Title',
+  dataType: DataFieldType.String,
+  displayOrder: 1,
+  onScenarioEventList: true,
+};
+const BODY: DataField = {
+  id: 'df-body',
+  name: 'Description',
+  dataType: DataFieldType.Html,
+  displayOrder: 2,
+  onScenarioEventList: true,
+};
 
 interface Roles {
   isEditor?: boolean;
@@ -77,12 +97,39 @@ interface Roles {
   techniques?: string;
 }
 
-const WHEN: DataField = { id: 'df-when', name: 'When', dataType: DataFieldType.DateTime, displayOrder: 2, onScenarioEventList: true };
-const TECHNIQUES: DataField = { id: 'df-attack', name: 'Techniques', dataType: DataFieldType.AttackTechnique, displayOrder: 3, onScenarioEventList: true };
-const COUNTERMEASURES: DataField = { id: 'df-defend', name: 'Countermeasures', dataType: DataFieldType.DefensiveTechnique, displayOrder: 4, onScenarioEventList: true };
+const WHEN: DataField = {
+  id: 'df-when',
+  name: 'When',
+  dataType: DataFieldType.DateTime,
+  displayOrder: 2,
+  onScenarioEventList: true,
+};
+const TECHNIQUES: DataField = {
+  id: 'df-attack',
+  name: 'Techniques',
+  dataType: DataFieldType.AttackTechnique,
+  displayOrder: 3,
+  onScenarioEventList: true,
+};
+const COUNTERMEASURES: DataField = {
+  id: 'df-defend',
+  name: 'Countermeasures',
+  dataType: DataFieldType.DefensiveTechnique,
+  displayOrder: 4,
+  onScenarioEventList: true,
+};
 
 function dialogData(roles: Roles = {}) {
-  const { isEditor = false, isApprover = false, isOwner = false, isEditingRestricted = false, steamfitter = false, when, titleOnDefaultTab = false, techniques } = roles;
+  const {
+    isEditor = false,
+    isApprover = false,
+    isOwner = false,
+    isEditingRestricted = false,
+    steamfitter = false,
+    when,
+    titleOnDefaultTab = false,
+    techniques,
+  } = roles;
   return {
     scenarioEvent: {
       id: 'se-1',
@@ -91,19 +138,54 @@ function dialogData(roles: Roles = {}) {
       deltaSeconds: 600,
       rowMetadata: '',
       dataValues: [
-        { id: 'dv-1', scenarioEventId: 'se-1', dataFieldId: 'df-title', value: 'Phishing wave' },
-        ...(when === undefined ? [] : [{ id: 'dv-2', scenarioEventId: 'se-1', dataFieldId: 'df-when', value: when }]),
-        ...(techniques === undefined ? [] : [
-          { id: 'dv-3', scenarioEventId: 'se-1', dataFieldId: 'df-attack', value: techniques },
-          { id: 'dv-4', scenarioEventId: 'se-1', dataFieldId: 'df-defend', value: '' },
-        ]),
+        {
+          id: 'dv-1',
+          scenarioEventId: 'se-1',
+          dataFieldId: 'df-title',
+          value: 'Phishing wave',
+        },
+        ...(when === undefined
+          ? []
+          : [
+              {
+                id: 'dv-2',
+                scenarioEventId: 'se-1',
+                dataFieldId: 'df-when',
+                value: when,
+              },
+            ]),
+        ...(techniques === undefined
+          ? []
+          : [
+              {
+                id: 'dv-3',
+                scenarioEventId: 'se-1',
+                dataFieldId: 'df-attack',
+                value: techniques,
+              },
+              {
+                id: 'dv-4',
+                scenarioEventId: 'se-1',
+                dataFieldId: 'df-defend',
+                value: '',
+              },
+            ]),
       ],
-      integrationTarget: steamfitter ? IntegrationTarget.Steamfitter : undefined,
-      steamfitterTask: { id: 'task-1', name: steamfitter ? 'Ping the VM' : 'Unused task' },
+      integrationTarget: steamfitter
+        ? IntegrationTarget.Steamfitter
+        : undefined,
+      steamfitterTask: {
+        id: 'task-1',
+        name: steamfitter ? 'Ping the VM' : 'Unused task',
+      },
       steamfitterTaskId: 'task-1',
     } as ScenarioEvent,
     integrationTargetOptions: [],
-    dataFields: [{ ...TITLE, isShownOnDefaultTab: titleOnDefaultTab }, ...(when === undefined ? [] : [WHEN]), ...(techniques === undefined ? [] : [TECHNIQUES, COUNTERMEASURES])],
+    dataFields: [
+      { ...TITLE, isShownOnDefaultTab: titleOnDefaultTab },
+      ...(when === undefined ? [] : [WHEN]),
+      ...(techniques === undefined ? [] : [TECHNIQUES, COUNTERMEASURES]),
+    ],
     organizationList: [],
     teamList: [],
     unitList: [],
@@ -125,13 +207,23 @@ function dialogData(roles: Roles = {}) {
   };
 }
 
-async function renderEventEdit(roles: Roles = {}, open = vi.fn(), withBody = false) {
+async function renderEventEdit(
+  roles: Roles = {},
+  open = vi.fn(),
+  withBody = false,
+) {
   const data = dialogData(roles);
   if (withBody) {
     data.dataFields = [TITLE, BODY];
   }
   const rendered = await renderComponent(ScenarioEventEditDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, MatFormFieldModule, MatInputModule, MatSelectModule, MatTabsModule],
+    imports: [
+      ...CRUCIBLE_DIALOG_IMPORTS,
+      MatFormFieldModule,
+      MatInputModule,
+      MatSelectModule,
+      MatTabsModule,
+    ],
     childStubs: [
       { replace: DataValueComponent, with: DataValueStub },
       { replace: DurationEditComponent, with: DurationEditStub },
@@ -139,18 +231,26 @@ async function renderEventEdit(roles: Roles = {}, open = vi.fn(), withBody = fal
     ],
     providers: [
       { provide: MAT_DIALOG_DATA, useValue: data },
-      { provide: MatDialog, useValue: { open } satisfies Pick<MatDialog, 'open'> },
+      {
+        provide: MatDialog,
+        useValue: { open } satisfies Pick<MatDialog, 'open'>,
+      },
     ],
   });
   // ngModel applies [disabled] in a microtask.
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
   const results: { saveChanges: boolean; scenarioEvent?: ScenarioEvent }[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results };
 }
 
-function child<T>(fixture: ComponentFixture<unknown>, stub: new (...args: never[]) => T): T {
+function child<T>(
+  fixture: ComponentFixture<unknown>,
+  stub: new (...args: never[]) => T,
+): T {
   return fixture.debugElement.query(By.directive(stub)).componentInstance;
 }
 
@@ -161,7 +261,10 @@ describe('ScenarioEventEditDialogComponent', () => {
    * Data: isEditor true (isApprover false); an Inject with a Title value that targets Steamfitter.
    */
   it('lets an editor edit the event', async () => {
-    const { fixture } = await renderEventEdit({ isEditor: true, steamfitter: true });
+    const { fixture } = await renderEventEdit({
+      isEditor: true,
+      steamfitter: true,
+    });
     const user = userEvent.setup();
 
     expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
@@ -179,13 +282,20 @@ describe('ScenarioEventEditDialogComponent', () => {
    * Data: isEditor false; isApprover and isOwner true (near miss); an Inject that targets Steamfitter.
    */
   it('makes the event read-only without the editor role', async () => {
-    const { fixture } = await renderEventEdit({ isEditor: false, isApprover: true, isOwner: true, steamfitter: true });
+    const { fixture } = await renderEventEdit({
+      isEditor: false,
+      isApprover: true,
+      isOwner: true,
+      steamfitter: true,
+    });
     const user = userEvent.setup();
 
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
     expect(child(fixture, DataValueStub).canEdit()).toBe(false);
     expect(child(fixture, DurationEditStub).canEdit()).toBe(false);
-    expect(screen.getByRole('textbox', { name: 'Row Metadata' })).toBeDisabled();
+    expect(
+      screen.getByRole('textbox', { name: 'Row Metadata' }),
+    ).toBeDisabled();
     await user.click(screen.getByText('Steamfitter Task'));
     expect(child(fixture, SteamfitterTaskStub).canEdit()).toBe(false);
   });
@@ -195,12 +305,19 @@ describe('ScenarioEventEditDialogComponent', () => {
    * Interacts with: DataValueStub inputs.
    * Data: isEditor true; approver and owner true, then false.
    */
-  it.each([true, false])('passes canApprove and isOwner %s to the data values', async (granted) => {
-    const { fixture } = await renderEventEdit({ isEditor: true, isApprover: granted, isOwner: granted });
+  it.each([true, false])(
+    'passes canApprove and isOwner %s to the data values',
+    async (granted) => {
+      const { fixture } = await renderEventEdit({
+        isEditor: true,
+        isApprover: granted,
+        isOwner: granted,
+      });
 
-    expect(child(fixture, DataValueStub).canApprove()).toBe(granted);
-    expect(child(fixture, DataValueStub).isOwner()).toBe(granted);
-  });
+      expect(child(fixture, DataValueStub).canApprove()).toBe(granted);
+      expect(child(fixture, DataValueStub).isOwner()).toBe(granted);
+    },
+  );
 
   /**
    * Verifies: every data value is told the event's Attack Technique values, so a Defensive Technique field can
@@ -208,12 +325,25 @@ describe('ScenarioEventEditDialogComponent', () => {
    * Interacts with: techniqueValues, DataValueStub.techniques.
    * Data: an Attack Technique field holding "T1059, T1566" beside a Defensive Technique field.
    */
-  it('passes the event\'s attack techniques to the data values', async () => {
-    const { fixture } = await renderEventEdit({ isEditor: true, techniques: 'T1059, T1566' });
+  it("passes the event's attack techniques to the data values", async () => {
+    const { fixture } = await renderEventEdit({
+      isEditor: true,
+      techniques: 'T1059, T1566',
+    });
 
-    const stubs = fixture.debugElement.queryAll(By.directive(DataValueStub)).map((d) => d.componentInstance as DataValueStub);
-    expect(stubs.map((s) => s.dataField().name)).toEqual(['Title', 'Techniques', 'Countermeasures']);
-    expect(stubs.map((s) => s.techniques())).toEqual(['T1059, T1566', 'T1059, T1566', 'T1059, T1566']);
+    const stubs = fixture.debugElement
+      .queryAll(By.directive(DataValueStub))
+      .map((d) => d.componentInstance as DataValueStub);
+    expect(stubs.map((s) => s.dataField().name)).toEqual([
+      'Title',
+      'Techniques',
+      'Countermeasures',
+    ]);
+    expect(stubs.map((s) => s.techniques())).toEqual([
+      'T1059, T1566',
+      'T1059, T1566',
+      'T1059, T1566',
+    ]);
   });
 
   /**
@@ -233,10 +363,15 @@ describe('ScenarioEventEditDialogComponent', () => {
    * Data: isEditor true; isEditingRestricted true; an Inject.
    */
   it('restricts inject values on a starter MSEL', async () => {
-    const { fixture } = await renderEventEdit({ isEditor: true, isEditingRestricted: true });
+    const { fixture } = await renderEventEdit({
+      isEditor: true,
+      isEditingRestricted: true,
+    });
 
     expect(child(fixture, DataValueStub).canEdit()).toBe(false);
-    expect(screen.queryByRole('combobox', { name: 'Scenario Event Type' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('combobox', { name: 'Scenario Event Type' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -246,12 +381,20 @@ describe('ScenarioEventEditDialogComponent', () => {
    */
   it.each([
     { roles: { isOwner: true, isEditor: true }, disabled: 'false' },
-    { roles: { isOwner: false, isEditor: true, isApprover: true }, disabled: 'true' },
-  ])('sets the event type select aria-disabled $disabled', async ({ roles, disabled }) => {
-    await renderEventEdit(roles);
+    {
+      roles: { isOwner: false, isEditor: true, isApprover: true },
+      disabled: 'true',
+    },
+  ])(
+    'sets the event type select aria-disabled $disabled',
+    async ({ roles, disabled }) => {
+      await renderEventEdit(roles);
 
-    expect(screen.getByRole('combobox', { name: 'Scenario Event Type' })).toHaveAttribute('aria-disabled', disabled);
-  });
+      expect(
+        screen.getByRole('combobox', { name: 'Scenario Event Type' }),
+      ).toHaveAttribute('aria-disabled', disabled);
+    },
+  );
 
   /**
    * Verifies: saving an event that does not target Steamfitter drops its Steamfitter task.
@@ -276,14 +419,27 @@ describe('ScenarioEventEditDialogComponent', () => {
    */
   it.each([
     { label: 'that can be edited', roles: { when: 'Team 2' }, disabled: true },
-    { label: 'on a starter MSEL, where inject values are read-only', roles: { when: 'Team 2', isEditingRestricted: true }, disabled: false },
-    { label: 'hidden from the Default tab', roles: { when: 'Team 2', titleOnDefaultTab: true }, disabled: false },
+    {
+      label: 'on a starter MSEL, where inject values are read-only',
+      roles: { when: 'Team 2', isEditingRestricted: true },
+      disabled: false,
+    },
+    {
+      label: 'hidden from the Default tab',
+      roles: { when: 'Team 2', titleOnDefaultTab: true },
+      disabled: false,
+    },
     { label: 'that is only spaces', roles: { when: '  ' }, disabled: false },
-  ])('sets Save disabled $disabled for a DateTime value $label', async ({ roles, disabled }) => {
-    await renderEventEdit({ isEditor: true, ...roles });
+  ])(
+    'sets Save disabled $disabled for a DateTime value $label',
+    async ({ roles, disabled }) => {
+      await renderEventEdit({ isEditor: true, ...roles });
 
-    expect(screen.getByRole('button', { name: 'Save' }).hasAttribute('disabled')).toBe(disabled);
-  });
+      expect(
+        screen.getByRole('button', { name: 'Save' }).hasAttribute('disabled'),
+      ).toBe(disabled);
+    },
+  );
 
   /**
    * Verifies: the event's data values get the MSEL's Gallery source types and Gallery article statuses the list passed in.
@@ -293,8 +449,14 @@ describe('ScenarioEventEditDialogComponent', () => {
   it("passes the MSEL's Gallery source types and statuses to the data values", async () => {
     const { fixture } = await renderEventEdit({ isEditor: true });
 
-    expect(child(fixture, DataValueStub).gallerySourceTypeOptions()).toEqual(['News', 'Social']);
-    expect(child(fixture, DataValueStub).galleryItemStatusOptions()).toEqual(['Green', 'Red']);
+    expect(child(fixture, DataValueStub).gallerySourceTypeOptions()).toEqual([
+      'News',
+      'Social',
+    ]);
+    expect(child(fixture, DataValueStub).galleryItemStatusOptions()).toEqual([
+      'Green',
+      'Red',
+    ]);
   });
 
   /**
@@ -303,26 +465,40 @@ describe('ScenarioEventEditDialogComponent', () => {
    * Data: Title "Phishing wave" (String) and Description (Html, no value yet); the writer returns "<p>Users report a fake payroll email.</p>".
    */
   it('writes an Html field with AI and keeps the accepted value', async () => {
-    const ref = dialogRefStub<DataValueDraftDialogComponent, string>('<p>Users report a fake payroll email.</p>');
+    const ref = dialogRefStub<DataValueDraftDialogComponent, string>(
+      '<p>Users report a fake payroll email.</p>',
+    );
     const open = vi.fn(() => ref.dialogRef);
-    const { fixture, data } = await renderEventEdit({ isEditor: true }, open, true);
+    const { fixture, data } = await renderEventEdit(
+      { isEditor: true },
+      open,
+      true,
+    );
 
-    const [title, body] = fixture.debugElement.queryAll(By.directive(DataValueStub)).map((d) => d.componentInstance as DataValueStub);
+    const [title, body] = fixture.debugElement
+      .queryAll(By.directive(DataValueStub))
+      .map((d) => d.componentInstance as DataValueStub);
     expect(title.canAiWrite()).toBe(false);
     expect(body.canAiWrite()).toBe(true);
     body.aiWrite.emit();
 
-    expect(open).toHaveBeenCalledWith(DataValueDraftDialogComponent, expect.objectContaining({
-      data: expect.objectContaining({
-        mselId: 'msel-1',
-        scenarioEventId: 'se-1',
-        deltaSeconds: 600,
-        dataField: BODY,
-        values: { 'df-title': 'Phishing wave' },
-        gallerySourceTypes: ['News', 'Social'],
+    expect(open).toHaveBeenCalledWith(
+      DataValueDraftDialogComponent,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          mselId: 'msel-1',
+          scenarioEventId: 'se-1',
+          deltaSeconds: 600,
+          dataField: BODY,
+          values: { 'df-title': 'Phishing wave' },
+          gallerySourceTypes: ['News', 'Social'],
+        }),
       }),
-    }));
-    expect(data.scenarioEvent.dataValues).toContainEqual({ dataFieldId: 'df-body', value: '<p>Users report a fake payroll email.</p>' });
+    );
+    expect(data.scenarioEvent.dataValues).toContainEqual({
+      dataFieldId: 'df-body',
+      value: '<p>Users report a fake payroll email.</p>',
+    });
     expect(fixture.componentInstance.blankDataValue.value).toBe('');
   });
 
@@ -334,13 +510,34 @@ describe('ScenarioEventEditDialogComponent', () => {
   it('tells the writer the inject source type', async () => {
     const ref = dismissedDialogRefStub<DataValueDraftDialogComponent, string>();
     const open = vi.fn(() => ref.dialogRef);
-    const { fixture, data } = await renderEventEdit({ isEditor: true }, open, true);
-    data.dataFields.push({ id: 'df-source', name: 'Source Type', dataType: DataFieldType.SourceType, displayOrder: 3, galleryArticleParameter: 'SourceType' });
-    data.scenarioEvent.dataValues.push({ dataFieldId: 'df-source', value: 'Phone' });
+    const { fixture, data } = await renderEventEdit(
+      { isEditor: true },
+      open,
+      true,
+    );
+    data.dataFields.push({
+      id: 'df-source',
+      name: 'Source Type',
+      dataType: DataFieldType.SourceType,
+      displayOrder: 3,
+      galleryArticleParameter: 'SourceType',
+    });
+    data.scenarioEvent.dataValues.push({
+      dataFieldId: 'df-source',
+      value: 'Phone',
+    });
 
-    (fixture.debugElement.queryAll(By.directive(DataValueStub))[1].componentInstance as DataValueStub).aiWrite.emit();
+    (
+      fixture.debugElement.queryAll(By.directive(DataValueStub))[1]
+        .componentInstance as DataValueStub
+    ).aiWrite.emit();
 
-    expect(open).toHaveBeenCalledWith(DataValueDraftDialogComponent, expect.objectContaining({ data: expect.objectContaining({ sourceType: 'Phone' }) }));
+    expect(open).toHaveBeenCalledWith(
+      DataValueDraftDialogComponent,
+      expect.objectContaining({
+        data: expect.objectContaining({ sourceType: 'Phone' }),
+      }),
+    );
   });
 
   /**
@@ -350,11 +547,25 @@ describe('ScenarioEventEditDialogComponent', () => {
    */
   it('changes nothing when the writer is dismissed', async () => {
     const ref = dismissedDialogRefStub<DataValueDraftDialogComponent, string>();
-    const { fixture, data } = await renderEventEdit({ isEditor: true }, vi.fn(() => ref.dialogRef), true);
+    const { fixture, data } = await renderEventEdit(
+      { isEditor: true },
+      vi.fn(() => ref.dialogRef),
+      true,
+    );
 
-    (fixture.debugElement.queryAll(By.directive(DataValueStub))[1].componentInstance as DataValueStub).aiWrite.emit();
+    (
+      fixture.debugElement.queryAll(By.directive(DataValueStub))[1]
+        .componentInstance as DataValueStub
+    ).aiWrite.emit();
 
-    expect(data.scenarioEvent.dataValues).toEqual([{ id: 'dv-1', scenarioEventId: 'se-1', dataFieldId: 'df-title', value: 'Phishing wave' }]);
+    expect(data.scenarioEvent.dataValues).toEqual([
+      {
+        id: 'dv-1',
+        scenarioEventId: 'se-1',
+        dataFieldId: 'df-title',
+        value: 'Phishing wave',
+      },
+    ]);
   });
 
   /**
@@ -367,10 +578,44 @@ describe('ScenarioEventEditDialogComponent', () => {
     const { fixture } = await renderEventEdit({ isEditor: true });
     const dialog = fixture.componentInstance;
 
-    expect(dialog.canAiWrite({ id: 'df-summary', name: 'Summary', dataType: DataFieldType.String, galleryArticleParameter: 'Summary' })).toBe(true);
-    expect(dialog.canAiWrite({ id: 'df-from', name: 'From Org', dataType: DataFieldType.String, galleryArticleParameter: 'FromOrg' })).toBe(false);
-    expect(dialog.canAiWrite({ id: 'df-list', name: 'Priority', dataType: DataFieldType.String, isChosenFromList: true })).toBe(false);
-    expect(dialog.canAiWrite({ id: 'df-status', name: 'Card Status', dataType: DataFieldType.String, galleryArticleParameter: 'Status' })).toBe(false);
-    expect(dialog.canAiWrite({ id: 'df-when', name: 'Simulated Time', dataType: DataFieldType.DateTime })).toBe(false);
+    expect(
+      dialog.canAiWrite({
+        id: 'df-summary',
+        name: 'Summary',
+        dataType: DataFieldType.String,
+        galleryArticleParameter: 'Summary',
+      }),
+    ).toBe(true);
+    expect(
+      dialog.canAiWrite({
+        id: 'df-from',
+        name: 'From Org',
+        dataType: DataFieldType.String,
+        galleryArticleParameter: 'FromOrg',
+      }),
+    ).toBe(false);
+    expect(
+      dialog.canAiWrite({
+        id: 'df-list',
+        name: 'Priority',
+        dataType: DataFieldType.String,
+        isChosenFromList: true,
+      }),
+    ).toBe(false);
+    expect(
+      dialog.canAiWrite({
+        id: 'df-status',
+        name: 'Card Status',
+        dataType: DataFieldType.String,
+        galleryArticleParameter: 'Status',
+      }),
+    ).toBe(false);
+    expect(
+      dialog.canAiWrite({
+        id: 'df-when',
+        name: 'Simulated Time',
+        dataType: DataFieldType.DateTime,
+      }),
+    ).toBe(false);
   });
 });

@@ -7,10 +7,7 @@ import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
-import {
-  Injectm,
-  InjectService,
-} from 'src/app/generated/blueprint.api';
+import { Injectm, InjectService } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 
@@ -26,7 +23,7 @@ export class InjectmDataService {
 
   private _requestedInjectmId: string;
   private _requestedInjectmId$ = this.activatedRoute.queryParamMap.pipe(
-    map((params) => params.get('injectmId') || '')
+    map((params) => params.get('injectmId') || ''),
   );
   readonly InjectmList: Observable<Injectm[]>;
   readonly filterControl = new UntypedFormControl();
@@ -42,7 +39,7 @@ export class InjectmDataService {
     const activatedRoute = this.activatedRoute;
 
     this.filterTerm = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('injectmmask') || '')
+      map((params) => params.get('injectmmask') || ''),
     );
     this.filterControl.valueChanges.subscribe((term) => {
       this.router.navigate([], {
@@ -51,16 +48,16 @@ export class InjectmDataService {
       });
     });
     this.sortColumn = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('sorton') || 'name')
+      map((params) => params.get('sorton') || 'name'),
     );
     this.sortIsAscending = activatedRoute.queryParamMap.pipe(
-      map((params) => (params.get('sortdir') || 'asc') === 'asc')
+      map((params) => (params.get('sortdir') || 'asc') === 'asc'),
     );
     this.pageSize = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pagesize') || '20', 10))
+      map((params) => parseInt(params.get('pagesize') || '20', 10)),
     );
     this.pageIndex = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pageindex') || '0', 10))
+      map((params) => parseInt(params.get('pageindex') || '0', 10)),
     );
     this.InjectmList = combineLatest([
       this.injectmQuery.selectAll(),
@@ -80,14 +77,11 @@ export class InjectmDataService {
           pageIndex,
         ]) =>
           items
-            ? (items as Injectm[])
-              .filter(
-                (injectm) =>
-                  injectm.id
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase()))
-            : []
-      )
+            ? (items as Injectm[]).filter((injectm) =>
+                injectm.id.toLowerCase().includes(filterTerm.toLowerCase()),
+              )
+            : [],
+      ),
     );
   }
 
@@ -99,18 +93,18 @@ export class InjectmDataService {
         tap(() => {
           this.injectmStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (injectms) => {
-          injectms.forEach(a => {
+          injectms.forEach((a) => {
             this.setAsDates(a);
           });
           this.injectmStore.set(injectms);
         },
         (error) => {
           this.injectmStore.set([]);
-        }
+        },
       );
   }
 
@@ -122,18 +116,18 @@ export class InjectmDataService {
         tap(() => {
           this.injectmStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (injectms) => {
-          injectms.forEach(a => {
+          injectms.forEach((a) => {
             this.setAsDates(a);
           });
           this.injectmStore.set(injectms);
         },
         (error) => {
           this.injectmStore.set([]);
-        }
+        },
       );
   }
 
@@ -145,7 +139,7 @@ export class InjectmDataService {
         tap(() => {
           this.injectmStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.setAsDates(s);
@@ -165,7 +159,7 @@ export class InjectmDataService {
         tap(() => {
           this.injectmStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.setAsDates(s);
@@ -181,7 +175,7 @@ export class InjectmDataService {
         tap(() => {
           this.injectmStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((n) => {
         this.setAsDates(n);
@@ -219,5 +213,4 @@ export class InjectmDataService {
     injectm.dateCreated = new Date(injectm.dateCreated);
     injectm.dateModified = new Date(injectm.dateModified);
   }
-
 }

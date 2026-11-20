@@ -10,7 +10,11 @@ import userEvent from '@testing-library/user-event';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, Subject, of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { Msel, MselItemStatus, MselService } from 'src/app/generated/blueprint.api';
+import {
+  Msel,
+  MselItemStatus,
+  MselService,
+} from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { IntegrationStatusComponent } from './integration-status.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
@@ -18,18 +22,29 @@ import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
 function msel(integrationStatus: string, status: MselItemStatus): MselPlus {
-  return Object.assign(new MselPlus(), { id: 'msel-1', name: 'Exercise Alpha', integrationStatus, status });
+  return Object.assign(new MselPlus(), {
+    id: 'msel-1',
+    name: 'Exercise Alpha',
+    integrationStatus,
+    status,
+  });
 }
 
 async function renderStatus(
   integrationStatus: string,
   casterWorkspaceUrl = '',
   status: MselItemStatus = MselItemStatus.Pushing,
-  retryAnswer: Observable<Msel> = of<Msel>({ id: 'msel-1', name: 'Exercise Alpha', integrationStatus: 'Retrying Caster' })
+  retryAnswer: Observable<Msel> = of<Msel>({
+    id: 'msel-1',
+    name: 'Exercise Alpha',
+    integrationStatus: 'Retrying Caster',
+  }),
 ) {
   const mselApi = {
     cancelIntegrations: vi.fn(() => of<unknown>(null)),
-    pullIntegrations: vi.fn(() => of<Msel>({ id: 'msel-1', name: 'Exercise Alpha' })),
+    pullIntegrations: vi.fn(() =>
+      of<Msel>({ id: 'msel-1', name: 'Exercise Alpha' }),
+    ),
     retryCasterIntegration: vi.fn(() => retryAnswer),
   } satisfies ApiStub<MselService>;
   // The user confirms every dialog.
@@ -58,8 +73,12 @@ describe('IntegrationStatusComponent', () => {
   it('renders with the default test providers', async () => {
     const { fixture } = await renderStatus('Pushing to Gallery');
 
-    expect(fixture.componentInstance).toBeInstanceOf(IntegrationStatusComponent);
-    expect(screen.getByRole('heading', { name: 'Processing integrations ...' })).toBeInTheDocument();
+    expect(fixture.componentInstance).toBeInstanceOf(
+      IntegrationStatusComponent,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Processing integrations ...' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Pushing to Gallery ...')).toBeInTheDocument();
   });
 
@@ -84,17 +103,24 @@ describe('IntegrationStatusComponent', () => {
    * Data: status "ERROR: Gallery is unreachable".
    */
   it('pulls the partial integrations after a failure', async () => {
-    const { mselApi, confirm, closedCount } = await renderStatus('ERROR: Gallery is unreachable');
+    const { mselApi, confirm, closedCount } = await renderStatus(
+      'ERROR: Gallery is unreachable',
+    );
     const user = userEvent.setup();
 
-    expect(screen.getByRole('heading', { name: 'Integration Failed' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Integration Failed' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Gallery is unreachable')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Pull Integrations' }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({
-      title: 'Remove Integrations',
-      message: 'Are you sure that you want to remove partial integrations from the associated applications?',
-    }));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Remove Integrations',
+        message:
+          'Are you sure that you want to remove partial integrations from the associated applications?',
+      }),
+    );
     expect(mselApi.pullIntegrations).toHaveBeenCalledWith('msel-1');
     expect(closedCount()).toBe(1);
   });
@@ -105,12 +131,20 @@ describe('IntegrationStatusComponent', () => {
    * Data: a failed Caster plan, with and without a workspace URL.
    */
   it.each([
-    ['with a workspace', 'http://caster.example/projects/proj-1?workspace=ws-1'],
+    [
+      'with a workspace',
+      'http://caster.example/projects/proj-1?workspace=ws-1',
+    ],
     ['without a workspace', ''],
   ])('links a failed push to its Caster workspace, %s', async (_label, url) => {
-    await renderStatus('ERROR: Caster - planning failed - Caster run run-1 plan ended Failed.', url);
+    await renderStatus(
+      'ERROR: Caster - planning failed - Caster run run-1 plan ended Failed.',
+      url,
+    );
 
-    const link = screen.queryByRole('link', { name: 'Open Workspace in Caster' });
+    const link = screen.queryByRole('link', {
+      name: 'Open Workspace in Caster',
+    });
     if (url) {
       expect(link).toHaveAttribute('href', url);
     } else {
@@ -125,21 +159,38 @@ describe('IntegrationStatusComponent', () => {
    * Data: running statuses with and without a workspace URL.
    */
   it.each([
-    ['Caster - applying', 'http://caster.example/projects/proj-1?workspace=ws-1', true],
-    ['Caster - planning', 'http://caster.example/projects/proj-1?workspace=ws-1', true],
+    [
+      'Caster - applying',
+      'http://caster.example/projects/proj-1?workspace=ws-1',
+      true,
+    ],
+    [
+      'Caster - planning',
+      'http://caster.example/projects/proj-1?workspace=ws-1',
+      true,
+    ],
     ['Caster - creating workspace', '', false],
-    ['Pushing to Gallery', 'http://caster.example/projects/proj-1?workspace=ws-1', false],
-  ])('links a running push to its Caster workspace at "%s"', async (status, url, shown) => {
-    await renderStatus(status, url);
+    [
+      'Pushing to Gallery',
+      'http://caster.example/projects/proj-1?workspace=ws-1',
+      false,
+    ],
+  ])(
+    'links a running push to its Caster workspace at "%s"',
+    async (status, url, shown) => {
+      await renderStatus(status, url);
 
-    const link = screen.queryByRole('link', { name: 'Open Workspace in Caster' });
-    if (shown) {
-      expect(link).toHaveAttribute('href', url);
-      expect(link).toHaveAttribute('target', '_blank');
-    } else {
-      expect(link).not.toBeInTheDocument();
-    }
-  });
+      const link = screen.queryByRole('link', {
+        name: 'Open Workspace in Caster',
+      });
+      if (shown) {
+        expect(link).toHaveAttribute('href', url);
+        expect(link).toHaveAttribute('target', '_blank');
+      } else {
+        expect(link).not.toBeInTheDocument();
+      }
+    },
+  );
 
   /**
    * Verifies: a push that failed at its Caster step offers Retry Caster, which asks the API to retry and leaves the status open.
@@ -147,7 +198,9 @@ describe('IntegrationStatusComponent', () => {
    * Data: a Pushing MSEL with status "ERROR: Caster - planning failed - ...".
    */
   it('retries Caster after a push failed at Caster', async () => {
-    const { mselApi, confirm, closedCount } = await renderStatus('ERROR: Caster - planning failed - Caster run run-1 plan ended Failed.');
+    const { mselApi, confirm, closedCount } = await renderStatus(
+      'ERROR: Caster - planning failed - Caster run run-1 plan ended Failed.',
+    );
     const user = userEvent.setup();
 
     await user.click(screen.getByRole('button', { name: 'Retry Caster' }));
@@ -165,7 +218,11 @@ describe('IntegrationStatusComponent', () => {
   it('sends one retry until the request answers', async () => {
     const answer = new Subject<Msel>();
     const { mselApi, fixture } = await renderStatus(
-      'ERROR: Caster - planning failed - Caster run run-1 plan ended Failed.', '', MselItemStatus.Pushing, answer);
+      'ERROR: Caster - planning failed - Caster run run-1 plan ended Failed.',
+      '',
+      MselItemStatus.Pushing,
+      answer,
+    );
     const user = userEvent.setup();
     const retry = screen.getByRole('button', { name: 'Retry Caster' });
 
@@ -186,12 +243,27 @@ describe('IntegrationStatusComponent', () => {
    * Data: a push that failed at Gallery, and a pull of a deployed MSEL that failed at Caster.
    */
   it.each([
-    ['a push that failed at Gallery', 'ERROR: Gallery - create collection failed - boom', MselItemStatus.Pushing],
-    ['a pull that failed at Caster', 'ERROR: Caster - pull workspace failed - boom', MselItemStatus.Deployed],
-  ])('offers no Retry Caster for %s', async (_label, integrationStatus, status) => {
-    await renderStatus(integrationStatus, '', status);
+    [
+      'a push that failed at Gallery',
+      'ERROR: Gallery - create collection failed - boom',
+      MselItemStatus.Pushing,
+    ],
+    [
+      'a pull that failed at Caster',
+      'ERROR: Caster - pull workspace failed - boom',
+      MselItemStatus.Deployed,
+    ],
+  ])(
+    'offers no Retry Caster for %s',
+    async (_label, integrationStatus, status) => {
+      await renderStatus(integrationStatus, '', status);
 
-    expect(screen.getByRole('heading', { name: 'Integration Failed' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Retry Caster' })).not.toBeInTheDocument();
-  });
+      expect(
+        screen.getByRole('heading', { name: 'Integration Failed' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Retry Caster' }),
+      ).not.toBeInTheDocument();
+    },
+  );
 });

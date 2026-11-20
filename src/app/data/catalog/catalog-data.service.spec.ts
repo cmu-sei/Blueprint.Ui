@@ -25,7 +25,10 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function catalog(overrides: Partial<Catalog> = {}): Catalog {
   return {
@@ -60,7 +63,10 @@ function setup(queryParams: Record<string, string> = {}) {
       { provide: CatalogInjectService, useValue: catalogInjectApi },
       // Injected but never used by CatalogDataService.
       unstubbed(InjectmDataService),
-      { provide: Router, useValue: { navigate: vi.fn() } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate: vi.fn() } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -89,7 +95,9 @@ describe('CatalogDataService', () => {
     catalogApi.getCatalogs.mockReturnValue(
       of([catalog(), catalog({ id: 'cat-2', name: 'Phishing Catalog' })]),
     );
-    catalogApi.getMyCatalogs.mockReturnValue(of([catalog({ id: 'cat-3', name: 'My Catalog' })]));
+    catalogApi.getMyCatalogs.mockReturnValue(
+      of([catalog({ id: 'cat-3', name: 'My Catalog' })]),
+    );
 
     service.load();
     service.loadMine();
@@ -109,10 +117,18 @@ describe('CatalogDataService', () => {
    */
   it('single-catalog calls keep the store in step with the API', () => {
     const { service, query, catalogApi } = setup();
-    catalogApi.getCatalog.mockReturnValue(of(catalog({ id: 'cat-2', name: 'Phishing Catalog' })));
-    catalogApi.createCatalog.mockReturnValue(of(catalog({ id: 'cat-3', name: 'Insider Catalog' })));
-    catalogApi.copyCatalog.mockReturnValue(of(catalog({ id: 'cat-4', name: 'Insider Catalog - Copy' })));
-    catalogApi.updateCatalog.mockReturnValue(of(catalog({ id: 'cat-2', name: 'Phishing v2' })));
+    catalogApi.getCatalog.mockReturnValue(
+      of(catalog({ id: 'cat-2', name: 'Phishing Catalog' })),
+    );
+    catalogApi.createCatalog.mockReturnValue(
+      of(catalog({ id: 'cat-3', name: 'Insider Catalog' })),
+    );
+    catalogApi.copyCatalog.mockReturnValue(
+      of(catalog({ id: 'cat-4', name: 'Insider Catalog - Copy' })),
+    );
+    catalogApi.updateCatalog.mockReturnValue(
+      of(catalog({ id: 'cat-2', name: 'Phishing v2' })),
+    );
     catalogApi.deleteCatalog.mockReturnValue(of(null));
 
     service.loadById('cat-2');
@@ -131,7 +147,10 @@ describe('CatalogDataService', () => {
     ]);
 
     service.delete('cat-3');
-    expect(names(query.getAll())).toEqual(['Insider Catalog - Copy', 'Phishing v2']);
+    expect(names(query.getAll())).toEqual([
+      'Insider Catalog - Copy',
+      'Phishing v2',
+    ]);
 
     service.unload();
     expect(query.getAll()).toEqual([]);
@@ -168,11 +187,20 @@ describe('CatalogDataService', () => {
     const progress = recordEmissions(service.uploadProgress);
     catalogApi.uploadJsonCatalog.mockReturnValueOnce(
       of(
-        { type: HttpEventType.UploadProgress, loaded: 1, total: 5 } satisfies HttpUploadProgressEvent,
-        new HttpResponse({ status: 200, body: catalog({ id: 'cat-up', name: 'Uploaded' }) }),
+        {
+          type: HttpEventType.UploadProgress,
+          loaded: 1,
+          total: 5,
+        } satisfies HttpUploadProgressEvent,
+        new HttpResponse({
+          status: 200,
+          body: catalog({ id: 'cat-up', name: 'Uploaded' }),
+        }),
       ),
     );
-    catalogApi.uploadJsonCatalog.mockReturnValueOnce(throwError(() => new Error('bad')));
+    catalogApi.uploadJsonCatalog.mockReturnValueOnce(
+      throwError(() => new Error('bad')),
+    );
 
     service.uploadJson(new File(['{}'], 'catalog.json'), 'events', true);
     service.uploadJson(new File(['{}'], 'catalog.json'), 'events', true);
@@ -220,7 +248,9 @@ describe('CatalogDataService', () => {
     service.updateStore(catalog());
     service.updateStore(catalog({ id: 'cat-2', name: 'Phishing Catalog' }));
 
-    expect(names(recordEmissions(service.CatalogList).at(-1))).toEqual(['Phishing Catalog']);
+    expect(names(recordEmissions(service.CatalogList).at(-1))).toEqual([
+      'Phishing Catalog',
+    ]);
   });
 
   /**
@@ -229,26 +259,54 @@ describe('CatalogDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'load', endpoint: 'getCatalogs', escapes: false, call: (s: CatalogDataService) => s.load() },
-    { method: 'loadMine', endpoint: 'getMyCatalogs', escapes: false, call: (s: CatalogDataService) => s.loadMine() },
-    { method: 'loadById', endpoint: 'getCatalog', escapes: true, call: (s: CatalogDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createCatalog', escapes: true, call: (s: CatalogDataService) => s.add({ id: 'x-1' }) },
-    { method: 'update', endpoint: 'updateCatalog', escapes: true, call: (s: CatalogDataService) => s.update({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, catalogApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(CatalogStore).setLoading(false);
-    catalogApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'load',
+      endpoint: 'getCatalogs',
+      escapes: false,
+      call: (s: CatalogDataService) => s.load(),
+    },
+    {
+      method: 'loadMine',
+      endpoint: 'getMyCatalogs',
+      escapes: false,
+      call: (s: CatalogDataService) => s.loadMine(),
+    },
+    {
+      method: 'loadById',
+      endpoint: 'getCatalog',
+      escapes: true,
+      call: (s: CatalogDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createCatalog',
+      escapes: true,
+      call: (s: CatalogDataService) => s.add({ id: 'x-1' }),
+    },
+    {
+      method: 'update',
+      endpoint: 'updateCatalog',
+      escapes: true,
+      call: (s: CatalogDataService) => s.update({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, catalogApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(CatalogStore).setLoading(false);
+      catalogApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(CatalogQuery).getValue().loading).toBe(true);
-    // An empty error callback swallows the error; with no callback it escapes to
-    // ErrorService, the ErrorHandler app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(CatalogQuery).getValue().loading).toBe(true);
+      // An empty error callback swallows the error; with no callback it escapes to
+      // ErrorService, the ErrorHandler app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from copy, delete escapes to the app's global ErrorHandler.
@@ -256,22 +314,33 @@ describe('CatalogDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'copy', endpoint: 'copyCatalog', call: (s: CatalogDataService) => s.copy('x-1') },
-    { method: 'delete', endpoint: 'deleteCatalog', call: (s: CatalogDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, catalogApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    catalogApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'copy',
+      endpoint: 'copyCatalog',
+      call: (s: CatalogDataService) => s.copy('x-1'),
+    },
+    {
+      method: 'delete',
+      endpoint: 'deleteCatalog',
+      call: (s: CatalogDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, catalogApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      catalogApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 
   /**
    * Verifies: a failed addInjectToCatalog escapes to the app's global ErrorHandler.
@@ -282,7 +351,9 @@ describe('CatalogDataService', () => {
     const { service, catalogInjectApi } = setup();
     const errors = captureUnhandledRxErrors();
     const failure = new Error('request failed');
-    catalogInjectApi.createCatalogInject.mockReturnValue(throwError(() => failure));
+    catalogInjectApi.createCatalogInject.mockReturnValue(
+      throwError(() => failure),
+    );
 
     service.addInjectToCatalog('cat-1', 'inj-1', 1);
     await flush();

@@ -15,13 +15,23 @@ import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { NEVER, Observable, of, Subject, throwError } from 'rxjs';
 import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
-import { CompetencyFrameworkService, MselBuildService, MselDraftResult } from 'src/app/generated/blueprint.api';
+import {
+  CompetencyFrameworkService,
+  MselBuildService,
+  MselDraftResult,
+} from 'src/app/generated/blueprint.api';
 import { MselAiBuildService } from 'src/app/data/msel/msel-ai-build.service';
-import { AiDraftProgress, SignalRService } from 'src/app/services/signalr.service';
+import {
+  AiDraftProgress,
+  SignalRService,
+} from 'src/app/services/signalr.service';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
-import { MselDraftDialogComponent, MselDraftDialogData } from './msel-draft-dialog.component';
+import {
+  MselDraftDialogComponent,
+  MselDraftDialogData,
+} from './msel-draft-dialog.component';
 
 function designResult(): MselDraftResult {
   return {
@@ -34,21 +44,65 @@ function designResult(): MselDraftResult {
       { idNumber: 'T0175', shortName: 'Respond to incidents' },
     ],
     questions: [
-      { id: 'Q1', question: 'Should the outage reach the hospital?', why: 'Sets the stakes', suggested: 'Stop at the port' },
-      { id: 'Q2', question: 'Is the press involved?', suggested: 'Yes, from move 1' },
+      {
+        id: 'Q1',
+        question: 'Should the outage reach the hospital?',
+        why: 'Sets the stakes',
+        suggested: 'Stop at the port',
+      },
+      {
+        id: 'Q2',
+        question: 'Is the press involved?',
+        suggested: 'Yes, from move 1',
+      },
     ],
     draft: {
       name: 'Port closure',
       description: 'A hurricane closes the port.',
       durationMinutes: 120,
-      scenario: { problem: 'The port is closed.', premise: 'A hurricane hit.', escalationCeiling: 'No loss of life' },
-      objectives: [{ id: 'O1', task: 'Reopen the port', condition: 'With half the staff', standard: 'Within a day', competencies: ['T0161'] }],
-      moves: [
-        { moveNumber: 0, description: 'Landfall', startMinutes: 0, purpose: 'Make them choose a lead' },
-        { moveNumber: 1, description: 'Recovery', startMinutes: 60, purpose: 'Pressure' },
+      scenario: {
+        problem: 'The port is closed.',
+        premise: 'A hurricane hit.',
+        escalationCeiling: 'No loss of life',
+      },
+      objectives: [
+        {
+          id: 'O1',
+          task: 'Reopen the port',
+          condition: 'With half the staff',
+          standard: 'Within a day',
+          competencies: ['T0161'],
+        },
       ],
-      teams: [{ name: 'Blue Team', shortName: 'BLUE', description: 'The port operators', competencies: ['T0175'] }],
-      organizations: [{ name: 'Harbour Herald', shortName: 'NEWS', description: 'The regional paper' }],
+      moves: [
+        {
+          moveNumber: 0,
+          description: 'Landfall',
+          startMinutes: 0,
+          purpose: 'Make them choose a lead',
+        },
+        {
+          moveNumber: 1,
+          description: 'Recovery',
+          startMinutes: 60,
+          purpose: 'Pressure',
+        },
+      ],
+      teams: [
+        {
+          name: 'Blue Team',
+          shortName: 'BLUE',
+          description: 'The port operators',
+          competencies: ['T0175'],
+        },
+      ],
+      organizations: [
+        {
+          name: 'Harbour Herald',
+          shortName: 'NEWS',
+          description: 'The regional paper',
+        },
+      ],
       cards: [{ name: 'Port news', description: 'What the port says' }],
       injects: [],
       competencies: ['T0161', 'T0175'],
@@ -59,19 +113,39 @@ function designResult(): MselDraftResult {
 
 async function renderDraftDialog(
   design: () => Observable<unknown> = () => of(designResult()),
-  templates: MselDraftDialogData['templates'] = [{ id: 'tpl-1', name: 'Template' }],
-  create: (request?: unknown) => Observable<unknown> = () => of({ msel: { id: "msel-new" } })
+  templates: MselDraftDialogData['templates'] = [
+    { id: 'tpl-1', name: 'Template' },
+  ],
+  create: (request?: unknown) => Observable<unknown> = () =>
+    of({ msel: { id: 'msel-new' } }),
 ) {
   const designMsel = vi.fn(design);
   const createMselFromDesign = vi.fn(create);
-  const buildApi = { designMsel, createMselFromDesign } as Partial<ApiStub<MselBuildService>>;
+  const buildApi = { designMsel, createMselFromDesign } as Partial<
+    ApiStub<MselBuildService>
+  >;
   // the build service creates the MSEL; here it sends the request on, so the tests see what was asked for
-  const run = vi.fn((request: { mselId?: string }) => createMselFromDesign(request).subscribe());
+  const run = vi.fn((request: { mselId?: string }) =>
+    createMselFromDesign(request).subscribe(),
+  );
   const progress = new Subject<AiDraftProgress>();
   const frameworkApi = {
-    getCompetencyFrameworks: vi.fn(() => of([{ id: 'fw-nice', name: 'NICE 2.0.0' }, { id: 'fw-dcwf', name: 'DCWF 5.1' }])),
+    getCompetencyFrameworks: vi.fn(() =>
+      of([
+        { id: 'fw-nice', name: 'NICE 2.0.0' },
+        { id: 'fw-dcwf', name: 'DCWF 5.1' },
+      ]),
+    ),
     getCompetencyFramework: vi.fn((id: string) =>
-      of({ id, name: 'NICE 2.0.0', competencies: [{ idNumber: 'T0161', shortName: 'Perform analysis' }, { idNumber: 'T0175', shortName: 'Lead the response' }, { idNumber: 'T0200', shortName: 'Brief leadership' }] })
+      of({
+        id,
+        name: 'NICE 2.0.0',
+        competencies: [
+          { idNumber: 'T0161', shortName: 'Perform analysis' },
+          { idNumber: 'T0175', shortName: 'Lead the response' },
+          { idNumber: 'T0200', shortName: 'Brief leadership' },
+        ],
+      }),
     ),
   } satisfies ApiStub<CompetencyFrameworkService>;
   const ref = dialogRefStub<MselDraftDialogComponent, string>();
@@ -100,13 +174,24 @@ async function renderDraftDialog(
   });
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
-  return { ...rendered, designMsel, createMselFromDesign, run, progress, frameworkApi, close: ref.close };
+  return {
+    ...rendered,
+    designMsel,
+    createMselFromDesign,
+    run,
+    progress,
+    frameworkApi,
+    close: ref.close,
+  };
 }
 
 async function draftDesign(design?: () => Observable<unknown>) {
   const rendered = await renderDraftDialog(design);
   const user = userEvent.setup();
-  await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'A hurricane closes the port.');
+  await user.type(
+    screen.getByRole('textbox', { name: 'Exercise description' }),
+    'A hurricane closes the port.',
+  );
   await user.click(screen.getByRole('button', { name: 'Draft' }));
   return { ...rendered, user };
 }
@@ -120,20 +205,33 @@ describe('MselDraftDialogComponent', () => {
   it('drafts the design and asks its questions with suggested answers', async () => {
     const rendered = await renderDraftDialog();
     const user = userEvent.setup();
-    await user.click(screen.getByRole('combobox', { name: 'Competency frameworks' }));
+    await user.click(
+      screen.getByRole('combobox', { name: 'Competency frameworks' }),
+    );
     await user.click(await screen.findByRole('option', { name: 'DCWF 5.1' }));
     await user.keyboard('{Escape}');
-    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'A hurricane closes the port.');
+    await user.type(
+      screen.getByRole('textbox', { name: 'Exercise description' }),
+      'A hurricane closes the port.',
+    );
     await user.click(screen.getByRole('button', { name: 'Draft' }));
 
-    expect(rendered.designMsel).toHaveBeenCalledWith(expect.objectContaining({
-      templateMselId: 'tpl-1',
-      prompt: 'A hurricane closes the port.',
-      competencyFrameworkIds: ['fw-dcwf'],
-    }));
-    expect(screen.getByRole('tab', { name: 'Questions (2)', selected: true })).toBeInTheDocument();
+    expect(rendered.designMsel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        templateMselId: 'tpl-1',
+        prompt: 'A hurricane closes the port.',
+        competencyFrameworkIds: ['fw-dcwf'],
+      }),
+    );
+    expect(
+      screen.getByRole('tab', { name: 'Questions (2)', selected: true }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Sets the stakes')).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'Should the outage reach the hospital?' })).toHaveValue('Stop at the port');
+    expect(
+      screen.getByRole('textbox', {
+        name: 'Should the outage reach the hospital?',
+      }),
+    ).toHaveValue('Stop at the port');
   });
 
   /**
@@ -144,7 +242,9 @@ describe('MselDraftDialogComponent', () => {
    */
   it('creates the MSEL from the reviewed design and starts the build', async () => {
     const { user, createMselFromDesign, run, close } = await draftDesign();
-    const answer = screen.getByRole('textbox', { name: 'Should the outage reach the hospital?' });
+    const answer = screen.getByRole('textbox', {
+      name: 'Should the outage reach the hospital?',
+    });
     await user.clear(answer);
     await user.type(answer, 'Yes, the hospital loses power');
     await user.click(screen.getByRole('tab', { name: 'Design' }));
@@ -153,15 +253,20 @@ describe('MselDraftDialogComponent', () => {
     await user.type(name, 'Port and hospital');
     await user.click(screen.getByRole('button', { name: 'Create MSEL' }));
 
-    expect(createMselFromDesign).toHaveBeenCalledWith(expect.objectContaining({
-      templateMselId: 'tpl-1',
-      prompt: 'A hurricane closes the port.',
-      draft: expect.objectContaining({ name: 'Port and hospital' }),
-      answers: [
-        { question: 'Should the outage reach the hospital?', answer: 'Yes, the hospital loses power' },
-        { question: 'Is the press involved?', answer: 'Yes, from move 1' },
-      ],
-    }));
+    expect(createMselFromDesign).toHaveBeenCalledWith(
+      expect.objectContaining({
+        templateMselId: 'tpl-1',
+        prompt: 'A hurricane closes the port.',
+        draft: expect.objectContaining({ name: 'Port and hospital' }),
+        answers: [
+          {
+            question: 'Should the outage reach the hospital?',
+            answer: 'Yes, the hospital loses power',
+          },
+          { question: 'Is the press involved?', answer: 'Yes, from move 1' },
+        ],
+      }),
+    );
     const mselId = run.mock.calls[0][0].mselId;
     expect(mselId).toMatch(/^[0-9a-f-]{36}$/);
     expect(close).toHaveBeenCalledWith(mselId);
@@ -174,7 +279,9 @@ describe('MselDraftDialogComponent', () => {
    */
   it('puts a suggested answer back', async () => {
     const { user } = await draftDesign();
-    const answer = screen.getByRole('textbox', { name: 'Should the outage reach the hospital?' });
+    const answer = screen.getByRole('textbox', {
+      name: 'Should the outage reach the hospital?',
+    });
     await user.clear(answer);
 
     await user.click(screen.getByRole('button', { name: 'Use it' }));
@@ -191,28 +298,54 @@ describe('MselDraftDialogComponent', () => {
     const { user, createMselFromDesign } = await draftDesign();
 
     await user.click(screen.getByRole('tab', { name: 'Design' }));
-    expect(screen.getByRole('textbox', { name: 'The problem' })).toHaveValue('The port is closed.');
-    expect(screen.getByRole('textbox', { name: 'O1 task' })).toHaveValue('Reopen the port');
-    expect(screen.getByText('The draft had no Gallery cards.')).toBeInTheDocument();
-    expect(screen.getByText('Assumed a two-hour exercise.')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'The problem' })).toHaveValue(
+      'The port is closed.',
+    );
+    expect(screen.getByRole('textbox', { name: 'O1 task' })).toHaveValue(
+      'Reopen the port',
+    );
+    expect(
+      screen.getByText('The draft had no Gallery cards.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Assumed a two-hour exercise.'),
+    ).toBeInTheDocument();
 
     await user.click(screen.getByRole('tab', { name: 'Moves (2)' }));
-    expect(screen.getByRole('textbox', { name: 'Move 0 purpose' })).toHaveValue('Make them choose a lead');
-    expect(screen.getByRole('textbox', { name: 'Move 1 title' })).toHaveValue('Recovery');
+    expect(screen.getByRole('textbox', { name: 'Move 0 purpose' })).toHaveValue(
+      'Make them choose a lead',
+    );
+    expect(screen.getByRole('textbox', { name: 'Move 1 title' })).toHaveValue(
+      'Recovery',
+    );
 
-    await user.click(screen.getByRole('tab', { name: 'Teams and organizations (2)' }));
-    const table = screen.getByRole('table', { name: 'Teams and organizations' });
-    expect(within(table).getByRole('textbox', { name: 'BLUE description' })).toHaveValue('The port operators');
-    await user.click(within(table).getByRole('button', { name: 'Remove NEWS' }));
-    expect(within(table).queryByRole('textbox', { name: 'NEWS description' })).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole('tab', { name: 'Teams and organizations (2)' }),
+    );
+    const table = screen.getByRole('table', {
+      name: 'Teams and organizations',
+    });
+    expect(
+      within(table).getByRole('textbox', { name: 'BLUE description' }),
+    ).toHaveValue('The port operators');
+    await user.click(
+      within(table).getByRole('button', { name: 'Remove NEWS' }),
+    );
+    expect(
+      within(table).queryByRole('textbox', { name: 'NEWS description' }),
+    ).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('tab', { name: 'Gallery cards (1)' }));
-    expect(screen.getByRole('textbox', { name: 'Port news description' })).toHaveValue('What the port says');
+    expect(
+      screen.getByRole('textbox', { name: 'Port news description' }),
+    ).toHaveValue('What the port says');
 
     await user.click(screen.getByRole('button', { name: 'Create MSEL' }));
-    expect(createMselFromDesign).toHaveBeenCalledWith(expect.objectContaining({
-      draft: expect.objectContaining({ organizations: [] }),
-    }));
+    expect(createMselFromDesign).toHaveBeenCalledWith(
+      expect.objectContaining({
+        draft: expect.objectContaining({ organizations: [] }),
+      }),
+    );
   });
 
   /**
@@ -222,14 +355,18 @@ describe('MselDraftDialogComponent', () => {
    */
   it('removes a competency the planner rejects everywhere it is no longer used', async () => {
     const { user, createMselFromDesign } = await draftDesign();
-    await user.click(screen.getByRole('tab', { name: 'Teams and organizations (2)' }));
+    await user.click(
+      screen.getByRole('tab', { name: 'Teams and organizations (2)' }),
+    );
 
     await user.click(screen.getByRole('button', { name: 'Remove T0175' }));
     await user.click(screen.getByRole('button', { name: 'Create MSEL' }));
 
-    expect(createMselFromDesign).toHaveBeenCalledWith(expect.objectContaining({
-      draft: expect.objectContaining({ competencies: ['T0161'] }),
-    }));
+    expect(createMselFromDesign).toHaveBeenCalledWith(
+      expect.objectContaining({
+        draft: expect.objectContaining({ competencies: ['T0161'] }),
+      }),
+    );
   });
 
   /**
@@ -240,16 +377,27 @@ describe('MselDraftDialogComponent', () => {
   it('shows the design being written and stops it', async () => {
     const { user, progress, fixture } = await draftDesign(() => NEVER);
 
-    progress.next({ operation: 'design', characters: 900, counts: { moves: 2, teams: 1 }, done: false });
+    progress.next({
+      operation: 'design',
+      characters: 900,
+      counts: { moves: 2, teams: 1 },
+      done: false,
+    });
     fixture.detectChanges();
     expect(screen.getByText('Writing the design.')).toBeInTheDocument();
     expect(screen.getByText(/2 moves, 1 team so far\./)).toBeInTheDocument();
-    expect(screen.getByText(/Stop discards this design; your description and choices stay\./)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Stop discards this design; your description and choices stay\./,
+      ),
+    ).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Stop' }));
 
     expect(screen.queryByText('Writing the design.')).not.toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'Exercise description' })).toHaveValue('A hurricane closes the port.');
+    expect(
+      screen.getByRole('textbox', { name: 'Exercise description' }),
+    ).toHaveValue('A hurricane closes the port.');
     expect(screen.getByRole('button', { name: 'Draft' })).toBeEnabled();
   });
 
@@ -259,9 +407,15 @@ describe('MselDraftDialogComponent', () => {
    * Data: the API answers 500 with a title.
    */
   it('says why a design failed', async () => {
-    await draftDesign(() => throwError(() => ({ error: { title: 'The model declined to write this draft.' } })));
+    await draftDesign(() =>
+      throwError(() => ({
+        error: { title: 'The model declined to write this draft.' },
+      })),
+    );
 
-    expect(screen.getByRole('alert')).toHaveTextContent('The model declined to write this draft.');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'The model declined to write this draft.',
+    );
     expect(screen.getByRole('button', { name: 'Draft' })).toBeEnabled();
   });
 
@@ -271,23 +425,52 @@ describe('MselDraftDialogComponent', () => {
    * Data: a CITE template; Discussion format, the mission impact matrix, 4 moves, two parallel teams, no profile pages.
    */
   it('sends the design choices with the draft', async () => {
-    const { designMsel } = await renderDraftDialog(undefined, [{ id: 'tpl-1', name: 'Template', useCite: true }]);
+    const { designMsel } = await renderDraftDialog(undefined, [
+      { id: 'tpl-1', name: 'Template', useCite: true },
+    ]);
     const user = userEvent.setup();
 
     await user.click(screen.getByText('Design choices (optional)'));
     await user.click(screen.getByRole('combobox', { name: 'Format' }));
-    await user.click(await screen.findByRole('option', { name: 'Discussion (tabletop)' }));
+    await user.click(
+      await screen.findByRole('option', { name: 'Discussion (tabletop)' }),
+    );
     await user.click(screen.getByRole('combobox', { name: 'CITE assessment' }));
-    await user.click(await screen.findByRole('option', { name: 'DoD CTT mission impact matrix' }));
-    await user.type(screen.getByRole('spinbutton', { name: 'Number of moves' }), '4');
-    await user.type(screen.getByRole('textbox', { name: 'Participant structure' }), 'Two parallel teams');
-    await user.click(screen.getByRole('checkbox', { name: 'Add Team Profiles and Organization Profiles pages' }));
-    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'Cables are cut.');
+    await user.click(
+      await screen.findByRole('option', {
+        name: 'DoD CTT mission impact matrix',
+      }),
+    );
+    await user.type(
+      screen.getByRole('spinbutton', { name: 'Number of moves' }),
+      '4',
+    );
+    await user.type(
+      screen.getByRole('textbox', { name: 'Participant structure' }),
+      'Two parallel teams',
+    );
+    await user.click(
+      screen.getByRole('checkbox', {
+        name: 'Add Team Profiles and Organization Profiles pages',
+      }),
+    );
+    await user.type(
+      screen.getByRole('textbox', { name: 'Exercise description' }),
+      'Cables are cut.',
+    );
     await user.click(screen.getByRole('button', { name: 'Draft' }));
 
-    expect(designMsel).toHaveBeenCalledWith(expect.objectContaining({
-      design: { format: 'Discussion', citeAssessment: 'MissionImpact', moves: 4, structure: 'Two parallel teams', profilePages: false },
-    }));
+    expect(designMsel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        design: {
+          format: 'Discussion',
+          citeAssessment: 'MissionImpact',
+          moves: 4,
+          structure: 'Two parallel teams',
+          profilePages: false,
+        },
+      }),
+    );
   });
 
   /**
@@ -297,13 +480,23 @@ describe('MselDraftDialogComponent', () => {
    * Data: a template with Gallery and CITE.
    */
   it('shows the default of every design choice', async () => {
-    await renderDraftDialog(undefined, [{ id: 'tpl-1', name: 'Template', useCite: true, useGallery: true }]);
+    await renderDraftDialog(undefined, [
+      { id: 'tpl-1', name: 'Template', useCite: true, useGallery: true },
+    ]);
 
-    await userEvent.setup().click(screen.getByText('Design choices (optional)'));
+    await userEvent
+      .setup()
+      .click(screen.getByText('Design choices (optional)'));
 
-    expect(screen.getByRole('combobox', { name: 'Format' })).toHaveTextContent('Let the draft decide');
-    expect(screen.getByRole('combobox', { name: 'Gallery cards' })).toHaveTextContent('Let the draft decide');
-    expect(screen.getByRole('combobox', { name: 'CITE assessment' })).toHaveTextContent('Let the model choose');
+    expect(screen.getByRole('combobox', { name: 'Format' })).toHaveTextContent(
+      'Let the draft decide',
+    );
+    expect(
+      screen.getByRole('combobox', { name: 'Gallery cards' }),
+    ).toHaveTextContent('Let the draft decide');
+    expect(
+      screen.getByRole('combobox', { name: 'CITE assessment' }),
+    ).toHaveTextContent('Let the model choose');
   });
 
   /**
@@ -314,10 +507,16 @@ describe('MselDraftDialogComponent', () => {
   it('offers no CITE assessment for a template without CITE', async () => {
     await renderDraftDialog();
 
-    await userEvent.setup().click(screen.getByText('Design choices (optional)'));
+    await userEvent
+      .setup()
+      .click(screen.getByText('Design choices (optional)'));
 
-    expect(screen.queryByRole('combobox', { name: 'CITE assessment' })).not.toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: 'Format' })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('combobox', { name: 'CITE assessment' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('combobox', { name: 'Format' }),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -329,22 +528,47 @@ describe('MselDraftDialogComponent', () => {
   it('lets the model choose the assessment by default and says what CITE gets', async () => {
     const result = designResult();
     result.draft.design = { citeAssessment: 'QuestionsByMove' };
-    const { designMsel } = await renderDraftDialog(() => of(result), [
-      { id: 'tpl-1', name: 'Template', useCite: true, citeScoringModelId: 'sm-1' },
-    ]);
+    const { designMsel } = await renderDraftDialog(
+      () => of(result),
+      [
+        {
+          id: 'tpl-1',
+          name: 'Template',
+          useCite: true,
+          citeScoringModelId: 'sm-1',
+        },
+      ],
+    );
     const user = userEvent.setup();
 
     await user.click(screen.getByText('Design choices (optional)'));
-    expect(screen.getByRole('combobox', { name: 'CITE assessment' })).toHaveTextContent('Let the model choose');
+    expect(
+      screen.getByRole('combobox', { name: 'CITE assessment' }),
+    ).toHaveTextContent('Let the model choose');
     await user.click(screen.getByRole('combobox', { name: 'CITE assessment' }));
-    expect(screen.getByRole('option', { name: "Keep the template's scoring model" })).toBeInTheDocument();
-    await user.click(screen.getByRole('option', { name: 'Let the model choose' }));
-    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'Cables are cut.');
+    expect(
+      screen.getByRole('option', { name: "Keep the template's scoring model" }),
+    ).toBeInTheDocument();
+    await user.click(
+      screen.getByRole('option', { name: 'Let the model choose' }),
+    );
+    await user.type(
+      screen.getByRole('textbox', { name: 'Exercise description' }),
+      'Cables are cut.',
+    );
     await user.click(screen.getByRole('button', { name: 'Draft' }));
 
-    expect(designMsel).toHaveBeenCalledWith(expect.objectContaining({ design: expect.objectContaining({ citeAssessment: 'Auto' }) }));
+    expect(designMsel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        design: expect.objectContaining({ citeAssessment: 'Auto' }),
+      }),
+    );
     await user.click(screen.getByRole('tab', { name: 'Design' }));
-    expect(screen.getByText(/also creates the scoring model "Port closure Questions by Move" in CITE/)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /also creates the scoring model "Port closure Questions by Move" in CITE/,
+      ),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -360,15 +584,27 @@ describe('MselDraftDialogComponent', () => {
 
     await user.click(screen.getByText('Design choices (optional)'));
     await user.click(screen.getByRole('combobox', { name: 'Gallery cards' }));
-    await user.click(await screen.findByRole('option', { name: 'By critical infrastructure sector' }));
+    await user.click(
+      await screen.findByRole('option', {
+        name: 'By critical infrastructure sector',
+      }),
+    );
     await user.click(screen.getByRole('combobox', { name: 'CITE assessment' }));
     await user.click(await screen.findByRole('option', { name: 'CISA NCISS' }));
-    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'A grid attack.');
+    await user.type(
+      screen.getByRole('textbox', { name: 'Exercise description' }),
+      'A grid attack.',
+    );
     await user.click(screen.getByRole('button', { name: 'Draft' }));
 
-    expect(designMsel).toHaveBeenCalledWith(expect.objectContaining({
-      design: expect.objectContaining({ cardGrouping: 'Sectors', citeAssessment: 'Nciss' }),
-    }));
+    expect(designMsel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        design: expect.objectContaining({
+          cardGrouping: 'Sectors',
+          citeAssessment: 'Nciss',
+        }),
+      }),
+    );
   });
 
   /**
@@ -379,10 +615,17 @@ describe('MselDraftDialogComponent', () => {
   it('starts from the Crucible MSEL template', async () => {
     await renderDraftDialog(undefined, [
       { id: 'tpl-standard', name: 'Standard MSEL' },
-      { id: 'tpl-crucible', name: 'Crucible MSEL', useCite: true, useGallery: true },
+      {
+        id: 'tpl-crucible',
+        name: 'Crucible MSEL',
+        useCite: true,
+        useGallery: true,
+      },
     ]);
 
-    expect(screen.getByRole('combobox', { name: 'Template' })).toHaveTextContent('Crucible MSEL');
+    expect(
+      screen.getByRole('combobox', { name: 'Template' }),
+    ).toHaveTextContent('Crucible MSEL');
   });
 
   /**
@@ -392,24 +635,46 @@ describe('MselDraftDialogComponent', () => {
    */
   it('starts from the template marking and sends the chosen one', async () => {
     const { designMsel } = await renderDraftDialog(undefined, [
-      { id: 'tpl-1', name: 'Template', useGallery: true, articleMarking: 'Tlp', articleMarkingText: 'AMBER' },
+      {
+        id: 'tpl-1',
+        name: 'Template',
+        useGallery: true,
+        articleMarking: 'Tlp',
+        articleMarkingText: 'AMBER',
+      },
     ]);
     const user = userEvent.setup();
 
     await user.click(screen.getByText('Design choices (optional)'));
-    expect(screen.getByRole('combobox', { name: 'Article marking' })).toHaveTextContent('TLP');
-    expect(screen.getByRole('combobox', { name: 'TLP level' })).toHaveTextContent('TLP:AMBER');
+    expect(
+      screen.getByRole('combobox', { name: 'Article marking' }),
+    ).toHaveTextContent('TLP');
+    expect(
+      screen.getByRole('combobox', { name: 'TLP level' }),
+    ).toHaveTextContent('TLP:AMBER');
     await user.click(screen.getByRole('combobox', { name: 'Article marking' }));
-    await user.click(await screen.findByRole('option', { name: 'Classification banner' }));
-    const text = screen.getByRole('textbox', { name: 'Classification banner text' });
+    await user.click(
+      await screen.findByRole('option', { name: 'Classification banner' }),
+    );
+    const text = screen.getByRole('textbox', {
+      name: 'Classification banner text',
+    });
     await user.clear(text);
     await user.type(text, 'UNCLASSIFIED // FOUO');
-    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'A grid attack.');
+    await user.type(
+      screen.getByRole('textbox', { name: 'Exercise description' }),
+      'A grid attack.',
+    );
     await user.click(screen.getByRole('button', { name: 'Draft' }));
 
-    expect(designMsel).toHaveBeenCalledWith(expect.objectContaining({
-      design: expect.objectContaining({ marking: 'Classification', markingText: 'UNCLASSIFIED // FOUO' }),
-    }));
+    expect(designMsel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        design: expect.objectContaining({
+          marking: 'Classification',
+          markingText: 'UNCLASSIFIED // FOUO',
+        }),
+      }),
+    );
   });
 
   /**
@@ -420,25 +685,46 @@ describe('MselDraftDialogComponent', () => {
   it('sends the edited CITE duties', async () => {
     const result = designResult();
     result.draft.teams[0].duties = ['Incident Lead'];
-    const { createMselFromDesign } = await renderDraftDialog(() => of(result), [{ id: 'tpl-1', name: 'Template', useCite: true }]);
+    const { createMselFromDesign } = await renderDraftDialog(
+      () => of(result),
+      [{ id: 'tpl-1', name: 'Template', useCite: true }],
+    );
     const user = userEvent.setup();
 
-    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'A grid attack.');
+    await user.type(
+      screen.getByRole('textbox', { name: 'Exercise description' }),
+      'A grid attack.',
+    );
     await user.click(screen.getByRole('button', { name: 'Draft' }));
 
-    await user.click(screen.getByRole('tab', { name: 'Teams and organizations (2)' }));
+    await user.click(
+      screen.getByRole('tab', { name: 'Teams and organizations (2)' }),
+    );
     // the duties are chips: one removed, two added from the input, by Enter and by leaving it
     expect(screen.getByText('Incident Lead')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Remove duty Incident Lead' }));
-    const add = screen.getByRole('textbox', { name: 'Add a CITE duty to BLUE' });
+    await user.click(
+      screen.getByRole('button', { name: 'Remove duty Incident Lead' }),
+    );
+    const add = screen.getByRole('textbox', {
+      name: 'Add a CITE duty to BLUE',
+    });
     await user.type(add, 'Lead{Enter}');
     await user.type(add, 'Scribe');
     await user.tab();
     await user.click(screen.getByRole('button', { name: 'Create MSEL' }));
 
-    expect(createMselFromDesign).toHaveBeenCalledWith(expect.objectContaining({
-      draft: expect.objectContaining({ teams: [expect.objectContaining({ shortName: 'BLUE', duties: ['Lead', 'Scribe'] })] }),
-    }));
+    expect(createMselFromDesign).toHaveBeenCalledWith(
+      expect.objectContaining({
+        draft: expect.objectContaining({
+          teams: [
+            expect.objectContaining({
+              shortName: 'BLUE',
+              duties: ['Lead', 'Scribe'],
+            }),
+          ],
+        }),
+      }),
+    );
   });
 
   /**
@@ -449,37 +735,64 @@ describe('MselDraftDialogComponent', () => {
    * Data: the draft with O1, moves 0 and 1 and BLUE and NEWS; the new move moved to start at 10 minutes.
    */
   it('adds objectives, moves, teams, organizations and cards to the design', async () => {
-    const { createMselFromDesign } = await renderDraftDialog(() => of(designResult()), [{ id: 'tpl-1', name: 'Template', useGallery: true }]);
+    const { createMselFromDesign } = await renderDraftDialog(
+      () => of(designResult()),
+      [{ id: 'tpl-1', name: 'Template', useGallery: true }],
+    );
     const user = userEvent.setup();
-    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'A grid attack.');
+    await user.type(
+      screen.getByRole('textbox', { name: 'Exercise description' }),
+      'A grid attack.',
+    );
     await user.click(screen.getByRole('button', { name: 'Draft' }));
 
     await user.click(screen.getByRole('tab', { name: 'Design' }));
     await user.click(screen.getByRole('button', { name: 'Add objective' }));
-    await user.type(screen.getByRole('textbox', { name: 'O2 task' }), 'Brief the governor');
+    await user.type(
+      screen.getByRole('textbox', { name: 'O2 task' }),
+      'Brief the governor',
+    );
 
     await user.click(screen.getByRole('tab', { name: /^Moves/ }));
     await user.click(screen.getByRole('button', { name: 'Add move' }));
-    await user.type(screen.getByRole('textbox', { name: 'Move 2 title' }), 'Restoration');
+    await user.type(
+      screen.getByRole('textbox', { name: 'Move 2 title' }),
+      'Restoration',
+    );
     const start = screen.getByRole('spinbutton', { name: 'Move 2 starts' });
     await user.clear(start);
     await user.type(start, '10');
     start.dispatchEvent(new Event('change'));
 
-    await user.click(screen.getByRole('tab', { name: /^Teams and organizations/ }));
+    await user.click(
+      screen.getByRole('tab', { name: /^Teams and organizations/ }),
+    );
     await user.click(screen.getByRole('button', { name: 'Add team' }));
     await user.click(screen.getByRole('button', { name: 'Add organization' }));
     await user.click(screen.getByRole('tab', { name: /^Gallery cards/ }));
     await user.click(screen.getByRole('button', { name: 'Add card' }));
     await user.click(screen.getByRole('button', { name: 'Create MSEL' }));
 
-    const draft = (createMselFromDesign.mock.calls[0] as unknown as [{ draft: MselDraftResult['draft'] }])[0].draft;
+    const draft = (
+      createMselFromDesign.mock.calls[0] as unknown as [
+        { draft: MselDraftResult['draft'] },
+      ]
+    )[0].draft;
     expect(draft.objectives.map((o) => o.id)).toEqual(['O1', 'O2']);
     expect(draft.objectives[1].task).toBe('Brief the governor');
     // the new move, moved to minute 10, comes between the two and the moves are renumbered
-    expect(draft.moves.map((m) => [m.moveNumber, m.description, m.startMinutes])).toEqual([[0, 'Landfall', 0], [1, 'Restoration', 10], [2, 'Recovery', 60]]);
+    expect(
+      draft.moves.map((m) => [m.moveNumber, m.description, m.startMinutes]),
+    ).toEqual([
+      [0, 'Landfall', 0],
+      [1, 'Restoration', 10],
+      [2, 'Recovery', 60],
+    ]);
     expect(draft.teams.map((t) => t.shortName)).toEqual(['BLUE', 'TEAM1']);
-    expect(draft.organizations.map((o) => o.shortName)).toEqual(['NEWS', 'ORG1']);
+    expect(draft.organizations.map((o) => o.shortName)).toEqual([
+      'NEWS',
+      'ORG1',
+    ]);
     expect(draft.cards).toHaveLength(2);
   });
 
@@ -493,19 +806,41 @@ describe('MselDraftDialogComponent', () => {
     const result = designResult();
     const asApi = (n: number) => String(n) as unknown as number;
     result.draft.moves = [
-      { ...result.draft.moves[0], startMinutes: asApi(0), plannedInjects: asApi(12) },
-      { ...result.draft.moves[1], startMinutes: asApi(60), plannedInjects: asApi(10) },
+      {
+        ...result.draft.moves[0],
+        startMinutes: asApi(0),
+        plannedInjects: asApi(12),
+      },
+      {
+        ...result.draft.moves[1],
+        startMinutes: asApi(60),
+        plannedInjects: asApi(10),
+      },
     ];
-    const { createMselFromDesign } = await renderDraftDialog(() => of(result), [{ id: 'tpl-1', name: 'Template' }]);
+    const { createMselFromDesign } = await renderDraftDialog(
+      () => of(result),
+      [{ id: 'tpl-1', name: 'Template' }],
+    );
     const user = userEvent.setup();
-    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'A grid attack.');
+    await user.type(
+      screen.getByRole('textbox', { name: 'Exercise description' }),
+      'A grid attack.',
+    );
     await user.click(screen.getByRole('button', { name: 'Draft' }));
     await user.click(screen.getByRole('tab', { name: /^Moves/ }));
     await user.click(screen.getByRole('button', { name: 'Add move' }));
     await user.click(screen.getByRole('button', { name: 'Create MSEL' }));
 
-    const draft = (createMselFromDesign.mock.calls[0] as unknown as [{ draft: MselDraftResult['draft'] }])[0].draft;
-    expect(draft.moves[2]).toMatchObject({ moveNumber: 2, startMinutes: 90, plannedInjects: 11 });
+    const draft = (
+      createMselFromDesign.mock.calls[0] as unknown as [
+        { draft: MselDraftResult['draft'] },
+      ]
+    )[0].draft;
+    expect(draft.moves[2]).toMatchObject({
+      moveNumber: 2,
+      startMinutes: 90,
+      plannedInjects: 11,
+    });
   });
 
   /**
@@ -515,28 +850,48 @@ describe('MselDraftDialogComponent', () => {
    * Data: the NICE framework chosen; BLUE has T0175; T0200 is added.
    */
   it('adds a competency to a team from the chosen frameworks', async () => {
-    const { createMselFromDesign, frameworkApi } = await renderDraftDialog(() => of(designResult()), [{ id: 'tpl-1', name: 'Template', useCite: true }]);
+    const { createMselFromDesign, frameworkApi } = await renderDraftDialog(
+      () => of(designResult()),
+      [{ id: 'tpl-1', name: 'Template', useCite: true }],
+    );
     const user = userEvent.setup();
 
-    await user.click(screen.getByRole('combobox', { name: 'Competency frameworks' }));
+    await user.click(
+      screen.getByRole('combobox', { name: 'Competency frameworks' }),
+    );
     await user.click(screen.getByRole('option', { name: 'NICE 2.0.0' }));
     await user.keyboard('{Escape}');
-    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'A grid attack.');
+    await user.type(
+      screen.getByRole('textbox', { name: 'Exercise description' }),
+      'A grid attack.',
+    );
     await user.click(screen.getByRole('button', { name: 'Draft' }));
     expect(frameworkApi.getCompetencyFramework).toHaveBeenCalledWith('fw-nice');
 
-    await user.click(screen.getByRole('tab', { name: 'Teams and organizations (2)' }));
+    await user.click(
+      screen.getByRole('tab', { name: 'Teams and organizations (2)' }),
+    );
     expect(screen.getByText('Competencies')).toBeInTheDocument();
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Add a competency to BLUE' }), 'T0200');
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Add a competency to BLUE' }),
+      'T0200',
+    );
     expect(screen.getByText('T0200')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Create MSEL' }));
 
-    expect(createMselFromDesign).toHaveBeenCalledWith(expect.objectContaining({
-      draft: expect.objectContaining({
-        teams: [expect.objectContaining({ shortName: 'BLUE', competencies: ['T0175', 'T0200'] })],
-        competencies: ['T0161', 'T0175', 'T0200'],
+    expect(createMselFromDesign).toHaveBeenCalledWith(
+      expect.objectContaining({
+        draft: expect.objectContaining({
+          teams: [
+            expect.objectContaining({
+              shortName: 'BLUE',
+              competencies: ['T0175', 'T0200'],
+            }),
+          ],
+          competencies: ['T0161', 'T0175', 'T0200'],
+        }),
       }),
-    }));
+    );
   });
 
   /**
@@ -546,17 +901,35 @@ describe('MselDraftDialogComponent', () => {
    * Data: a CITE template with hasScoringModel and no linked model.
    */
   it('offers to keep a template authored scoring model', async () => {
-    const { designMsel } = await renderDraftDialog(undefined, [{ id: 'tpl-1', name: 'Crucible MSEL', useCite: true, hasScoringModel: true }]);
+    const { designMsel } = await renderDraftDialog(undefined, [
+      {
+        id: 'tpl-1',
+        name: 'Crucible MSEL',
+        useCite: true,
+        hasScoringModel: true,
+      },
+    ]);
     const user = userEvent.setup();
 
     await user.click(screen.getByText('Design choices (optional)'));
-    expect(screen.getByRole('combobox', { name: 'CITE assessment' })).toHaveTextContent('Let the model choose');
+    expect(
+      screen.getByRole('combobox', { name: 'CITE assessment' }),
+    ).toHaveTextContent('Let the model choose');
     await user.click(screen.getByRole('combobox', { name: 'CITE assessment' }));
-    await user.click(screen.getByRole('option', { name: "Keep the template's scoring model" }));
-    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'Cables are cut.');
+    await user.click(
+      screen.getByRole('option', { name: "Keep the template's scoring model" }),
+    );
+    await user.type(
+      screen.getByRole('textbox', { name: 'Exercise description' }),
+      'Cables are cut.',
+    );
     await user.click(screen.getByRole('button', { name: 'Draft' }));
 
-    expect(designMsel).toHaveBeenCalledWith(expect.objectContaining({ design: expect.objectContaining({ citeAssessment: 'Template' }) }));
+    expect(designMsel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        design: expect.objectContaining({ citeAssessment: 'Template' }),
+      }),
+    );
   });
 
   /**
@@ -567,34 +940,77 @@ describe('MselDraftDialogComponent', () => {
   it('sends the sectors and the organization facts', async () => {
     const result = designResult();
     result.draft.scenario.sectors = ['Healthcare and Public Health', 'Energy'];
-    const { designMsel, createMselFromDesign } = await renderDraftDialog(() => of(result));
+    const { designMsel, createMselFromDesign } = await renderDraftDialog(() =>
+      of(result),
+    );
     const user = userEvent.setup();
 
     await user.click(screen.getByText('Design choices (optional)'));
-    await user.click(screen.getByRole('combobox', { name: 'Critical infrastructure sectors' }));
+    await user.click(
+      screen.getByRole('combobox', { name: 'Critical infrastructure sectors' }),
+    );
     await user.click(await screen.findByRole('option', { name: 'Energy' }));
-    await user.click(await screen.findByRole('option', { name: 'Water and Wastewater Systems' }));
+    await user.click(
+      await screen.findByRole('option', {
+        name: 'Water and Wastewater Systems',
+      }),
+    );
     await user.keyboard('{Escape}');
-    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'A hurricane closes the port.');
+    await user.type(
+      screen.getByRole('textbox', { name: 'Exercise description' }),
+      'A hurricane closes the port.',
+    );
     await user.click(screen.getByRole('button', { name: 'Draft' }));
-    expect(designMsel).toHaveBeenCalledWith(expect.objectContaining({
-      design: expect.objectContaining({ sectors: ['Energy', 'Water and Wastewater Systems'] }),
-    }));
+    expect(designMsel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        design: expect.objectContaining({
+          sectors: ['Energy', 'Water and Wastewater Systems'],
+        }),
+      }),
+    );
 
     await user.click(screen.getByRole('tab', { name: 'Design' }));
-    expect(screen.getByText(/Healthcare and Public Health, Energy/)).toBeInTheDocument();
-    await user.click(screen.getByRole('tab', { name: 'Teams and organizations (2)' }));
-    await user.selectOptions(screen.getByRole('combobox', { name: 'NEWS sector' }), 'Communications');
-    await user.selectOptions(screen.getByRole('combobox', { name: 'NEWS size' }), 'Medium');
-    await user.type(screen.getByRole('textbox', { name: 'NEWS industry' }), 'Regional newspaper');
-    await user.type(screen.getByRole('textbox', { name: 'NEWS country' }), 'Island state');
-    expect(screen.queryByRole('combobox', { name: 'BLUE sector' })).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/Healthcare and Public Health, Energy/),
+    ).toBeInTheDocument();
+    await user.click(
+      screen.getByRole('tab', { name: 'Teams and organizations (2)' }),
+    );
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'NEWS sector' }),
+      'Communications',
+    );
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'NEWS size' }),
+      'Medium',
+    );
+    await user.type(
+      screen.getByRole('textbox', { name: 'NEWS industry' }),
+      'Regional newspaper',
+    );
+    await user.type(
+      screen.getByRole('textbox', { name: 'NEWS country' }),
+      'Island state',
+    );
+    expect(
+      screen.queryByRole('combobox', { name: 'BLUE sector' }),
+    ).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Create MSEL' }));
 
-    expect(createMselFromDesign).toHaveBeenCalledWith(expect.objectContaining({
-      draft: expect.objectContaining({
-        organizations: [expect.objectContaining({ shortName: 'NEWS', sector: 'Communications', size: 'Medium', industry: 'Regional newspaper', country: 'Island state' })],
+    expect(createMselFromDesign).toHaveBeenCalledWith(
+      expect.objectContaining({
+        draft: expect.objectContaining({
+          organizations: [
+            expect.objectContaining({
+              shortName: 'NEWS',
+              sector: 'Communications',
+              size: 'Medium',
+              industry: 'Regional newspaper',
+              country: 'Island state',
+            }),
+          ],
+        }),
       }),
-    }));
+    );
   });
 });

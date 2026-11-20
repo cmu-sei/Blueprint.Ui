@@ -2,7 +2,11 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect } from 'vitest';
-import { CiteScoringOptionSelection, MselScoringCategory, MselScoringModel } from 'src/app/generated/blueprint.api';
+import {
+  CiteScoringOptionSelection,
+  MselScoringCategory,
+  MselScoringModel,
+} from 'src/app/generated/blueprint.api';
 import {
   categoriesForMove,
   categoriesWithoutOptions,
@@ -15,7 +19,12 @@ import {
 
 // Blueprint writes every int as a JSON string, so a model read from the API looks like this
 const asRead = (n: number) => `${n}` as unknown as number;
-const category = (description: string, first: number, last: number, extra: Partial<MselScoringCategory> = {}): MselScoringCategory => ({
+const category = (
+  description: string,
+  first: number,
+  last: number,
+  extra: Partial<MselScoringCategory> = {},
+): MselScoringCategory => ({
   description,
   moveNumberFirstDisplay: first,
   moveNumberLastDisplay: last,
@@ -34,7 +43,12 @@ describe('normalizeScoringModel', () => {
     const model: MselScoringModel = {
       description: 'Read',
       categories: [
-        { ...category('Second', 2, 2), displayOrder: asRead(2), moveNumberFirstDisplay: asRead(2), moveNumberLastDisplay: asRead(2) },
+        {
+          ...category('Second', 2, 2),
+          displayOrder: asRead(2),
+          moveNumberFirstDisplay: asRead(2),
+          moveNumberLastDisplay: asRead(2),
+        },
         {
           ...category('First', 1, 1),
           displayOrder: asRead(1),
@@ -49,10 +63,18 @@ describe('normalizeScoringModel', () => {
 
     const normalized = normalizeScoringModel(model);
 
-    expect(normalized.categories.map((c) => c.description)).toEqual(['First', 'Second']);
+    expect(normalized.categories.map((c) => c.description)).toEqual([
+      'First',
+      'Second',
+    ]);
     expect(normalized.categories[1].moveNumberFirstDisplay).toBe(2);
     expect(normalized.categories[0].scoringWeight).toBe(3);
-    expect(normalized.categories[0].options.map((o) => [o.description, o.value])).toEqual([['a', 4], ['b', 5]]);
+    expect(
+      normalized.categories[0].options.map((o) => [o.description, o.value]),
+    ).toEqual([
+      ['a', 4],
+      ['b', 5],
+    ]);
   });
 
   /**
@@ -62,7 +84,10 @@ describe('normalizeScoringModel', () => {
    */
   it('leaves no model alone and fills in no categories', () => {
     expect(normalizeScoringModel(null)).toBeNull();
-    expect(normalizeScoringModel({ description: 'Empty', categories: null }).categories).toEqual([]);
+    expect(
+      normalizeScoringModel({ description: 'Empty', categories: null })
+        .categories,
+    ).toEqual([]);
   });
 });
 
@@ -70,7 +95,11 @@ describe('categoriesForMove', () => {
   const model: MselScoringModel = {
     description: 'By move',
     displayScoringModelByMoveNumber: true,
-    categories: [category('Move 1', 1, 1), category('Moves 1 to 3', 1, 3), category('Move 3', 3, 3)],
+    categories: [
+      category('Move 1', 1, 1),
+      category('Moves 1 to 3', 1, 3),
+      category('Move 3', 3, 3),
+    ],
   };
 
   /**
@@ -84,7 +113,9 @@ describe('categoriesForMove', () => {
     { move: 3, shown: ['Moves 1 to 3', 'Move 3'] },
     { move: 4, shown: [] },
   ])('shows move $move its categories', ({ move, shown }) => {
-    expect(categoriesForMove(model, move).map((c) => c.description)).toEqual(shown);
+    expect(categoriesForMove(model, move).map((c) => c.description)).toEqual(
+      shown,
+    );
   });
 
   /**
@@ -93,7 +124,12 @@ describe('categoriesForMove', () => {
    * Data: the same categories with displayScoringModelByMoveNumber off; move 4.
    */
   it('shows every category when the model is not displayed by move', () => {
-    expect(categoriesForMove({ ...model, displayScoringModelByMoveNumber: false }, 4)).toHaveLength(3);
+    expect(
+      categoriesForMove(
+        { ...model, displayScoringModelByMoveNumber: false },
+        4,
+      ),
+    ).toHaveLength(3);
   });
 });
 
@@ -106,10 +142,17 @@ describe('categoriesWithoutOptions', () => {
   it('finds the categories with nothing to answer', () => {
     const model: MselScoringModel = {
       description: 'Partly written',
-      categories: [category('Written', 1, 1), category('Empty', 2, 2, { options: [] }), category('Null', 3, 3, { options: null })],
+      categories: [
+        category('Written', 1, 1),
+        category('Empty', 2, 2, { options: [] }),
+        category('Null', 3, 3, { options: null }),
+      ],
     };
 
-    expect(categoriesWithoutOptions(model).map((c) => c.description)).toEqual(['Empty', 'Null']);
+    expect(categoriesWithoutOptions(model).map((c) => c.description)).toEqual([
+      'Empty',
+      'Null',
+    ]);
   });
 });
 
@@ -136,10 +179,25 @@ describe('scoringModelCounts', () => {
    * Data: one category with one question; two categories with three options between them; no model.
    */
   it.each([
-    { label: 'one of each', model: { description: 'm', categories: [category('a', 1, 1)] }, counts: '1 category, 1 option' },
+    {
+      label: 'one of each',
+      model: { description: 'm', categories: [category('a', 1, 1)] },
+      counts: '1 category, 1 option',
+    },
     {
       label: 'several',
-      model: { description: 'm', categories: [category('a', 1, 1), category('b', 2, 2, { options: [{ description: 'x', value: 1 }, { description: 'y', value: 2 }] })] },
+      model: {
+        description: 'm',
+        categories: [
+          category('a', 1, 1),
+          category('b', 2, 2, {
+            options: [
+              { description: 'x', value: 1 },
+              { description: 'y', value: 2 },
+            ],
+          }),
+        ],
+      },
       counts: '2 categories, 3 options',
     },
     { label: 'no model', model: null, counts: '0 categories, 0 options' },
@@ -149,8 +207,15 @@ describe('scoringModelCounts', () => {
 });
 
 describe('isScoringModelValid', () => {
-  const scored = (extra: Partial<MselScoringCategory> = {}): MselScoringCategory =>
-    category('Impact', 1, 2, { scoringOptionSelection: CiteScoringOptionSelection.Single, scoringWeight: 2, options: [{ description: 'Low', value: 1 }], ...extra });
+  const scored = (
+    extra: Partial<MselScoringCategory> = {},
+  ): MselScoringCategory =>
+    category('Impact', 1, 2, {
+      scoringOptionSelection: CiteScoringOptionSelection.Single,
+      scoringWeight: 2,
+      options: [{ description: 'Low', value: 1 }],
+      ...extra,
+    });
 
   /**
    * Verifies: a model needs a description, each category move numbers, in order when the model displays by move, and a weight, and each option a value, a question set's hidden ones too, since the API's weights and values cannot be left out.
@@ -158,17 +223,98 @@ describe('isScoringModelValid', () => {
    * Data: a valid scored model; then one with no description, a range ending before it starts, no weight, an option with no value, and question sets with and without their numbers.
    */
   it.each([
-    { label: 'a scored model', model: { description: 'Impact', categories: [scored()] }, valid: true },
-    { label: 'no description', model: { description: ' ', categories: [scored()] }, valid: false },
-    { label: 'a range ending before it starts', model: { description: 'Impact', displayScoringModelByMoveNumber: true, categories: [scored({ moveNumberLastDisplay: 0 })] }, valid: false },
-    { label: 'a hidden range ending before it starts', model: { description: 'Impact', displayScoringModelByMoveNumber: false, categories: [scored({ moveNumberLastDisplay: 0 })] }, valid: true },
-    { label: 'a hidden range with no number', model: { description: 'Impact', displayScoringModelByMoveNumber: false, categories: [scored({ moveNumberLastDisplay: null })] }, valid: false },
-    { label: 'a scored category with no weight', model: { description: 'Impact', categories: [scored({ scoringWeight: null })] }, valid: false },
-    { label: 'an option with no value', model: { description: 'Impact', categories: [scored({ options: [{ description: 'Low', value: undefined }] })] }, valid: false },
-    { label: 'a weight cleared to an empty string', model: { description: 'Impact', categories: [scored({ scoringWeight: '' as unknown as number })] }, valid: false },
-    { label: 'a question set with its numbers', model: { description: 'Q', categories: [category('q', 1, 1, { scoringWeight: 1 })] }, valid: true },
-    { label: 'a question set with no weight', model: { description: 'Q', categories: [category('q', 1, 1, { scoringWeight: null })] }, valid: false },
-    { label: 'a question with no value', model: { description: 'Q', categories: [category('q', 1, 1, { scoringWeight: 1, options: [{ description: 'Why?', value: undefined }] })] }, valid: false },
+    {
+      label: 'a scored model',
+      model: { description: 'Impact', categories: [scored()] },
+      valid: true,
+    },
+    {
+      label: 'no description',
+      model: { description: ' ', categories: [scored()] },
+      valid: false,
+    },
+    {
+      label: 'a range ending before it starts',
+      model: {
+        description: 'Impact',
+        displayScoringModelByMoveNumber: true,
+        categories: [scored({ moveNumberLastDisplay: 0 })],
+      },
+      valid: false,
+    },
+    {
+      label: 'a hidden range ending before it starts',
+      model: {
+        description: 'Impact',
+        displayScoringModelByMoveNumber: false,
+        categories: [scored({ moveNumberLastDisplay: 0 })],
+      },
+      valid: true,
+    },
+    {
+      label: 'a hidden range with no number',
+      model: {
+        description: 'Impact',
+        displayScoringModelByMoveNumber: false,
+        categories: [scored({ moveNumberLastDisplay: null })],
+      },
+      valid: false,
+    },
+    {
+      label: 'a scored category with no weight',
+      model: {
+        description: 'Impact',
+        categories: [scored({ scoringWeight: null })],
+      },
+      valid: false,
+    },
+    {
+      label: 'an option with no value',
+      model: {
+        description: 'Impact',
+        categories: [
+          scored({ options: [{ description: 'Low', value: undefined }] }),
+        ],
+      },
+      valid: false,
+    },
+    {
+      label: 'a weight cleared to an empty string',
+      model: {
+        description: 'Impact',
+        categories: [scored({ scoringWeight: '' as unknown as number })],
+      },
+      valid: false,
+    },
+    {
+      label: 'a question set with its numbers',
+      model: {
+        description: 'Q',
+        categories: [category('q', 1, 1, { scoringWeight: 1 })],
+      },
+      valid: true,
+    },
+    {
+      label: 'a question set with no weight',
+      model: {
+        description: 'Q',
+        categories: [category('q', 1, 1, { scoringWeight: null })],
+      },
+      valid: false,
+    },
+    {
+      label: 'a question with no value',
+      model: {
+        description: 'Q',
+        categories: [
+          category('q', 1, 1, {
+            scoringWeight: 1,
+            options: [{ description: 'Why?', value: undefined }],
+          }),
+        ],
+      },
+      valid: false,
+    },
   ])('judges $label', ({ model, valid }) => {
     expect(isScoringModelValid(model)).toBe(valid);
   });
@@ -180,8 +326,14 @@ describe('fillHiddenNumbers', () => {
    * Interacts with: fillHiddenNumbers.
    * Data: a question set with no weight and two questions, one with no value and one worth 3.
    */
-  it('fills a question set\'s missing weight and values', () => {
-    const questions = category('Questions', 1, 1, { scoringWeight: null, options: [{ description: 'Why?', value: null }, { description: 'Who?', value: 3 }] });
+  it("fills a question set's missing weight and values", () => {
+    const questions = category('Questions', 1, 1, {
+      scoringWeight: null,
+      options: [
+        { description: 'Why?', value: null },
+        { description: 'Who?', value: 3 },
+      ],
+    });
 
     fillHiddenNumbers(questions);
 
@@ -195,7 +347,10 @@ describe('fillHiddenNumbers', () => {
    * Data: a Single category with no weight.
    */
   it('leaves a scored category as it is', () => {
-    const scored = category('Impact', 1, 1, { scoringOptionSelection: CiteScoringOptionSelection.Single, scoringWeight: null });
+    const scored = category('Impact', 1, 1, {
+      scoringOptionSelection: CiteScoringOptionSelection.Single,
+      scoringWeight: null,
+    });
 
     fillHiddenNumbers(scored);
 

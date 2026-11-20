@@ -10,7 +10,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ComnAuthQuery, ComnAuthService } from '@cmusei/crucible-common';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { take } from 'rxjs/operators';
-import { UnitUserService, UserService } from 'src/app/generated/blueprint.api/api/api';
+import {
+  UnitUserService,
+  UserService,
+} from 'src/app/generated/blueprint.api/api/api';
 import { UnitUser, User } from 'src/app/generated/blueprint.api/model/models';
 
 @Injectable({
@@ -45,34 +48,36 @@ export class UnitUserDataService implements OnDestroy {
         },
         (error) => {
           this.updateUnitUsers([]);
-        }
+        },
       );
   }
 
   addUserToUnit(unitId: string, user: User) {
-    this.unitUserService.createUnitUser({unitId: unitId, userId: user.id}).subscribe(
-      (tu) => {
+    this.unitUserService
+      .createUnitUser({ unitId: unitId, userId: user.id })
+      .subscribe((tu) => {
         // condition added, because sometimes signalR returns the item first
-        if (!this._unitUsers.some(u => u.id === user.id)) {
+        if (!this._unitUsers.some((u) => u.id === user.id)) {
           this._unitUsers.unshift(user);
           this.updateUnitUsers(this._unitUsers);
         }
-      }
-    );
+      });
   }
 
   removeUnitUser(unitId: string, userId: string) {
-    this.unitUserService.deleteUnitUserByIds(unitId, userId).subscribe(
-      (response) => {
+    this.unitUserService
+      .deleteUnitUserByIds(unitId, userId)
+      .subscribe((response) => {
         this._unitUsers = this._unitUsers.filter((u) => u.id !== userId);
         this.updateUnitUsers(this._unitUsers);
-      }
-    );
+      });
   }
 
   updateStore(unitUser: UnitUser) {
     if (unitUser.unitId === this._unitId) {
-      const updatedUnitUsers = this._unitUsers.filter(u => u.id !== unitUser.userId);
+      const updatedUnitUsers = this._unitUsers.filter(
+        (u) => u.id !== unitUser.userId,
+      );
       updatedUnitUsers.unshift(unitUser.user);
       this.updateUnitUsers(updatedUnitUsers);
     }
@@ -80,7 +85,9 @@ export class UnitUserDataService implements OnDestroy {
 
   deleteFromStore(unitUser: UnitUser) {
     if (unitUser.unitId === this._unitId) {
-      const updatedUnitUsers = this._unitUsers.filter(u => u.id !== unitUser.userId);
+      const updatedUnitUsers = this._unitUsers.filter(
+        (u) => u.id !== unitUser.userId,
+      );
       this.updateUnitUsers(updatedUnitUsers);
     }
   }

@@ -1,7 +1,15 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
 import { MatButton } from '@angular/material/button';
@@ -47,7 +55,9 @@ export class TopologyMapPanelComponent {
 
   readonly workspaceId = computed(() => this.msel()?.casterWorkspaceId || '');
   readonly hasView = computed(() => !!this.msel()?.playerViewId);
-  readonly hasMachines = computed(() => (this.preview()?.machineCount ?? 0) > 0);
+  readonly hasMachines = computed(
+    () => (this.preview()?.machineCount ?? 0) > 0,
+  );
 
   constructor() {
     // a new workspace, from a push, is a new drawing
@@ -75,7 +85,8 @@ export class TopologyMapPanelComponent {
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (preview) => this.preview.set(preview),
-        error: (err) => this.error.set(this.describe(err, 'The map could not be drawn.')),
+        error: (err) =>
+          this.error.set(this.describe(err, 'The map could not be drawn.')),
       });
   }
 
@@ -91,10 +102,17 @@ export class TopologyMapPanelComponent {
       .subscribe({
         next: (result) => {
           if (result?.map) this.preview.set(result.map);
-          const added = result?.applicationAdded ? ' and the Network Map application added' : '';
-          this.message.set(`Map ${result?.created ? 'created' : 'updated'} in Player${added}.`);
+          const added = result?.applicationAdded
+            ? ' and the Network Map application added'
+            : '';
+          this.message.set(
+            `Map ${result?.created ? 'created' : 'updated'} in Player${added}.`,
+          );
         },
-        error: (err) => this.error.set(this.describe(err, 'The map could not be updated in Player.')),
+        error: (err) =>
+          this.error.set(
+            this.describe(err, 'The map could not be updated in Player.'),
+          ),
       });
   }
 

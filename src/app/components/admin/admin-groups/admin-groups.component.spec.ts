@@ -16,7 +16,13 @@ import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { Group, GroupService, SystemPermission, User, UserService } from 'src/app/generated/blueprint.api';
+import {
+  Group,
+  GroupService,
+  SystemPermission,
+  User,
+  UserService,
+} from 'src/app/generated/blueprint.api';
 import { AdminGroupsComponent } from './admin-groups.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
@@ -32,7 +38,9 @@ class GroupsDetailStub {
 
 const GROUP: Group = { id: 'group-1', name: 'Analysts' };
 // Every system permission except ManageGroups: the near miss for the denied cases.
-const ALL_BUT_MANAGE_GROUPS = Object.values(SystemPermission).filter((p) => p !== SystemPermission.ManageGroups);
+const ALL_BUT_MANAGE_GROUPS = Object.values(SystemPermission).filter(
+  (p) => p !== SystemPermission.ManageGroups,
+);
 
 async function renderGroups(permissions: SystemPermission[]) {
   const groupApi = {
@@ -47,7 +55,10 @@ async function renderGroups(permissions: SystemPermission[]) {
   const dialog = { confirm } satisfies Pick<CrucibleDialogService, 'confirm'>;
   // Add and Rename open NameDialogComponent and set its title on the instance;
   // the user cancels it.
-  const nameDialogRef = { componentInstance: {} as { title?: string }, afterClosed: () => of(undefined) };
+  const nameDialogRef = {
+    componentInstance: {} as { title?: string },
+    afterClosed: () => of(undefined),
+  };
   const matDialog = { open: vi.fn(() => nameDialogRef) };
   const rendered = await renderComponent(AdminGroupsComponent, {
     imports: [
@@ -75,8 +86,12 @@ async function renderGroups(permissions: SystemPermission[]) {
 
 const table = () => screen.getByRole('table');
 // The buttons carry only a tooltip, which Material exposes as the accessible description.
-const buttonDescribed = (description: string) => within(table()).getByRole('button', { description });
-const renameButton = () => within(within(table()).getByText('Analysts').closest('tr') as HTMLElement).getByRole('button', { description: 'Rename' });
+const buttonDescribed = (description: string) =>
+  within(table()).getByRole('button', { description });
+const renameButton = () =>
+  within(
+    within(table()).getByText('Analysts').closest('tr') as HTMLElement,
+  ).getByRole('button', { description: 'Rename' });
 
 describe('AdminGroupsComponent', () => {
   /**
@@ -85,7 +100,9 @@ describe('AdminGroupsComponent', () => {
    * Data: one group, Analysts.
    */
   it('enables group actions with ManageGroups', async () => {
-    const { groupApi, userApi } = await renderGroups([SystemPermission.ManageGroups]);
+    const { groupApi, userApi } = await renderGroups([
+      SystemPermission.ManageGroups,
+    ]);
 
     expect(groupApi.getGroups).toHaveBeenCalledTimes(1);
     expect(userApi.getUsers).toHaveBeenCalledTimes(1);
@@ -116,16 +133,20 @@ describe('AdminGroupsComponent', () => {
   it.each([
     { granted: true, permissions: [SystemPermission.ManageGroups] },
     { granted: false, permissions: ALL_BUT_MANAGE_GROUPS },
-  ])('passes canEdit $granted to the expanded group', async ({ granted, permissions }) => {
-    const { fixture } = await renderGroups(permissions);
-    const user = userEvent.setup();
+  ])(
+    'passes canEdit $granted to the expanded group',
+    async ({ granted, permissions }) => {
+      const { fixture } = await renderGroups(permissions);
+      const user = userEvent.setup();
 
-    await user.click(within(table()).getByText('Analysts'));
+      await user.click(within(table()).getByText('Analysts'));
 
-    const detail = fixture.debugElement.query(By.directive(GroupsDetailStub)).componentInstance as GroupsDetailStub;
-    expect(detail.groupId()).toBe('group-1');
-    expect(detail.canEdit()).toBe(granted);
-  });
+      const detail = fixture.debugElement.query(By.directive(GroupsDetailStub))
+        .componentInstance as GroupsDetailStub;
+      expect(detail.groupId()).toBe('group-1');
+      expect(detail.canEdit()).toBe(granted);
+    },
+  );
 
   /**
    * Verifies: confirming Delete deletes the group through the API and removes it from the table.
@@ -133,12 +154,21 @@ describe('AdminGroupsComponent', () => {
    * Data: ManageGroups granted.
    */
   it('deletes a group after confirmation', async () => {
-    const { groupApi, confirm } = await renderGroups([SystemPermission.ManageGroups]);
+    const { groupApi, confirm } = await renderGroups([
+      SystemPermission.ManageGroups,
+    ]);
     const user = userEvent.setup();
 
     await user.click(buttonDescribed('Delete Analysts'));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Group', message: 'Are you sure that you want to delete Analysts?', confirmText: 'Delete', cancelText: 'Cancel' }));
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Delete Group',
+        message: 'Are you sure that you want to delete Analysts?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      }),
+    );
     expect(groupApi.deleteGroup).toHaveBeenCalledWith('group-1');
     expect(within(table()).queryByText('Analysts')).not.toBeInTheDocument();
   });
@@ -152,7 +182,9 @@ describe('AdminGroupsComponent', () => {
     { title: 'Add Group', open: () => buttonDescribed('Add New Group') },
     { title: 'Rename Group', open: renameButton },
   ])('titles the name dialog $title', async ({ title, open }) => {
-    const { nameDialogRef } = await renderGroups([SystemPermission.ManageGroups]);
+    const { nameDialogRef } = await renderGroups([
+      SystemPermission.ManageGroups,
+    ]);
 
     await userEvent.setup().click(open());
 

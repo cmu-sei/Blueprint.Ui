@@ -7,15 +7,36 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
-import { MselPageDraftDialogComponent, MselPageDraftDialogData } from '../msel-page-draft-dialog/msel-page-draft-dialog.component';
-import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  MselPageDraftDialogComponent,
+  MselPageDraftDialogData,
+} from '../msel-page-draft-dialog/msel-page-draft-dialog.component';
+import {
+  UntypedFormControl,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { Move } from 'src/app/generated/blueprint.api';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EDITOR_CONFIG } from 'src/app/utilities/editor-config';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
-import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
+import {
+  MatFormField,
+  MatLabel,
+  MatInput,
+  MatSuffix,
+} from '@angular/material/input';
 import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
-import { NgxMatDatepickerInput, NgxMatDatetimepicker, NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel } from '@ngxmc/datetime-picker';
+import {
+  NgxMatDatepickerInput,
+  NgxMatDatetimepicker,
+  NgxMatDatepickerActions,
+  NgxMatDatepickerApply,
+  NgxMatDatepickerCancel,
+} from '@ngxmc/datetime-picker';
 import { MatDatepickerToggle } from '@angular/material/datepicker';
 import { MatButton } from '@angular/material/button';
 import { AngularEditorModule } from '@kolkov/angular-editor';
@@ -23,12 +44,33 @@ import { DatePipe } from '@angular/common';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
 
 @Component({
-    selector: 'app-move-edit-dialog',
-    templateUrl: './move-edit-dialog.component.html',
-    styleUrls: ['./move-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, MatIconButton, MatIcon, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, DurationEditComponent, NgxMatDatepickerInput, ReactiveFormsModule, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, AngularEditorModule, DatePipe, TimezoneAbbrPipe]
+  selector: 'app-move-edit-dialog',
+  templateUrl: './move-edit-dialog.component.html',
+  styleUrls: ['./move-edit-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    MatIconButton,
+    MatIcon,
+    CrucibleDialogContentDirective,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    FormsModule,
+    DurationEditComponent,
+    NgxMatDatepickerInput,
+    ReactiveFormsModule,
+    MatDatepickerToggle,
+    MatSuffix,
+    NgxMatDatetimepicker,
+    NgxMatDatepickerActions,
+    MatButton,
+    NgxMatDatepickerApply,
+    NgxMatDatepickerCancel,
+    AngularEditorModule,
+    DatePipe,
+    TimezoneAbbrPipe,
+  ],
 })
-
 export class MoveEditDialogComponent {
   data = inject<{
     move: Move;
@@ -43,7 +85,7 @@ export class MoveEditDialogComponent {
 
   public situationDateFormControl = new UntypedFormControl(
     this.data.move.situationTime,
-    []
+    [],
   );
   editorConfig = EDITOR_CONFIG;
 
@@ -66,7 +108,9 @@ export class MoveEditDialogComponent {
     switch (which) {
       case 'situationDate':
         if (this.situationDateFormControl.value) {
-          this.data.move.situationTime = new Date(this.situationDateFormControl.value);
+          this.data.move.situationTime = new Date(
+            this.situationDateFormControl.value,
+          );
         }
         break;
       default:
@@ -83,7 +127,8 @@ export class MoveEditDialogComponent {
       name: 'the situation briefing',
       content: move.situationDescription ?? '',
       title: `Write move ${move.moveNumber}'s situation briefing with AI`,
-      about: "Writes from the MSEL's scenario, the moves, and the injects before this move, keeping clear of what its own injects bring",
+      about:
+        "Writes from the MSEL's scenario, the moves, and the injects before this move, keeping clear of what its own injects bring",
       write: (instruction) =>
         this.mselDataService.draftMoveSituation(this.data.mselId, {
           moveId: move.id,
@@ -95,7 +140,10 @@ export class MoveEditDialogComponent {
         }),
     };
     this.dialog
-      .open<MselPageDraftDialogComponent, MselPageDraftDialogData, string>(MselPageDraftDialogComponent, { width: '95vw', maxWidth: '1600px', data })
+      .open<MselPageDraftDialogComponent, MselPageDraftDialogData, string>(
+        MselPageDraftDialogComponent,
+        { width: '95vw', maxWidth: '1600px', data },
+      )
       .afterClosed()
       .subscribe((html) => {
         if (html) {

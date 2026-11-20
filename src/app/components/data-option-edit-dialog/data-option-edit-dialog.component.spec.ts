@@ -11,7 +11,13 @@ import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
 import { DataOptionEditDialogComponent } from './data-option-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const OPTION = { id: 'opt-1', dataFieldId: 'df-1', optionName: 'HIGH', optionValue: 'High priority', displayOrder: 1 };
+const OPTION = {
+  id: 'opt-1',
+  dataFieldId: 'df-1',
+  optionName: 'HIGH',
+  optionValue: 'High priority',
+  displayOrder: 1,
+};
 
 function dialogData(overrides: Partial<typeof OPTION> = {}) {
   return { dataOption: { ...structuredClone(OPTION), ...overrides } };
@@ -27,7 +33,9 @@ async function renderDataOptionEditDialog(data = dialogData()) {
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
   const results: unknown[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results };
 }
 
@@ -40,8 +48,12 @@ describe('DataOptionEditDialogComponent', () => {
   it('renders with the default test providers', async () => {
     const { fixture } = await renderDataOptionEditDialog();
 
-    expect(fixture.componentInstance).toBeInstanceOf(DataOptionEditDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Edit Option' })).toBeInTheDocument();
+    expect(fixture.componentInstance).toBeInstanceOf(
+      DataOptionEditDialogComponent,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Edit Option' }),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -79,11 +91,15 @@ describe('DataOptionEditDialogComponent', () => {
    * Data: an option with an empty value.
    */
   it('saves an incomplete option when handleEditComplete is called', async () => {
-    const { fixture, data, results } = await renderDataOptionEditDialog(dialogData({ optionValue: '' }));
+    const { fixture, data, results } = await renderDataOptionEditDialog(
+      dialogData({ optionValue: '' }),
+    );
 
     fixture.componentInstance.handleEditComplete(true);
 
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
-    expect(results).toEqual([{ saveChanges: true, dataOption: data.dataOption }]);
+    expect(results).toEqual([
+      { saveChanges: true, dataOption: data.dataOption },
+    ]);
   });
 });

@@ -7,7 +7,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DecimalPipe } from '@angular/common';
 import { debounceTime, filter, take } from 'rxjs/operators';
 import { SignalRService } from 'src/app/services/signalr.service';
-import { AiUsageService, AiUsageSummary } from 'src/app/generated/blueprint.api';
+import {
+  AiUsageService,
+  AiUsageSummary,
+} from 'src/app/generated/blueprint.api';
 
 /**
  * What building this MSEL with AI used: every call to an AI model, while it was a draft and since, by step, with an
@@ -56,9 +59,14 @@ export class AiUsageComponent {
     // calls, such as articles written six at once, is read once
     this.signalRService.aiDraftProgress$
       .pipe(
-        filter((progress) => progress.done && !!progress.mselId && progress.mselId === this.mselId()),
+        filter(
+          (progress) =>
+            progress.done &&
+            !!progress.mselId &&
+            progress.mselId === this.mselId(),
+        ),
         debounceTime(2000),
-        takeUntilDestroyed(inject(DestroyRef))
+        takeUntilDestroyed(inject(DestroyRef)),
       )
       .subscribe(() => this.load(this.mselId()));
   }
@@ -83,6 +91,8 @@ export class AiUsageComponent {
     if (micros === null || micros === undefined) {
       return '';
     }
-    return micros < 10_000 ? 'under $0.01' : `$${(micros / 1_000_000).toFixed(2)}`;
+    return micros < 10_000
+      ? 'under $0.01'
+      : `$${(micros / 1_000_000).toFixed(2)}`;
   }
 }

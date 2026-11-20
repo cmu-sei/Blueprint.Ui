@@ -14,33 +14,56 @@ project root for license information.
     <div class="add-margin">
       <mat-form-field class="full-width">
         <mat-label>Name</mat-label>
-        <input type="text" matInput required [(ngModel)]="form.name" title="The framework's name">
+        <input
+          type="text"
+          matInput
+          required
+          [(ngModel)]="form.name"
+          title="The framework's name"
+        />
       </mat-form-field>
     </div>
     <div class="add-margin">
       <mat-form-field class="full-width">
         <mat-label>Description</mat-label>
-        <textarea matInput rows="2" [(ngModel)]="form.description" title="What the framework covers"></textarea>
+        <textarea
+          matInput
+          rows="2"
+          [(ngModel)]="form.description"
+          title="What the framework covers"
+        ></textarea>
       </mat-form-field>
     </div>
     <div class="row">
       <mat-form-field class="grow">
         <mat-label>Domain</mat-label>
-        <input type="text" matInput required [(ngModel)]="form.domain" title="The domain its releases are filed under">
+        <input
+          type="text"
+          matInput
+          required
+          [(ngModel)]="form.domain"
+          title="The domain its releases are filed under"
+        />
         <mat-hint>Unique. A MSEL pins one release per domain.</mat-hint>
       </mat-form-field>
       <mat-form-field class="fixed">
         <mat-label>Family</mat-label>
-        <mat-select [(ngModel)]="form.isDefensive" title="Whether its techniques are attacks or defences">
+        <mat-select
+          [(ngModel)]="form.isDefensive"
+          title="Whether its techniques are attacks or defences"
+        >
           <mat-option [value]="false">Attack</mat-option>
           <mat-option [value]="true">Defensive</mat-option>
         </mat-select>
       </mat-form-field>
       <mat-form-field class="fixed">
         <mat-label>File Format</mat-label>
-        <mat-select [(ngModel)]="form.format" title="The format its release files are published in">
+        <mat-select
+          [(ngModel)]="form.format"
+          title="The format its release files are published in"
+        >
           @for (format of formats; track format.value) {
-          <mat-option [value]="format.value">{{ format.label }}</mat-option>
+            <mat-option [value]="format.value">{{ format.label }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
@@ -48,12 +71,21 @@ project root for license information.
     <div class="add-margin">
       <mat-form-field class="full-width">
         <mat-label>Settings (JSON)</mat-label>
-        <textarea matInput class="settings" rows="16" spellcheck="false" [(ngModel)]="form.settingsJson"
-          title="Match conditions, format options, mappings, links and download hints"></textarea>
-        <mat-hint>The match conditions, format options, mappings, link templates and download hints, as an exported definition holds them.</mat-hint>
+        <textarea
+          matInput
+          class="settings"
+          rows="16"
+          spellcheck="false"
+          [(ngModel)]="form.settingsJson"
+          title="Match conditions, format options, mappings, links and download hints"
+        ></textarea>
+        <mat-hint
+          >The match conditions, format options, mappings, link templates and
+          download hints, as an exported definition holds them.</mat-hint
+        >
       </mat-form-field>
       @if (settingsError) {
-      <div class="settings-error" role="alert">{{ settingsError }}</div>
+        <div class="settings-error" role="alert">{{ settingsError }}</div>
       }
     </div>
   </div>

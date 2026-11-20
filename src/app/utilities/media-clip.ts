@@ -2,7 +2,12 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { AudioDraftKind, AudioDraftLine, AudioDraftMarking, AudioDraftResult } from 'src/app/generated/blueprint.api';
+import {
+  AudioDraftKind,
+  AudioDraftLine,
+  AudioDraftMarking,
+  AudioDraftResult,
+} from 'src/app/generated/blueprint.api';
 
 /*
  * Audio and video for a Gallery article, made in the planner's browser from the lines the API voiced: the lines joined with
@@ -52,9 +57,15 @@ export interface MediaEnv {
   /** The samples alone as an MP4 audio file */
   encodeAudio(pcm: Float32Array, codec: 'aac' | 'opus'): Promise<Uint8Array>;
   /** Frames drawn by draw, over the samples, as an MP4 video */
-  encodeVideo(video: VideoJob, pcm: Float32Array, codec: 'aac' | 'opus'): Promise<Uint8Array>;
+  encodeVideo(
+    video: VideoJob,
+    pcm: Float32Array,
+    codec: 'aac' | 'opus',
+  ): Promise<Uint8Array>;
   /** An image from a data URI, or null when it cannot be read */
-  loadImage(src: string): Promise<CanvasImageSource & { width: number; height: number } | null>;
+  loadImage(
+    src: string,
+  ): Promise<(CanvasImageSource & { width: number; height: number }) | null>;
 }
 
 export interface VideoJob {
@@ -66,7 +77,8 @@ export interface VideoJob {
   draw(g: CanvasDrawingContext, t: number): void;
 }
 
-export type CanvasDrawingContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+export type CanvasDrawingContext =
+  CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 
 export const RATE = 48000;
 const FONT = 'Arial, Helvetica, sans-serif';
@@ -77,7 +89,11 @@ const FONT_ATTRS = 'face="Arial, Helvetica, sans-serif"';
 
 /** The pause between lines: a call's speakers answer quickly, a broadcast's take a breath */
 export function gapMs(kind: AudioDraftKind): number {
-  return kind === AudioDraftKind.Call ? 450 : kind === AudioDraftKind.Broadcast ? 600 : 400;
+  return kind === AudioDraftKind.Call
+    ? 450
+    : kind === AudioDraftKind.Broadcast
+      ? 600
+      : 400;
 }
 
 /** Where each line starts, in milliseconds, when they are laid end to end with a pause between */
@@ -92,17 +108,33 @@ export function lineOffsets(durationsMs: number[], gap: number): number[] {
 }
 
 /** The caption cues of the lines: one a sentence, labelled with its speaker when asked; a line without timings is one cue */
-export function buildCues(lines: AudioDraftLine[], durationsMs: number[], gap: number, labelSpeakers: boolean): Cue[] {
+export function buildCues(
+  lines: AudioDraftLine[],
+  durationsMs: number[],
+  gap: number,
+  labelSpeakers: boolean,
+): Cue[] {
   const offsets = lineOffsets(durationsMs, gap);
   const cues: Cue[] = [];
   lines.forEach((line, i) => {
-    const marks = line.marks?.length ? line.marks : [{ startMs: 0, text: line.text }];
+    const marks = line.marks?.length
+      ? line.marks
+      : [{ startMs: 0, text: line.text }];
     const lineEnd = offsets[i] + durationsMs[i];
     marks.forEach((mark, k) => {
       const start = offsets[i] + (mark.startMs ?? 0);
-      const end = k + 1 < marks.length ? offsets[i] + (marks[k + 1].startMs ?? 0) : lineEnd;
-      const text = (labelSpeakers && line.speaker ? line.speaker + ': ' : '') + (mark.text ?? '');
-      cues.push({ start: start / 1000, end: Math.max(end, start + 1) / 1000, text });
+      const end =
+        k + 1 < marks.length
+          ? offsets[i] + (marks[k + 1].startMs ?? 0)
+          : lineEnd;
+      const text =
+        (labelSpeakers && line.speaker ? line.speaker + ': ' : '') +
+        (mark.text ?? '');
+      cues.push({
+        start: start / 1000,
+        end: Math.max(end, start + 1) / 1000,
+        text,
+      });
     });
   });
   return cues;
@@ -115,7 +147,12 @@ export function toWebVtt(cues: Cue[]): string {
     const pad = (n: number, width = 2) => String(n).padStart(width, '0');
     return `${pad(Math.floor(ms / 3600000))}:${pad(Math.floor(ms / 60000) % 60)}:${pad(Math.floor(ms / 1000) % 60)}.${pad(ms % 1000, 3)}`;
   };
-  return 'WEBVTT\n\n' + cues.map((c) => `${time(c.start)} --> ${time(c.end)}\n${escapeVtt(c.text)}\n`).join('\n');
+  return (
+    'WEBVTT\n\n' +
+    cues
+      .map((c) => `${time(c.start)} --> ${time(c.end)}\n${escapeVtt(c.text)}\n`)
+      .join('\n')
+  );
 }
 
 /**
@@ -123,22 +160,51 @@ export function toWebVtt(cues: Cue[]): string {
  * AAC where the browser can encode it; video falls back to Opus, which older Safari plays silent in MP4, so the MP3 is kept
  * beside it.
  */
-export function chooseEncoding(format: ClipFormat, support: EncoderSupport): { format: ClipFormat; audio: 'aac' | 'opus' | 'mp3'; keepMp3: boolean; fellBack: boolean } {
+export function chooseEncoding(
+  format: ClipFormat,
+  support: EncoderSupport,
+): {
+  format: ClipFormat;
+  audio: 'aac' | 'opus' | 'mp3';
+  keepMp3: boolean;
+  fellBack: boolean;
+} {
   const video = format !== 'audio';
   if (video && support.h264 && (support.aac || support.opus)) {
-    return { format, audio: support.aac ? 'aac' : 'opus', keepMp3: !support.aac, fellBack: false };
+    return {
+      format,
+      audio: support.aac ? 'aac' : 'opus',
+      keepMp3: !support.aac,
+      fellBack: false,
+    };
   }
-  return { format: 'audio', audio: support.aac ? 'aac' : 'mp3', keepMp3: false, fellBack: video };
+  return {
+    format: 'audio',
+    audio: support.aac ? 'aac' : 'mp3',
+    keepMp3: false,
+    fellBack: video,
+  };
 }
 
 /** A reel's caption screens: two or three words each, no longer than 18 characters, breaking after a comma or full stop */
-export function captionChunks(words: Cue[], maxWords = 3, maxChars = 18): { words: Cue[]; start: number; end: number }[] {
+export function captionChunks(
+  words: Cue[],
+  maxWords = 3,
+  maxChars = 18,
+): { words: Cue[]; start: number; end: number }[] {
   const chunks: { words: Cue[]; start: number; end: number }[] = [];
   for (const word of words) {
     const last = chunks[chunks.length - 1];
     const lastWord = last?.words[last.words.length - 1];
-    const joined = last ? [...last.words.map((w) => w.text), word.text].join(' ') : '';
-    if (!last || last.words.length >= maxWords || joined.length > maxChars || /[.,!?;:]$/.test(lastWord.text)) {
+    const joined = last
+      ? [...last.words.map((w) => w.text), word.text].join(' ')
+      : '';
+    if (
+      !last ||
+      last.words.length >= maxWords ||
+      joined.length > maxChars ||
+      /[.,!?;:]$/.test(lastWord.text)
+    ) {
       chunks.push({ words: [word], start: word.start, end: word.end });
     } else {
       last.words.push(word);
@@ -146,28 +212,50 @@ export function captionChunks(words: Cue[], maxWords = 3, maxChars = 18): { word
     }
   }
   // a screen stays up until the next, and the last a moment after its word
-  chunks.forEach((c, i) => (c.end = i + 1 < chunks.length ? chunks[i + 1].start : c.end + 0.4));
+  chunks.forEach(
+    (c, i) =>
+      (c.end = i + 1 < chunks.length ? chunks[i + 1].start : c.end + 0.4),
+  );
   return chunks;
 }
 
 /** A line's words as timed cues, each lasting until the next starts and the last until the line ends */
-export function timedWords(line: AudioDraftLine, offsetMs: number, durationMs: number): Cue[] {
+export function timedWords(
+  line: AudioDraftLine,
+  offsetMs: number,
+  durationMs: number,
+): Cue[] {
   const words = line.words?.length ? line.words : [];
   return words.map((w, i) => ({
     text: w.text ?? '',
     start: (offsetMs + (w.startMs ?? 0)) / 1000,
-    end: (offsetMs + (i + 1 < words.length ? words[i + 1].startMs ?? 0 : durationMs)) / 1000,
+    end:
+      (offsetMs +
+        (i + 1 < words.length ? (words[i + 1].startMs ?? 0) : durationMs)) /
+      1000,
   }));
 }
 
 /** A reel's picture: its photo, or a card in the outlet's colour when it has none or the photo cannot be read */
-export function reelPicture(result: AudioDraftResult, photoLoaded: boolean): 'photo' | 'card' {
+export function reelPicture(
+  result: AudioDraftResult,
+  photoLoaded: boolean,
+): 'photo' | 'card' {
   return result.photo && photoLoaded ? 'photo' : 'card';
 }
 
 /** An outlet's colour, the same each time for the same name */
 export function outletColor(name: string): string {
-  const colors = ['#B91C1C', '#1D4ED8', '#047857', '#7C2D12', '#6D28D9', '#0F766E', '#9D174D', '#1E3A8A'];
+  const colors = [
+    '#B91C1C',
+    '#1D4ED8',
+    '#047857',
+    '#7C2D12',
+    '#6D28D9',
+    '#0F766E',
+    '#9D174D',
+    '#1E3A8A',
+  ];
   let hash = 2166136261;
   for (const c of (name ?? '').trim().toLowerCase()) {
     hash = Math.imul(hash ^ c.charCodeAt(0), 16777619) >>> 0;
@@ -180,7 +268,12 @@ export function outletColor(name: string): string {
  * marking banner, wherever the article's layout put it, else first; the body is where its first paragraph starts, or the
  * top when it has none.
  */
-export function insertMedia(html: string, media: string, position: 'top' | 'body', headline?: string): string {
+export function insertMedia(
+  html: string,
+  media: string,
+  position: 'top' | 'body',
+  headline?: string,
+): string {
   const value = html ?? '';
   if (!value.trim()) {
     return media;
@@ -191,9 +284,13 @@ export function insertMedia(html: string, media: string, position: 'top' | 'body
       return value.slice(0, paragraph) + media + value.slice(paragraph);
     }
   }
-  const doc = new DOMParser().parseFromString(`<body>${value}</body>`, 'text/html');
+  const doc = new DOMParser().parseFromString(
+    `<body>${value}</body>`,
+    'text/html',
+  );
   const marking = doc.querySelector('table[title="Marking"]');
-  const heading = headlineElement(doc, headline, marking) ?? firstHeading(doc, marking);
+  const heading =
+    headlineElement(doc, headline, marking) ?? firstHeading(doc, marking);
   const anchor = heading ? pastBylines(heading) : marking;
   if (!anchor) {
     return media + value;
@@ -205,14 +302,26 @@ export function insertMedia(html: string, media: string, position: 'top' | 'body
 }
 
 // the smallest element after the marking whose text is the headline
-function headlineElement(doc: Document, headline: string | undefined, marking: Element | null): Element | null {
+function headlineElement(
+  doc: Document,
+  headline: string | undefined,
+  marking: Element | null,
+): Element | null {
   const wanted = normalizeText(headline);
   if (!wanted) {
     return null;
   }
   let found: Element | null = null;
   for (const element of Array.from(doc.body.querySelectorAll('*'))) {
-    if (marking && (marking === element || marking.contains(element) || !(marking.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING))) {
+    if (
+      marking &&
+      (marking === element ||
+        marking.contains(element) ||
+        !(
+          marking.compareDocumentPosition(element) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+        ))
+    ) {
       continue;
     }
     if (normalizeText(element.textContent) === wanted) {
@@ -228,7 +337,13 @@ function headlineElement(doc: Document, headline: string | undefined, marking: E
 function firstHeading(doc: Document, marking: Element | null): Element | null {
   return (
     Array.from(doc.body.querySelectorAll('h1, h2, h3')).find(
-      (h) => !marking || (!marking.contains(h) && !!(marking.compareDocumentPosition(h) & Node.DOCUMENT_POSITION_FOLLOWING))
+      (h) =>
+        !marking ||
+        (!marking.contains(h) &&
+          !!(
+            marking.compareDocumentPosition(h) &
+            Node.DOCUMENT_POSITION_FOLLOWING
+          )),
     ) ?? null
   );
 }
@@ -244,7 +359,9 @@ function pastBylines(heading: Element): Element {
       break;
     }
     const byline = text.startsWith('by ');
-    const dek = !!next.querySelector('i, em') && normalizeText(next.querySelector('i, em')?.textContent) === text;
+    const dek =
+      !!next.querySelector('i, em') &&
+      normalizeText(next.querySelector('i, em')?.textContent) === text;
     if (!byline && !dek) {
       break;
     }
@@ -261,7 +378,11 @@ function normalizeText(text: string | null | undefined): string {
 }
 
 /** "Listen to this article", with the player, as a bar of its own colours, so it reads the same in light and dark themes */
-export function listenBar(audioSrc: string, seconds: number, voicedBy: string): string {
+export function listenBar(
+  audioSrc: string,
+  seconds: number,
+  voicedBy: string,
+): string {
   const minutes = Math.max(1, Math.round(seconds / 60));
   return (
     `<table width="720" cellpadding="10" cellspacing="0" border="0" bgcolor="#F3F4F6"><tbody><tr><td>` +
@@ -281,8 +402,15 @@ export function audioHtml(src: string): string {
   return `<audio controls preload="metadata" src="${src}"></audio>`;
 }
 
-export function videoHtml(src: string, width: number, height: number, vtt: string | null): string {
-  const track = vtt ? `<track default kind="captions" srclang="en" label="English" src="data:text/vtt;base64,${base64Text(vtt)}">` : '';
+export function videoHtml(
+  src: string,
+  width: number,
+  height: number,
+  vtt: string | null,
+): string {
+  const track = vtt
+    ? `<track default kind="captions" srclang="en" label="English" src="data:text/vtt;base64,${base64Text(vtt)}">`
+    : '';
   return `<video controls preload="metadata" width="${width}" height="${height}"><source src="${src}" type="video/mp4">${track}</video>`;
 }
 
@@ -290,7 +418,11 @@ export function videoHtml(src: string, width: number, height: number, vtt: strin
 // Making the media
 
 /** Makes the clip of an API answer in the format asked for, or the nearest the browser can encode */
-export async function makeMedia(result: AudioDraftResult, format: ClipFormat, env: MediaEnv = browserMedia()): Promise<MediaClip> {
+export async function makeMedia(
+  result: AudioDraftResult,
+  format: ClipFormat,
+  env: MediaEnv = browserMedia(),
+): Promise<MediaClip> {
   const lines = (result.lines ?? []).filter((l) => !!l.audio);
   if (!lines.length) {
     throw new Error('Nothing was voiced.');
@@ -298,7 +430,14 @@ export async function makeMedia(result: AudioDraftResult, format: ClipFormat, en
   if (result.kind === AudioDraftKind.Listen) {
     // the article is its own transcript, so the MP3 goes in as it came
     const seconds = lines.reduce((n, l) => n + (l.durationMs ?? 0), 0) / 1000;
-    return { html: listenBar(lines[0].audio, seconds, lines[0].speaker), position: 'top', format: 'audio', codec: 'mp3', seconds, notes: [] };
+    return {
+      html: listenBar(lines[0].audio, seconds, lines[0].speaker),
+      position: 'top',
+      format: 'audio',
+      codec: 'mp3',
+      seconds,
+      notes: [],
+    };
   }
   if (result.kind === AudioDraftKind.Reel) {
     return makeReel(result, env);
@@ -306,32 +445,64 @@ export async function makeMedia(result: AudioDraftResult, format: ClipFormat, en
 
   const support = await env.probe();
   const choice = chooseEncoding(format, support);
-  const notes = choice.fellBack ? ['This browser cannot encode video, so the clip is audio only.'] : [];
+  const notes = choice.fellBack
+    ? ['This browser cannot encode video, so the clip is audio only.']
+    : [];
   const transcript = result.transcript ?? '';
   const mp3 = joinMp3(lines);
   // one plain line needs no mixing at all
-  if (choice.format === 'audio' && (choice.audio === 'mp3' || (lines.length === 1 && !result.phone))) {
+  if (
+    choice.format === 'audio' &&
+    (choice.audio === 'mp3' || (lines.length === 1 && !result.phone))
+  ) {
     if (result.phone && choice.audio === 'mp3') {
-      notes.push('This browser cannot encode AAC audio, so the clip is without the phone-line sound.');
+      notes.push(
+        'This browser cannot encode AAC audio, so the clip is without the phone-line sound.',
+      );
     }
     const seconds = lines.reduce((n, l) => n + (l.durationMs ?? 0), 0) / 1000;
-    return { html: audioHtml(mp3) + transcript, position: 'body', format: 'audio', codec: 'mp3', seconds, notes };
+    return {
+      html: audioHtml(mp3) + transcript,
+      position: 'body',
+      format: 'audio',
+      codec: 'mp3',
+      seconds,
+      notes,
+    };
   }
 
   const gap = gapMs(result.kind);
-  const decoded = await Promise.all(lines.map((l) => env.decode(dataUriBytes(l.audio))));
+  const decoded = await Promise.all(
+    lines.map((l) => env.decode(dataUriBytes(l.audio))),
+  );
   const durations = decoded.map((d) => Math.round((d.length / RATE) * 1000));
-  let pcm = joinPcm(decoded, Math.round((gap / 1000) * RATE), Math.round(0.3 * RATE));
+  let pcm = joinPcm(
+    decoded,
+    Math.round((gap / 1000) * RATE),
+    Math.round(0.3 * RATE),
+  );
   if (result.phone) {
     pcm = await env.phone(pcm);
   }
   const seconds = pcm.length / RATE;
   if (choice.format === 'audio') {
     const m4a = await env.encodeAudio(pcm, 'aac');
-    return { html: audioHtml('data:audio/mp4;base64,' + bytesBase64(m4a)) + transcript, position: 'body', format: 'audio', codec: 'aac', seconds, notes };
+    return {
+      html: audioHtml('data:audio/mp4;base64,' + bytesBase64(m4a)) + transcript,
+      position: 'body',
+      format: 'audio',
+      codec: 'aac',
+      seconds,
+      notes,
+    };
   }
 
-  const cues = buildCues(lines, durations, gap, result.kind === AudioDraftKind.Call);
+  const cues = buildCues(
+    lines,
+    durations,
+    gap,
+    result.kind === AudioDraftKind.Call,
+  );
   const width = 640;
   const height = 360;
   const card = titleCard(result, lines);
@@ -350,15 +521,29 @@ export async function makeMedia(result: AudioDraftResult, format: ClipFormat, en
       },
     },
     pcm,
-    choice.audio as 'aac' | 'opus'
+    choice.audio as 'aac' | 'opus',
   );
-  let html = videoHtml('data:video/mp4;base64,' + bytesBase64(mp4), width, height, toWebVtt(cues));
+  let html = videoHtml(
+    'data:video/mp4;base64,' + bytesBase64(mp4),
+    width,
+    height,
+    toWebVtt(cues),
+  );
   if (choice.keepMp3) {
     // Opus in MP4 plays silent in older Safari
     html += '<br>' + audioHtml(mp3);
-    notes.push('This browser has no AAC encoder, so the video has Opus audio and the MP3 is kept beside it for browsers that cannot play Opus.');
+    notes.push(
+      'This browser has no AAC encoder, so the video has Opus audio and the MP3 is kept beside it for browsers that cannot play Opus.',
+    );
   }
-  return { html: html + transcript, position: 'body', format: choice.format, codec: choice.audio as 'aac' | 'opus', seconds, notes };
+  return {
+    html: html + transcript,
+    position: 'body',
+    format: choice.format,
+    codec: choice.audio as 'aac' | 'opus',
+    seconds,
+    notes,
+  };
 }
 
 /**
@@ -366,15 +551,29 @@ export async function makeMedia(result: AudioDraftResult, format: ClipFormat, en
  * handle, a BREAKING tag and the headline; captions burned in a few words at a time with the word being said in yellow; an end
  * card for the last three seconds. Social video is watched muted, so the captions are the point.
  */
-export async function makeReel(result: AudioDraftResult, env: MediaEnv = browserMedia()): Promise<MediaClip> {
+export async function makeReel(
+  result: AudioDraftResult,
+  env: MediaEnv = browserMedia(),
+): Promise<MediaClip> {
   const notes: string[] = [];
   const support = await env.probe();
   const line = result.lines[0];
-  const post = result.post ? `<p><font ${FONT_ATTRS}>${escapeHtml(result.post)}</font></p>` : '';
+  const post = result.post
+    ? `<p><font ${FONT_ATTRS}>${escapeHtml(result.post)}</font></p>`
+    : '';
   if (!support.h264 || !(support.aac || support.opus)) {
-    notes.push('This browser cannot encode video, so the reel is the post with its audio. Make it in Chrome or Edge for the video.');
+    notes.push(
+      'This browser cannot encode video, so the reel is the post with its audio. Make it in Chrome or Edge for the video.',
+    );
     const seconds = (line.durationMs ?? 0) / 1000;
-    return { html: post + audioHtml(line.audio) + (result.transcript ?? ''), position: 'body', format: 'audio', codec: 'mp3', seconds, notes };
+    return {
+      html: post + audioHtml(line.audio) + (result.transcript ?? ''),
+      position: 'body',
+      format: 'audio',
+      codec: 'mp3',
+      seconds,
+      notes,
+    };
   }
   const codec = support.aac ? 'aac' : 'opus';
   const voice = await env.decode(dataUriBytes(line.audio));
@@ -383,12 +582,20 @@ export async function makeReel(result: AudioDraftResult, env: MediaEnv = browser
   const pcm = new Float32Array(voice.length + Math.round((lead + tail) * RATE));
   pcm.set(voice, Math.round(lead * RATE));
   const duration = pcm.length / RATE;
-  const words = timedWords(line, lead * 1000, Math.round((voice.length / RATE) * 1000));
+  const words = timedWords(
+    line,
+    lead * 1000,
+    Math.round((voice.length / RATE) * 1000),
+  );
   const chunks = captionChunks(words);
   const photo = result.photo ? await env.loadImage(result.photo) : null;
   const picture = reelPicture(result, !!photo);
   if (picture === 'card') {
-    notes.push(result.photo ? 'The photo could not be read, so the reel is on a plain card.' : 'The reel has no photo, so it is on a plain card.');
+    notes.push(
+      result.photo
+        ? 'The photo could not be read, so the reel is on a plain card.'
+        : 'The reel has no photo, so it is on a plain card.',
+    );
   }
   const outlet = result.outlet || result.title || 'News';
   const handle = result.handle || '';
@@ -401,32 +608,61 @@ export async function makeReel(result: AudioDraftResult, env: MediaEnv = browser
       height: H,
       fps: 24,
       bitrate: 700_000,
-      draw: (g, t) => drawReelFrame(g, { W, H, t, duration, photo: picture === 'photo' ? photo : null, color, outlet, handle, headline: result.headline, marking: result.marking, chunks }),
+      draw: (g, t) =>
+        drawReelFrame(g, {
+          W,
+          H,
+          t,
+          duration,
+          photo: picture === 'photo' ? photo : null,
+          color,
+          outlet,
+          handle,
+          headline: result.headline,
+          marking: result.marking,
+          chunks,
+        }),
     },
     pcm,
-    codec
+    codec,
   );
   let html =
     post +
     `<video controls preload="metadata" width="360" height="640"><source src="data:video/mp4;base64,${bytesBase64(mp4)}" type="video/mp4"></video>`;
   if (codec === 'opus') {
     html += '<br>' + audioHtml(line.audio);
-    notes.push('This browser has no AAC encoder, so the reel has Opus audio and the MP3 is kept beside it for browsers that cannot play Opus.');
+    notes.push(
+      'This browser has no AAC encoder, so the reel has Opus audio and the MP3 is kept beside it for browsers that cannot play Opus.',
+    );
   }
-  return { html: html + (result.transcript ?? ''), position: 'body', format: 'reel', codec, seconds: duration, notes };
+  return {
+    html: html + (result.transcript ?? ''),
+    position: 'body',
+    format: 'reel',
+    codec,
+    seconds: duration,
+    notes,
+  };
 }
 
 // ------------------------------------------------------------------------------------------------
 // Drawing
 
 /** The title card of a voicemail, an intercept or a broadcast, with the MSEL's marking across the top */
-export function titleCard(result: AudioDraftResult, lines: AudioDraftLine[]): (g: CanvasDrawingContext, W: number, H: number) => void {
+export function titleCard(
+  result: AudioDraftResult,
+  lines: AudioDraftLine[],
+): (g: CanvasDrawingContext, W: number, H: number) => void {
   const speakers = Array.from(new Set(lines.map((l) => l.speaker)));
   return (g, W, H) => {
     const kind = result.kind;
     const intercept = kind === AudioDraftKind.Call;
     const broadcast = kind === AudioDraftKind.Broadcast;
-    const color = broadcast ? outletColor(result.title) : intercept ? '#0B1410' : '#1E293B';
+    const color = broadcast
+      ? outletColor(result.title)
+      : intercept
+        ? '#0B1410'
+        : '#1E293B';
     g.fillStyle = color;
     g.fillRect(0, 0, W, H);
     const top = drawMarking(g, result.marking, W, 13);
@@ -438,32 +674,54 @@ export function titleCard(result: AudioDraftResult, lines: AudioDraftLine[]): (g
       g.fillText('INTERCEPT', 40, top + 60);
       g.fillStyle = '#4ADE80';
       g.font = `15px "Courier New", monospace`;
-      ['SOURCE: VOICE', `PARTIES: ${speakers.length}`, ...wrap(g, (result.headline ?? '').toUpperCase(), W - 80).slice(0, 3)].forEach((text, i) =>
-        g.fillText(text, 40, top + 100 + i * 24)
-      );
+      [
+        'SOURCE: VOICE',
+        `PARTIES: ${speakers.length}`,
+        ...wrap(g, (result.headline ?? '').toUpperCase(), W - 80).slice(0, 3),
+      ].forEach((text, i) => g.fillText(text, 40, top + 100 + i * 24));
     } else if (broadcast) {
       g.fillStyle = '#FFFFFF';
       g.font = `900 44px ${FONT}`;
-      wrap(g, (result.title ?? 'News').toUpperCase(), W - 80).slice(0, 1).forEach((text) => g.fillText(text, 40, top + 90));
+      wrap(g, (result.title ?? 'News').toUpperCase(), W - 80)
+        .slice(0, 1)
+        .forEach((text) => g.fillText(text, 40, top + 90));
       g.fillStyle = '#FFFFFF';
       g.fillRect(0, top + 130, W, 54);
       g.fillStyle = color;
       g.font = `bold 22px ${FONT}`;
-      g.fillText(fit(g, (result.headline ?? '').toUpperCase(), W - 80), 40, top + 165);
+      g.fillText(
+        fit(g, (result.headline ?? '').toUpperCase(), W - 80),
+        40,
+        top + 165,
+      );
     } else {
       g.fillStyle = '#FFFFFF';
       g.font = `bold 34px ${FONT}`;
       g.fillText((result.title ?? 'Voicemail').toUpperCase(), 40, top + 70);
       g.fillStyle = '#CBD5E1';
       g.font = `18px ${FONT}`;
-      g.fillText(fit(g, speakers.length ? 'From ' + speakers[0] : '', W - 80), 40, top + 104);
-      wrap(g, result.headline ?? '', W - 80).slice(0, 2).forEach((text, i) => g.fillText(text, 40, top + 136 + i * 26));
+      g.fillText(
+        fit(g, speakers.length ? 'From ' + speakers[0] : '', W - 80),
+        40,
+        top + 104,
+      );
+      wrap(g, result.headline ?? '', W - 80)
+        .slice(0, 2)
+        .forEach((text, i) => g.fillText(text, 40, top + 136 + i * 26));
     }
   };
 }
 
 /** The voice's level around t as bars across the lower part of the card */
-function drawWaveform(g: CanvasDrawingContext, pcm: Float32Array, t: number, fps: number, W: number, H: number, phone: boolean) {
+function drawWaveform(
+  g: CanvasDrawingContext,
+  pcm: Float32Array,
+  t: number,
+  fps: number,
+  W: number,
+  H: number,
+  phone: boolean,
+) {
   const start = Math.floor(t * RATE);
   const columns = 140;
   const per = RATE / fps / columns;
@@ -471,7 +729,11 @@ function drawWaveform(g: CanvasDrawingContext, pcm: Float32Array, t: number, fps
   g.fillStyle = phone ? '#4ADE80' : '#FFFFFF';
   for (let c = 0; c < columns; c++) {
     let peak = 0;
-    for (let s = Math.floor(start + c * per); s < start + (c + 1) * per && s < pcm.length; s++) {
+    for (
+      let s = Math.floor(start + c * per);
+      s < start + (c + 1) * per && s < pcm.length;
+      s++
+    ) {
       peak = Math.max(peak, Math.abs(pcm[s]));
     }
     const h = Math.max(1, Math.sqrt(peak) * 40);
@@ -528,7 +790,11 @@ function drawReelFrame(g: CanvasDrawingContext, f: ReelFrame) {
   g.fillStyle = '#FFFFFF';
   g.fillText(name, 52, top + 67);
   g.font = `22px ${FONT}`;
-  g.fillText(fit(g, f.handle, W - nameWidth - 72), 36 + nameWidth + 16, top + 67);
+  g.fillText(
+    fit(g, f.handle, W - nameWidth - 72),
+    36 + nameWidth + 16,
+    top + 67,
+  );
 
   if (t < duration - 3.4) {
     g.fillStyle = f.color;
@@ -540,7 +806,9 @@ function drawReelFrame(g: CanvasDrawingContext, f: ReelFrame) {
     g.fillRect(36, H - 284, W - 72, 120);
     g.fillStyle = '#111111';
     g.font = `bold 34px ${FONT}`;
-    wrap(g, f.headline ?? '', W - 112).slice(0, 2).forEach((text, n) => g.fillText(text, 56, H - 246 + n * 44));
+    wrap(g, f.headline ?? '', W - 112)
+      .slice(0, 2)
+      .forEach((text, n) => g.fillText(text, 56, H - 246 + n * 44));
   } else {
     g.fillStyle = f.color;
     g.fillRect(0, H / 2 - 90, W, 180);
@@ -560,7 +828,8 @@ function drawReelFrame(g: CanvasDrawingContext, f: ReelFrame) {
     g.textAlign = 'left';
     g.lineJoin = 'round';
     const widths = chunk.words.map((w) => g.measureText(w.text + ' ').width);
-    let x = (W - widths.reduce((a, b) => a + b, 0) + g.measureText(' ').width) / 2;
+    let x =
+      (W - widths.reduce((a, b) => a + b, 0) + g.measureText(' ').width) / 2;
     chunk.words.forEach((word, k) => {
       const speaking = t >= word.start && t < word.end;
       g.lineWidth = 10;
@@ -574,7 +843,12 @@ function drawReelFrame(g: CanvasDrawingContext, f: ReelFrame) {
 }
 
 /** The marking bar across the top, in the article banner's words and colours; answers where the card below it starts */
-function drawMarking(g: CanvasDrawingContext, marking: AudioDraftMarking | null | undefined, W: number, size: number): number {
+function drawMarking(
+  g: CanvasDrawingContext,
+  marking: AudioDraftMarking | null | undefined,
+  W: number,
+  size: number,
+): number {
   if (!marking?.text) {
     return 0;
   }
@@ -635,8 +909,15 @@ export function joinMp3(lines: AudioDraftLine[]): string {
   return 'data:audio/mpeg;base64,' + bytesBase64(joined);
 }
 
-export function joinPcm(parts: Float32Array[], gapSamples: number, tailSamples: number): Float32Array {
-  const total = parts.reduce((n, p) => n + p.length, 0) + gapSamples * Math.max(0, parts.length - 1) + tailSamples;
+export function joinPcm(
+  parts: Float32Array[],
+  gapSamples: number,
+  tailSamples: number,
+): Float32Array {
+  const total =
+    parts.reduce((n, p) => n + p.length, 0) +
+    gapSamples * Math.max(0, parts.length - 1) +
+    tailSamples;
   const joined = new Float32Array(total);
   let at = 0;
   for (const part of parts) {
@@ -669,11 +950,18 @@ function base64Text(text: string): string {
 }
 
 function escapeHtml(text: string): string {
-  return (text ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return (text ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 function escapeVtt(text: string): string {
-  return (text ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/-->/g, '->');
+  return (text ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/-->/g, '->');
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -683,14 +971,40 @@ function escapeVtt(text: string): string {
 export function browserMedia(): MediaEnv {
   return {
     probe: async () => {
-      if (typeof VideoEncoder === 'undefined' || typeof AudioEncoder === 'undefined') {
+      if (
+        typeof VideoEncoder === 'undefined' ||
+        typeof AudioEncoder === 'undefined'
+      ) {
         return { h264: false, aac: false, opus: false };
       }
-      const supported = (check: Promise<{ supported?: boolean }>) => check.then((r) => !!r.supported).catch(() => false);
+      const supported = (check: Promise<{ supported?: boolean }>) =>
+        check.then((r) => !!r.supported).catch(() => false);
       const [h264, aac, opus] = await Promise.all([
-        supported(VideoEncoder.isConfigSupported({ codec: 'avc1.42001f', width: 720, height: 1280, bitrate: 700_000, framerate: 24 })),
-        supported(AudioEncoder.isConfigSupported({ codec: 'mp4a.40.2', sampleRate: RATE, numberOfChannels: 1, bitrate: 64000 })),
-        supported(AudioEncoder.isConfigSupported({ codec: 'opus', sampleRate: RATE, numberOfChannels: 1, bitrate: 64000 })),
+        supported(
+          VideoEncoder.isConfigSupported({
+            codec: 'avc1.42001f',
+            width: 720,
+            height: 1280,
+            bitrate: 700_000,
+            framerate: 24,
+          }),
+        ),
+        supported(
+          AudioEncoder.isConfigSupported({
+            codec: 'mp4a.40.2',
+            sampleRate: RATE,
+            numberOfChannels: 1,
+            bitrate: 64000,
+          }),
+        ),
+        supported(
+          AudioEncoder.isConfigSupported({
+            codec: 'opus',
+            sampleRate: RATE,
+            numberOfChannels: 1,
+            bitrate: 64000,
+          }),
+        ),
       ]);
       return { h264, aac, opus };
     },
@@ -716,10 +1030,18 @@ export function browserMedia(): MediaEnv {
       low.type = 'lowpass';
       low.frequency.value = 3400;
       const drive = context.createWaveShaper();
-      drive.curve = Float32Array.from({ length: 1024 }, (_, i) => Math.tanh(((i / 1023) * 2 - 1) * 2.2) / Math.tanh(2.2));
+      drive.curve = Float32Array.from(
+        { length: 1024 },
+        (_, i) => Math.tanh(((i / 1023) * 2 - 1) * 2.2) / Math.tanh(2.2),
+      );
       const gain = context.createGain();
       gain.gain.value = 0.9;
-      source.connect(high).connect(low).connect(drive).connect(gain).connect(context.destination);
+      source
+        .connect(high)
+        .connect(low)
+        .connect(drive)
+        .connect(gain)
+        .connect(context.destination);
       source.start();
       return (await context.startRendering()).getChannelData(0);
     },
@@ -731,7 +1053,9 @@ export function browserMedia(): MediaEnv {
         fastStart: 'in-memory',
         firstTimestampBehavior: 'offset',
       });
-      await encodePcm(pcm, codec, (chunk, meta) => muxer.addAudioChunk(chunk, meta));
+      await encodePcm(pcm, codec, (chunk, meta) =>
+        muxer.addAudioChunk(chunk, meta),
+      );
       muxer.finalize();
       return new Uint8Array(muxer.target.buffer);
     },
@@ -739,21 +1063,45 @@ export function browserMedia(): MediaEnv {
       const { Muxer, ArrayBufferTarget } = await import('mp4-muxer');
       const muxer = new Muxer({
         target: new ArrayBufferTarget(),
-        video: { codec: 'avc', width: job.width, height: job.height, frameRate: job.fps },
+        video: {
+          codec: 'avc',
+          width: job.width,
+          height: job.height,
+          frameRate: job.fps,
+        },
         audio: { codec, numberOfChannels: 1, sampleRate: RATE },
         fastStart: 'in-memory',
         firstTimestampBehavior: 'offset',
       });
       let failure: unknown = null;
-      const encoder = new VideoEncoder({ output: (chunk, meta) => muxer.addVideoChunk(chunk, meta), error: (e) => (failure = e) });
-      encoder.configure({ codec: 'avc1.42001f', width: job.width, height: job.height, bitrate: job.bitrate, framerate: job.fps, avc: { format: 'avc' } });
-      const canvas = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(job.width, job.height) : Object.assign(document.createElement('canvas'), { width: job.width, height: job.height });
+      const encoder = new VideoEncoder({
+        output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+        error: (e) => (failure = e),
+      });
+      encoder.configure({
+        codec: 'avc1.42001f',
+        width: job.width,
+        height: job.height,
+        bitrate: job.bitrate,
+        framerate: job.fps,
+        avc: { format: 'avc' },
+      });
+      const canvas =
+        typeof OffscreenCanvas !== 'undefined'
+          ? new OffscreenCanvas(job.width, job.height)
+          : Object.assign(document.createElement('canvas'), {
+              width: job.width,
+              height: job.height,
+            });
       const g = canvas.getContext('2d') as CanvasDrawingContext;
       const frames = Math.ceil((pcm.length / RATE) * job.fps);
       for (let i = 0; i < frames && !failure; i++) {
         const t = i / job.fps;
         job.draw(g, t);
-        const frame = new VideoFrame(canvas, { timestamp: Math.round(t * 1e6), duration: Math.round(1e6 / job.fps) });
+        const frame = new VideoFrame(canvas, {
+          timestamp: Math.round(t * 1e6),
+          duration: Math.round(1e6 / job.fps),
+        });
         encoder.encode(frame, { keyFrame: i % (job.fps * 2) === 0 });
         frame.close();
         // let the encoder catch up, and the page breathe
@@ -766,7 +1114,9 @@ export function browserMedia(): MediaEnv {
       if (failure) {
         throw failure;
       }
-      await encodePcm(pcm, codec, (chunk, meta) => muxer.addAudioChunk(chunk, meta));
+      await encodePcm(pcm, codec, (chunk, meta) =>
+        muxer.addAudioChunk(chunk, meta),
+      );
       muxer.finalize();
       return new Uint8Array(muxer.target.buffer);
     },
@@ -781,13 +1131,31 @@ export function browserMedia(): MediaEnv {
   };
 }
 
-async function encodePcm(pcm: Float32Array, codec: 'aac' | 'opus', output: (chunk: EncodedAudioChunk, meta?: EncodedAudioChunkMetadata) => void) {
+async function encodePcm(
+  pcm: Float32Array,
+  codec: 'aac' | 'opus',
+  output: (chunk: EncodedAudioChunk, meta?: EncodedAudioChunkMetadata) => void,
+) {
   let failure: unknown = null;
   const encoder = new AudioEncoder({ output, error: (e) => (failure = e) });
-  encoder.configure({ codec: codec === 'aac' ? 'mp4a.40.2' : 'opus', sampleRate: RATE, numberOfChannels: 1, bitrate: 64000 });
+  encoder.configure({
+    codec: codec === 'aac' ? 'mp4a.40.2' : 'opus',
+    sampleRate: RATE,
+    numberOfChannels: 1,
+    bitrate: 64000,
+  });
   for (let s = 0; s < pcm.length && !failure; s += 960) {
     const slice = pcm.slice(s, Math.min(s + 960, pcm.length));
-    encoder.encode(new AudioData({ format: 'f32-planar', sampleRate: RATE, numberOfFrames: slice.length, numberOfChannels: 1, timestamp: Math.round((s / RATE) * 1e6), data: slice }));
+    encoder.encode(
+      new AudioData({
+        format: 'f32-planar',
+        sampleRate: RATE,
+        numberOfFrames: slice.length,
+        numberOfChannels: 1,
+        timestamp: Math.round((s / RATE) * 1e6),
+        data: slice,
+      }),
+    );
   }
   await encoder.flush();
   encoder.close();

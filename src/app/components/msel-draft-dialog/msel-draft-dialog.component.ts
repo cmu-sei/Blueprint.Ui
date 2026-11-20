@@ -25,7 +25,10 @@ import { MatChip, MatChipRemove, MatChipSet } from '@angular/material/chips';
 import { MatTooltip } from '@angular/material/tooltip';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
-import { MselAiBuildService, errorMessage } from 'src/app/data/msel/msel-ai-build.service';
+import {
+  MselAiBuildService,
+  errorMessage,
+} from 'src/app/data/msel/msel-ai-build.service';
 import { SignalRService } from 'src/app/services/signalr.service';
 import {
   CompetencyFramework,
@@ -81,7 +84,8 @@ export const LEFT_TO_DRAFT = 'Auto';
   ],
 })
 export class MselDraftDialogComponent {
-  dialogRef = inject<MatDialogRef<MselDraftDialogComponent, string>>(MatDialogRef);
+  dialogRef =
+    inject<MatDialogRef<MselDraftDialogComponent, string>>(MatDialogRef);
   data = inject<MselDraftDialogData>(MAT_DIALOG_DATA);
   private competencyFrameworkService = inject(CompetencyFrameworkService);
   private buildApi = inject(MselBuildService);
@@ -96,7 +100,12 @@ export class MselDraftDialogComponent {
   // the design questions the author-ttx workflow asks; all optional
   // "Let the draft decide" is a value of its own: a select treats a null option as a reset and shows nothing chosen;
   // it goes to the API as no choice
-  design: MselDraftDesign = { citeAssessment: 'Auto', format: LEFT_TO_DRAFT, cardGrouping: LEFT_TO_DRAFT, profilePages: true };
+  design: MselDraftDesign = {
+    citeAssessment: 'Auto',
+    format: LEFT_TO_DRAFT,
+    cardGrouping: LEFT_TO_DRAFT,
+    profilePages: true,
+  };
   // the chosen frameworks' competencies, offered to the teams on review
   frameworkCompetencies: MselDraftCompetency[] = [];
   isDrafting = false;
@@ -118,7 +127,10 @@ export class MselDraftDialogComponent {
     this.dialogRef.disableClose = true;
     // the template built for drafting, ready for every integration, unless there is only one to choose
     const templates = this.data.templates;
-    const preferred = templates.length === 1 ? templates[0] : templates.find((t) => t.name === 'Crucible MSEL');
+    const preferred =
+      templates.length === 1
+        ? templates[0]
+        : templates.find((t) => t.name === 'Crucible MSEL');
     if (preferred) {
       this.templateMselId = preferred.id;
       this.templateChanged();
@@ -128,38 +140,56 @@ export class MselDraftDialogComponent {
       .pipe(take(1))
       .subscribe({
         next: (frameworks) =>
-          (this.competencyFrameworks = [...frameworks].sort((a, b) => a.name.localeCompare(b.name))),
+          (this.competencyFrameworks = [...frameworks].sort((a, b) =>
+            a.name.localeCompare(b.name),
+          )),
         // drafting still works without a framework list; the template's competencies are used
         error: () => (this.competencyFrameworks = []),
       });
     this.signalRService.aiDraftProgress$
       .pipe(
         filter((p) => this.isDrafting && p.operation === 'design'),
-        takeUntilDestroyed()
+        takeUntilDestroyed(),
       )
       .subscribe((p) => (this.progress = p.counts ?? {}));
   }
 
   get templateUsesCite(): boolean {
-    return !!this.data.templates.find((t) => t.id === this.templateMselId)?.useCite;
+    return !!this.data.templates.find((t) => t.id === this.templateMselId)
+      ?.useCite;
   }
 
   get templateUsesGallery(): boolean {
-    return !!this.data.templates.find((t) => t.id === this.templateMselId)?.useGallery;
+    return !!this.data.templates.find((t) => t.id === this.templateMselId)
+      ?.useGallery;
   }
 
   // a template links a CITE scoring model or authors its own, which the drafted MSEL gets a copy of
   get templateHasScoringModel(): boolean {
-    const template = this.data.templates.find((t) => t.id === this.templateMselId);
+    const template = this.data.templates.find(
+      (t) => t.id === this.templateMselId,
+    );
     return !!template?.citeScoringModelId || !!template?.hasScoringModel;
   }
 
   readonly tlpLevels = ['CLEAR', 'GREEN', 'AMBER', 'AMBER+STRICT', 'RED'];
   // the 16 critical infrastructure sectors, as CISA names them
   readonly sectors = [
-    'Chemical', 'Commercial Facilities', 'Communications', 'Critical Manufacturing', 'Dams', 'Defense Industrial Base',
-    'Emergency Services', 'Energy', 'Financial Services', 'Food and Agriculture', 'Government Services and Facilities',
-    'Healthcare and Public Health', 'Information Technology', 'Nuclear Reactors, Materials, and Waste', 'Transportation Systems',
+    'Chemical',
+    'Commercial Facilities',
+    'Communications',
+    'Critical Manufacturing',
+    'Dams',
+    'Defense Industrial Base',
+    'Emergency Services',
+    'Energy',
+    'Financial Services',
+    'Food and Agriculture',
+    'Government Services and Facilities',
+    'Healthcare and Public Health',
+    'Information Technology',
+    'Nuclear Reactors, Materials, and Waste',
+    'Transportation Systems',
     'Water and Wastewater Systems',
   ];
   readonly sizes = ['Small', 'Medium', 'Large', 'Enterprise'];
@@ -167,10 +197,17 @@ export class MselDraftDialogComponent {
   // the model chooses the assessment unless the planner does; the template's article marking is the starting choice
   templateChanged() {
     this.design.citeAssessment = 'Auto';
-    const template = this.data.templates.find((t) => t.id === this.templateMselId);
+    const template = this.data.templates.find(
+      (t) => t.id === this.templateMselId,
+    );
     // only Gallery articles are marked
-    this.design.marking = template?.useGallery ? template.articleMarking || 'Exercise' : undefined;
-    this.design.markingText = template?.useGallery ? template.articleMarkingText ?? (this.design.marking === 'Tlp' ? 'CLEAR' : undefined) : undefined;
+    this.design.marking = template?.useGallery
+      ? template.articleMarking || 'Exercise'
+      : undefined;
+    this.design.markingText = template?.useGallery
+      ? (template.articleMarkingText ??
+        (this.design.marking === 'Tlp' ? 'CLEAR' : undefined))
+      : undefined;
   }
 
   // what building the MSEL makes in CITE, so the planner is not surprised by it
@@ -194,7 +231,9 @@ export class MselDraftDialogComponent {
   }
 
   get canDraft(): boolean {
-    return !!this.templateMselId && this.prompt.trim().length > 0 && !this.isDrafting;
+    return (
+      !!this.templateMselId && this.prompt.trim().length > 0 && !this.isDrafting
+    );
   }
 
   // what the design has so far, from the model's streamed answer
@@ -215,7 +254,9 @@ export class MselDraftDialogComponent {
     this.draftStarted = Date.now();
     this.elapsed = '0:00';
     this.ticking?.unsubscribe();
-    this.ticking = interval(1000).subscribe(() => (this.elapsed = clock(Date.now() - this.draftStarted)));
+    this.ticking = interval(1000).subscribe(
+      () => (this.elapsed = clock(Date.now() - this.draftStarted)),
+    );
     this.drafting = this.buildApi
       .designMsel({
         templateMselId: this.templateMselId,
@@ -223,8 +264,14 @@ export class MselDraftDialogComponent {
         competencyFrameworkIds: this.competencyFrameworkIds,
         design: {
           ...this.design,
-          format: this.design.format === LEFT_TO_DRAFT ? undefined : this.design.format,
-          cardGrouping: this.design.cardGrouping === LEFT_TO_DRAFT ? undefined : this.design.cardGrouping,
+          format:
+            this.design.format === LEFT_TO_DRAFT
+              ? undefined
+              : this.design.format,
+          cardGrouping:
+            this.design.cardGrouping === LEFT_TO_DRAFT
+              ? undefined
+              : this.design.cardGrouping,
         },
       })
       .pipe(take(1))
@@ -260,7 +307,10 @@ export class MselDraftDialogComponent {
   }
 
   get teamsAndOrganizations(): (MselDraftTeam | MselDraftOrganization)[] {
-    return [...(this.result?.draft?.teams ?? []), ...(this.result?.draft?.organizations ?? [])];
+    return [
+      ...(this.result?.draft?.teams ?? []),
+      ...(this.result?.draft?.organizations ?? []),
+    ];
   }
 
   isTeam(owner: MselDraftTeam | MselDraftOrganization): boolean {
@@ -270,16 +320,24 @@ export class MselDraftDialogComponent {
   removeOwner(owner: MselDraftTeam | MselDraftOrganization) {
     const draft = this.result.draft;
     draft.teams = (draft.teams ?? []).filter((t) => t !== owner);
-    draft.organizations = (draft.organizations ?? []).filter((o) => o !== owner);
+    draft.organizations = (draft.organizations ?? []).filter(
+      (o) => o !== owner,
+    );
     this.pruneCompetencies();
   }
 
   // a team's CITE duties, as chips: one is added from the input, by Enter or by leaving it
-  addDuty(owner: MselDraftTeam | MselDraftOrganization, input: HTMLInputElement) {
+  addDuty(
+    owner: MselDraftTeam | MselDraftOrganization,
+    input: HTMLInputElement,
+  ) {
     const team = owner as MselDraftTeam;
     const duty = input.value.trim();
     input.value = '';
-    if (!duty || (team.duties ?? []).some((d) => d.toLowerCase() === duty.toLowerCase())) {
+    if (
+      !duty ||
+      (team.duties ?? []).some((d) => d.toLowerCase() === duty.toLowerCase())
+    ) {
       return;
     }
     team.duties = [...(team.duties ?? []), duty];
@@ -291,22 +349,34 @@ export class MselDraftDialogComponent {
   }
 
   removeObjective(index: number) {
-    this.result.draft.objectives = this.result.draft.objectives.filter((_, i) => i !== index);
+    this.result.draft.objectives = this.result.draft.objectives.filter(
+      (_, i) => i !== index,
+    );
   }
 
   removeCard(index: number) {
-    this.result.draft.cards = this.result.draft.cards.filter((_, i) => i !== index);
+    this.result.draft.cards = this.result.draft.cards.filter(
+      (_, i) => i !== index,
+    );
   }
 
   // what the planner adds to the design is written for like the rest: the injects step writes to the reviewed design
   addCard() {
-    this.result.draft.cards = [...(this.result.draft.cards ?? []), { name: '', description: '' }];
+    this.result.draft.cards = [
+      ...(this.result.draft.cards ?? []),
+      { name: '', description: '' },
+    ];
   }
 
   addObjective() {
-    const numbers = (this.result.draft.objectives ?? []).map((o) => Number(/^O(\d+)$/.exec(o.id ?? '')?.[1] ?? 0));
+    const numbers = (this.result.draft.objectives ?? []).map((o) =>
+      Number(/^O(\d+)$/.exec(o.id ?? '')?.[1] ?? 0),
+    );
     const id = `O${Math.max(0, ...numbers) + 1}`;
-    this.result.draft.objectives = [...(this.result.draft.objectives ?? []), { id, task: '', condition: '', standard: '', competencies: [] }];
+    this.result.draft.objectives = [
+      ...(this.result.draft.objectives ?? []),
+      { id, task: '', condition: '', standard: '', competencies: [] },
+    ];
   }
 
   // a new move starts half an hour after the last, a day later on the scenario clock, with as many injects as an average move;
@@ -314,8 +384,14 @@ export class MselDraftDialogComponent {
   addMove() {
     const moves = this.result.draft.moves ?? [];
     const last = moves[moves.length - 1];
-    const planned = moves.map((m) => Number(m.plannedInjects ?? 0)).filter((n) => n > 0);
-    const situationTime = last?.situationTime ? new Date(new Date(last.situationTime).getTime() + 24 * 3600 * 1000).toISOString() : undefined;
+    const planned = moves
+      .map((m) => Number(m.plannedInjects ?? 0))
+      .filter((n) => n > 0);
+    const situationTime = last?.situationTime
+      ? new Date(
+          new Date(last.situationTime).getTime() + 24 * 3600 * 1000,
+        ).toISOString()
+      : undefined;
     this.result.draft.moves = [
       ...moves,
       {
@@ -324,7 +400,9 @@ export class MselDraftDialogComponent {
         purpose: '',
         startMinutes: Number(last?.startMinutes ?? -30) + 30,
         situationTime,
-        plannedInjects: planned.length ? Math.round(planned.reduce((a, b) => a + b, 0) / planned.length) : 8,
+        plannedInjects: planned.length
+          ? Math.round(planned.reduce((a, b) => a + b, 0) / planned.length)
+          : 8,
         expectedDecisions: [],
         citeQuestions: [],
       },
@@ -338,26 +416,50 @@ export class MselDraftDialogComponent {
 
   // moves run in start order and are numbered in it, as the MSEL numbers them
   sortMoves() {
-    this.result.draft.moves = [...this.result.draft.moves].sort((a, b) => (a.startMinutes ?? 0) - (b.startMinutes ?? 0));
+    this.result.draft.moves = [...this.result.draft.moves].sort(
+      (a, b) => (a.startMinutes ?? 0) - (b.startMinutes ?? 0),
+    );
     this.renumberMoves();
   }
 
   private renumberMoves() {
-    const first = Math.min(...this.result.draft.moves.map((m) => m.moveNumber ?? 0), 0);
+    const first = Math.min(
+      ...this.result.draft.moves.map((m) => m.moveNumber ?? 0),
+      0,
+    );
     this.result.draft.moves.forEach((m, i) => (m.moveNumber = first + i));
   }
 
   addTeam() {
-    this.result.draft.teams = [...(this.result.draft.teams ?? []), { shortName: this.newShortName('TEAM'), name: '', description: '', competencies: [], duties: [] }];
+    this.result.draft.teams = [
+      ...(this.result.draft.teams ?? []),
+      {
+        shortName: this.newShortName('TEAM'),
+        name: '',
+        description: '',
+        competencies: [],
+        duties: [],
+      },
+    ];
   }
 
   addOrganization() {
-    this.result.draft.organizations = [...(this.result.draft.organizations ?? []), { shortName: this.newShortName('ORG'), name: '', description: '', summary: '' }];
+    this.result.draft.organizations = [
+      ...(this.result.draft.organizations ?? []),
+      {
+        shortName: this.newShortName('ORG'),
+        name: '',
+        description: '',
+        summary: '',
+      },
+    ];
   }
 
   // short names are unique across teams and organizations; the planner renames it
   private newShortName(prefix: string): string {
-    const taken = new Set(this.teamsAndOrganizations.map((o) => o.shortName?.toUpperCase()));
+    const taken = new Set(
+      this.teamsAndOrganizations.map((o) => o.shortName?.toUpperCase()),
+    );
     let i = 1;
     while (taken.has(`${prefix}${i}`)) {
       i++;
@@ -372,13 +474,20 @@ export class MselDraftDialogComponent {
   }
 
   // the competencies a team may be given: the chosen frameworks' (loaded with the design), or the draft's own
-  availableCompetencies(owner: MselDraftTeam | MselDraftOrganization): MselDraftCompetency[] {
+  availableCompetencies(
+    owner: MselDraftTeam | MselDraftOrganization,
+  ): MselDraftCompetency[] {
     const have = new Set((owner as MselDraftTeam).competencies ?? []);
-    const pool = this.frameworkCompetencies.length ? this.frameworkCompetencies : (this.result?.competencies ?? []);
+    const pool = this.frameworkCompetencies.length
+      ? this.frameworkCompetencies
+      : (this.result?.competencies ?? []);
     return pool.filter((c) => c.idNumber && !have.has(c.idNumber));
   }
 
-  addCompetency(owner: MselDraftTeam | MselDraftOrganization, idNumber: string) {
+  addCompetency(
+    owner: MselDraftTeam | MselDraftOrganization,
+    idNumber: string,
+  ) {
     if (!idNumber) {
       return;
     }
@@ -390,8 +499,13 @@ export class MselDraftDialogComponent {
     }
     // the chip shows the name, which the design only knows for the competencies it used
     if (!this.result.competencies?.some((c) => c.idNumber === idNumber)) {
-      const named = this.frameworkCompetencies.find((c) => c.idNumber === idNumber);
-      this.result.competencies = [...(this.result.competencies ?? []), named ?? { idNumber, shortName: '' }];
+      const named = this.frameworkCompetencies.find(
+        (c) => c.idNumber === idNumber,
+      );
+      this.result.competencies = [
+        ...(this.result.competencies ?? []),
+        named ?? { idNumber, shortName: '' },
+      ];
     }
   }
 
@@ -402,13 +516,19 @@ export class MselDraftDialogComponent {
     if (!this.competencyFrameworkIds.length) {
       return;
     }
-    forkJoin(this.competencyFrameworkIds.map((id) => this.competencyFrameworkService.getCompetencyFramework(id))).subscribe({
+    forkJoin(
+      this.competencyFrameworkIds.map((id) =>
+        this.competencyFrameworkService.getCompetencyFramework(id),
+      ),
+    ).subscribe({
       next: (frameworks) =>
         (this.frameworkCompetencies = frameworks
           .flatMap((f) => f.competencies ?? [])
           .filter((c) => c.idNumber)
           .map((c) => ({ idNumber: c.idNumber, shortName: c.shortName ?? '' }))
-          .sort((a, b) => a.idNumber.localeCompare(b.idNumber, undefined, { numeric: true }))),
+          .sort((a, b) =>
+            a.idNumber.localeCompare(b.idNumber, undefined, { numeric: true }),
+          )),
       error: () => (this.frameworkCompetencies = []),
     });
   }
@@ -423,7 +543,10 @@ export class MselDraftDialogComponent {
   }
 
   competencyName(idNumber: string): string {
-    return this.result.competencies?.find((c) => c.idNumber === idNumber)?.shortName ?? '';
+    return (
+      this.result.competencies?.find((c) => c.idNumber === idNumber)
+        ?.shortName ?? ''
+    );
   }
 
   formatMinutes(minutes: number): string {
@@ -433,7 +556,11 @@ export class MselDraftDialogComponent {
   }
 
   get canCreate(): boolean {
-    return !!this.result?.draft?.name?.trim() && !!this.result.draft.moves?.length && !this.isCreating;
+    return (
+      !!this.result?.draft?.name?.trim() &&
+      !!this.result.draft.moves?.length &&
+      !this.isCreating
+    );
   }
 
   // creates the MSEL from the design, then writes the rest into it while the planner works on the MSEL page
@@ -447,7 +574,10 @@ export class MselDraftDialogComponent {
       prompt: this.prompt,
       draft: this.result.draft,
       competencyFrameworkIds: this.competencyFrameworkIds,
-      answers: (this.result.questions ?? []).map((q, i) => ({ question: q.question, answer: this.answers[i] ?? '' })),
+      answers: (this.result.questions ?? []).map((q, i) => ({
+        question: q.question,
+        answer: this.answers[i] ?? '',
+      })),
     });
     this.dialogRef.close(mselId);
   }

@@ -53,7 +53,8 @@ export interface MselPageDraftDialogData {
   ],
 })
 export class MselPageDraftDialogComponent {
-  readonly dialogRef = inject<MatDialogRef<MselPageDraftDialogComponent, string>>(MatDialogRef);
+  readonly dialogRef =
+    inject<MatDialogRef<MselPageDraftDialogComponent, string>>(MatDialogRef);
   readonly data = inject<MselPageDraftDialogData>(MAT_DIALOG_DATA);
   private mselDataService = inject(MselDataService);
   instruction = '';
@@ -64,12 +65,16 @@ export class MselPageDraftDialogComponent {
 
   constructor() {
     this.dialogRef.disableClose = true;
-    this.hasContent = (this.data.content ?? '').replace(/<[^>]*>/g, '').trim().length > 0;
+    this.hasContent =
+      (this.data.content ?? '').replace(/<[^>]*>/g, '').trim().length > 0;
   }
 
   // a page with content is changed as asked; an empty one is written for its name
   get canWrite(): boolean {
-    return !this.isWriting && (this.hasContent ? this.instruction.trim().length > 0 : true);
+    return (
+      !this.isWriting &&
+      (this.hasContent ? this.instruction.trim().length > 0 : true)
+    );
   }
 
   write() {
@@ -83,18 +88,16 @@ export class MselPageDraftDialogComponent {
           content: this.data.content,
           instruction: this.instruction,
         });
-    request
-      .pipe(take(1))
-      .subscribe({
-        next: (result) => {
-          this.result = result;
-          this.isWriting = false;
-        },
-        error: (err) => {
-          this.errorMessage = this.getErrorMessage(err);
-          this.isWriting = false;
-        },
-      });
+    request.pipe(take(1)).subscribe({
+      next: (result) => {
+        this.result = result;
+        this.isWriting = false;
+      },
+      error: (err) => {
+        this.errorMessage = this.getErrorMessage(err);
+        this.isWriting = false;
+      },
+    });
   }
 
   // back to the instruction, keeping it so the planner can adjust and write again
@@ -110,7 +113,15 @@ export class MselPageDraftDialogComponent {
     this.dialogRef.close();
   }
 
-  private getErrorMessage(err: HttpErrorResponse | { error?: { title?: string; detail?: string }; status?: number; message?: string }): string {
+  private getErrorMessage(
+    err:
+      | HttpErrorResponse
+      | {
+          error?: { title?: string; detail?: string };
+          status?: number;
+          message?: string;
+        },
+  ): string {
     if (err instanceof HttpErrorResponse && err.status === 0) {
       return 'The API could not be reached.';
     }

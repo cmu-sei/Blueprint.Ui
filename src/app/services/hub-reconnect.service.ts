@@ -25,7 +25,8 @@ export class HubReconnectService {
   private readonly reconnectedSubject = new Subject<void>();
 
   /** Emits once a new connection has rejoined its groups. */
-  readonly reconnected$: Observable<void> = this.reconnectedSubject.asObservable();
+  readonly reconnected$: Observable<void> =
+    this.reconnectedSubject.asObservable();
 
   /** Called by SignalRService once a replacement connection has rejoined its groups. */
   announceReconnected() {

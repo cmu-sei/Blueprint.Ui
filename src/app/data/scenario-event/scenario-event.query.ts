@@ -4,16 +4,23 @@
  project root for license information.
 */
 
-import { Order, Query, QueryConfig, QueryEntity, SortBy } from '@datorama/akita';
 import {
-  ScenarioEventState,
-  ScenarioEventStore,
-} from './scenario-event.store';
+  Order,
+  Query,
+  QueryConfig,
+  QueryEntity,
+  SortBy,
+} from '@datorama/akita';
+import { ScenarioEventState, ScenarioEventStore } from './scenario-event.store';
 import { ScenarioEvent } from 'src/app/generated/blueprint.api';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-const querySort = (a: ScenarioEvent, b: ScenarioEvent, m: ScenarioEventState): number => {
+const querySort = (
+  a: ScenarioEvent,
+  b: ScenarioEvent,
+  m: ScenarioEventState,
+): number => {
   let sortResult = +a.deltaSeconds - +b.deltaSeconds;
   if (0 === sortResult) {
     sortResult = +a.groupOrder - +b.groupOrder;
@@ -22,7 +29,7 @@ const querySort = (a: ScenarioEvent, b: ScenarioEvent, m: ScenarioEventState): n
 };
 
 @QueryConfig({
-  sortBy: querySort
+  sortBy: querySort,
 })
 @Injectable({
   providedIn: 'root',
@@ -34,7 +41,7 @@ export class ScenarioEventQuery extends QueryEntity<ScenarioEventState> {
     const store = inject(ScenarioEventStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

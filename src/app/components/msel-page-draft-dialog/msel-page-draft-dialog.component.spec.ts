@@ -8,12 +8,25 @@ import { of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
-import { MselPageDraftDialogComponent, MselPageDraftDialogData } from './msel-page-draft-dialog.component';
+import {
+  MselPageDraftDialogComponent,
+  MselPageDraftDialogData,
+} from './msel-page-draft-dialog.component';
 
 describe('MselPageDraftDialogComponent', () => {
-  async function renderDialog(content: string, draftPage = vi.fn(() => of({ html: '<p>New read-in</p>', notes: ['Assumed one shift'] }))) {
+  async function renderDialog(
+    content: string,
+    draftPage = vi.fn(() =>
+      of({ html: '<p>New read-in</p>', notes: ['Assumed one shift'] }),
+    ),
+  ) {
     const ref = dialogRefStub<MselPageDraftDialogComponent, string>(undefined);
-    const data: MselPageDraftDialogData = { mselId: 'msel-1', pageId: 'page-1', name: 'Read-In', content };
+    const data: MselPageDraftDialogData = {
+      mselId: 'msel-1',
+      pageId: 'page-1',
+      name: 'Read-In',
+      content,
+    };
     await render(MselPageDraftDialogComponent, {
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: data },
@@ -34,10 +47,18 @@ describe('MselPageDraftDialogComponent', () => {
     const { ref, draftPage, user } = await renderDialog('<p>Old read-in</p>');
 
     expect(screen.getByRole('button', { name: 'Write' })).toBeDisabled();
-    await user.type(screen.getByRole('textbox', { name: 'What should change?' }), 'Add the rules of play');
+    await user.type(
+      screen.getByRole('textbox', { name: 'What should change?' }),
+      'Add the rules of play',
+    );
     await user.click(screen.getByRole('button', { name: 'Write' }));
 
-    expect(draftPage).toHaveBeenCalledWith('msel-1', { pageId: 'page-1', name: 'Read-In', content: '<p>Old read-in</p>', instruction: 'Add the rules of play' });
+    expect(draftPage).toHaveBeenCalledWith('msel-1', {
+      pageId: 'page-1',
+      name: 'Read-In',
+      content: '<p>Old read-in</p>',
+      instruction: 'Add the rules of play',
+    });
     expect(screen.getByText('Old read-in')).toBeInTheDocument();
     expect(screen.getByText('New read-in')).toBeInTheDocument();
     expect(screen.getByText('Assumed one shift')).toBeInTheDocument();
@@ -51,13 +72,22 @@ describe('MselPageDraftDialogComponent', () => {
    * Data: an empty page; the API answers 400 "Name the page".
    */
   it('writes an empty page and says why it failed', async () => {
-    const draftPage = vi.fn(() => throwError(() => ({ status: 400, error: { title: 'Name the page, or say what to write.' } })));
+    const draftPage = vi.fn(() =>
+      throwError(() => ({
+        status: 400,
+        error: { title: 'Name the page, or say what to write.' },
+      })),
+    );
     const { user } = await renderDialog('', draftPage);
 
-    expect(screen.getByRole('textbox', { name: 'Instructions (optional)' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('textbox', { name: 'Instructions (optional)' }),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Write' }));
 
-    expect(screen.getByRole('alert')).toHaveTextContent('Name the page, or say what to write.');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Name the page, or say what to write.',
+    );
     expect(screen.getByRole('button', { name: 'Write' })).toBeEnabled();
   });
 });

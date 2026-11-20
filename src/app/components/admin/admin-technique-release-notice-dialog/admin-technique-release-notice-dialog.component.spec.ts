@@ -8,23 +8,46 @@ import { MatInputModule } from '@angular/material/input';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
-import { TechniqueRelease, TechniqueReleaseNotice } from 'src/app/generated/blueprint.api';
-import { AdminTechniqueReleaseNoticeDialogComponent, isWebAddress } from './admin-technique-release-notice-dialog.component';
+import {
+  TechniqueRelease,
+  TechniqueReleaseNotice,
+} from 'src/app/generated/blueprint.api';
+import {
+  AdminTechniqueReleaseNoticeDialogComponent,
+  isWebAddress,
+} from './admin-technique-release-notice-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const RELEASE: TechniqueRelease = { id: 'rel-5', domain: 'acme-ttp', name: 'Acme Techniques', version: '1.0' };
+const RELEASE: TechniqueRelease = {
+  id: 'rel-5',
+  domain: 'acme-ttp',
+  name: 'Acme Techniques',
+  version: '1.0',
+};
 
-async function renderDialog(notice: TechniqueReleaseNotice = { source: '', sourceUrl: '', notice: '', termsUrl: '' }) {
+async function renderDialog(
+  notice: TechniqueReleaseNotice = {
+    source: '',
+    sourceUrl: '',
+    notice: '',
+    termsUrl: '',
+  },
+) {
   const data = { release: RELEASE, notice };
-  const rendered = await renderComponent(AdminTechniqueReleaseNoticeDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, MatFormFieldModule, MatInputModule],
-    declarations: [AdminTechniqueReleaseNoticeDialogComponent],
-    providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
-  });
+  const rendered = await renderComponent(
+    AdminTechniqueReleaseNoticeDialogComponent,
+    {
+      imports: [...CRUCIBLE_DIALOG_IMPORTS, MatFormFieldModule, MatInputModule],
+      declarations: [AdminTechniqueReleaseNoticeDialogComponent],
+      providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
+    },
+  );
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
   const results: unknown[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results };
 }
 
@@ -50,7 +73,11 @@ describe('AdminTechniqueReleaseNoticeDialogComponent', () => {
   it('starts a custom release with all four fields empty', async () => {
     await renderDialog();
 
-    expect(screen.getByRole('heading', { name: 'Edit Release: Acme Techniques 1.0' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', {
+        name: 'Edit Release: Acme Techniques 1.0',
+      }),
+    ).toBeInTheDocument();
     for (const label of ['Source', 'Source URL', 'Notice', 'Terms URL']) {
       expect(screen.getByRole('textbox', { name: label })).toHaveValue('');
     }
@@ -65,7 +92,10 @@ describe('AdminTechniqueReleaseNoticeDialogComponent', () => {
     const { data, results } = await renderDialog();
     const user = userEvent.setup();
 
-    await user.type(screen.getByRole('textbox', { name: 'Source' }), 'Acme Corp');
+    await user.type(
+      screen.getByRole('textbox', { name: 'Source' }),
+      'Acme Corp',
+    );
     await user.click(screen.getByRole('button', { name: 'Save' }));
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
@@ -82,9 +112,16 @@ describe('AdminTechniqueReleaseNoticeDialogComponent', () => {
    * Data: a source URL of javascript:alert(1).
    */
   it('refuses a link that is not a web address', async () => {
-    const { results } = await renderDialog({ source: 'Acme', sourceUrl: 'javascript:alert(1)', notice: '', termsUrl: '' });
+    const { results } = await renderDialog({
+      source: 'Acme',
+      sourceUrl: 'javascript:alert(1)',
+      notice: '',
+      termsUrl: '',
+    });
 
-    expect(screen.getByText('Enter an http or https address')).toBeInTheDocument();
+    expect(
+      screen.getByText('Enter an http or https address'),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
     expect(results).toEqual([]);
   });

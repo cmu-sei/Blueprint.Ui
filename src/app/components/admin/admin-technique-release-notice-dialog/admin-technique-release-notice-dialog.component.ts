@@ -4,11 +4,23 @@
 
 import { Component, inject, output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
-import { MatFormField, MatLabel, MatInput, MatHint } from '@angular/material/input';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
+import {
+  MatFormField,
+  MatLabel,
+  MatInput,
+  MatHint,
+} from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatSelect, MatOption } from '@angular/material/select';
-import { TechniqueFramework, TechniqueRelease, TechniqueReleaseNotice } from 'src/app/generated/blueprint.api';
+import {
+  TechniqueFramework,
+  TechniqueRelease,
+  TechniqueReleaseNotice,
+} from 'src/app/generated/blueprint.api';
 
 /** Whether a link is blank or an http or https address, the only kind the API accepts. */
 export function isWebAddress(url: string | null | undefined): boolean {
@@ -30,12 +42,29 @@ export function isWebAddress(url: string | null | undefined): boolean {
   selector: 'app-admin-technique-release-notice-dialog',
   templateUrl: './admin-technique-release-notice-dialog.component.html',
   styleUrls: ['./admin-technique-release-notice-dialog.component.scss'],
-  imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, MatHint, MatSelect, MatOption, FormsModule]
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    MatHint,
+    MatSelect,
+    MatOption,
+    FormsModule,
+  ],
 })
 export class AdminTechniqueReleaseNoticeDialogComponent {
-  data = inject<{ release: TechniqueRelease; notice: TechniqueReleaseNotice; frameworks?: TechniqueFramework[] }>(MAT_DIALOG_DATA);
+  data = inject<{
+    release: TechniqueRelease;
+    notice: TechniqueReleaseNotice;
+    frameworks?: TechniqueFramework[];
+  }>(MAT_DIALOG_DATA);
 
-  readonly editComplete = output<{ saveChanges: boolean; notice: TechniqueReleaseNotice | null }>();
+  readonly editComplete = output<{
+    saveChanges: boolean;
+    notice: TechniqueReleaseNotice | null;
+  }>();
 
   get release(): TechniqueRelease {
     return this.data.release;
@@ -43,7 +72,11 @@ export class AdminTechniqueReleaseNoticeDialogComponent {
 
   /** The frameworks the release may belong to: those of its domain and family. */
   get frameworks(): TechniqueFramework[] {
-    return (this.data.frameworks || []).filter(f => f.domain === this.release.domain && !!f.isDefensive === !!this.release.isDefensive);
+    return (this.data.frameworks || []).filter(
+      (f) =>
+        f.domain === this.release.domain &&
+        !!f.isDefensive === !!this.release.isDefensive,
+    );
   }
 
   get sourceUrlError(): boolean {

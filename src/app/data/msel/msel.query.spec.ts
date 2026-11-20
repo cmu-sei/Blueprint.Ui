@@ -82,7 +82,10 @@ describe('MselQuery', () => {
     const query = runInInjectionContext(injector, () => new MselQuery());
     store.set([
       msel({ scenarioEvents: [{ id: 'se-1', mselId: 'msel-1' }] }),
-      msel({ id: 'msel-2', scenarioEvents: [{ id: 'se-2', mselId: 'msel-2' }] }),
+      msel({
+        id: 'msel-2',
+        scenarioEvents: [{ id: 'se-2', mselId: 'msel-2' }],
+      }),
     ]);
 
     expect(query.getByScenarioEventId('se-2').id).toBe('msel-2');

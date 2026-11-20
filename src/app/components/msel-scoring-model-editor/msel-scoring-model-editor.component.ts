@@ -7,7 +7,13 @@ import { FormsModule } from '@angular/forms';
 import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatIcon } from '@angular/material/icon';
-import { MatError, MatFormField, MatHint, MatInput, MatLabel } from '@angular/material/input';
+import {
+  MatError,
+  MatFormField,
+  MatHint,
+  MatInput,
+  MatLabel,
+} from '@angular/material/input';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { MatTooltip } from '@angular/material/tooltip';
 import {
@@ -16,7 +22,14 @@ import {
   MselScoringCategory,
   MselScoringModel,
 } from 'src/app/generated/blueprint.api';
-import { RIGHT_SIDE_DISPLAYS, categoriesForMove, fillHiddenNumbers, hasNumber, isQuestionCategory, moveRangeLabel } from 'src/app/utilities/scoring-model';
+import {
+  RIGHT_SIDE_DISPLAYS,
+  categoriesForMove,
+  fillHiddenNumbers,
+  hasNumber,
+  isQuestionCategory,
+  moveRangeLabel,
+} from 'src/app/utilities/scoring-model';
 
 export interface ScoringModelMove {
   moveNumber: number;
@@ -32,7 +45,21 @@ export interface ScoringModelMove {
   selector: 'app-msel-scoring-model-editor',
   templateUrl: './msel-scoring-model-editor.component.html',
   styleUrls: ['./msel-scoring-model-editor.component.scss'],
-  imports: [FormsModule, MatFormField, MatLabel, MatInput, MatHint, MatError, MatSelect, MatOption, MatCheckbox, MatButton, MatIconButton, MatIcon, MatTooltip],
+  imports: [
+    FormsModule,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    MatHint,
+    MatError,
+    MatSelect,
+    MatOption,
+    MatCheckbox,
+    MatButton,
+    MatIconButton,
+    MatIcon,
+    MatTooltip,
+  ],
 })
 export class MselScoringModelEditorComponent {
   readonly model = input.required<MselScoringModel>();
@@ -40,7 +67,11 @@ export class MselScoringModelEditorComponent {
   readonly moves = input<ScoringModelMove[]>([]);
   readonly canEdit = input(false);
 
-  readonly moveNumbers = computed(() => this.moves().map((m) => +m.moveNumber).sort((a, b) => a - b));
+  readonly moveNumbers = computed(() =>
+    this.moves()
+      .map((m) => +m.moveNumber)
+      .sort((a, b) => a - b),
+  );
   readonly rightSideDisplays = RIGHT_SIDE_DISPLAYS;
   readonly selections = [
     { value: CiteScoringOptionSelection.Single, label: 'Single' },
@@ -58,7 +89,9 @@ export class MselScoringModelEditorComponent {
     // another model previews from its first move
     effect(() => {
       this.model();
-      untracked(() => (this.previewMoveNumber = this.previewMoveNumbers()[0] ?? 0));
+      untracked(
+        () => (this.previewMoveNumber = this.previewMoveNumbers()[0] ?? 0),
+      );
     });
     // new or changed moves keep the move being previewed while it is still offered
     effect(() => {
@@ -71,7 +104,9 @@ export class MselScoringModelEditorComponent {
 
   moveLabel(moveNumber: number): string {
     const move = this.moves().find((m) => +m.moveNumber === +moveNumber);
-    return move?.description ? `Move ${moveNumber} - ${move.description}` : `Move ${moveNumber}`;
+    return move?.description
+      ? `Move ${moveNumber} - ${move.description}`
+      : `Move ${moveNumber}`;
   }
 
   rangeLabel(category: MselScoringCategory): string {
@@ -83,7 +118,9 @@ export class MselScoringModelEditorComponent {
     if (this.moveNumbers().length) {
       return this.moveNumbers();
     }
-    const firsts = (this.model()?.categories || []).map((c) => +c.moveNumberFirstDisplay);
+    const firsts = (this.model()?.categories || []).map(
+      (c) => +c.moveNumberFirstDisplay,
+    );
     return [...new Set(firsts)].sort((a, b) => a - b);
   }
 
@@ -124,7 +161,9 @@ export class MselScoringModelEditorComponent {
       moveNumberFirstDisplay: first,
       moveNumberLastDisplay: last,
       // a question set's next category asks questions too
-      scoringOptionSelection: model.categories[model.categories.length - 1]?.scoringOptionSelection ?? CiteScoringOptionSelection.Single,
+      scoringOptionSelection:
+        model.categories[model.categories.length - 1]?.scoringOptionSelection ??
+        CiteScoringOptionSelection.Single,
       isModifierRequired: false,
       options: [],
     });
@@ -139,7 +178,11 @@ export class MselScoringModelEditorComponent {
   }
 
   addOption(category: MselScoringCategory) {
-    category.options.push({ description: '', value: isQuestionCategory(category) ? 1 : 0, isModifier: false });
+    category.options.push({
+      description: '',
+      value: isQuestionCategory(category) ? 1 : 0,
+      isModifier: false,
+    });
   }
 
   removeOption(category: MselScoringCategory, index: number) {

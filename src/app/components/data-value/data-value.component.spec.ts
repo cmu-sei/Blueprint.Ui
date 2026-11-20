@@ -16,11 +16,24 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { FormsModule } from '@angular/forms';
-import { NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel, NgxMatDatepickerInput, NgxMatDatetimepicker } from '@ngxmc/datetime-picker';
+import {
+  NgxMatDatepickerActions,
+  NgxMatDatepickerApply,
+  NgxMatDatepickerCancel,
+  NgxMatDatepickerInput,
+  NgxMatDatetimepicker,
+} from '@ngxmc/datetime-picker';
 import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
-import { DataField, DataFieldType, MselTechnique, MselTechniqueService, MselCountermeasures, MselItemStatus } from 'src/app/generated/blueprint.api';
+import {
+  DataField,
+  DataFieldType,
+  MselTechnique,
+  MselTechniqueService,
+  MselCountermeasures,
+  MselItemStatus,
+} from 'src/app/generated/blueprint.api';
 import { MselTechniqueDataService } from 'src/app/data/msel-technique/msel-technique-data.service';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { MselTechniqueStore } from 'src/app/data/msel-technique/msel-technique.store';
@@ -29,13 +42,38 @@ import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
 import { IsDateTimeValuePipe } from 'src/app/utilities/date-time-value';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const SUBJECT: DataField = { id: 'df-subject', name: 'Subject', dataType: DataFieldType.String };
-const STATUS: DataField = { id: 'df-status', name: 'Status', dataType: DataFieldType.Status };
-const ASSIGNED: DataField = { id: 'df-team', name: 'Assigned To', dataType: DataFieldType.Team };
-const BODY: DataField = { id: 'df-body', name: 'Description', dataType: DataFieldType.Html };
-const WHEN: DataField = { id: 'df-when', name: 'When', dataType: DataFieldType.DateTime };
+const SUBJECT: DataField = {
+  id: 'df-subject',
+  name: 'Subject',
+  dataType: DataFieldType.String,
+};
+const STATUS: DataField = {
+  id: 'df-status',
+  name: 'Status',
+  dataType: DataFieldType.Status,
+};
+const ASSIGNED: DataField = {
+  id: 'df-team',
+  name: 'Assigned To',
+  dataType: DataFieldType.Team,
+};
+const BODY: DataField = {
+  id: 'df-body',
+  name: 'Description',
+  dataType: DataFieldType.Html,
+};
+const WHEN: DataField = {
+  id: 'df-when',
+  name: 'When',
+  dataType: DataFieldType.DateTime,
+};
 // The data field that sets a Gallery Article's status, and the statuses the MSEL offers.
-const ARTICLE_STATUS: DataField = { id: 'df-article-status', name: 'Article Status', dataType: DataFieldType.String, galleryArticleParameter: 'Status' };
+const ARTICLE_STATUS: DataField = {
+  id: 'df-article-status',
+  name: 'Article Status',
+  dataType: DataFieldType.String,
+  galleryArticleParameter: 'Status',
+};
 const GALLERY_STATUSES = ['Gray', 'Green', 'Red'];
 
 interface Flags {
@@ -46,8 +84,19 @@ interface Flags {
   canAiWrite?: boolean;
 }
 
-async function renderDataValue(dataField: DataField, value: string, flags: Flags = {}, galleryItemStatusOptions: string[] = []) {
-  const { canEdit = false, canApprove = false, isOwner = false, showValueOnly = false, canAiWrite = false } = flags;
+async function renderDataValue(
+  dataField: DataField,
+  value: string,
+  flags: Flags = {},
+  galleryItemStatusOptions: string[] = [],
+) {
+  const {
+    canEdit = false,
+    canApprove = false,
+    isOwner = false,
+    showValueOnly = false,
+    canAiWrite = false,
+  } = flags;
   const rendered = await renderComponent(DataValueComponent, {
     imports: [
       AngularEditorModule,
@@ -75,7 +124,10 @@ async function renderDataValue(dataField: DataField, value: string, flags: Flags
       isOwner,
       showValueOnly,
       canAiWrite,
-      unitOptions: [{ id: 'unit-blue', shortName: 'BLUE' }, { id: 'unit-red', shortName: 'RED' }],
+      unitOptions: [
+        { id: 'unit-blue', shortName: 'BLUE' },
+        { id: 'unit-red', shortName: 'RED' },
+      ],
       galleryItemStatusOptions,
     },
   });
@@ -83,7 +135,9 @@ async function renderDataValue(dataField: DataField, value: string, flags: Flags
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
   const changes: string[] = [];
-  rendered.fixture.componentInstance.valueChange.subscribe((v) => changes.push(v));
+  rendered.fixture.componentInstance.valueChange.subscribe((v) =>
+    changes.push(v),
+  );
   return { ...rendered, changes };
 }
 
@@ -99,7 +153,9 @@ describe('DataValueComponent', () => {
    * Data: Subject = "Urgent"; canEdit true; "!" typed.
    */
   it('edits a string value with canEdit', async () => {
-    const { changes } = await renderDataValue(SUBJECT, 'Urgent', { canEdit: true });
+    const { changes } = await renderDataValue(SUBJECT, 'Urgent', {
+      canEdit: true,
+    });
     const user = userEvent.setup();
 
     const input = screen.getByRole('textbox', { name: 'Subject' });
@@ -115,7 +171,11 @@ describe('DataValueComponent', () => {
    * Data: Subject; canEdit false, canApprove true, isOwner true (near miss: other flags granted).
    */
   it('disables a string value without canEdit', async () => {
-    await renderDataValue(SUBJECT, 'Urgent', { canEdit: false, canApprove: true, isOwner: true });
+    await renderDataValue(SUBJECT, 'Urgent', {
+      canEdit: false,
+      canApprove: true,
+      isOwner: true,
+    });
 
     expect(screen.getByRole('textbox', { name: 'Subject' })).toBeDisabled();
   });
@@ -128,11 +188,21 @@ describe('DataValueComponent', () => {
   it.each([
     { canApprove: true, disabled: 'false' },
     { canApprove: false, disabled: 'true' },
-  ])('sets the Status select aria-disabled $disabled with canApprove $canApprove', async ({ canApprove, disabled }) => {
-    await renderDataValue(STATUS, MselItemStatus.Pending, { canApprove, canEdit: true, isOwner: true });
+  ])(
+    'sets the Status select aria-disabled $disabled with canApprove $canApprove',
+    async ({ canApprove, disabled }) => {
+      await renderDataValue(STATUS, MselItemStatus.Pending, {
+        canApprove,
+        canEdit: true,
+        isOwner: true,
+      });
 
-    expect(screen.getByRole('combobox')).toHaveAttribute('aria-disabled', disabled);
-  });
+      expect(screen.getByRole('combobox')).toHaveAttribute(
+        'aria-disabled',
+        disabled,
+      );
+    },
+  );
 
   /**
    * Verifies: the assigned-unit select follows isOwner alone: enabled for the owner, disabled otherwise even with canEdit and canApprove.
@@ -142,11 +212,21 @@ describe('DataValueComponent', () => {
   it.each([
     { isOwner: true, disabled: 'false' },
     { isOwner: false, disabled: 'true' },
-  ])('sets the Assigned To select aria-disabled $disabled with isOwner $isOwner', async ({ isOwner, disabled }) => {
-    await renderDataValue(ASSIGNED, 'BLUE', { isOwner, canEdit: true, canApprove: true });
+  ])(
+    'sets the Assigned To select aria-disabled $disabled with isOwner $isOwner',
+    async ({ isOwner, disabled }) => {
+      await renderDataValue(ASSIGNED, 'BLUE', {
+        isOwner,
+        canEdit: true,
+        canApprove: true,
+      });
 
-    expect(screen.getByRole('combobox')).toHaveAttribute('aria-disabled', disabled);
-  });
+      expect(screen.getByRole('combobox')).toHaveAttribute(
+        'aria-disabled',
+        disabled,
+      );
+    },
+  );
 
   /**
    * Verifies: the owner can reassign the event to another unit.
@@ -154,7 +234,9 @@ describe('DataValueComponent', () => {
    * Data: Assigned To = BLUE; isOwner true; RED chosen.
    */
   it('reassigns the unit as the owner', async () => {
-    const { changes } = await renderDataValue(ASSIGNED, 'BLUE', { isOwner: true });
+    const { changes } = await renderDataValue(ASSIGNED, 'BLUE', {
+      isOwner: true,
+    });
     const user = userEvent.setup();
 
     await user.click(screen.getByRole('combobox'));
@@ -184,18 +266,29 @@ describe('DataValueComponent', () => {
     [
       { view: 'shown read-only', flags: { showValueOnly: true } },
       { view: 'in the editable field', flags: { canEdit: true } },
-      { view: 'shown as a value to its editor', flags: { showValueOnly: true, canEdit: true, canApprove: true, isOwner: true } },
+      {
+        view: 'shown as a value to its editor',
+        flags: {
+          showValueOnly: true,
+          canEdit: true,
+          canApprove: true,
+          isOwner: true,
+        },
+      },
     ].flatMap((v) => [
       { ...v, value: '2026-10-12T16:00:00Z', label: '12 Oct 2026 12:00 EDT' },
       { ...v, value: '2026-11-12T17:00:00Z', label: '12 Nov 2026 12:00 EST' },
     ]),
-  )('labels a date-time value $view as $label', async ({ flags, value, label }) => {
-    vi.stubEnv('TZ', 'America/New_York');
+  )(
+    'labels a date-time value $view as $label',
+    async ({ flags, value, label }) => {
+      vi.stubEnv('TZ', 'America/New_York');
 
-    await renderDataValue(WHEN, value, flags);
+      await renderDataValue(WHEN, value, flags);
 
-    expect(screen.getByText(label)).toBeInTheDocument();
-  });
+      expect(screen.getByText(label)).toBeInTheDocument();
+    },
+  );
 
   /**
    * Verifies: a DateTime value that is not a date, such as a team left behind by a data type change, is shown as its text instead of breaking the page or showing a made-up date, in each of the three places the template shows a date.
@@ -206,13 +299,29 @@ describe('DataValueComponent', () => {
     [
       { view: 'shown read-only', flags: { showValueOnly: true } },
       { view: 'in the editable field', flags: { canEdit: true } },
-      { view: 'shown as a value to its editor', flags: { showValueOnly: true, canEdit: true, canApprove: true, isOwner: true } },
-    ].flatMap((v) => ['TEAM1', 'Team 2', '42'].map((value) => ({ ...v, value }))),
-  )('shows the date-time value $value as its text $view', async ({ flags, value }) => {
-    await renderDataValue(WHEN, value, flags);
+      {
+        view: 'shown as a value to its editor',
+        flags: {
+          showValueOnly: true,
+          canEdit: true,
+          canApprove: true,
+          isOwner: true,
+        },
+      },
+    ].flatMap((v) =>
+      ['TEAM1', 'Team 2', '42'].map((value) => ({ ...v, value })),
+    ),
+  )(
+    'shows the date-time value $value as its text $view',
+    async ({ flags, value }) => {
+      await renderDataValue(WHEN, value, flags);
 
-    expect(screen.getByText(value)).toHaveAttribute('title', 'Not a date and time');
-  });
+      expect(screen.getByText(value)).toHaveAttribute(
+        'title',
+        'Not a date and time',
+      );
+    },
+  );
 
   /**
    * Verifies: the editable DateTime field says how to fix a value that is not a date.
@@ -222,7 +331,9 @@ describe('DataValueComponent', () => {
   it('asks for a new date in the editable field when the value is not a date', async () => {
     await renderDataValue(WHEN, 'Team 2', { canEdit: true });
 
-    expect(screen.getByText('Not a date and time. Choose a new one.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Not a date and time. Choose a new one.'),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -233,7 +344,9 @@ describe('DataValueComponent', () => {
   it('treats a date-time value of only spaces as empty', async () => {
     const { container } = await renderDataValue(WHEN, '   ', { canEdit: true });
 
-    expect(screen.queryByText('Not a date and time. Choose a new one.')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Not a date and time. Choose a new one.'),
+    ).not.toBeInTheDocument();
     expect(container.querySelector('.invalid-value')).toBeNull();
   });
 
@@ -243,17 +356,25 @@ describe('DataValueComponent', () => {
    * Data: When (DateTime) empty; canEdit; the 15th of the month picked.
    */
   it('shows a picked date with no error', async () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const { fixture, changes } = await renderDataValue(WHEN, '', { canEdit: true });
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    const { fixture, changes } = await renderDataValue(WHEN, '', {
+      canEdit: true,
+    });
     const user = userEvent.setup();
 
-    await user.click(within(screen.getByTitle('Choose Date/Time')).getByRole('button'));
+    await user.click(
+      within(screen.getByTitle('Choose Date/Time')).getByRole('button'),
+    );
     await user.click(await screen.findByText('15'));
     await user.click(screen.getByRole('button', { name: 'Save' }));
     fixture.detectChanges();
 
     expect(changes.at(-1)).toBeInstanceOf(Date);
-    expect(screen.queryByText('Not a date and time. Choose a new one.')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Not a date and time. Choose a new one.'),
+    ).not.toBeInTheDocument();
     expect(consoleError).not.toHaveBeenCalled();
     consoleError.mockRestore();
   });
@@ -263,26 +384,39 @@ describe('DataValueComponent', () => {
    * Interacts with: the numeric and dropdown branches of the template, mat-select options, valueChange output.
    * Data: an Integer or Double field chosen from the options One (1) and Two (2); value 1; canEdit; Two chosen.
    */
-  it.each([DataFieldType.Integer, DataFieldType.Double])('shows only the dropdown for a %s field chosen from a list', async (dataType) => {
-    const field: DataField = {
-      id: 'df-count',
-      name: 'Count',
-      dataType,
-      isChosenFromList: true,
-      dataOptions: [
-        { id: 'do-1', dataFieldId: 'df-count', optionName: 'One', optionValue: '1' },
-        { id: 'do-2', dataFieldId: 'df-count', optionName: 'Two', optionValue: '2' },
-      ],
-    };
-    const { changes } = await renderDataValue(field, '1', { canEdit: true });
-    const user = userEvent.setup();
+  it.each([DataFieldType.Integer, DataFieldType.Double])(
+    'shows only the dropdown for a %s field chosen from a list',
+    async (dataType) => {
+      const field: DataField = {
+        id: 'df-count',
+        name: 'Count',
+        dataType,
+        isChosenFromList: true,
+        dataOptions: [
+          {
+            id: 'do-1',
+            dataFieldId: 'df-count',
+            optionName: 'One',
+            optionValue: '1',
+          },
+          {
+            id: 'do-2',
+            dataFieldId: 'df-count',
+            optionName: 'Two',
+            optionValue: '2',
+          },
+        ],
+      };
+      const { changes } = await renderDataValue(field, '1', { canEdit: true });
+      const user = userEvent.setup();
 
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-    await user.click(screen.getByRole('combobox'));
-    await user.click(screen.getByRole('option', { name: 'Two' }));
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+      await user.click(screen.getByRole('combobox'));
+      await user.click(screen.getByRole('option', { name: 'Two' }));
 
-    expect(changes).toEqual(['2']);
-  });
+      expect(changes).toEqual(['2']);
+    },
+  );
 
   /**
    * Verifies: a numeric field not chosen from a list keeps its number box.
@@ -290,7 +424,11 @@ describe('DataValueComponent', () => {
    * Data: a Double field; value 1.5; canEdit.
    */
   it('shows the number box for a Double field', async () => {
-    await renderDataValue({ id: 'df-ratio', name: 'Ratio', dataType: DataFieldType.Double }, '1.5', { canEdit: true });
+    await renderDataValue(
+      { id: 'df-ratio', name: 'Ratio', dataType: DataFieldType.Double },
+      '1.5',
+      { canEdit: true },
+    );
 
     expect(screen.getByRole('textbox', { name: 'Ratio' })).toHaveValue('1.5');
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
@@ -301,31 +439,58 @@ describe('DataValueComponent', () => {
    * Interacts with: useGalleryItemStatusSelect, getGalleryItemStatus (legacy "open" shown as Green), galleryItemStatusChange, valueChange output.
    * Data: Article Status (String, Gallery parameter Status) = "open"; statuses Gray, Green, Red; canEdit only, with showValueOnly false or true; Red chosen.
    */
-  it.each([false, true])('lets a Gallery status be chosen with canEdit (showValueOnly %s)', async (showValueOnly) => {
-    const { fixture, changes } = await renderDataValue(ARTICLE_STATUS, 'open', { canEdit: true, showValueOnly }, GALLERY_STATUSES);
-    // In the value-only view the select has no form field, so it opens through the harness.
-    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+  it.each([false, true])(
+    'lets a Gallery status be chosen with canEdit (showValueOnly %s)',
+    async (showValueOnly) => {
+      const { fixture, changes } = await renderDataValue(
+        ARTICLE_STATUS,
+        'open',
+        { canEdit: true, showValueOnly },
+        GALLERY_STATUSES,
+      );
+      // In the value-only view the select has no form field, so it opens through the harness.
+      const select =
+        await TestbedHarnessEnvironment.loader(fixture).getHarness(
+          MatSelectHarness,
+        );
 
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-    expect(screen.getByRole('combobox')).toHaveAttribute('aria-disabled', 'false');
-    expect(await select.getValueText()).toBe('Green');
-    await select.open();
-    expect(await Promise.all((await select.getOptions()).map((o) => o.getText()))).toEqual(['', 'Gray', 'Green', 'Red']);
-    await select.clickOptions({ text: 'Red' });
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+      expect(screen.getByRole('combobox')).toHaveAttribute(
+        'aria-disabled',
+        'false',
+      );
+      expect(await select.getValueText()).toBe('Green');
+      await select.open();
+      expect(
+        await Promise.all((await select.getOptions()).map((o) => o.getText())),
+      ).toEqual(['', 'Gray', 'Green', 'Red']);
+      await select.clickOptions({ text: 'Red' });
 
-    expect(changes).toEqual(['Red']);
-  });
+      expect(changes).toEqual(['Red']);
+    },
+  );
 
   /**
    * Verifies: without canEdit the Gallery status select is disabled, even for an approver who owns the event, in the form field and in the value-only view.
    * Interacts with: the Gallery status mat-select [disabled].
    * Data: Article Status = "Green"; statuses Gray, Green, Red; canEdit false with canApprove and isOwner true (near miss), showValueOnly false or true.
    */
-  it.each([false, true])('disables the Gallery status select without canEdit (showValueOnly %s)', async (showValueOnly) => {
-    await renderDataValue(ARTICLE_STATUS, 'Green', { canEdit: false, canApprove: true, isOwner: true, showValueOnly }, GALLERY_STATUSES);
+  it.each([false, true])(
+    'disables the Gallery status select without canEdit (showValueOnly %s)',
+    async (showValueOnly) => {
+      await renderDataValue(
+        ARTICLE_STATUS,
+        'Green',
+        { canEdit: false, canApprove: true, isOwner: true, showValueOnly },
+        GALLERY_STATUSES,
+      );
 
-    expect(screen.getByRole('combobox')).toHaveAttribute('aria-disabled', 'true');
-  });
+      expect(screen.getByRole('combobox')).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
+    },
+  );
 
   /**
    * Verifies: the Gallery status select replaces the own option list of a status field chosen from a list.
@@ -336,7 +501,14 @@ describe('DataValueComponent', () => {
     const field: DataField = {
       ...ARTICLE_STATUS,
       isChosenFromList: true,
-      dataOptions: [{ id: 'do-a', dataFieldId: 'df-article-status', optionName: 'A', optionValue: 'A' }],
+      dataOptions: [
+        {
+          id: 'do-a',
+          dataFieldId: 'df-article-status',
+          optionName: 'A',
+          optionValue: 'A',
+        },
+      ],
     };
     await renderDataValue(field, 'Green', { canEdit: true }, GALLERY_STATUSES);
     const user = userEvent.setup();
@@ -344,7 +516,9 @@ describe('DataValueComponent', () => {
     expect(screen.getAllByRole('combobox')).toHaveLength(1);
     await user.click(screen.getByRole('combobox'));
 
-    expect(screen.getAllByRole('option').map((o) => o.textContent.trim())).toEqual(['', 'Gray', 'Green', 'Red']);
+    expect(
+      screen.getAllByRole('option').map((o) => o.textContent.trim()),
+    ).toEqual(['', 'Gray', 'Green', 'Red']);
   });
 
   /**
@@ -353,12 +527,18 @@ describe('DataValueComponent', () => {
    * Data: Article Status with no statuses; a Subject field with statuses Gray, Green, Red; value "Green"; canEdit.
    */
   it.each([
-    { label: 'without MSEL statuses', field: ARTICLE_STATUS, statuses: [] as string[] },
+    {
+      label: 'without MSEL statuses',
+      field: ARTICLE_STATUS,
+      statuses: [] as string[],
+    },
     { label: 'for another field', field: SUBJECT, statuses: GALLERY_STATUSES },
   ])('keeps the text box $label', async ({ field, statuses }) => {
     await renderDataValue(field, 'Green', { canEdit: true }, statuses);
 
-    expect(screen.getByRole('textbox', { name: field.name })).toHaveValue('Green');
+    expect(screen.getByRole('textbox', { name: field.name })).toHaveValue(
+      'Green',
+    );
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   });
 
@@ -371,13 +551,23 @@ describe('DataValueComponent', () => {
     { value: 'CRITICAL', shown: 'Orange', color: 'rgb(250, 163, 2)' },
     { value: 'red', shown: 'Red', color: 'rgb(255, 51, 51)' },
     { value: 'Pending review', shown: 'Pending review', color: null as string },
-  ])('shows the Gallery status $value as $shown', async ({ value, shown, color }) => {
-    const { container } = await renderDataValue(ARTICLE_STATUS, value, { showValueOnly: true }, GALLERY_STATUSES);
+  ])(
+    'shows the Gallery status $value as $shown',
+    async ({ value, shown, color }) => {
+      const { container } = await renderDataValue(
+        ARTICLE_STATUS,
+        value,
+        { showValueOnly: true },
+        GALLERY_STATUSES,
+      );
 
-    expect(screen.getByText(shown)).toBeInTheDocument();
-    const swatch = container.querySelector<HTMLElement>('.gallery-status-swatch');
-    expect(swatch?.style.backgroundColor ?? null).toBe(color);
-  });
+      expect(screen.getByText(shown)).toBeInTheDocument();
+      const swatch = container.querySelector<HTMLElement>(
+        '.gallery-status-swatch',
+      );
+      expect(swatch?.style.backgroundColor ?? null).toBe(color);
+    },
+  );
 
   /**
    * Verifies: Write with AI is offered on an Html field only when the dialog allows it and the value is editable, and it emits aiWrite.
@@ -389,11 +579,17 @@ describe('DataValueComponent', () => {
     { flags: { canEdit: false, canAiWrite: true }, offered: false },
     { flags: { canEdit: true, canAiWrite: false }, offered: false },
   ])('offers Write with AI $offered for $flags', async ({ flags, offered }) => {
-    const { fixture } = await renderDataValue(BODY, '<p>Crews restore the grid.</p>', flags);
+    const { fixture } = await renderDataValue(
+      BODY,
+      '<p>Crews restore the grid.</p>',
+      flags,
+    );
     const requests: void[] = [];
     fixture.componentInstance.aiWrite.subscribe(() => requests.push(undefined));
 
-    const button = screen.queryByRole('button', { name: 'Write Description with AI' });
+    const button = screen.queryByRole('button', {
+      name: 'Write Description with AI',
+    });
     if (!offered) {
       expect(button).not.toBeInTheDocument();
       return;
@@ -408,45 +604,128 @@ describe('DataValueComponent', () => {
    * Data: Subject (String) "Phishing wave".
    */
   it('offers Write with AI on a String field but not on a Url field', async () => {
-    const { fixture } = await renderDataValue(SUBJECT, 'Phishing wave', { canEdit: true, canAiWrite: true });
+    const { fixture } = await renderDataValue(SUBJECT, 'Phishing wave', {
+      canEdit: true,
+      canAiWrite: true,
+    });
     const requests: void[] = [];
     fixture.componentInstance.aiWrite.subscribe(() => requests.push(undefined));
 
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Write Subject with AI' }));
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Write Subject with AI' }));
     expect(requests).toHaveLength(1);
   });
 
   it('offers no Write with AI on a Url field', async () => {
-    const link: DataField = { id: 'df-link', name: 'Link', dataType: DataFieldType.Url };
-    await renderDataValue(link, 'https://example.com/advisory', { canEdit: true, canAiWrite: true });
+    const link: DataField = {
+      id: 'df-link',
+      name: 'Link',
+      dataType: DataFieldType.Url,
+    };
+    await renderDataValue(link, 'https://example.com/advisory', {
+      canEdit: true,
+      canAiWrite: true,
+    });
 
-    expect(screen.queryByRole('button', { name: 'Write Link with AI' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Write Link with AI' }),
+    ).not.toBeInTheDocument();
   });
 });
 
 // The MSEL's pool offers T1059 and T1566 from an ATT&CK release and D3-CH from a D3FEND one; T9999 was dropped
 // from it, but a cell still names it. An Attack Technique field offers the first two, a Defensive Technique field the third.
 const TECHNIQUE_POOL: MselTechnique[] = [
-  { id: 'mat-2', mselId: 'msel-1', techniqueId: 'at-2', technique: { id: 'at-2', domain: 'enterprise-attack', externalId: 'T1566', name: 'Phishing', url: 'https://attack.mitre.org/techniques/T1566' } },
-  { id: 'mat-1', mselId: 'msel-1', techniqueId: 'at-1', technique: { id: 'at-1', domain: 'enterprise-attack', externalId: 'T1059', name: 'Command and Scripting Interpreter', url: 'https://attack.mitre.org/techniques/T1059' } },
-  { id: 'mat-3', mselId: 'msel-1', techniqueId: 'at-3', technique: { id: 'at-3', domain: 'd3fend', isDefensive: true, externalId: 'D3-CH', name: 'Credential Hardening', url: 'https://d3fend.mitre.org/technique/d3f:CredentialHardening/' } },
+  {
+    id: 'mat-2',
+    mselId: 'msel-1',
+    techniqueId: 'at-2',
+    technique: {
+      id: 'at-2',
+      domain: 'enterprise-attack',
+      externalId: 'T1566',
+      name: 'Phishing',
+      url: 'https://attack.mitre.org/techniques/T1566',
+    },
+  },
+  {
+    id: 'mat-1',
+    mselId: 'msel-1',
+    techniqueId: 'at-1',
+    technique: {
+      id: 'at-1',
+      domain: 'enterprise-attack',
+      externalId: 'T1059',
+      name: 'Command and Scripting Interpreter',
+      url: 'https://attack.mitre.org/techniques/T1059',
+    },
+  },
+  {
+    id: 'mat-3',
+    mselId: 'msel-1',
+    techniqueId: 'at-3',
+    technique: {
+      id: 'at-3',
+      domain: 'd3fend',
+      isDefensive: true,
+      externalId: 'D3-CH',
+      name: 'Credential Hardening',
+      url: 'https://d3fend.mitre.org/technique/d3f:CredentialHardening/',
+    },
+  },
 ];
 
 // D3-FA is a second defensive technique in the pool, so a Suggested group has something to come before.
 const D3_FA_IN_POOL: MselTechnique = {
-  id: 'mat-4', mselId: 'msel-1', techniqueId: 'at-4',
-  technique: { id: 'at-4', domain: 'd3fend', isDefensive: true, externalId: 'D3-FA', name: 'File Analysis', url: 'https://d3fend.mitre.org/technique/d3f:FileAnalysis/' },
+  id: 'mat-4',
+  mselId: 'msel-1',
+  techniqueId: 'at-4',
+  technique: {
+    id: 'at-4',
+    domain: 'd3fend',
+    isDefensive: true,
+    externalId: 'D3-FA',
+    name: 'File Analysis',
+    url: 'https://d3fend.mitre.org/technique/d3f:FileAnalysis/',
+  },
 };
 // D3FEND counters T1059 with File Analysis (two paths) and with Network Traffic Filtering, which the pool does not hold.
 const T1059_COUNTERED: MselCountermeasures = {
-  mselId: 'msel-1', techniqueReleaseId: 'rel-d3', hasMappings: true,
-  techniques: [{
-    techniqueId: 'at-1', offensiveExternalId: 'T1059', inheritedFrom: null,
-    countermeasures: [
-      { id: 'cm-1', offensiveExternalId: 'T1059', defensiveTechniqueId: 'at-4', defensiveTechnique: D3_FA_IN_POOL.technique, defensiveTactic: 'Detect', weight: 2 },
-      { id: 'cm-2', offensiveExternalId: 'T1059', defensiveTechniqueId: 'at-9', defensiveTechnique: { id: 'at-9', domain: 'd3fend', isDefensive: true, externalId: 'D3-NTF', name: 'Network Traffic Filtering' }, defensiveTactic: 'Isolate', weight: 1 },
-    ],
-  }],
+  mselId: 'msel-1',
+  techniqueReleaseId: 'rel-d3',
+  hasMappings: true,
+  techniques: [
+    {
+      techniqueId: 'at-1',
+      offensiveExternalId: 'T1059',
+      inheritedFrom: null,
+      countermeasures: [
+        {
+          id: 'cm-1',
+          offensiveExternalId: 'T1059',
+          defensiveTechniqueId: 'at-4',
+          defensiveTechnique: D3_FA_IN_POOL.technique,
+          defensiveTactic: 'Detect',
+          weight: 2,
+        },
+        {
+          id: 'cm-2',
+          offensiveExternalId: 'T1059',
+          defensiveTechniqueId: 'at-9',
+          defensiveTechnique: {
+            id: 'at-9',
+            domain: 'd3fend',
+            isDefensive: true,
+            externalId: 'D3-NTF',
+            name: 'Network Traffic Filtering',
+          },
+          defensiveTactic: 'Isolate',
+          weight: 1,
+        },
+      ],
+    },
+  ],
 };
 
 interface TechniqueOptions {
@@ -456,31 +735,63 @@ interface TechniqueOptions {
   pool?: MselTechnique[];
 }
 
-async function renderTechniqueField(dataField: DataField, value: string, flags: Flags = {}, options: TechniqueOptions = {}) {
+async function renderTechniqueField(
+  dataField: DataField,
+  value: string,
+  flags: Flags = {},
+  options: TechniqueOptions = {},
+) {
   const ensureLoaded = vi.fn();
   const poolApi = {
-    getMselCountermeasures: vi.fn(() => of(structuredClone(options.countermeasures ?? T1059_COUNTERED))),
+    getMselCountermeasures: vi.fn(() =>
+      of(structuredClone(options.countermeasures ?? T1059_COUNTERED)),
+    ),
   } satisfies ApiStub<MselTechniqueService>;
   const rendered = await renderComponent(DataValueComponent, {
-    imports: [MatChipsModule, MatFormFieldModule, MatIconModule, MatSelectModule, MatTooltipModule],
+    imports: [
+      MatChipsModule,
+      MatFormFieldModule,
+      MatIconModule,
+      MatSelectModule,
+      MatTooltipModule,
+    ],
     declarations: [DataValueComponent, TimezoneAbbrPipe],
     providers: [
       { provide: MselTechniqueDataService, useValue: { ensureLoaded } },
       { provide: MselTechniqueService, useValue: poolApi },
     ],
-    inputs: { dataField, value, canEdit: false, canApprove: false, isOwner: false, showValueOnly: false, ...flags, ...(options.techniques !== undefined ? { techniques: options.techniques } : {}) },
+    inputs: {
+      dataField,
+      value,
+      canEdit: false,
+      canApprove: false,
+      isOwner: false,
+      showValueOnly: false,
+      ...flags,
+      ...(options.techniques !== undefined
+        ? { techniques: options.techniques }
+        : {}),
+    },
   });
   TestBed.inject(MselTechniqueStore).set(options.pool ?? TECHNIQUE_POOL);
   rendered.fixture.detectChanges();
   const changes: string[] = [];
-  rendered.fixture.componentInstance.valueChange.subscribe((v) => changes.push(v));
+  rendered.fixture.componentInstance.valueChange.subscribe((v) =>
+    changes.push(v),
+  );
   return { ...rendered, changes, ensureLoaded, poolApi };
 }
 
 describe('DataValueComponent ATT&CK techniques', () => {
-  const TECHNIQUES: DataField = { id: 'df-attack', mselId: 'msel-1', name: 'Techniques', dataType: DataFieldType.AttackTechnique };
+  const TECHNIQUES: DataField = {
+    id: 'df-attack',
+    mselId: 'msel-1',
+    name: 'Techniques',
+    dataType: DataFieldType.AttackTechnique,
+  };
 
-  const renderTechniques = (value: string, flags: Flags = {}) => renderTechniqueField(TECHNIQUES, value, flags);
+  const renderTechniques = (value: string, flags: Flags = {}) =>
+    renderTechniqueField(TECHNIQUES, value, flags);
 
   /**
    * Verifies: read-only, a cell lists its technique ids as text, including one the pool no longer offers.
@@ -488,9 +799,13 @@ describe('DataValueComponent ATT&CK techniques', () => {
    * Data: value "T1059, T9999"; showValueOnly with no flags.
    */
   it('lists the ids read-only', async () => {
-    const { container } = await renderTechniques('T1059, T9999', { showValueOnly: true });
+    const { container } = await renderTechniques('T1059, T9999', {
+      showValueOnly: true,
+    });
 
-    expect(container.textContent.replace(/\s+/g, ' ')).toContain('T1059, T9999');
+    expect(container.textContent.replace(/\s+/g, ' ')).toContain(
+      'T1059, T9999',
+    );
     expect(container.querySelector('mat-chip')).toBeNull();
   });
 
@@ -500,12 +815,19 @@ describe('DataValueComponent ATT&CK techniques', () => {
    * Data: value "T1059, T9999"; canEdit.
    */
   it('links pooled ids and marks the rest', async () => {
-    const { container, ensureLoaded } = await renderTechniques('T1059, T9999', { canEdit: true });
+    const { container, ensureLoaded } = await renderTechniques('T1059, T9999', {
+      canEdit: true,
+    });
 
     expect(ensureLoaded).toHaveBeenCalledWith('msel-1');
-    expect(screen.getByRole('link', { name: 'T1059' })).toHaveAttribute('href', 'https://attack.mitre.org/techniques/T1059');
+    expect(screen.getByRole('link', { name: 'T1059' })).toHaveAttribute(
+      'href',
+      'https://attack.mitre.org/techniques/T1059',
+    );
     const chips = Array.from(container.querySelectorAll('mat-chip'));
-    expect(chips.map((c) => c.classList.contains('attack-not-in-pool'))).toEqual([false, true]);
+    expect(
+      chips.map((c) => c.classList.contains('attack-not-in-pool')),
+    ).toEqual([false, true]);
   });
 
   /**
@@ -514,12 +836,20 @@ describe('DataValueComponent ATT&CK techniques', () => {
    * Data: value "T1059, T9999"; canEdit; choose "T1566 - Phishing".
    */
   it('adds a technique and keeps a dropped id', async () => {
-    const { fixture, changes } = await renderTechniques('T1059, T9999', { canEdit: true });
-    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+    const { fixture, changes } = await renderTechniques('T1059, T9999', {
+      canEdit: true,
+    });
+    const select =
+      await TestbedHarnessEnvironment.loader(fixture).getHarness(
+        MatSelectHarness,
+      );
     await select.open();
 
     const options = await select.getOptions();
-    expect(await Promise.all(options.map((o) => o.getText()))).toEqual(['T1059 - Command and Scripting Interpreter', 'T1566 - Phishing']);
+    expect(await Promise.all(options.map((o) => o.getText()))).toEqual([
+      'T1059 - Command and Scripting Interpreter',
+      'T1566 - Phishing',
+    ]);
     await options[1].click();
 
     expect(changes).toEqual(['T9999, T1059, T1566']);
@@ -534,11 +864,41 @@ describe('DataValueComponent ATT&CK techniques', () => {
   it('names the domain of each option when the pool holds more than one, once per shared id', async () => {
     const pool: MselTechnique[] = [
       TECHNIQUE_POOL[1],
-      { id: 'mat-m', mselId: 'msel-1', techniqueId: 'at-m', technique: { id: 'at-m', domain: 'mobile-attack', externalId: 'T1059', name: 'Mobile Same Id', url: 'https://attack.mitre.org/techniques/T1059' } },
-      { id: 'mat-c', mselId: 'msel-1', techniqueId: 'at-c', technique: { id: 'at-c', domain: 'capec', externalId: 'CAPEC-66', name: 'SQL Injection', url: 'https://capec.mitre.org/data/definitions/66.html' } },
+      {
+        id: 'mat-m',
+        mselId: 'msel-1',
+        techniqueId: 'at-m',
+        technique: {
+          id: 'at-m',
+          domain: 'mobile-attack',
+          externalId: 'T1059',
+          name: 'Mobile Same Id',
+          url: 'https://attack.mitre.org/techniques/T1059',
+        },
+      },
+      {
+        id: 'mat-c',
+        mselId: 'msel-1',
+        techniqueId: 'at-c',
+        technique: {
+          id: 'at-c',
+          domain: 'capec',
+          externalId: 'CAPEC-66',
+          name: 'SQL Injection',
+          url: 'https://capec.mitre.org/data/definitions/66.html',
+        },
+      },
     ];
-    const { fixture } = await renderTechniqueField(TECHNIQUES, '', { canEdit: true }, { pool });
-    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+    const { fixture } = await renderTechniqueField(
+      TECHNIQUES,
+      '',
+      { canEdit: true },
+      { pool },
+    );
+    const select =
+      await TestbedHarnessEnvironment.loader(fixture).getHarness(
+        MatSelectHarness,
+      );
     await select.open();
 
     const options = await select.getOptions();
@@ -554,7 +914,9 @@ describe('DataValueComponent ATT&CK techniques', () => {
    * Data: value "T1059, T9999"; canEdit; remove T1059's chip.
    */
   it('removes a technique', async () => {
-    const { container, changes } = await renderTechniques('T1059, T9999', { canEdit: true });
+    const { container, changes } = await renderTechniques('T1059, T9999', {
+      canEdit: true,
+    });
 
     await userEvent.click(container.querySelector('mat-chip [matChipRemove]'));
 
@@ -563,9 +925,18 @@ describe('DataValueComponent ATT&CK techniques', () => {
 });
 
 describe('DataValueComponent D3FEND techniques', () => {
-  const COUNTERMEASURES: DataField = { id: 'df-defend', mselId: 'msel-1', name: 'Countermeasures', dataType: DataFieldType.DefensiveTechnique };
+  const COUNTERMEASURES: DataField = {
+    id: 'df-defend',
+    mselId: 'msel-1',
+    name: 'Countermeasures',
+    dataType: DataFieldType.DefensiveTechnique,
+  };
 
-  const renderCountermeasures = (value: string, flags: Flags = {}, options: TechniqueOptions = {}) => renderTechniqueField(COUNTERMEASURES, value, flags, options);
+  const renderCountermeasures = (
+    value: string,
+    flags: Flags = {},
+    options: TechniqueOptions = {},
+  ) => renderTechniqueField(COUNTERMEASURES, value, flags, options);
 
   /**
    * Verifies: a Defensive Technique field draws the same chips as an Attack Technique one, loads the pool, links a
@@ -575,13 +946,23 @@ describe('DataValueComponent D3FEND techniques', () => {
    * Data: value "D3-CH, T1059"; canEdit.
    */
   it('links pooled defensive ids and marks the rest', async () => {
-    const { container, ensureLoaded } = await renderCountermeasures('D3-CH, T1059', { canEdit: true });
+    const { container, ensureLoaded } = await renderCountermeasures(
+      'D3-CH, T1059',
+      { canEdit: true },
+    );
 
     expect(ensureLoaded).toHaveBeenCalledWith('msel-1');
-    expect(screen.getByRole('link', { name: 'D3-CH' })).toHaveAttribute('href', 'https://d3fend.mitre.org/technique/d3f:CredentialHardening/');
-    expect(screen.queryByRole('link', { name: 'T1059' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'D3-CH' })).toHaveAttribute(
+      'href',
+      'https://d3fend.mitre.org/technique/d3f:CredentialHardening/',
+    );
+    expect(
+      screen.queryByRole('link', { name: 'T1059' }),
+    ).not.toBeInTheDocument();
     const chips = Array.from(container.querySelectorAll('mat-chip'));
-    expect(chips.map((c) => c.classList.contains('attack-not-in-pool'))).toEqual([false, true]);
+    expect(
+      chips.map((c) => c.classList.contains('attack-not-in-pool')),
+    ).toEqual([false, true]);
   });
 
   /**
@@ -590,12 +971,19 @@ describe('DataValueComponent D3FEND techniques', () => {
    * Data: value "T1059"; canEdit; choose "D3-CH - Credential Hardening".
    */
   it('offers the defensive pool only', async () => {
-    const { fixture, changes } = await renderCountermeasures('T1059', { canEdit: true });
-    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+    const { fixture, changes } = await renderCountermeasures('T1059', {
+      canEdit: true,
+    });
+    const select =
+      await TestbedHarnessEnvironment.loader(fixture).getHarness(
+        MatSelectHarness,
+      );
     await select.open();
 
     const options = await select.getOptions();
-    expect(await Promise.all(options.map((o) => o.getText()))).toEqual(['D3-CH - Credential Hardening']);
+    expect(await Promise.all(options.map((o) => o.getText()))).toEqual([
+      'D3-CH - Credential Hardening',
+    ]);
     await options[0].click();
 
     expect(changes).toEqual(['T1059, D3-CH']);
@@ -609,12 +997,18 @@ describe('DataValueComponent D3FEND techniques', () => {
    */
   it('says where to add techniques when the defensive pool is empty', async () => {
     const { fixture } = await renderCountermeasures('', { canEdit: true });
-    expect(screen.queryByText("Add techniques on the MSEL's Techniques tab")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Add techniques on the MSEL's Techniques tab"),
+    ).not.toBeInTheDocument();
 
-    TestBed.inject(MselTechniqueStore).set(TECHNIQUE_POOL.filter((m) => m.technique.domain !== 'd3fend'));
+    TestBed.inject(MselTechniqueStore).set(
+      TECHNIQUE_POOL.filter((m) => m.technique.domain !== 'd3fend'),
+    );
     fixture.detectChanges();
 
-    expect(screen.getByText("Add techniques on the MSEL's Techniques tab")).toBeInTheDocument();
+    expect(
+      screen.getByText("Add techniques on the MSEL's Techniques tab"),
+    ).toBeInTheDocument();
     expect(screen.getByLabelText('Select techniques')).toBeInTheDocument();
   });
   /**
@@ -625,16 +1019,29 @@ describe('DataValueComponent D3FEND techniques', () => {
    * MselTechniqueService.getMselCountermeasures (stub).
    * Data: the event's Attack Technique is T1059; D3-CH and D3-FA in the defensive pool; D3-FA and D3-NTF counter T1059.
    */
-  it('suggests the countermeasures of the event\'s attack techniques first', async () => {
-    const { fixture, poolApi } = await renderCountermeasures('', { canEdit: true }, { techniques: 'T1059', pool: [...TECHNIQUE_POOL, D3_FA_IN_POOL] });
-    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+  it("suggests the countermeasures of the event's attack techniques first", async () => {
+    const { fixture, poolApi } = await renderCountermeasures(
+      '',
+      { canEdit: true },
+      { techniques: 'T1059', pool: [...TECHNIQUE_POOL, D3_FA_IN_POOL] },
+    );
+    const select =
+      await TestbedHarnessEnvironment.loader(fixture).getHarness(
+        MatSelectHarness,
+      );
     await select.open();
 
     expect(poolApi.getMselCountermeasures).toHaveBeenCalledWith('msel-1');
     const groups = await select.getOptionGroups();
-    expect(await Promise.all(groups.map((g) => g.getLabelText()))).toEqual(['Suggested', 'Other techniques']);
+    expect(await Promise.all(groups.map((g) => g.getLabelText()))).toEqual([
+      'Suggested',
+      'Other techniques',
+    ]);
     const options = await select.getOptions();
-    expect(await Promise.all(options.map((o) => o.getText()))).toEqual(['D3-FA - File Analysis', 'D3-CH - Credential Hardening']);
+    expect(await Promise.all(options.map((o) => o.getText()))).toEqual([
+      'D3-FA - File Analysis',
+      'D3-CH - Credential Hardening',
+    ]);
   });
 
   /**
@@ -643,13 +1050,22 @@ describe('DataValueComponent D3FEND techniques', () => {
    * Data: no Attack Technique value; D3-CH and D3-FA in the defensive pool.
    */
   it('keeps the flat list when the event names no attack technique', async () => {
-    const { fixture, poolApi } = await renderCountermeasures('', { canEdit: true }, { pool: [...TECHNIQUE_POOL, D3_FA_IN_POOL] });
-    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+    const { fixture, poolApi } = await renderCountermeasures(
+      '',
+      { canEdit: true },
+      { pool: [...TECHNIQUE_POOL, D3_FA_IN_POOL] },
+    );
+    const select =
+      await TestbedHarnessEnvironment.loader(fixture).getHarness(
+        MatSelectHarness,
+      );
     await select.open();
 
     expect(poolApi.getMselCountermeasures).not.toHaveBeenCalled();
     expect(await select.getOptionGroups()).toHaveLength(0);
-    expect(await Promise.all((await select.getOptions()).map((o) => o.getText()))).toEqual(['D3-CH - Credential Hardening', 'D3-FA - File Analysis']);
+    expect(
+      await Promise.all((await select.getOptions()).map((o) => o.getText())),
+    ).toEqual(['D3-CH - Credential Hardening', 'D3-FA - File Analysis']);
   });
 
   /**
@@ -658,11 +1074,20 @@ describe('DataValueComponent D3FEND techniques', () => {
    * Data: the event's Attack Technique is T1566, which nothing counters.
    */
   it('shows no Suggested group when nothing pooled counters the event', async () => {
-    const { fixture } = await renderCountermeasures('', { canEdit: true }, { techniques: 'T1566' });
-    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+    const { fixture } = await renderCountermeasures(
+      '',
+      { canEdit: true },
+      { techniques: 'T1566' },
+    );
+    const select =
+      await TestbedHarnessEnvironment.loader(fixture).getHarness(
+        MatSelectHarness,
+      );
     await select.open();
 
     expect(await select.getOptionGroups()).toHaveLength(0);
-    expect(await Promise.all((await select.getOptions()).map((o) => o.getText()))).toEqual(['D3-CH - Credential Hardening']);
+    expect(
+      await Promise.all((await select.getOptions()).map((o) => o.getText())),
+    ).toEqual(['D3-CH - Credential Hardening']);
   });
 });

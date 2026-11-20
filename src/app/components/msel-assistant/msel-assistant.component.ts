@@ -25,7 +25,11 @@ import { ScenarioEventDataService } from 'src/app/data/scenario-event/scenario-e
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { MselTechniqueDataService } from 'src/app/data/msel-technique/msel-technique-data.service';
-import { MselAssistMessage, MselChange, MselChangeResult } from 'src/app/generated/blueprint.api';
+import {
+  MselAssistMessage,
+  MselChange,
+  MselChangeResult,
+} from 'src/app/generated/blueprint.api';
 
 /** One turn of the conversation, with what the assistant proposed and what came of applying it. */
 export interface AssistTurn {
@@ -95,7 +99,10 @@ export class MselAssistantComponent {
     }
     const history: MselAssistMessage[] = this.turns.map((t) => ({
       role: t.role,
-      text: t.role === 'assistant' ? [t.text, t.question].filter(Boolean).join(' ') : t.text,
+      text:
+        t.role === 'assistant'
+          ? [t.text, t.question].filter(Boolean).join(' ')
+          : t.text,
     }));
     this.turns.push({ role: 'planner', text });
     this.prompt = '';
@@ -109,13 +116,20 @@ export class MselAssistantComponent {
             role: 'assistant',
             text: result.reply || '',
             question: result.question || undefined,
-            changes: (result.changes ?? []).map((change) => ({ change, keep: true })),
+            changes: (result.changes ?? []).map((change) => ({
+              change,
+              keep: true,
+            })),
             warnings: result.warnings ?? [],
           });
           this.isAsking = false;
         },
         error: (err) => {
-          this.turns.push({ role: 'assistant', text: '', error: this.getErrorMessage(err, 'The request failed.') });
+          this.turns.push({
+            role: 'assistant',
+            text: '',
+            error: this.getErrorMessage(err, 'The request failed.'),
+          });
           this.isAsking = false;
         },
       });
@@ -150,7 +164,10 @@ export class MselAssistantComponent {
           this.reload();
         },
         error: (err) => {
-          turn.error = this.getErrorMessage(err, 'The changes could not be applied.');
+          turn.error = this.getErrorMessage(
+            err,
+            'The changes could not be applied.',
+          );
           this.isApplying = false;
         },
       });

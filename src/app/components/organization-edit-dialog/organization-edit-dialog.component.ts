@@ -3,19 +3,43 @@
 // project root for license information.
 
 import { Component, inject, output } from '@angular/core';
-import { UntypedFormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  UntypedFormControl,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EDITOR_CONFIG } from 'src/app/utilities/editor-config';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
-import { MatFormField, MatLabel, MatInput, MatError } from '@angular/material/input';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
+import {
+  MatFormField,
+  MatLabel,
+  MatInput,
+  MatError,
+} from '@angular/material/input';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 
 import { ProfileWriterComponent } from '../profile-writer/profile-writer.component';
 @Component({
-    selector: 'app-organization-edit-dialog',
-    templateUrl: './organization-edit-dialog.component.html',
-    styleUrls: ['./organization-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, ReactiveFormsModule, MatError, AngularEditorModule, ProfileWriterComponent]
+  selector: 'app-organization-edit-dialog',
+  templateUrl: './organization-edit-dialog.component.html',
+  styleUrls: ['./organization-edit-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    FormsModule,
+    ReactiveFormsModule,
+    MatError,
+    AngularEditorModule,
+    ProfileWriterComponent,
+  ],
 })
 export class OrganizationEditDialogComponent {
   data = inject(MAT_DIALOG_DATA);
@@ -24,23 +48,23 @@ export class OrganizationEditDialogComponent {
 
   public organizationNameFormControl = new UntypedFormControl(
     this.data.organization.name,
-    [Validators.required]
+    [Validators.required],
   );
   public organizationShortNameFormControl = new UntypedFormControl(
     this.data.organization.shortName,
-    [Validators.required]
+    [Validators.required],
   );
   public organizationEmailFormControl = new UntypedFormControl(
     this.data.organization.email,
-    [Validators.required]
+    [Validators.required],
   );
   public descriptionFormControl = new UntypedFormControl(
     this.data.organization.description,
-    []
+    [],
   );
   public summaryFormControl = new UntypedFormControl(
     this.data.organization.summary,
-    [Validators.required]
+    [Validators.required],
   );
   editorConfig = EDITOR_CONFIG;
 
@@ -63,7 +87,7 @@ export class OrganizationEditDialogComponent {
       this.descriptionFormControl.value.toString()[0] === ' '
     ) {
       this.descriptionFormControl.setValue(
-        this.descriptionFormControl.value.toString().trim()
+        this.descriptionFormControl.value.toString().trim(),
       );
     }
   }

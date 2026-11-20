@@ -17,17 +17,23 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div>
           <mat-form-field class="full-width">
             <mat-label>Name</mat-label>
-            <input type="text" matInput [formControl]="teamNameFormControl" placeholder="Name (required)" (blur)="saveTeam('name')"
-              >
-            @if (teamNameFormControl.hasError('minlength') && !teamNameFormControl.hasError('required')) {
+            <input
+              type="text"
+              matInput
+              [formControl]="teamNameFormControl"
+              placeholder="Name (required)"
+              (blur)="saveTeam('name')"
+            />
+            @if (
+              teamNameFormControl.hasError('minlength') &&
+              !teamNameFormControl.hasError('required')
+            ) {
               <mat-error>
                 Must contain {{ MIN_NAME_LENGTH }} or more characters
               </mat-error>
             }
             @if (teamNameFormControl.hasError('required')) {
-              <mat-error>
-                Name is <strong>required</strong>
-              </mat-error>
+              <mat-error> Name is <strong>required</strong> </mat-error>
             }
           </mat-form-field>
         </div>
@@ -36,17 +42,24 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div>
           <mat-form-field class="full-width">
             <mat-label>Short Name</mat-label>
-            <input type="text" matInput [formControl]="teamShortNameFormControl" placeholder="Short Name (required)" (blur)="saveTeam('shortName')"
-              value="{{ data.team.shortName }}">
-            @if (teamShortNameFormControl.hasError('minlength') && !teamShortNameFormControl.hasError('required')) {
+            <input
+              type="text"
+              matInput
+              [formControl]="teamShortNameFormControl"
+              placeholder="Short Name (required)"
+              (blur)="saveTeam('shortName')"
+              value="{{ data.team.shortName }}"
+            />
+            @if (
+              teamShortNameFormControl.hasError('minlength') &&
+              !teamShortNameFormControl.hasError('required')
+            ) {
               <mat-error>
                 Must contain {{ MIN_NAME_LENGTH }} or more characters
               </mat-error>
             }
             @if (teamShortNameFormControl.hasError('required')) {
-              <mat-error>
-                Short Name is <strong>required</strong>
-              </mat-error>
+              <mat-error> Short Name is <strong>required</strong> </mat-error>
             }
           </mat-form-field>
         </div>
@@ -64,23 +77,39 @@ project root for license information or contact permission@sei.cmu.edu for full 
               placeholder="Email"
               (blur)="saveTeam('email')"
               title="Team Email"
-              />
+            />
           </mat-form-field>
         </div>
       </div>
       <div class="add-margin left">
         <div>
-          <p style="font-size: 13px; font-weight: 400; line-height: 1.125; letter-spacing: normal;">
+          <p
+            style="
+              font-size: 13px;
+              font-weight: 400;
+              line-height: 1.125;
+              letter-spacing: normal;
+            "
+          >
             Description
             @if (data.team.mselId) {
-            <app-profile-writer kind="team" [mselId]="data.team.mselId" [shortName]="teamShortNameFormControl.value"
-              [name]="teamNameFormControl.value" [description]="descriptionFormControl.value"
-              (useProfile)="useProfile($event)" />
+              <app-profile-writer
+                kind="team"
+                [mselId]="data.team.mselId"
+                [shortName]="teamShortNameFormControl.value"
+                [name]="teamNameFormControl.value"
+                [description]="descriptionFormControl.value"
+                (useProfile)="useProfile($event)"
+              />
             }
           </p>
           <div>
-            <angular-editor [placeholder]="'Description'" [formControl]="descriptionFormControl" [config]="editorConfig"
-              (blur)="saveTeam('description')" />
+            <angular-editor
+              [placeholder]="'Description'"
+              [formControl]="descriptionFormControl"
+              [config]="editorConfig"
+              (blur)="saveTeam('description')"
+            />
           </div>
         </div>
       </div>
@@ -93,7 +122,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 [value]="data.team.citeTeamTypeId"
                 [formControl]="citeTeamTypeIdFormControl"
                 (selectionChange)="saveTeam('citeTeamTypeId')"
-                >
+              >
                 <mat-option [value]="''" />
                 @for (teamType of data.teamTypeList; track teamType) {
                   <mat-option [value]="teamType.id">
@@ -118,7 +147,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <mat-select
                 [formControl]="casterTeamVariableFormControl"
                 (selectionChange)="saveTeam('casterTeamVariable')"
-                >
+              >
                 <mat-option [value]="''">By team name</mat-option>
                 @for (variable of topologyTeamOptions(); track variable) {
                   <mat-option [value]="variable">
@@ -126,7 +155,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </mat-option>
                 }
               </mat-select>
-              <mat-hint>The Caster template variable this team's Player team ID is written to</mat-hint>
+              <mat-hint
+                >The Caster template variable this team's Player team ID is
+                written to</mat-hint
+              >
             </mat-form-field>
           </div>
         </div>
@@ -136,9 +168,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-checkbox
             [(ngModel)]="data.team.canTeamMemberInvite"
             class="bottom-margin"
-            >
-            ALL users can invite others to this team
-          </mat-checkbox><br />
+          >
+            ALL users can invite others to this team </mat-checkbox
+          ><br />
         </div>
       </div>
     </div>

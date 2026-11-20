@@ -26,12 +26,25 @@ import { MediaClip } from 'src/app/utilities/media-clip';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
-import { DataValueDraftDialogComponent, DataValueDraftDialogData } from './data-value-draft-dialog.component';
+import {
+  DataValueDraftDialogComponent,
+  DataValueDraftDialogData,
+} from './data-value-draft-dialog.component';
 
-const BODY = { id: 'df-body', name: 'Description', dataType: DataFieldType.Html, displayOrder: 2 };
+const BODY = {
+  id: 'df-body',
+  name: 'Description',
+  dataType: DataFieldType.Html,
+  displayOrder: 2,
+};
 
-function dialogData(body: string | undefined, sourceType?: string): DataValueDraftDialogData {
-  const values: { [id: string]: string } = { 'df-title': 'Storm warning issued' };
+function dialogData(
+  body: string | undefined,
+  sourceType?: string,
+): DataValueDraftDialogData {
+  const values: { [id: string]: string } = {
+    'df-title': 'Storm warning issued',
+  };
   if (body !== undefined) {
     values['df-body'] = body;
   }
@@ -46,20 +59,50 @@ function dialogData(body: string | undefined, sourceType?: string): DataValueDra
   };
 }
 
-const NO_AUDIO: AudioDraftAvailability = { available: false, scripts: false, photos: false };
+const NO_AUDIO: AudioDraftAvailability = {
+  available: false,
+  scripts: false,
+  photos: false,
+};
 
 async function renderDraftDialog(
   body: string | undefined,
-  draft = vi.fn(() => of<DataValueDraftResult>({ value: '<p>Landfall at noon.</p>', notes: ['Check the time zone.'] })),
-  audio: { availability?: AudioDraftAvailability; sourceType?: string; draftAudio?: any } = {}
+  draft = vi.fn(() =>
+    of<DataValueDraftResult>({
+      value: '<p>Landfall at noon.</p>',
+      notes: ['Check the time zone.'],
+    }),
+  ),
+  audio: {
+    availability?: AudioDraftAvailability;
+    sourceType?: string;
+    draftAudio?: any;
+  } = {},
 ) {
-  const getAudioDraftAvailability = vi.fn(() => of(audio.availability ?? NO_AUDIO));
-  const draftAudio = audio.draftAudio ?? vi.fn(() => of<AudioDraftResult>({ kind: AudioDraftKind.Listen, lines: [] }));
-  const mselApi = { draftDataValue: draft, getAudioDraftAvailability, draftAudio } satisfies ApiStub<MselService>;
+  const getAudioDraftAvailability = vi.fn(() =>
+    of(audio.availability ?? NO_AUDIO),
+  );
+  const draftAudio =
+    audio.draftAudio ??
+    vi.fn(() =>
+      of<AudioDraftResult>({ kind: AudioDraftKind.Listen, lines: [] }),
+    );
+  const mselApi = {
+    draftDataValue: draft,
+    getAudioDraftAvailability,
+    draftAudio,
+  } satisfies ApiStub<MselService>;
   const ref = dialogRefStub<DataValueDraftDialogComponent, string>();
   const data = dialogData(body, audio.sourceType);
   const rendered = await renderComponent(DataValueDraftDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, MatFormFieldModule, MatInputModule, MatSelectModule, MatProgressSpinnerModule, MatIconModule],
+    imports: [
+      ...CRUCIBLE_DIALOG_IMPORTS,
+      MatFormFieldModule,
+      MatInputModule,
+      MatSelectModule,
+      MatProgressSpinnerModule,
+      MatIconModule,
+    ],
     declarations: [DataValueDraftDialogComponent],
     providers: [
       { provide: MAT_DIALOG_DATA, useValue: data },
@@ -69,14 +112,31 @@ async function renderDraftDialog(
   });
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
-  return { ...rendered, draft, close: ref.close, data, draftAudio, getAudioDraftAvailability };
+  return {
+    ...rendered,
+    draft,
+    close: ref.close,
+    data,
+    draftAudio,
+    getAudioDraftAvailability,
+  };
 }
 
 const VOICED: AudioDraftResult = {
   kind: AudioDraftKind.Broadcast,
   title: 'WPN News',
   notes: ['Assumed the mayor is named Ito.'],
-  lines: [{ speaker: 'Anchor', voice: 'Matthew', text: 'Good evening.', audio: 'data:audio/mpeg;base64,QUFB', durationMs: 1200, marks: [], words: [] }],
+  lines: [
+    {
+      speaker: 'Anchor',
+      voice: 'Matthew',
+      text: 'Good evening.',
+      audio: 'data:audio/mpeg;base64,QUFB',
+      durationMs: 1200,
+      marks: [],
+      words: [],
+    },
+  ],
 };
 
 const CLIP: MediaClip = {
@@ -88,7 +148,10 @@ const CLIP: MediaClip = {
   notes: ['Made in this browser.'],
 };
 
-async function chooseAction(user: ReturnType<typeof userEvent.setup>, label: string) {
+async function chooseAction(
+  user: ReturnType<typeof userEvent.setup>,
+  label: string,
+) {
   await user.click(screen.getByRole('combobox', { name: 'What to do' }));
   await user.click(screen.getByRole('option', { name: label }));
 }
@@ -131,7 +194,13 @@ describe('DataValueDraftDialogComponent', () => {
 
     await user.click(screen.getByRole('button', { name: 'Write' }));
 
-    expect(draft).toHaveBeenCalledWith('msel-1', expect.objectContaining({ action: DataValueDraftAction.Rewrite, style: 'News' }));
+    expect(draft).toHaveBeenCalledWith(
+      'msel-1',
+      expect.objectContaining({
+        action: DataValueDraftAction.Rewrite,
+        style: 'News',
+      }),
+    );
     expect(screen.getByText('NWS expects landfall.')).toBeInTheDocument();
   });
 
@@ -157,14 +226,25 @@ describe('DataValueDraftDialogComponent', () => {
    */
   it('shows the reason a write failed', async () => {
     const draft = vi.fn(() =>
-      throwError(() => new HttpErrorResponse({ status: 500, error: { title: 'A server error occurred.', detail: 'AI drafting is not enabled on this server.' } }))
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 500,
+            error: {
+              title: 'A server error occurred.',
+              detail: 'AI drafting is not enabled on this server.',
+            },
+          }),
+      ),
     );
     await renderDraftDialog(undefined, draft);
     const user = userEvent.setup();
 
     await user.click(screen.getByRole('button', { name: 'Write' }));
 
-    expect(screen.getByRole('alert')).toHaveTextContent('AI drafting is not enabled on this server.');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'AI drafting is not enabled on this server.',
+    );
     expect(screen.getByRole('button', { name: 'Write' })).toBeEnabled();
   });
 
@@ -174,14 +254,27 @@ describe('DataValueDraftDialogComponent', () => {
    * Data: the model writes an article with one SVG logo.
    */
   it('hands back an article with its graphics as PNG', async () => {
-    const { close, fixture } = await renderDraftDialog(undefined, vi.fn(() => of<DataValueDraftResult>({ value: '<img src="data:image/svg+xml;base64,LOGO" alt="Logo">', notes: [] })));
-    fixture.componentInstance.toPng = async (html: string) => html.replace('image/svg+xml', 'image/png');
+    const { close, fixture } = await renderDraftDialog(
+      undefined,
+      vi.fn(() =>
+        of<DataValueDraftResult>({
+          value: '<img src="data:image/svg+xml;base64,LOGO" alt="Logo">',
+          notes: [],
+        }),
+      ),
+    );
+    fixture.componentInstance.toPng = async (html: string) =>
+      html.replace('image/svg+xml', 'image/png');
     const user = userEvent.setup();
 
     await user.click(screen.getByRole('button', { name: 'Write' }));
     await user.click(screen.getByRole('button', { name: 'Use this' }));
 
-    await vi.waitFor(() => expect(close).toHaveBeenCalledWith('<img src="data:image/png;base64,LOGO" alt="Logo">'));
+    await vi.waitFor(() =>
+      expect(close).toHaveBeenCalledWith(
+        '<img src="data:image/png;base64,LOGO" alt="Logo">',
+      ),
+    );
   });
 
   /**
@@ -190,13 +283,19 @@ describe('DataValueDraftDialogComponent', () => {
    * Data: a News article; the server has no speech provider.
    */
   it('offers no audio without a speech provider', async () => {
-    const { getAudioDraftAvailability } = await renderDraftDialog('<p>NWS expects landfall.</p>', undefined, { sourceType: 'News' });
+    const { getAudioDraftAvailability } = await renderDraftDialog(
+      '<p>NWS expects landfall.</p>',
+      undefined,
+      { sourceType: 'News' },
+    );
     const user = userEvent.setup();
 
     await user.click(screen.getByRole('combobox', { name: 'What to do' }));
 
     expect(getAudioDraftAvailability).toHaveBeenCalledWith('msel-1');
-    expect(screen.getAllByRole('option').map((o) => o.textContent.trim())).toEqual([
+    expect(
+      screen.getAllByRole('option').map((o) => o.textContent.trim()),
+    ).toEqual([
       'Draft from this inject',
       'Rewrite as...',
       'Make consistent with the scenario',
@@ -212,16 +311,38 @@ describe('DataValueDraftDialogComponent', () => {
    * Data: the same article as each source type.
    */
   it.each([
-    ['News', true, ["Add 'Listen to this article'", 'Make a news broadcast clip', 'Make a news reel']],
+    [
+      'News',
+      true,
+      [
+        "Add 'Listen to this article'",
+        'Make a news broadcast clip',
+        'Make a news reel',
+      ],
+    ],
     ['Phone', true, ["Add 'Listen to this article'", 'Make a voicemail']],
-    ['Intel', true, ["Add 'Listen to this article'", 'Make an intercepted call']],
+    [
+      'Intel',
+      true,
+      ["Add 'Listen to this article'", 'Make an intercepted call'],
+    ],
     ['Social', true, ["Add 'Listen to this article'", 'Make a news reel']],
     ['News', false, ["Add 'Listen to this article'"]],
-  ])('offers a %s inject its clips (scripts: %s)', async (sourceType, scripts, expected) => {
-    const { fixture } = await renderDraftDialog('<p>Text.</p>', undefined, { sourceType, availability: { available: true, scripts } });
+  ])(
+    'offers a %s inject its clips (scripts: %s)',
+    async (sourceType, scripts, expected) => {
+      const { fixture } = await renderDraftDialog('<p>Text.</p>', undefined, {
+        sourceType,
+        availability: { available: true, scripts },
+      });
 
-    expect(fixture.componentInstance.actions.filter((a) => a.audio).map((a) => a.label)).toEqual(expected);
-  });
+      expect(
+        fixture.componentInstance.actions
+          .filter((a) => a.audio)
+          .map((a) => a.label),
+      ).toEqual(expected);
+    },
+  );
 
   /**
    * Verifies: a broadcast clip asks for the format, sends the inject's values and the kind, previews the article with the clip
@@ -231,12 +352,17 @@ describe('DataValueDraftDialogComponent', () => {
    */
   it('makes a broadcast clip, previews it and hands back the article with it', async () => {
     const draftAudio = vi.fn(() => of(VOICED));
-    const article = '<table title="Marking"><tr><td>EXERCISE</td></tr></table><h1>Storm</h1><p>NWS expects landfall.</p>';
-    const { fixture, close, data } = await renderDraftDialog(article, undefined, {
-      sourceType: 'News',
-      availability: { available: true, scripts: true },
-      draftAudio,
-    });
+    const article =
+      '<table title="Marking"><tr><td>EXERCISE</td></tr></table><h1>Storm</h1><p>NWS expects landfall.</p>';
+    const { fixture, close, data } = await renderDraftDialog(
+      article,
+      undefined,
+      {
+        sourceType: 'News',
+        availability: { available: true, scripts: true },
+        draftAudio,
+      },
+    );
     const makeMedia = vi.fn(async () => CLIP);
     fixture.componentInstance.makeMedia = makeMedia;
     const user = userEvent.setup();
@@ -244,7 +370,10 @@ describe('DataValueDraftDialogComponent', () => {
     await chooseAction(user, 'Make a news broadcast clip');
     await user.click(screen.getByRole('combobox', { name: 'Format' }));
     await user.click(screen.getByRole('option', { name: 'Still card video' }));
-    await user.type(screen.getByRole('textbox', { name: 'Instructions (optional)' }), 'Quote the mayor');
+    await user.type(
+      screen.getByRole('textbox', { name: 'Instructions (optional)' }),
+      'Quote the mayor',
+    );
     await user.click(screen.getByRole('button', { name: 'Write' }));
 
     expect(draftAudio).toHaveBeenCalledWith('msel-1', {
@@ -256,15 +385,27 @@ describe('DataValueDraftDialogComponent', () => {
       instruction: 'Quote the mayor',
     });
     expect(makeMedia).toHaveBeenCalledWith(VOICED, 'still');
-    await vi.waitFor(() => expect(screen.getByText(/Waveform video, 0:42, AAC audio/)).toBeInTheDocument());
-    expect(screen.getByText('Assumed the mayor is named Ito.')).toBeInTheDocument();
+    await vi.waitFor(() =>
+      expect(
+        screen.getByText(/Waveform video, 0:42, AAC audio/),
+      ).toBeInTheDocument(),
+    );
+    expect(
+      screen.getByText('Assumed the mayor is named Ito.'),
+    ).toBeInTheDocument();
     expect(screen.getByText('Made in this browser.')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Copy HTML' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Copy HTML' }),
+    ).not.toBeInTheDocument();
     fixture.componentInstance.toPng = async (html: string) => html;
     await user.click(screen.getByRole('button', { name: 'Use this' }));
 
     await vi.waitFor(() =>
-      expect(close).toHaveBeenCalledWith('<table title="Marking"><tr><td>EXERCISE</td></tr></table><h1>Storm</h1>' + CLIP.html + '<p>NWS expects landfall.</p>')
+      expect(close).toHaveBeenCalledWith(
+        '<table title="Marking"><tr><td>EXERCISE</td></tr></table><h1>Storm</h1>' +
+          CLIP.html +
+          '<p>NWS expects landfall.</p>',
+      ),
     );
   });
 
@@ -274,21 +415,39 @@ describe('DataValueDraftDialogComponent', () => {
    * Data: a News article; Listen's bar comes back for the top.
    */
   it('adds Listen to this article at the top', async () => {
-    const draftAudio = vi.fn(() => of<AudioDraftResult>({ ...VOICED, kind: AudioDraftKind.Listen }));
-    const article = '<table title="Marking"><tbody><tr><td>EXERCISE</td></tr></tbody></table><p>NWS expects landfall.</p>';
-    const { fixture, close } = await renderDraftDialog(article, undefined, { sourceType: 'News', availability: { available: true }, draftAudio });
-    fixture.componentInstance.makeMedia = vi.fn(async () => ({ ...CLIP, html: '<table><tbody><tr><td>Listen</td></tr></tbody></table>', position: 'top' as const }));
+    const draftAudio = vi.fn(() =>
+      of<AudioDraftResult>({ ...VOICED, kind: AudioDraftKind.Listen }),
+    );
+    const article =
+      '<table title="Marking"><tbody><tr><td>EXERCISE</td></tr></tbody></table><p>NWS expects landfall.</p>';
+    const { fixture, close } = await renderDraftDialog(article, undefined, {
+      sourceType: 'News',
+      availability: { available: true },
+      draftAudio,
+    });
+    fixture.componentInstance.makeMedia = vi.fn(async () => ({
+      ...CLIP,
+      html: '<table><tbody><tr><td>Listen</td></tr></tbody></table>',
+      position: 'top' as const,
+    }));
     fixture.componentInstance.toPng = async (html: string) => html;
     const user = userEvent.setup();
 
     await chooseAction(user, "Add 'Listen to this article'");
-    expect(screen.queryByRole('combobox', { name: 'Format' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('combobox', { name: 'Format' }),
+    ).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Write' }));
-    expect(fixture.componentInstance.makeMedia).toHaveBeenCalledWith(expect.anything(), 'audio');
+    expect(fixture.componentInstance.makeMedia).toHaveBeenCalledWith(
+      expect.anything(),
+      'audio',
+    );
     await user.click(await screen.findByRole('button', { name: 'Use this' }));
 
     await vi.waitFor(() =>
-      expect(close).toHaveBeenCalledWith('<table title="Marking"><tbody><tr><td>EXERCISE</td></tr></tbody></table><table><tbody><tr><td>Listen</td></tr></tbody></table><p>NWS expects landfall.</p>')
+      expect(close).toHaveBeenCalledWith(
+        '<table title="Marking"><tbody><tr><td>EXERCISE</td></tr></tbody></table><table><tbody><tr><td>Listen</td></tr></tbody></table><p>NWS expects landfall.</p>',
+      ),
     );
   });
 
@@ -298,21 +457,36 @@ describe('DataValueDraftDialogComponent', () => {
    * Data: a News article; a reel comes back.
    */
   it('offers a reel made on a News inject to copy', async () => {
-    const draftAudio = vi.fn(() => of<AudioDraftResult>({ ...VOICED, kind: AudioDraftKind.Reel }));
-    const { fixture } = await renderDraftDialog('<p>Storm.</p>', undefined, { sourceType: 'News', availability: { available: true, scripts: true }, draftAudio });
-    fixture.componentInstance.makeMedia = vi.fn(async () => ({ ...CLIP, format: 'reel' as const }));
+    const draftAudio = vi.fn(() =>
+      of<AudioDraftResult>({ ...VOICED, kind: AudioDraftKind.Reel }),
+    );
+    const { fixture } = await renderDraftDialog('<p>Storm.</p>', undefined, {
+      sourceType: 'News',
+      availability: { available: true, scripts: true },
+      draftAudio,
+    });
+    fixture.componentInstance.makeMedia = vi.fn(async () => ({
+      ...CLIP,
+      format: 'reel' as const,
+    }));
     const user = userEvent.setup();
     // user-event puts its own clipboard on the navigator
     const writeText = vi.spyOn(navigator.clipboard, 'writeText');
 
     await chooseAction(user, 'Make a news reel');
-    expect(screen.queryByRole('combobox', { name: 'Format' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('combobox', { name: 'Format' }),
+    ).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Write' }));
     await user.click(await screen.findByRole('button', { name: 'Copy HTML' }));
 
     expect(writeText).toHaveBeenCalledWith(CLIP.html);
-    expect(screen.getByText(/A reel belongs on a Social inject/)).toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: 'Copied' })).toBeInTheDocument();
+    expect(
+      screen.getByText(/A reel belongs on a Social inject/),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByRole('button', { name: 'Copied' }),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -321,14 +495,30 @@ describe('DataValueDraftDialogComponent', () => {
    * Data: a 400 whose title says to set Ai:Speech.
    */
   it('shows why a clip could not be made', async () => {
-    const draftAudio = vi.fn(() => throwError(() => new HttpErrorResponse({ status: 400, error: { title: 'No speech provider is configured on this server.' } })));
-    await renderDraftDialog('<p>Storm.</p>', undefined, { sourceType: 'Phone', availability: { available: true, scripts: true }, draftAudio });
+    const draftAudio = vi.fn(() =>
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 400,
+            error: {
+              title: 'No speech provider is configured on this server.',
+            },
+          }),
+      ),
+    );
+    await renderDraftDialog('<p>Storm.</p>', undefined, {
+      sourceType: 'Phone',
+      availability: { available: true, scripts: true },
+      draftAudio,
+    });
     const user = userEvent.setup();
 
     await chooseAction(user, 'Make a voicemail');
     await user.click(screen.getByRole('button', { name: 'Write' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('No speech provider is configured on this server.');
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'No speech provider is configured on this server.',
+    );
     expect(screen.getByRole('button', { name: 'Write' })).toBeEnabled();
   });
 });

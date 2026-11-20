@@ -4,7 +4,11 @@
 import { Injectable, OnDestroy, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, map, shareReplay, take, tap } from 'rxjs/operators';
-import { Msel, MselImagePreview, MselImageService } from 'src/app/generated/blueprint.api';
+import {
+  Msel,
+  MselImagePreview,
+  MselImageService,
+} from 'src/app/generated/blueprint.api';
 import { MselDataService } from './msel-data.service';
 
 // The image endpoint needs the bearer token, so an <img src> can't load it.
@@ -16,8 +20,10 @@ import { MselDataService } from './msel-data.service';
 export class MselImageDataService implements OnDestroy {
   private mselImageService = inject(MselImageService);
   private mselDataService = inject(MselDataService);
-  private urls = new Map<string, { key: string; url$: Observable<string | null>; url?: string }>();
-
+  private urls = new Map<
+    string,
+    { key: string; url$: Observable<string | null>; url?: string }
+  >();
 
   imageUrl(msel: Msel): Observable<string | null> {
     if (!msel?.imageDateModified) {
@@ -29,13 +35,17 @@ export class MselImageDataService implements OnDestroy {
       return cached.url$;
     }
     this.revoke(msel.id);
-    const entry: { key: string; url$: Observable<string | null>; url?: string } = { key, url$: null };
+    const entry: {
+      key: string;
+      url$: Observable<string | null>;
+      url?: string;
+    } = { key, url$: null };
     // the key on the URL, so a browser cache keyed by URL misses once the image changes
     entry.url$ = this.mselImageService.getMselImage(msel.id, key).pipe(
       map((blob: Blob) => (entry.url = URL.createObjectURL(blob))),
       // A missing or unreadable image leaves the card on its generated pattern.
       catchError(() => of(null)),
-      shareReplay(1)
+      shareReplay(1),
     );
     this.urls.set(msel.id, entry);
     return entry.url$;
@@ -44,24 +54,28 @@ export class MselImageDataService implements OnDestroy {
   setImage(mselId: string, file: File): Observable<Msel> {
     return this.mselImageService.setMselImage(mselId, file).pipe(
       take(1),
-      tap((msel) => this.updateStore(msel))
+      tap((msel) => this.updateStore(msel)),
     );
   }
 
   // a picture made from the MSEL's scenario, and what the planner asks for, replaces the one it has, so the cached URL goes
   generateImage(mselId: string, prompt?: string): Observable<Msel> {
-    return this.mselImageService.generateMselImage(mselId, { prompt: prompt || null }).pipe(
-      take(1),
-      tap((msel: Msel) => {
-        this.revoke(mselId);
-        this.updateStore(msel);
-      })
-    );
+    return this.mselImageService
+      .generateMselImage(mselId, { prompt: prompt || null })
+      .pipe(
+        take(1),
+        tap((msel: Msel) => {
+          this.revoke(mselId);
+          this.updateStore(msel);
+        }),
+      );
   }
 
   // a new picture made the same way, but not saved, so the planner sees it before keeping it
   previewImage(mselId: string, prompt?: string): Observable<MselImagePreview> {
-    return this.mselImageService.previewMselImage(mselId, { prompt: prompt || null }).pipe(take(1));
+    return this.mselImageService
+      .previewMselImage(mselId, { prompt: prompt || null })
+      .pipe(take(1));
   }
 
   // a previewed picture kept: saved as an upload is, so it passes the same checks
@@ -69,7 +83,11 @@ export class MselImageDataService implements OnDestroy {
     const [head, base64] = dataUri.split(',', 2);
     const type = /data:([^;]+)/.exec(head)?.[1] ?? 'image/png';
     const bytes = Uint8Array.from(atob(base64 ?? ''), (c) => c.charCodeAt(0));
-    const file = new File([bytes], `msel-image.${type.split('/')[1] ?? 'png'}`, { type });
+    const file = new File(
+      [bytes],
+      `msel-image.${type.split('/')[1] ?? 'png'}`,
+      { type },
+    );
     return this.setImage(mselId, file).pipe(tap(() => this.revoke(mselId)));
   }
 
@@ -79,7 +97,7 @@ export class MselImageDataService implements OnDestroy {
       tap((msel: Msel) => {
         this.revoke(mselId);
         this.updateStore(msel);
-      })
+      }),
     );
   }
 
@@ -90,7 +108,10 @@ export class MselImageDataService implements OnDestroy {
   // Only the image marker changes, so the rest of the stored MSEL, such as
   // its roles, is left as it is.
   private updateStore(msel: Msel) {
-    this.mselDataService.updateImageDateModified(msel.id, msel.imageDateModified ?? null);
+    this.mselDataService.updateImageDateModified(
+      msel.id,
+      msel.imageDateModified ?? null,
+    );
   }
 
   private revoke(mselId: string) {

@@ -8,13 +8,22 @@ import { of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
-import { MselImageDialogComponent, MselImageDialogResult } from './msel-image-dialog.component';
+import {
+  MselImageDialogComponent,
+  MselImageDialogResult,
+} from './msel-image-dialog.component';
 
 const NEW = 'data:image/jpeg;base64,/9j/AA==';
 
 describe('MselImageDialogComponent', () => {
-  async function renderDialog(url: string | null, canGenerate = true, images: Partial<Record<keyof MselImageDataService, unknown>> = {}) {
-    const ref = dialogRefStub<MselImageDialogComponent, MselImageDialogResult>(undefined);
+  async function renderDialog(
+    url: string | null,
+    canGenerate = true,
+    images: Partial<Record<keyof MselImageDataService, unknown>> = {},
+  ) {
+    const ref = dialogRefStub<MselImageDialogComponent, MselImageDialogResult>(
+      undefined,
+    );
     const service = {
       previewImage: vi.fn(() => of({ image: NEW })),
       saveImage: vi.fn(() => of({ id: 'msel-1' })),
@@ -22,7 +31,15 @@ describe('MselImageDialogComponent', () => {
     };
     await render(MselImageDialogComponent, {
       providers: [
-        { provide: MAT_DIALOG_DATA, useValue: { mselId: 'msel-1', url, name: 'Exercise Alpha', canGenerate } },
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: {
+            mselId: 'msel-1',
+            url,
+            name: 'Exercise Alpha',
+            canGenerate,
+          },
+        },
         { provide: MatDialogRef, useValue: ref.dialogRef },
         { provide: MselImageDataService, useValue: service },
       ],
@@ -38,9 +55,13 @@ describe('MselImageDialogComponent', () => {
   it('shows the image and closes', async () => {
     const { close } = await renderDialog('blob:card');
 
-    expect(screen.getByAltText('Card image for Exercise Alpha')).toHaveAttribute('src', 'blob:card');
+    expect(
+      screen.getByAltText('Card image for Exercise Alpha'),
+    ).toHaveAttribute('src', 'blob:card');
     expect(screen.getByText('Exercise Alpha')).toBeInTheDocument();
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Close' }));
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Close' }));
     expect(close).toHaveBeenCalledWith();
   });
 
@@ -54,12 +75,24 @@ describe('MselImageDialogComponent', () => {
     const { close, service } = await renderDialog('blob:card');
     const user = userEvent.setup();
 
-    await user.type(screen.getByRole('textbox', { name: 'What should the picture show or change?' }), 'the control room at night');
+    await user.type(
+      screen.getByRole('textbox', {
+        name: 'What should the picture show or change?',
+      }),
+      'the control room at night',
+    );
     await user.click(screen.getByRole('button', { name: 'Regenerate' }));
 
-    expect(service.previewImage).toHaveBeenCalledWith('msel-1', 'the control room at night');
-    expect(screen.getByAltText('New card image for Exercise Alpha')).toHaveAttribute('src', NEW);
-    expect(screen.getByAltText('Card image for Exercise Alpha')).toBeInTheDocument();
+    expect(service.previewImage).toHaveBeenCalledWith(
+      'msel-1',
+      'the control room at night',
+    );
+    expect(
+      screen.getByAltText('New card image for Exercise Alpha'),
+    ).toHaveAttribute('src', NEW);
+    expect(
+      screen.getByAltText('Card image for Exercise Alpha'),
+    ).toBeInTheDocument();
     expect(service.saveImage).not.toHaveBeenCalled();
     expect(close).not.toHaveBeenCalled();
 
@@ -82,8 +115,12 @@ describe('MselImageDialogComponent', () => {
     expect(service.previewImage).toHaveBeenCalledTimes(2);
 
     await user.click(screen.getByRole('button', { name: 'Discard' }));
-    expect(screen.queryByAltText('New card image for Exercise Alpha')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Regenerate' })).toBeInTheDocument();
+    expect(
+      screen.queryByAltText('New card image for Exercise Alpha'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Regenerate' }),
+    ).toBeInTheDocument();
     expect(service.saveImage).not.toHaveBeenCalled();
   });
 
@@ -94,13 +131,27 @@ describe('MselImageDialogComponent', () => {
    */
   it('says why a picture could not be made', async () => {
     await renderDialog('blob:card', true, {
-      previewImage: vi.fn(() => throwError(() => ({ status: 400, error: { title: 'This server has no image model, so it cannot make a picture.' } }))),
+      previewImage: vi.fn(() =>
+        throwError(() => ({
+          status: 400,
+          error: {
+            title:
+              'This server has no image model, so it cannot make a picture.',
+          },
+        })),
+      ),
     });
 
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Regenerate' }));
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Regenerate' }));
 
-    expect(screen.getByRole('alert')).toHaveTextContent('This server has no image model');
-    expect(screen.queryByRole('button', { name: 'Use this' })).not.toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'This server has no image model',
+    );
+    expect(
+      screen.queryByRole('button', { name: 'Use this' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -112,7 +163,9 @@ describe('MselImageDialogComponent', () => {
     await renderDialog(null);
 
     expect(screen.getByText(/No image yet/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Generate' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Generate' }),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -124,6 +177,8 @@ describe('MselImageDialogComponent', () => {
     await renderDialog('blob:card', false);
 
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Regenerate' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Regenerate' }),
+    ).not.toBeInTheDocument();
   });
 });

@@ -7,8 +7,15 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { take } from 'rxjs/operators';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
-import { MselDraftImport, MselImportResult } from 'src/app/generated/blueprint.api';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective, CrucibleDialogActionsDirective } from '@cmusei/crucible-common';
+import {
+  MselDraftImport,
+  MselImportResult,
+} from 'src/app/generated/blueprint.api';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+  CrucibleDialogActionsDirective,
+} from '@cmusei/crucible-common';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
@@ -20,20 +27,21 @@ export interface MselImportDialogData {
 }
 
 @Component({
-    selector: 'app-msel-import-dialog',
-    templateUrl: './msel-import-dialog.component.html',
-    styleUrls: ['./msel-import-dialog.component.scss'],
-    imports: [
-        CrucibleDialogComponent,
-        CrucibleDialogContentDirective,
-        MatProgressSpinner,
-        MatIcon,
-        CrucibleDialogActionsDirective,
-        MatButton,
-    ],
+  selector: 'app-msel-import-dialog',
+  templateUrl: './msel-import-dialog.component.html',
+  styleUrls: ['./msel-import-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatProgressSpinner,
+    MatIcon,
+    CrucibleDialogActionsDirective,
+    MatButton,
+  ],
 })
 export class MselImportDialogComponent implements OnInit {
-  dialogRef = inject<MatDialogRef<MselImportDialogComponent, string>>(MatDialogRef);
+  dialogRef =
+    inject<MatDialogRef<MselImportDialogComponent, string>>(MatDialogRef);
   data = inject<MselImportDialogData>(MAT_DIALOG_DATA);
   private mselDataService = inject(MselDataService);
 
@@ -55,20 +63,18 @@ export class MselImportDialogComponent implements OnInit {
     const import$ = this.data.draft
       ? this.mselDataService.importDraft(this.data.draft)
       : this.mselDataService.importJson(this.data.file);
-    import$
-      .pipe(take(1))
-      .subscribe({
-        next: (result) => {
-          this.result = result;
-          this.isImporting = false;
-          this.dialogRef.disableClose = false;
-        },
-        error: (err) => {
-          this.errorMessage = this.getErrorMessage(err);
-          this.isImporting = false;
-          this.dialogRef.disableClose = false;
-        },
-      });
+    import$.pipe(take(1)).subscribe({
+      next: (result) => {
+        this.result = result;
+        this.isImporting = false;
+        this.dialogRef.disableClose = false;
+      },
+      error: (err) => {
+        this.errorMessage = this.getErrorMessage(err);
+        this.isImporting = false;
+        this.dialogRef.disableClose = false;
+      },
+    });
   }
 
   get counts(): { label: string; value: number }[] {

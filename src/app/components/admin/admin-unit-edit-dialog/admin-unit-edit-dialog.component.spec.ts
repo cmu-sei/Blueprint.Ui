@@ -14,7 +14,12 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AdminUnitEditDialogComponent } from './admin-unit-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const UNIT = { id: 'unit-1', name: 'Blue Team', shortName: 'BLUE', description: 'Defenders' };
+const UNIT = {
+  id: 'unit-1',
+  name: 'Blue Team',
+  shortName: 'BLUE',
+  description: 'Defenders',
+};
 
 function dialogData(overrides: Partial<typeof UNIT> = {}) {
   return { unit: { ...structuredClone(UNIT), ...overrides } };
@@ -22,22 +27,34 @@ function dialogData(overrides: Partial<typeof UNIT> = {}) {
 
 async function renderAdminUnitEditDialog(data = dialogData()) {
   const rendered = await renderComponent(AdminUnitEditDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, AngularEditorModule, MatFormFieldModule, MatInputModule],
+    imports: [
+      ...CRUCIBLE_DIALOG_IMPORTS,
+      AngularEditorModule,
+      MatFormFieldModule,
+      MatInputModule,
+    ],
     declarations: [AdminUnitEditDialogComponent],
     // angular-editor injects HttpClient for its image upload.
-    providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, provideHttpClient(), provideHttpClientTesting()],
+    providers: [
+      { provide: MAT_DIALOG_DATA, useValue: data },
+      provideHttpClient(),
+      provideHttpClientTesting(),
+    ],
   });
   // ngModel writes the values into the inputs in a microtask.
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
   const results: unknown[] = [];
-  rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
+  rendered.fixture.componentInstance.editComplete.subscribe((r) =>
+    results.push(r),
+  );
   return { ...rendered, data, results };
 }
 
 // angular-editor's toolbar makes whole-document role queries slow, so the
 // buttons are looked up in the dialog actions.
-const actions = () => within(document.querySelector('mat-dialog-actions') as HTMLElement);
+const actions = () =>
+  within(document.querySelector('mat-dialog-actions') as HTMLElement);
 
 describe('AdminUnitEditDialogComponent', () => {
   /**
@@ -48,8 +65,12 @@ describe('AdminUnitEditDialogComponent', () => {
   it('renders with the default test providers', async () => {
     const { fixture } = await renderAdminUnitEditDialog();
 
-    expect(fixture.componentInstance).toBeInstanceOf(AdminUnitEditDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Edit Unit' })).toBeInTheDocument();
+    expect(fixture.componentInstance).toBeInstanceOf(
+      AdminUnitEditDialogComponent,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Edit Unit' }),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -87,7 +108,9 @@ describe('AdminUnitEditDialogComponent', () => {
    * Data: a unit with no short name.
    */
   it('saves an incomplete unit when handleEditComplete is called', async () => {
-    const { fixture, data, results } = await renderAdminUnitEditDialog(dialogData({ shortName: '' }));
+    const { fixture, data, results } = await renderAdminUnitEditDialog(
+      dialogData({ shortName: '' }),
+    );
 
     fixture.componentInstance.handleEditComplete(true);
 

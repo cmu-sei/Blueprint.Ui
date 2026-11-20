@@ -22,7 +22,7 @@ export class MselTechniqueDataService {
   constructor(
     private mselTechniqueStore: MselTechniqueStore,
     private mselTechniqueQuery: MselTechniqueQuery,
-    private mselTechniqueService: MselTechniqueService
+    private mselTechniqueService: MselTechniqueService,
   ) {
     this.MselTechniqueList = this.mselTechniqueQuery.selectAll();
   }
@@ -36,7 +36,7 @@ export class MselTechniqueDataService {
         tap(() => {
           this.mselTechniqueStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (items) => {
@@ -44,7 +44,7 @@ export class MselTechniqueDataService {
         },
         (error) => {
           this.mselTechniqueStore.set([]);
-        }
+        },
       );
   }
 
@@ -79,12 +79,15 @@ export class MselTechniqueDataService {
   }
 
   /** Moves the pool to another release and reloads it; the caller reports what was dropped. */
-  upgrade(mselId: string, techniqueReleaseId: string): Observable<MselTechniqueUpgrade> {
+  upgrade(
+    mselId: string,
+    techniqueReleaseId: string,
+  ): Observable<MselTechniqueUpgrade> {
     return this.mselTechniqueService
       .upgradeMselTechniques(mselId, techniqueReleaseId)
       .pipe(
         take(1),
-        tap(() => this.loadByMsel(mselId))
+        tap(() => this.loadByMsel(mselId)),
       );
   }
 }

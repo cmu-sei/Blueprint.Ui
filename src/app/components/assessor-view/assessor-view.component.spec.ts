@@ -7,7 +7,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -48,13 +51,19 @@ import { MoveStore } from 'src/app/data/move/move.store';
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { ScenarioEventStore } from 'src/app/data/scenario-event/scenario-event.store';
 import { TeamStore } from 'src/app/data/team/team.store';
-import { AssessorViewComponent, TEAM_RESPONSES_STALE_MS } from './assessor-view.component';
+import {
+  AssessorViewComponent,
+  TEAM_RESPONSES_STALE_MS,
+} from './assessor-view.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
 import { DataValueComponent } from '../data-value/data-value.component';
 import { TeamResponsesComponent } from '../team-responses/team-responses.component';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 import { Router } from '@angular/router';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
@@ -89,33 +98,135 @@ class TeamResponsesStub {
   readonly prompt = input<string>('');
 }
 
-const MSEL: Msel = { id: 'msel-1', name: 'Exercise Alpha', teams: [], units: [], userMselRoles: [] };
+const MSEL: Msel = {
+  id: 'msel-1',
+  name: 'Exercise Alpha',
+  teams: [],
+  units: [],
+  userMselRoles: [],
+};
 const FIELDS: DataField[] = [
-  { id: 'df-title', mselId: 'msel-1', name: 'Title', dataType: DataFieldType.String, displayOrder: 1, isAssessorVisible: true },
-  { id: 'df-done', mselId: 'msel-1', name: 'Observed', dataType: DataFieldType.Checkbox, displayOrder: 2, isAssessorVisible: true },
-  { id: 'df-notes', mselId: 'msel-1', name: 'Planner Notes', dataType: DataFieldType.String, displayOrder: 3, isAssessorVisible: false },
+  {
+    id: 'df-title',
+    mselId: 'msel-1',
+    name: 'Title',
+    dataType: DataFieldType.String,
+    displayOrder: 1,
+    isAssessorVisible: true,
+  },
+  {
+    id: 'df-done',
+    mselId: 'msel-1',
+    name: 'Observed',
+    dataType: DataFieldType.Checkbox,
+    displayOrder: 2,
+    isAssessorVisible: true,
+  },
+  {
+    id: 'df-notes',
+    mselId: 'msel-1',
+    name: 'Planner Notes',
+    dataType: DataFieldType.String,
+    displayOrder: 3,
+    isAssessorVisible: false,
+  },
 ];
-const EVENT: ScenarioEvent = { id: 'se-1', mselId: 'msel-1', scenarioEventType: EventType.Inject, deltaSeconds: 0, groupOrder: 1 };
+const EVENT: ScenarioEvent = {
+  id: 'se-1',
+  mselId: 'msel-1',
+  scenarioEventType: EventType.Inject,
+  deltaSeconds: 0,
+  groupOrder: 1,
+};
 const VALUES: DataValue[] = [
-  { id: 'dv-1', scenarioEventId: 'se-1', dataFieldId: 'df-title', value: 'Phishing wave' },
-  { id: 'dv-2', scenarioEventId: 'se-1', dataFieldId: 'df-done', value: 'false' },
+  {
+    id: 'dv-1',
+    scenarioEventId: 'se-1',
+    dataFieldId: 'df-title',
+    value: 'Phishing wave',
+  },
+  {
+    id: 'dv-2',
+    scenarioEventId: 'se-1',
+    dataFieldId: 'df-done',
+    value: 'false',
+  },
 ];
-const MOVE_1: Move = { id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0, description: 'Initial access' };
-const BLUE: Team = { id: 'team-blue', mselId: 'msel-1', name: 'Blue Team', shortName: 'Blue' };
-const RED: Team = { id: 'team-red', mselId: 'msel-1', name: 'Red Team', shortName: 'Red' };
-const EXCON: Team = { id: 'team-excon', mselId: 'msel-1', name: 'Exercise Control', shortName: 'EXCON' };
+const MOVE_1: Move = {
+  id: 'move-1',
+  mselId: 'msel-1',
+  moveNumber: 1,
+  deltaSeconds: 0,
+  description: 'Initial access',
+};
+const BLUE: Team = {
+  id: 'team-blue',
+  mselId: 'msel-1',
+  name: 'Blue Team',
+  shortName: 'Blue',
+};
+const RED: Team = {
+  id: 'team-red',
+  mselId: 'msel-1',
+  name: 'Red Team',
+  shortName: 'Red',
+};
+const EXCON: Team = {
+  id: 'team-excon',
+  mselId: 'msel-1',
+  name: 'Exercise Control',
+  shortName: 'EXCON',
+};
 const COMPETENCY_FIELD: DataField = {
-  id: 'df-comp', mselId: 'msel-1', name: 'Competencies', dataType: DataFieldType.Competency, displayOrder: 4, isAssessorVisible: false,
+  id: 'df-comp',
+  mselId: 'msel-1',
+  name: 'Competencies',
+  dataType: DataFieldType.Competency,
+  displayOrder: 4,
+  isAssessorVisible: false,
 };
 // se-1 tagged with T0001, the MSEL's one competency; Move 1 holds se-1, so the move has it too.
 const ASSESSABLE_FIELDS = [...FIELDS, COMPETENCY_FIELD];
-const ASSESSABLE_VALUES: DataValue[] = [...VALUES, { id: 'dv-comp', scenarioEventId: 'se-1', dataFieldId: 'df-comp', value: 'T0001' }];
-const T0001: MselCompetency[] = [{ id: 'mc-1', mselId: 'msel-1', competencyId: 'comp-1', competency: { id: 'comp-1', idNumber: 'T0001' } }];
+const ASSESSABLE_VALUES: DataValue[] = [
+  ...VALUES,
+  {
+    id: 'dv-comp',
+    scenarioEventId: 'se-1',
+    dataFieldId: 'df-comp',
+    value: 'T0001',
+  },
+];
+const T0001: MselCompetency[] = [
+  {
+    id: 'mc-1',
+    mselId: 'msel-1',
+    competencyId: 'comp-1',
+    competency: { id: 'comp-1', idNumber: 'T0001' },
+  },
+];
 
 const LEVELS: ProficiencyLevel[] = [
-  { id: 'level-3', proficiencyScaleId: 'scale-1', name: 'Expert', value: 3, displayOrder: 3 },
-  { id: 'level-1', proficiencyScaleId: 'scale-1', name: 'Novice', value: 1, displayOrder: 1 },
-  { id: 'level-2', proficiencyScaleId: 'scale-1', name: 'Proficient', value: 2, displayOrder: 2 },
+  {
+    id: 'level-3',
+    proficiencyScaleId: 'scale-1',
+    name: 'Expert',
+    value: 3,
+    displayOrder: 3,
+  },
+  {
+    id: 'level-1',
+    proficiencyScaleId: 'scale-1',
+    name: 'Novice',
+    value: 1,
+    displayOrder: 1,
+  },
+  {
+    id: 'level-2',
+    proficiencyScaleId: 'scale-1',
+    name: 'Proficient',
+    value: 2,
+    displayOrder: 2,
+  },
 ];
 
 // The printed report's exercise: two teams (BLUE and RED above), two moves, four injects, three of them with competencies.
@@ -127,25 +238,84 @@ const REPORT_MSEL: Msel = {
   durationSeconds: 5400,
   teams: [RED, BLUE],
 };
-const TRIAGE: Competency = { id: 'comp-t1', competencyFrameworkId: 'fw-1', idNumber: 'T-1', shortName: 'Incident triage' };
-const CONTAIN: Competency = { id: 'comp-k2', competencyFrameworkId: 'fw-1', idNumber: 'K-2', shortName: 'Containment knowledge' };
+const TRIAGE: Competency = {
+  id: 'comp-t1',
+  competencyFrameworkId: 'fw-1',
+  idNumber: 'T-1',
+  shortName: 'Incident triage',
+};
+const CONTAIN: Competency = {
+  id: 'comp-k2',
+  competencyFrameworkId: 'fw-1',
+  idNumber: 'K-2',
+  shortName: 'Containment knowledge',
+};
 const REPORT_COMPETENCIES: MselCompetency[] = [
   { id: 'mc-1', mselId: 'msel-1', competencyId: TRIAGE.id, competency: TRIAGE },
-  { id: 'mc-2', mselId: 'msel-1', competencyId: CONTAIN.id, competency: CONTAIN },
+  {
+    id: 'mc-2',
+    mselId: 'msel-1',
+    competencyId: CONTAIN.id,
+    competency: CONTAIN,
+  },
 ];
 const REPORT_MOVES: Move[] = [
-  { id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0, description: 'Initial Reports' },
-  { id: 'move-2', mselId: 'msel-1', moveNumber: 2, deltaSeconds: 3600, description: 'Escalation' },
+  {
+    id: 'move-1',
+    mselId: 'msel-1',
+    moveNumber: 1,
+    deltaSeconds: 0,
+    description: 'Initial Reports',
+  },
+  {
+    id: 'move-2',
+    mselId: 'msel-1',
+    moveNumber: 2,
+    deltaSeconds: 3600,
+    description: 'Escalation',
+  },
 ];
 const REPORT_FIELDS: DataField[] = [
-  { id: 'df-title', mselId: 'msel-1', name: 'Title', dataType: DataFieldType.String, displayOrder: 1, isAssessorVisible: true },
-  { id: 'df-comps', mselId: 'msel-1', name: 'Competencies', dataType: DataFieldType.Competency, displayOrder: 3, isAssessorVisible: true },
+  {
+    id: 'df-title',
+    mselId: 'msel-1',
+    name: 'Title',
+    dataType: DataFieldType.String,
+    displayOrder: 1,
+    isAssessorVisible: true,
+  },
+  {
+    id: 'df-comps',
+    mselId: 'msel-1',
+    name: 'Competencies',
+    dataType: DataFieldType.Competency,
+    displayOrder: 3,
+    isAssessorVisible: true,
+  },
 ];
-const inject = (id: string, deltaSeconds: number): ScenarioEvent =>
-  ({ id, mselId: 'msel-1', scenarioEventType: EventType.Inject, deltaSeconds, groupOrder: 1 });
-const REPORT_EVENTS = [inject('se-1', 900), inject('se-2', 1800), inject('se-3', 3900), inject('se-4', 4000)];
-const value = (scenarioEventId: string, dataFieldId: string, v: string): DataValue =>
-  ({ id: `dv-${scenarioEventId}-${dataFieldId}`, scenarioEventId, dataFieldId, value: v });
+const inject = (id: string, deltaSeconds: number): ScenarioEvent => ({
+  id,
+  mselId: 'msel-1',
+  scenarioEventType: EventType.Inject,
+  deltaSeconds,
+  groupOrder: 1,
+});
+const REPORT_EVENTS = [
+  inject('se-1', 900),
+  inject('se-2', 1800),
+  inject('se-3', 3900),
+  inject('se-4', 4000),
+];
+const value = (
+  scenarioEventId: string,
+  dataFieldId: string,
+  v: string,
+): DataValue => ({
+  id: `dv-${scenarioEventId}-${dataFieldId}`,
+  scenarioEventId,
+  dataFieldId,
+  value: v,
+});
 const REPORT_VALUES: DataValue[] = [
   value('se-1', 'df-title', 'Unusual logins'),
   value('se-1', 'df-comps', 'T-1'),
@@ -164,21 +334,31 @@ function asserted(
   score: number,
   grouping: string,
   team = BLUE,
-  comment?: string
+  comment?: string,
 ) {
   return {
     id,
     timestamp,
     actor: { name: 'J. Doe' },
-    verb: { id: 'https://w3id.org/xapi/tla/verbs/asserted', display: { 'en-US': 'asserted' } },
+    verb: {
+      id: 'https://w3id.org/xapi/tla/verbs/asserted',
+      display: { 'en-US': 'asserted' },
+    },
     object: {
       id: `https://blueprint.example/api/competencies/${competency.id}`,
       definition: {
         type: 'https://w3id.org/xapi/tla/activity-types/competency',
-        extensions: { 'https://w3id.org/xapi/tla/extensions/competency-identifier': competency.idNumber },
+        extensions: {
+          'https://w3id.org/xapi/tla/extensions/competency-identifier':
+            competency.idNumber,
+        },
       },
     },
-    result: { score: { raw: score }, completion: true, ...(comment ? { response: comment } : {}) },
+    result: {
+      score: { raw: score },
+      completion: true,
+      ...(comment ? { response: comment } : {}),
+    },
     context: {
       platform: 'Blueprint',
       team: { name: team.shortName, account: { name: team.id } },
@@ -187,9 +367,13 @@ function asserted(
     },
   };
 }
-const onEvent = (eventId: string) => `https://blueprint.example/api/scenarioevents/${eventId}`;
+const onEvent = (eventId: string) =>
+  `https://blueprint.example/api/scenarioevents/${eventId}`;
 
-function seeded<S extends { set(entities: unknown[]): void }>(Store: new () => S, entities: unknown[]) {
+function seeded<S extends { set(entities: unknown[]): void }>(
+  Store: new () => S,
+  entities: unknown[],
+) {
   return {
     provide: Store,
     useFactory: () => {
@@ -213,10 +397,14 @@ async function renderAssessorView(
     teams?: Team[];
     mselCompetencies?: MselCompetency[];
     teamCompetencies?: TeamCompetency[];
-    teamResponses?: (mselId: string, moveNumber: number, teamId: string) => Observable<CiteTeamResponses>;
+    teamResponses?: (
+      mselId: string,
+      moveNumber: number,
+      teamId: string,
+    ) => Observable<CiteTeamResponses>;
     /** The levels of the proficiency scale, loaded for a competency that has a framework. */
     proficiencyLevels?: ProficiencyLevel[];
-  } = {}
+  } = {},
 ) {
   const {
     canEditCheckboxes = false,
@@ -234,19 +422,30 @@ async function renderAssessorView(
     proficiencyLevels = [],
   } = overrides;
   const poolApi = {
-    getMselCompetencies: vi.fn(() => of<MselCompetency[]>(structuredClone(mselCompetencies))),
+    getMselCompetencies: vi.fn(() =>
+      of<MselCompetency[]>(structuredClone(mselCompetencies)),
+    ),
   } satisfies ApiStub<MselCompetencyService>;
   const teamCompetencyApi = {
-    getMselTeamCompetencies: vi.fn(() => of<TeamCompetency[]>(structuredClone(teamCompetencies))),
+    getMselTeamCompetencies: vi.fn(() =>
+      of<TeamCompetency[]>(structuredClone(teamCompetencies)),
+    ),
   } satisfies ApiStub<TeamCompetencyService>;
   const citeApi = {
     getMselCiteTeamResponses: vi.fn(teamResponses),
   } satisfies ApiStub<CiteService>;
   const frameworkApi = {
-    getCompetencyFramework: vi.fn((id: string) => of<CompetencyFramework>({ id, defaultProficiencyScaleId: 'scale-1' })),
+    getCompetencyFramework: vi.fn((id: string) =>
+      of<CompetencyFramework>({ id, defaultProficiencyScaleId: 'scale-1' }),
+    ),
   } satisfies ApiStub<CompetencyFrameworkService>;
   const scaleApi = {
-    getProficiencyScale: vi.fn((id: string) => of<ProficiencyScale>({ id, proficiencyLevels: structuredClone(proficiencyLevels) })),
+    getProficiencyScale: vi.fn((id: string) =>
+      of<ProficiencyScale>({
+        id,
+        proficiencyLevels: structuredClone(proficiencyLevels),
+      }),
+    ),
   } satisfies ApiStub<ProficiencyScaleService>;
   const rendered = await renderComponent(AssessorViewComponent, {
     imports: [
@@ -289,22 +488,37 @@ async function renderAssessorView(
       seeded(MoveStore, moves),
       seeded(TeamStore, teams),
     ],
-    inputs: { canEditCheckboxes, loggedInUserId: 'user-me', standalone, canChooseFields },
+    inputs: {
+      canEditCheckboxes,
+      loggedInUserId: 'user-me',
+      standalone,
+      canChooseFields,
+    },
   });
   return { ...rendered, poolApi, citeApi };
 }
 
 function values(fixture: ComponentFixture<unknown>): DataValueStub[] {
-  return fixture.debugElement.queryAll(By.directive(DataValueStub)).map((d) => d.componentInstance);
+  return fixture.debugElement
+    .queryAll(By.directive(DataValueStub))
+    .map((d) => d.componentInstance);
 }
-const byField = (fixture: ComponentFixture<unknown>, name: string) => values(fixture).find((v) => v.dataField().name === name);
+const byField = (fixture: ComponentFixture<unknown>, name: string) =>
+  values(fixture).find((v) => v.dataField().name === name);
 
 /** Opens Move 1 and answers the MSEL's statement request with `statements`; returns the user. */
-async function openMove(fixture: ComponentFixture<unknown>, statements: unknown[] = []) {
+async function openMove(
+  fixture: ComponentFixture<unknown>,
+  statements: unknown[] = [],
+) {
   const user = userEvent.setup();
   await user.click(screen.getByText('Move 1'));
   TestBed.inject(HttpTestingController)
-    .expectOne((req) => req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1')
+    .expectOne(
+      (req) =>
+        req.url === '/api/xapi/statements' &&
+        req.params.get('mselId') === 'msel-1',
+    )
     .flush({ statements });
   fixture.detectChanges();
   return user;
@@ -329,11 +543,15 @@ describe('AssessorViewComponent', () => {
     const { fixture, poolApi } = await renderAssessorView();
 
     expect(poolApi.getMselCompetencies).toHaveBeenCalledWith('msel-1');
-    expect(values(fixture).map((v) => [v.dataField().name, v.value()])).toEqual([
-      ['Title', 'Phishing wave'],
-      ['Observed', 'false'],
-    ]);
-    expect(screen.queryByText('No data fields are marked as assessor-visible.')).not.toBeInTheDocument();
+    expect(values(fixture).map((v) => [v.dataField().name, v.value()])).toEqual(
+      [
+        ['Title', 'Phishing wave'],
+        ['Observed', 'false'],
+      ],
+    );
+    expect(
+      screen.queryByText('No data fields are marked as assessor-visible.'),
+    ).not.toBeInTheDocument();
   });
 
   describe('with no assessor-visible fields', () => {
@@ -347,9 +565,15 @@ describe('AssessorViewComponent', () => {
     it('points at the Data Fields tab inside the MSEL editor', async () => {
       await renderAssessorView({ fields: HIDDEN });
 
-      expect(screen.getByText('No data fields are marked as assessor-visible.')).toBeInTheDocument();
-      expect(screen.getByText(/^Go to the Data Fields tab/)).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'Open Data Fields' })).not.toBeInTheDocument();
+      expect(
+        screen.getByText('No data fields are marked as assessor-visible.'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/^Go to the Data Fields tab/),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Open Data Fields' }),
+      ).not.toBeInTheDocument();
     });
 
     /**
@@ -358,15 +582,27 @@ describe('AssessorViewComponent', () => {
      * Data: no field is assessor-visible; standalone and canChooseFields true.
      */
     it('opens the Data Fields tab for a user who can choose the fields', async () => {
-      const { fixture } = await renderAssessorView({ fields: HIDDEN, standalone: true, canChooseFields: true });
+      const { fixture } = await renderAssessorView({
+        fields: HIDDEN,
+        standalone: true,
+        canChooseFields: true,
+      });
       const router = fixture.debugElement.injector.get(Router);
       const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
-      expect(screen.queryByText(/^Go to the Data Fields tab/)).not.toBeInTheDocument();
-      await userEvent.click(screen.getByRole('button', { name: 'Open Data Fields' }));
+      expect(
+        screen.queryByText(/^Go to the Data Fields tab/),
+      ).not.toBeInTheDocument();
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Open Data Fields' }),
+      );
 
-      expect(navigate).toHaveBeenCalledWith(['/build'], { queryParams: { msel: 'msel-1' } });
-      expect(fixture.debugElement.injector.get(UIDataService).getMselTab()).toBe('Data Fields');
+      expect(navigate).toHaveBeenCalledWith(['/build'], {
+        queryParams: { msel: 'msel-1' },
+      });
+      expect(
+        fixture.debugElement.injector.get(UIDataService).getMselTab(),
+      ).toBe('Data Fields');
     });
 
     /**
@@ -378,7 +614,9 @@ describe('AssessorViewComponent', () => {
       await renderAssessorView({ fields: HIDDEN, standalone: true });
 
       expect(screen.getByText(/^Ask the MSEL owner/)).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'Open Data Fields' })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Open Data Fields' }),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -420,7 +658,15 @@ describe('AssessorViewComponent', () => {
     const errors = captureUnhandledRxErrors();
     const failure = new Error('clipboard access denied');
     const { fixture } = await renderAssessorView({
-      moves: [{ id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0, description: 'Initial access' }],
+      moves: [
+        {
+          id: 'move-1',
+          mselId: 'msel-1',
+          moveNumber: 1,
+          deltaSeconds: 0,
+          description: 'Initial access',
+        },
+      ],
     });
     const user = userEvent.setup();
     const writes: string[] = [];
@@ -434,12 +680,24 @@ describe('AssessorViewComponent', () => {
       id: 'stmt-1',
       timestamp: '2026-10-20T16:00:00Z',
       actor: { name: 'Blue Analyst' },
-      verb: { id: 'http://adlnet.gov/expapi/verbs/experienced', display: { 'en-US': 'experienced' } },
-      context: { platform: 'cite', contextActivities: { grouping: [{ id: 'https://blueprint.example/move/1' }] } },
+      verb: {
+        id: 'http://adlnet.gov/expapi/verbs/experienced',
+        display: { 'en-US': 'experienced' },
+      },
+      context: {
+        platform: 'cite',
+        contextActivities: {
+          grouping: [{ id: 'https://blueprint.example/move/1' }],
+        },
+      },
     };
     await user.click(screen.getByText('Move 1'));
     TestBed.inject(HttpTestingController)
-      .expectOne((req) => req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1')
+      .expectOne(
+        (req) =>
+          req.url === '/api/xapi/statements' &&
+          req.params.get('mselId') === 'msel-1',
+      )
       .flush({ statements: [statement] });
     fixture.detectChanges();
 
@@ -457,9 +715,20 @@ describe('AssessorViewComponent', () => {
    */
   it('times each move statement with the zone in effect on its date', async () => {
     vi.stubEnv('TZ', 'America/New_York');
-    localStorage.setItem('uiState', JSON.stringify({ statementGrouping: 'off' }));
+    localStorage.setItem(
+      'uiState',
+      JSON.stringify({ statementGrouping: 'off' }),
+    );
     const { fixture } = await renderAssessorView({
-      moves: [{ id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0, description: 'Initial access' }],
+      moves: [
+        {
+          id: 'move-1',
+          mselId: 'msel-1',
+          moveNumber: 1,
+          deltaSeconds: 0,
+          description: 'Initial access',
+        },
+      ],
     });
     const user = userEvent.setup();
 
@@ -468,26 +737,67 @@ describe('AssessorViewComponent', () => {
       id,
       timestamp,
       actor: { name: 'Blue Analyst' },
-      verb: { id: 'http://adlnet.gov/expapi/verbs/experienced', display: { 'en-US': 'experienced' } },
-      context: { platform: 'cite', contextActivities: { grouping: [{ id: 'https://blueprint.example/move/1' }] } },
+      verb: {
+        id: 'http://adlnet.gov/expapi/verbs/experienced',
+        display: { 'en-US': 'experienced' },
+      },
+      context: {
+        platform: 'cite',
+        contextActivities: {
+          grouping: [{ id: 'https://blueprint.example/move/1' }],
+        },
+      },
     });
     TestBed.inject(HttpTestingController)
-      .expectOne((req) => req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1')
-      .flush({ statements: [statement('stmt-oct', '2026-10-20T16:00:00Z'), statement('stmt-nov', '2026-11-20T17:00:00Z')] });
+      .expectOne(
+        (req) =>
+          req.url === '/api/xapi/statements' &&
+          req.params.get('mselId') === 'msel-1',
+      )
+      .flush({
+        statements: [
+          statement('stmt-oct', '2026-10-20T16:00:00Z'),
+          statement('stmt-nov', '2026-11-20T17:00:00Z'),
+        ],
+      });
     fixture.detectChanges();
 
-    expect(Array.from(document.querySelectorAll('.statement-time'), (e) => e.textContent)).toEqual([
-      '20 Oct 2026 12:00 EDT',
-      '20 Nov 2026 12:00 EST',
-    ]);
+    expect(
+      Array.from(
+        document.querySelectorAll('.statement-time'),
+        (e) => e.textContent,
+      ),
+    ).toEqual(['20 Oct 2026 12:00 EDT', '20 Nov 2026 12:00 EST']);
   });
 
   describe('printed assessment report', () => {
     const STATEMENTS = [
-      asserted('st-1', '2026-11-03T14:20:00Z', TRIAGE, 2, onEvent('se-1'), BLUE, 'Slow to isolate'),
-      asserted('st-2', '2026-11-03T14:30:00Z', TRIAGE, 3, onEvent('se-1'), BLUE, 'Isolated both hosts'),
+      asserted(
+        'st-1',
+        '2026-11-03T14:20:00Z',
+        TRIAGE,
+        2,
+        onEvent('se-1'),
+        BLUE,
+        'Slow to isolate',
+      ),
+      asserted(
+        'st-2',
+        '2026-11-03T14:30:00Z',
+        TRIAGE,
+        3,
+        onEvent('se-1'),
+        BLUE,
+        'Isolated both hosts',
+      ),
       asserted('st-3', '2026-11-03T15:10:00Z', CONTAIN, 1, onEvent('se-3')),
-      asserted('st-4', '2026-11-03T15:05:00Z', CONTAIN, 2, 'https://blueprint.example/api/msels/msel-1/moves/2'),
+      asserted(
+        'st-4',
+        '2026-11-03T15:05:00Z',
+        CONTAIN,
+        2,
+        'https://blueprint.example/api/msels/msel-1/moves/2',
+      ),
     ];
 
     // Clicks Print Assessment Report, answers the statements request, and waits until the report would be printed.
@@ -495,7 +805,7 @@ describe('AssessorViewComponent', () => {
     async function printReport(
       statements: unknown[] | 'unavailable',
       overrides: Parameters<typeof renderAssessorView>[0] = {},
-      beforePrinting?: () => void
+      beforePrinting?: () => void,
     ) {
       vi.stubEnv('TZ', 'America/New_York');
       const rendered = await renderAssessorView({
@@ -509,16 +819,28 @@ describe('AssessorViewComponent', () => {
         ...overrides,
       });
       const printDocument = vi
-        .spyOn(rendered.fixture.componentInstance as unknown as { printDocument(): void }, 'printDocument')
+        .spyOn(
+          rendered.fixture.componentInstance as unknown as {
+            printDocument(): void;
+          },
+          'printDocument',
+        )
         .mockImplementation(() => undefined);
       beforePrinting?.();
 
-      await userEvent.click(screen.getByRole('button', { name: 'Print Assessment Report' }));
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      );
       const request = TestBed.inject(HttpTestingController).expectOne(
-        (req) => req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1'
+        (req) =>
+          req.url === '/api/xapi/statements' &&
+          req.params.get('mselId') === 'msel-1',
       );
       if (statements === 'unavailable') {
-        request.flush('LRS down', { status: 503, statusText: 'Service Unavailable' });
+        request.flush('LRS down', {
+          status: 503,
+          statusText: 'Service Unavailable',
+        });
       } else {
         request.flush({ statements });
       }
@@ -529,7 +851,9 @@ describe('AssessorViewComponent', () => {
     }
 
     const texts = (root: ParentNode, selector: string) =>
-      Array.from(root.querySelectorAll(selector), (e) => e.textContent.replace(/\s+/g, ' ').trim());
+      Array.from(root.querySelectorAll(selector), (e) =>
+        e.textContent.replace(/\s+/g, ' ').trim(),
+      );
     const section = (name: string) => screen.getByLabelText(name);
 
     /**
@@ -541,7 +865,9 @@ describe('AssessorViewComponent', () => {
     it('draws the report only when printing', async () => {
       let drawnBeforePrinting: boolean | undefined;
       const { printDocument } = await printReport(STATEMENTS, {}, () => {
-        drawnBeforePrinting = !!document.getElementById('assessment-print-area');
+        drawnBeforePrinting = !!document.getElementById(
+          'assessment-print-area',
+        );
       });
 
       expect(drawnBeforePrinting).toBe(false);
@@ -550,7 +876,8 @@ describe('AssessorViewComponent', () => {
       expect(document.getElementById('assessment-print-area')).not.toBeNull();
     });
 
-    const tableRows = (table: Element) => Array.from(table.querySelectorAll('tbody tr'), (row) => texts(row, 'td'));
+    const tableRows = (table: Element) =>
+      Array.from(table.querySelectorAll('tbody tr'), (row) => texts(row, 'td'));
 
     /**
      * Verifies: the cover shows the theme band (no MSEL image), "Assessment Report", the MSEL name and facts, and the
@@ -564,13 +891,35 @@ describe('AssessorViewComponent', () => {
       const cover = section('Cover');
       expect(within(cover).getByTestId('cover-band')).toBeInTheDocument();
       expect(within(cover).getByText('Assessment Report')).toBeInTheDocument();
-      expect(within(cover).getByRole('heading', { level: 1, hidden: true })).toHaveTextContent('Scoring Model Check');
+      expect(
+        within(cover).getByRole('heading', { level: 1, hidden: true }),
+      ).toHaveTextContent('Scoring Model Check');
       const facts = cover.querySelector('.cover-facts');
-      expect(texts(facts, 'dt')).toEqual(['Start', 'Duration', 'Moves', 'Injects', 'Teams', 'Assessors', 'Printed']);
-      expect(texts(facts, 'dd').slice(0, 6)).toEqual(['03 Nov 2026 09:00 EST', '1 hour 30 minutes', '2', '4', '2', 'J. Doe']);
+      expect(texts(facts, 'dt')).toEqual([
+        'Start',
+        'Duration',
+        'Moves',
+        'Injects',
+        'Teams',
+        'Assessors',
+        'Printed',
+      ]);
+      expect(texts(facts, 'dd').slice(0, 6)).toEqual([
+        '03 Nov 2026 09:00 EST',
+        '1 hour 30 minutes',
+        '2',
+        '4',
+        '2',
+        'J. Doe',
+      ]);
       const purpose = within(cover).getByLabelText('Purpose');
-      expect(texts(purpose, '.purpose-description')).toEqual(['Rehearse triage and containment of a ransomware intrusion.']);
-      expect(texts(purpose, '.purpose-moves li')).toEqual(['Move 1: Initial Reports', 'Move 2: Escalation']);
+      expect(texts(purpose, '.purpose-description')).toEqual([
+        'Rehearse triage and containment of a ransomware intrusion.',
+      ]);
+      expect(texts(purpose, '.purpose-moves li')).toEqual([
+        'Move 1: Initial Reports',
+        'Move 2: Escalation',
+      ]);
     });
 
     /**
@@ -585,16 +934,39 @@ describe('AssessorViewComponent', () => {
       await printReport(STATEMENTS);
 
       const results = section('Results');
-      expect(texts(results, 'h2')).toEqual(['Results by competency', 'Results by team']);
-      expect(within(results).getByText('This MSEL has no objectives, so its competencies measure the results.')).toBeInTheDocument();
-      const byCompetency = within(results).getByLabelText('Results by competency');
-      expect(texts(byCompetency, 'thead th')).toEqual(['Competency', 'Injects', 'Assessed', 'Novice', 'Proficient', 'Expert']);
+      expect(texts(results, 'h2')).toEqual([
+        'Results by competency',
+        'Results by team',
+      ]);
+      expect(
+        within(results).getByText(
+          'This MSEL has no objectives, so its competencies measure the results.',
+        ),
+      ).toBeInTheDocument();
+      const byCompetency = within(results).getByLabelText(
+        'Results by competency',
+      );
+      expect(texts(byCompetency, 'thead th')).toEqual([
+        'Competency',
+        'Injects',
+        'Assessed',
+        'Novice',
+        'Proficient',
+        'Expert',
+      ]);
       expect(tableRows(byCompetency)).toEqual([
         ['K-2 Containment knowledge', '2', '1', '1', '1', '0'],
         ['T-1 Incident triage', '2', '1', '0', '0', '1'],
       ]);
       const byTeam = within(results).getByLabelText('Results by team');
-      expect(texts(byTeam, 'thead th')).toEqual(['Team', 'Injects assessed', 'Not assessed', 'Novice', 'Proficient', 'Expert']);
+      expect(texts(byTeam, 'thead th')).toEqual([
+        'Team',
+        'Injects assessed',
+        'Not assessed',
+        'Novice',
+        'Proficient',
+        'Expert',
+      ]);
       expect(tableRows(byTeam)).toEqual([
         ['Blue Team', '2', '1', '1', '1', '1'],
         ['Red Team', '0', '3', '0', '0', '0'],
@@ -612,7 +984,14 @@ describe('AssessorViewComponent', () => {
       await printReport(STATEMENTS, {
         fields: [
           ...REPORT_FIELDS,
-          { id: 'df-obj', mselId: 'msel-1', name: 'Objectives', dataType: DataFieldType.String, displayOrder: 4, isAssessorVisible: false },
+          {
+            id: 'df-obj',
+            mselId: 'msel-1',
+            name: 'Objectives',
+            dataType: DataFieldType.String,
+            displayOrder: 4,
+            isAssessorVisible: false,
+          },
         ],
         values: [
           ...REPORT_VALUES,
@@ -623,9 +1002,19 @@ describe('AssessorViewComponent', () => {
       });
 
       const results = section('Results');
-      expect(texts(results, 'h2')).toEqual(['Results by objective', 'Results by competency', 'Results by team']);
-      expect(within(results).getByText('Objectives are the values of the Objectives data field.')).toBeInTheDocument();
-      expect(tableRows(within(results).getByLabelText('Results by objective'))).toEqual([
+      expect(texts(results, 'h2')).toEqual([
+        'Results by objective',
+        'Results by competency',
+        'Results by team',
+      ]);
+      expect(
+        within(results).getByText(
+          'Objectives are the values of the Objectives data field.',
+        ),
+      ).toBeInTheDocument();
+      expect(
+        tableRows(within(results).getByLabelText('Results by objective')),
+      ).toEqual([
         ['Detect intrusion', '2', '1', '0', '0', '1'],
         ['Contain ransomware', '1', '1', '1', '0', '0'],
       ]);
@@ -641,21 +1030,34 @@ describe('AssessorViewComponent', () => {
     it('prints each team as one table with a not-assessed line', async () => {
       await printReport(STATEMENTS);
 
-      expect(texts(document, '.report-team .team-title')).toEqual(['Blue Team', 'Red Team']);
+      expect(texts(document, '.report-team .team-title')).toEqual([
+        'Blue Team',
+        'Red Team',
+      ]);
       const blue = section('Blue Team');
       expect(texts(blue, 'thead th')).toEqual(['Time', 'Inject', 'Rating']);
-      expect(tableRows(blue.querySelector('table')).map((row) => row.slice(1))).toEqual([
+      expect(
+        tableRows(blue.querySelector('table')).map((row) => row.slice(1)),
+      ).toEqual([
         ['Unusual logins', 'T-1 Expert Isolated both hosts'],
         ['Move 2 (whole move)', 'K-2 Proficient'],
         ['Ransom note', 'K-2 Novice'],
       ]);
       expect(blue.querySelectorAll('.rating-comment')).toHaveLength(1);
-      expect(texts(blue, '.not-assessed')).toEqual(['Not assessed: Locked accounts']);
+      expect(texts(blue, '.not-assessed')).toEqual([
+        'Not assessed: Locked accounts',
+      ]);
 
       const red = section('Red Team');
-      expect(within(red).getByText('No assessments recorded for this team.')).toBeInTheDocument();
-      expect(texts(red, '.not-assessed')).toEqual(['Not assessed: Unusual logins, Locked accounts, Ransom note']);
-      expect(document.querySelector('#assessment-print-area')?.textContent).not.toMatch(/Confidence/);
+      expect(
+        within(red).getByText('No assessments recorded for this team.'),
+      ).toBeInTheDocument();
+      expect(texts(red, '.not-assessed')).toEqual([
+        'Not assessed: Unusual logins, Locked accounts, Ransom note',
+      ]);
+      expect(
+        document.querySelector('#assessment-print-area')?.textContent,
+      ).not.toMatch(/Confidence/);
     });
 
     /**
@@ -664,16 +1066,39 @@ describe('AssessorViewComponent', () => {
      * Interacts with: buildAssessmentReport (isAssessableFor), TeamCompetencyService (stub).
      * Data: Red is assigned K-2 only; Blue is assigned T-1 and K-2 and is rated on every inject with competencies.
      */
-    it('narrows the not-assessed injects to the team\'s competencies', async () => {
-      await printReport([...STATEMENTS, asserted('st-5', '2026-11-03T14:45:00Z', TRIAGE, 2, onEvent('se-2'))], {
-        teamCompetencies: [
-          { id: 'tc-1', teamId: RED.id, competencyId: CONTAIN.id, competency: CONTAIN },
-          { id: 'tc-2', teamId: BLUE.id, competencyId: TRIAGE.id, competency: TRIAGE },
-          { id: 'tc-3', teamId: BLUE.id, competencyId: CONTAIN.id, competency: CONTAIN },
+    it("narrows the not-assessed injects to the team's competencies", async () => {
+      await printReport(
+        [
+          ...STATEMENTS,
+          asserted('st-5', '2026-11-03T14:45:00Z', TRIAGE, 2, onEvent('se-2')),
         ],
-      });
+        {
+          teamCompetencies: [
+            {
+              id: 'tc-1',
+              teamId: RED.id,
+              competencyId: CONTAIN.id,
+              competency: CONTAIN,
+            },
+            {
+              id: 'tc-2',
+              teamId: BLUE.id,
+              competencyId: TRIAGE.id,
+              competency: TRIAGE,
+            },
+            {
+              id: 'tc-3',
+              teamId: BLUE.id,
+              competencyId: CONTAIN.id,
+              competency: CONTAIN,
+            },
+          ],
+        },
+      );
 
-      expect(texts(section('Red Team'), '.not-assessed')).toEqual(['Not assessed: Locked accounts, Ransom note']);
+      expect(texts(section('Red Team'), '.not-assessed')).toEqual([
+        'Not assessed: Locked accounts, Ransom note',
+      ]);
       expect(section('Blue Team').querySelector('.not-assessed')).toBeNull();
     });
 
@@ -684,11 +1109,18 @@ describe('AssessorViewComponent', () => {
      * Data: the report exercise without teams or MSEL competencies; no statements.
      */
     it('prints no team pages for a MSEL with no teams', async () => {
-      await printReport([], { msel: { ...REPORT_MSEL, teams: [] }, mselCompetencies: [] });
+      await printReport([], {
+        msel: { ...REPORT_MSEL, teams: [] },
+        mselCompetencies: [],
+      });
 
       const results = section('Results');
-      expect(within(results).getByText('This MSEL has no teams.')).toBeInTheDocument();
-      expect(within(results).getByText('No injects exercise a competency.')).toBeInTheDocument();
+      expect(
+        within(results).getByText('This MSEL has no teams.'),
+      ).toBeInTheDocument();
+      expect(
+        within(results).getByText('No injects exercise a competency.'),
+      ).toBeInTheDocument();
       expect(document.querySelectorAll('.report-team')).toHaveLength(0);
     });
 
@@ -701,9 +1133,19 @@ describe('AssessorViewComponent', () => {
     it('says so when the statements could not be read', async () => {
       await printReport('unavailable');
 
-      expect(within(section('Cover')).getByText(/^The xAPI statements could not be read/)).toBeInTheDocument();
-      expect(within(section('Blue Team')).getByText('No assessments recorded for this team.')).toBeInTheDocument();
-      expect(texts(section('Blue Team'), '.not-assessed')).toEqual(['Not assessed: Unusual logins, Locked accounts, Ransom note']);
+      expect(
+        within(section('Cover')).getByText(
+          /^The xAPI statements could not be read/,
+        ),
+      ).toBeInTheDocument();
+      expect(
+        within(section('Blue Team')).getByText(
+          'No assessments recorded for this team.',
+        ),
+      ).toBeInTheDocument();
+      expect(texts(section('Blue Team'), '.not-assessed')).toEqual([
+        'Not assessed: Unusual logins, Locked accounts, Ransom note',
+      ]);
     });
 
     /**
@@ -714,12 +1156,27 @@ describe('AssessorViewComponent', () => {
      */
     it('prints a rating for no MSEL team on its own page', async () => {
       const other = { ...BLUE, id: 'team-gone', shortName: 'GONE' };
-      await printReport([asserted('st-9', '2026-11-03T14:20:00Z', TRIAGE, 1, onEvent('se-1'), other)]);
-
-      expect(texts(document, '.report-team .team-title')).toEqual(['Blue Team', 'Red Team', 'No team']);
-      expect(tableRows(section('No team').querySelector('table')).map((row) => row.slice(1))).toEqual([
-        ['Unusual logins', 'T-1 Novice'],
+      await printReport([
+        asserted(
+          'st-9',
+          '2026-11-03T14:20:00Z',
+          TRIAGE,
+          1,
+          onEvent('se-1'),
+          other,
+        ),
       ]);
+
+      expect(texts(document, '.report-team .team-title')).toEqual([
+        'Blue Team',
+        'Red Team',
+        'No team',
+      ]);
+      expect(
+        tableRows(section('No team').querySelector('table')).map((row) =>
+          row.slice(1),
+        ),
+      ).toEqual([['Unusual logins', 'T-1 Novice']]);
       expect(section('No team').querySelector('.not-assessed')).toBeNull();
     });
 
@@ -743,25 +1200,45 @@ describe('AssessorViewComponent', () => {
         proficiencyLevels: LEVELS,
       });
       const printDocument = vi
-        .spyOn(fixture.componentInstance as unknown as { printDocument(): void }, 'printDocument')
+        .spyOn(
+          fixture.componentInstance as unknown as { printDocument(): void },
+          'printDocument',
+        )
         .mockImplementation(() => undefined);
       const http = TestBed.inject(HttpTestingController);
-      const isRead = (req: { url: string; params: { get(name: string): string | null } }) =>
-        req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1';
+      const isRead = (req: {
+        url: string;
+        params: { get(name: string): string | null };
+      }) =>
+        req.url === '/api/xapi/statements' &&
+        req.params.get('mselId') === 'msel-1';
 
-      await userEvent.click(screen.getByRole('button', { name: 'Print Assessment Report' }));
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      );
       const first = http.expectOne(isRead);
-      TestBed.inject(MselStore).update('msel-1', { hideNamesOnAssessorView: true });
+      TestBed.inject(MselStore).update('msel-1', {
+        hideNamesOnAssessorView: true,
+      });
       fixture.detectChanges();
       first.flush({ statements: STATEMENTS });
-      http.expectOne(isRead).flush({ statements: STATEMENTS.map((stmt) => ({ ...stmt, actor: { objectType: 'Agent' } })) });
+      http.expectOne(isRead).flush({
+        statements: STATEMENTS.map((stmt) => ({
+          ...stmt,
+          actor: { objectType: 'Agent' },
+        })),
+      });
       fixture.detectChanges();
       await vi.waitFor(() => expect(printDocument).toHaveBeenCalledTimes(1));
       fixture.detectChanges();
 
       const facts = section('Cover').querySelector('.cover-facts');
       expect(texts(facts, 'dt')).not.toContain('Assessors');
-      expect(tableRows(section('Blue Team').querySelector('table')).map((row) => row.slice(1))).toEqual([
+      expect(
+        tableRows(section('Blue Team').querySelector('table')).map((row) =>
+          row.slice(1),
+        ),
+      ).toEqual([
         ['Unusual logins', 'T-1 Expert Isolated both hosts'],
         ['Move 2 (whole move)', 'K-2 Proficient'],
         ['Ransom note', 'K-2 Novice'],
@@ -771,16 +1248,42 @@ describe('AssessorViewComponent', () => {
 
   describe('statement grouping', () => {
     const VIEWED = 'http://id.tincanapi.com/verb/viewed';
-    const ANN = { objectType: 'Agent', name: 'Ann Analyst', account: { homePage: 'https://id.example', name: 'ann' } };
-    const BO = { objectType: 'Agent', name: 'Bo Builder', account: { homePage: 'https://id.example', name: 'bo' } };
-    const CY = { objectType: 'Agent', name: 'Cy Cipher', account: { homePage: 'https://id.example', name: 'cy' } };
-    const REX = { objectType: 'Agent', name: 'Rex Raider', account: { homePage: 'https://id.example', name: 'rex' } };
+    const ANN = {
+      objectType: 'Agent',
+      name: 'Ann Analyst',
+      account: { homePage: 'https://id.example', name: 'ann' },
+    };
+    const BO = {
+      objectType: 'Agent',
+      name: 'Bo Builder',
+      account: { homePage: 'https://id.example', name: 'bo' },
+    };
+    const CY = {
+      objectType: 'Agent',
+      name: 'Cy Cipher',
+      account: { homePage: 'https://id.example', name: 'cy' },
+    };
+    const REX = {
+      objectType: 'Agent',
+      name: 'Rex Raider',
+      account: { homePage: 'https://id.example', name: 'rex' },
+    };
     // What the API leaves of an agent for an assessor on a MSEL that hides names.
     const MASKED = { objectType: 'Agent' };
 
     /** A Move 1 statement; by default Blue views the Phishing email in Gallery at 12:0<minute> EDT on 20 Oct 2026. */
-    function statement(id: string, minute: number, overrides: Record<string, unknown> = {}) {
-      const { team = BLUE, platform = 'gallery', verb = VIEWED, object = 'https://gallery.example/article/phish', ...rest } = overrides as {
+    function statement(
+      id: string,
+      minute: number,
+      overrides: Record<string, unknown> = {},
+    ) {
+      const {
+        team = BLUE,
+        platform = 'gallery',
+        verb = VIEWED,
+        object = 'https://gallery.example/article/phish',
+        ...rest
+      } = overrides as {
         team?: Team;
         platform?: string;
         verb?: string;
@@ -791,22 +1294,39 @@ describe('AssessorViewComponent', () => {
         timestamp: `2026-10-20T16:0${minute}:00Z`,
         actor: ANN,
         verb: { id: verb, display: { 'en-US': verb.split('/').pop() } },
-        object: { id: object, definition: { name: { 'en-US': object.split('/').pop() } } },
+        object: {
+          id: object,
+          definition: { name: { 'en-US': object.split('/').pop() } },
+        },
         context: {
           platform,
-          team: { objectType: 'Group', name: team.name, account: { homePage: 'https://blueprint.example', name: team.id } },
-          contextActivities: { grouping: [{ id: 'https://blueprint.example/move/1' }] },
+          team: {
+            objectType: 'Group',
+            name: team.name,
+            account: { homePage: 'https://blueprint.example', name: team.id },
+          },
+          contextActivities: {
+            grouping: [{ id: 'https://blueprint.example/move/1' }],
+          },
         },
         ...rest,
       };
     }
 
     /** Opens Move 1 with the statements given and returns the user. */
-    async function openMoveWith(statements: unknown[], options: { hideNames?: boolean } = {}) {
+    async function openMoveWith(
+      statements: unknown[],
+      options: { hideNames?: boolean } = {},
+    ) {
       vi.stubEnv('TZ', 'America/New_York');
-      const rendered = await renderAssessorView({ moves: [MOVE_1], teams: [BLUE, RED] });
+      const rendered = await renderAssessorView({
+        moves: [MOVE_1],
+        teams: [BLUE, RED],
+      });
       if (options.hideNames) {
-        TestBed.inject(MselStore).update('msel-1', { hideNamesOnAssessorView: true });
+        TestBed.inject(MselStore).update('msel-1', {
+          hideNamesOnAssessorView: true,
+        });
       }
       const user = await openMove(rendered.fixture, statements);
       return { ...rendered, user };
@@ -820,7 +1340,11 @@ describe('AssessorViewComponent', () => {
         row.querySelector('.stmt-team')?.textContent,
       ]);
 
-    async function chooseGrouping(fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>, option: string) {
+    async function chooseGrouping(
+      fixture: ComponentFixture<unknown>,
+      user: ReturnType<typeof userEvent.setup>,
+      option: string,
+    ) {
       await user.click(screen.getByRole('combobox', { name: 'Group by' }));
       await user.click(await screen.findByRole('option', { name: option }));
       fixture.detectChanges();
@@ -840,16 +1364,22 @@ describe('AssessorViewComponent', () => {
      * Interacts with: toggleMoveExpand, HttpClient GET api/xapi/statements (HttpTestingController), getSectionStatementList, buildStatementGroups, formatRangeEnd.
      * Data: TZ America/New_York; Ann, Bo, Cy, Ann view one article for Blue (12:00–12:04 EDT), Rex views it for Red at 12:03.
      */
-    it('merges a team\'s repeats across its members by default', async () => {
+    it("merges a team's repeats across its members by default", async () => {
       await openMoveWith(REPEATS());
 
-      expect(screen.getByRole('combobox', { name: 'Group by' })).toHaveTextContent('Team');
+      expect(
+        screen.getByRole('combobox', { name: 'Group by' }),
+      ).toHaveTextContent('Team');
       expect(rowsShown()).toEqual([
         ['', 'Rex Raider', 'Red Team'],
         ['×4', 'Ann Analyst + 2 others', 'Blue Team'],
       ]);
-      const range = screen.getByRole('button', { name: /^×4/ }).querySelector('.statement-time-range');
-      expect(Array.from(range.children, (line) => line.textContent.trim())).toEqual(['20 Oct 2026 12:00 EDT', '– 12:04 EDT']);
+      const range = screen
+        .getByRole('button', { name: /^×4/ })
+        .querySelector('.statement-time-range');
+      expect(
+        Array.from(range.children, (line) => line.textContent.trim()),
+      ).toEqual(['20 Oct 2026 12:00 EDT', '– 12:04 EDT']);
       expect(screen.getByText('5 / 5')).toBeInTheDocument();
     });
 
@@ -903,7 +1433,9 @@ describe('AssessorViewComponent', () => {
 
       expect(rowsShown()).toEqual([['×3', 'Names hidden', 'Blue Team']]);
       await user.click(screen.getByRole('combobox', { name: 'Group by' }));
-      expect((await screen.findAllByRole('option')).map((o) => o.textContent.trim())).toEqual(['Team', 'Off']);
+      expect(
+        (await screen.findAllByRole('option')).map((o) => o.textContent.trim()),
+      ).toEqual(['Team', 'Off']);
     });
 
     /**
@@ -912,7 +1444,9 @@ describe('AssessorViewComponent', () => {
      * Data: MSEL hides names; one Blue statement whose actor carries only objectType Agent.
      */
     it('shows a team member of the team when the MSEL hides names', async () => {
-      await openMoveWith([statement('s-1', 0, { actor: MASKED })], { hideNames: true });
+      await openMoveWith([statement('s-1', 0, { actor: MASKED })], {
+        hideNames: true,
+      });
 
       expect(rowsShown()).toEqual([['', 'Team member', 'Blue Team']]);
     });
@@ -946,10 +1480,17 @@ describe('AssessorViewComponent', () => {
      */
     it('calls a person with no team a hidden name when the MSEL hides names', async () => {
       await openMoveWith(
-        [statement('s-1', 0, {
-          actor: MASKED,
-          context: { platform: 'blueprint', contextActivities: { grouping: [{ id: 'https://blueprint.example/move/1' }] } },
-        })],
+        [
+          statement('s-1', 0, {
+            actor: MASKED,
+            context: {
+              platform: 'blueprint',
+              contextActivities: {
+                grouping: [{ id: 'https://blueprint.example/move/1' }],
+              },
+            },
+          }),
+        ],
         { hideNames: true },
       );
 
@@ -962,7 +1503,14 @@ describe('AssessorViewComponent', () => {
      * Data: MSEL hides names; one Blue statement whose actor is mailto:pat@example.com.
      */
     it('shows the email address the API sent on a MSEL that hides names', async () => {
-      await openMoveWith([statement('s-1', 0, { actor: { objectType: 'Agent', mbox: 'mailto:pat@example.com' } })], { hideNames: true });
+      await openMoveWith(
+        [
+          statement('s-1', 0, {
+            actor: { objectType: 'Agent', mbox: 'mailto:pat@example.com' },
+          }),
+        ],
+        { hideNames: true },
+      );
 
       expect(rowsShown()).toEqual([['', 'pat@example.com', 'Blue Team']]);
     });
@@ -973,7 +1521,10 @@ describe('AssessorViewComponent', () => {
      * Data: MSEL hides names; one Blue statement whose actor is a Group with no name.
      */
     it('calls a group actor with no name Unknown when the MSEL hides names', async () => {
-      await openMoveWith([statement('s-1', 0, { actor: { objectType: 'Group' } })], { hideNames: true });
+      await openMoveWith(
+        [statement('s-1', 0, { actor: { objectType: 'Group' } })],
+        { hideNames: true },
+      );
 
       expect(rowsShown()).toEqual([['', 'Unknown', 'Blue Team']]);
     });
@@ -984,16 +1535,27 @@ describe('AssessorViewComponent', () => {
      * Data: MSEL hides names; grouping Off; two Blue statements whose objects are an Agent with only objectType, then Ann Analyst.
      */
     it('shows a person a statement is about as a hidden name', async () => {
-      localStorage.setItem('uiState', JSON.stringify({ statementGrouping: 'off' }));
+      localStorage.setItem(
+        'uiState',
+        JSON.stringify({ statementGrouping: 'off' }),
+      );
       await openMoveWith(
-        [statement('s-1', 0, { object: undefined }), statement('s-2', 1, { object: undefined })].map((stmt, i) => ({
+        [
+          statement('s-1', 0, { object: undefined }),
+          statement('s-2', 1, { object: undefined }),
+        ].map((stmt, i) => ({
           ...stmt,
           object: i === 0 ? MASKED : ANN,
         })),
         { hideNames: true },
       );
 
-      expect(Array.from(document.querySelectorAll('.stmt-object'), (e) => e.textContent)).toEqual(['Name hidden', 'Ann Analyst']);
+      expect(
+        Array.from(
+          document.querySelectorAll('.stmt-object'),
+          (e) => e.textContent,
+        ),
+      ).toEqual(['Name hidden', 'Ann Analyst']);
     });
 
     /**
@@ -1003,17 +1565,29 @@ describe('AssessorViewComponent', () => {
      */
     it('does not offer User grouping for accounts with no name', async () => {
       const { user } = await openMoveWith(
-        [0, 1, 2].map((m) => statement(`s-${m}`, m, { actor: { objectType: 'Agent', account: { homePage: 'https://lrs.example' } } })),
+        [0, 1, 2].map((m) =>
+          statement(`s-${m}`, m, {
+            actor: {
+              objectType: 'Agent',
+              account: { homePage: 'https://lrs.example' },
+            },
+          }),
+        ),
       );
 
       await user.click(screen.getByRole('combobox', { name: 'Group by' }));
-      expect((await screen.findAllByRole('option')).map((o) => o.textContent.trim())).toEqual(['Team', 'Off']);
+      expect(
+        (await screen.findAllByRole('option')).map((o) => o.textContent.trim()),
+      ).toEqual(['Team', 'Off']);
     });
 
     /** The preview beside an opened statement's actor section ('{...}' when it has none). */
     const actorPreview = () =>
       Array.from(document.querySelectorAll('.json-section'))
-        .find((section) => section.querySelector('.json-key')?.textContent === '"actor"')
+        .find(
+          (section) =>
+            section.querySelector('.json-key')?.textContent === '"actor"',
+        )
         ?.querySelector('.json-preview')?.textContent;
 
     /**
@@ -1022,7 +1596,9 @@ describe('AssessorViewComponent', () => {
      * Data: MSEL shows names; one Blue statement whose actor carries only objectType Agent.
      */
     it('previews an actor with no name as {...} when the MSEL shows names', async () => {
-      const { user } = await openMoveWith([statement('s-1', 0, { actor: MASKED })]);
+      const { user } = await openMoveWith([
+        statement('s-1', 0, { actor: MASKED }),
+      ]);
 
       await user.click(screen.getByText('Unknown'));
 
@@ -1031,9 +1607,20 @@ describe('AssessorViewComponent', () => {
 
     describe('when the MSEL starts hiding names', () => {
       const statements = () => TestBed.inject(HttpTestingController);
-      const hideNames = () => TestBed.inject(MselStore).update('msel-1', { hideNamesOnAssessorView: true });
-      const isFullRead = (req: { url: string; params: { get(name: string): string | null; has(name: string): boolean } }) =>
-        req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1' && !req.params.has('since');
+      const hideNames = () =>
+        TestBed.inject(MselStore).update('msel-1', {
+          hideNamesOnAssessorView: true,
+        });
+      const isFullRead = (req: {
+        url: string;
+        params: {
+          get(name: string): string | null;
+          has(name: string): boolean;
+        };
+      }) =>
+        req.url === '/api/xapi/statements' &&
+        req.params.get('mselId') === 'msel-1' &&
+        !req.params.has('since');
 
       /**
        * Verifies: hiding names on an open Assessor View reads every statement again, so the names already on screen, in the rows and an opened statement's preview, are replaced by what the API now sends.
@@ -1046,7 +1633,9 @@ describe('AssessorViewComponent', () => {
         expect(actorPreview()).toBe('Ann Analyst');
 
         hideNames();
-        statements().expectOne(isFullRead).flush({ statements: [statement('s-1', 0, { actor: MASKED })] });
+        statements()
+          .expectOne(isFullRead)
+          .flush({ statements: [statement('s-1', 0, { actor: MASKED })] });
         fixture.detectChanges();
 
         expect(rowsShown()).toEqual([['', 'Team member', 'Blue Team']]);
@@ -1062,18 +1651,30 @@ describe('AssessorViewComponent', () => {
        */
       it('drops a refresh that was under way and reads again', async () => {
         const { fixture, user } = await openMoveWith([statement('s-1', 0)]);
-        await user.click(screen.getAllByRole('button', { name: 'Refresh evidence' })[0]);
-        const refresh = statements().expectOne((req) => req.url === '/api/xapi/statements' && req.params.has('since'));
+        await user.click(
+          screen.getAllByRole('button', { name: 'Refresh evidence' })[0],
+        );
+        const refresh = statements().expectOne(
+          (req) =>
+            req.url === '/api/xapi/statements' && req.params.has('since'),
+        );
 
         hideNames();
         refresh.flush({ statements: [statement('s-2', 1, { actor: BO })] });
         statements()
           .expectOne(isFullRead)
-          .flush({ statements: [statement('s-1', 0, { actor: MASKED }), statement('s-2', 1, { actor: MASKED })] });
+          .flush({
+            statements: [
+              statement('s-1', 0, { actor: MASKED }),
+              statement('s-2', 1, { actor: MASKED }),
+            ],
+          });
         fixture.detectChanges();
 
         expect(rowsShown()).toEqual([['×2', 'Names hidden', 'Blue Team']]);
-        expect(screen.queryByText(/Ann Analyst|Bo Builder/)).not.toBeInTheDocument();
+        expect(
+          screen.queryByText(/Ann Analyst|Bo Builder/),
+        ).not.toBeInTheDocument();
       });
     });
 
@@ -1084,17 +1685,47 @@ describe('AssessorViewComponent', () => {
      */
     it('never groups assertions or CITE submissions and scores', async () => {
       await openMoveWith([
-        statement('s-assert-1', 0, { platform: 'blueprint', verb: 'https://w3id.org/xapi/tla/verbs/asserted' }),
-        statement('s-assert-2', 1, { platform: 'blueprint', verb: 'https://w3id.org/xapi/tla/verbs/asserted' }),
-        statement('s-submit-1', 2, { platform: 'cite', verb: 'https://w3id.org/xapi/dod-isd/verbs/submitted' }),
-        statement('s-submit-2', 3, { platform: 'cite', verb: 'https://w3id.org/xapi/dod-isd/verbs/submitted' }),
-        statement('s-eval-1', 4, { platform: 'cite', verb: 'https://w3id.org/xapi/dod-isd/verbs/evaluated' }),
-        statement('s-eval-2', 5, { platform: 'cite', verb: 'https://w3id.org/xapi/dod-isd/verbs/evaluated' }),
-        statement('s-gallery-1', 6, { verb: 'https://w3id.org/xapi/dod-isd/verbs/submitted' }),
-        statement('s-gallery-2', 7, { verb: 'https://w3id.org/xapi/dod-isd/verbs/submitted' }),
+        statement('s-assert-1', 0, {
+          platform: 'blueprint',
+          verb: 'https://w3id.org/xapi/tla/verbs/asserted',
+        }),
+        statement('s-assert-2', 1, {
+          platform: 'blueprint',
+          verb: 'https://w3id.org/xapi/tla/verbs/asserted',
+        }),
+        statement('s-submit-1', 2, {
+          platform: 'cite',
+          verb: 'https://w3id.org/xapi/dod-isd/verbs/submitted',
+        }),
+        statement('s-submit-2', 3, {
+          platform: 'cite',
+          verb: 'https://w3id.org/xapi/dod-isd/verbs/submitted',
+        }),
+        statement('s-eval-1', 4, {
+          platform: 'cite',
+          verb: 'https://w3id.org/xapi/dod-isd/verbs/evaluated',
+        }),
+        statement('s-eval-2', 5, {
+          platform: 'cite',
+          verb: 'https://w3id.org/xapi/dod-isd/verbs/evaluated',
+        }),
+        statement('s-gallery-1', 6, {
+          verb: 'https://w3id.org/xapi/dod-isd/verbs/submitted',
+        }),
+        statement('s-gallery-2', 7, {
+          verb: 'https://w3id.org/xapi/dod-isd/verbs/submitted',
+        }),
       ]);
 
-      expect(rowsShown().map(([count]) => count)).toEqual(['', '', '', '', '', '', '×2']);
+      expect(rowsShown().map(([count]) => count)).toEqual([
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '×2',
+      ]);
     });
 
     /**
@@ -1105,11 +1736,26 @@ describe('AssessorViewComponent', () => {
     it('does not merge statements with different results', async () => {
       const answered = 'http://adlnet.gov/expapi/verbs/answered';
       await openMoveWith([
-        statement('s-right-1', 0, { verb: answered, result: { success: true, response: 'A' } }),
-        statement('s-wrong', 1, { verb: answered, result: { success: false, response: 'B' } }),
-        statement('s-right-2', 2, { verb: answered, result: { success: true, response: 'A' } }),
-        statement('s-score-1', 3, { verb: answered, result: { score: { raw: 5 } } }),
-        statement('s-score-2', 4, { verb: answered, result: { score: { raw: 5 } } }),
+        statement('s-right-1', 0, {
+          verb: answered,
+          result: { success: true, response: 'A' },
+        }),
+        statement('s-wrong', 1, {
+          verb: answered,
+          result: { success: false, response: 'B' },
+        }),
+        statement('s-right-2', 2, {
+          verb: answered,
+          result: { success: true, response: 'A' },
+        }),
+        statement('s-score-1', 3, {
+          verb: answered,
+          result: { score: { raw: 5 } },
+        }),
+        statement('s-score-2', 4, {
+          verb: answered,
+          result: { score: { raw: 5 } },
+        }),
       ]);
 
       expect(rowsShown().map(([count]) => count)).toEqual(['', '×2', '', '']);
@@ -1132,7 +1778,9 @@ describe('AssessorViewComponent', () => {
       } satisfies Pick<Clipboard, 'writeText'> as Clipboard);
       const group = screen.getByRole('button', { name: /^×3/ });
       expect(group).toHaveAttribute('aria-expanded', 'false');
-      expect(screen.queryByRole('button', { name: 'Copy JSON' })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Copy JSON' }),
+      ).not.toBeInTheDocument();
 
       await user.click(group);
       fixture.detectChanges();
@@ -1152,7 +1800,9 @@ describe('AssessorViewComponent', () => {
 
       await user.click(group);
       fixture.detectChanges();
-      expect(rowsShown()).toEqual([['×3', 'Ann Analyst + 2 others', 'Blue Team']]);
+      expect(rowsShown()).toEqual([
+        ['×3', 'Ann Analyst + 2 others', 'Blue Team'],
+      ]);
     });
 
     /**
@@ -1165,7 +1815,9 @@ describe('AssessorViewComponent', () => {
 
       await chooseGrouping(fixture, user, 'Off');
 
-      expect(JSON.parse(localStorage.getItem('uiState')).statementGrouping).toBe('off');
+      expect(
+        JSON.parse(localStorage.getItem('uiState')).statementGrouping,
+      ).toBe('off');
     });
 
     /**
@@ -1174,9 +1826,14 @@ describe('AssessorViewComponent', () => {
      * Data: saved Off; the five repeats.
      */
     it('restores the saved choice', async () => {
-      localStorage.setItem('uiState', JSON.stringify({ statementGrouping: 'off' }));
+      localStorage.setItem(
+        'uiState',
+        JSON.stringify({ statementGrouping: 'off' }),
+      );
       await openMoveWith(REPEATS());
-      expect(screen.getByRole('combobox', { name: 'Group by' })).toHaveTextContent('Off');
+      expect(
+        screen.getByRole('combobox', { name: 'Group by' }),
+      ).toHaveTextContent('Off');
       expect(rowsShown()).toHaveLength(5);
     });
 
@@ -1186,15 +1843,22 @@ describe('AssessorViewComponent', () => {
      * Data: saved User; MSEL hides names; three masked Blue statements on one article.
      */
     it('falls back from a saved User to Team when names are hidden', async () => {
-      localStorage.setItem('uiState', JSON.stringify({ statementGrouping: 'user' }));
+      localStorage.setItem(
+        'uiState',
+        JSON.stringify({ statementGrouping: 'user' }),
+      );
       await openMoveWith(
         [0, 1, 2].map((m) => statement(`s-${m}`, m, { actor: MASKED })),
         { hideNames: true },
       );
 
-      expect(screen.getByRole('combobox', { name: 'Group by' })).toHaveTextContent('Team');
+      expect(
+        screen.getByRole('combobox', { name: 'Group by' }),
+      ).toHaveTextContent('Team');
       expect(rowsShown()).toEqual([['×3', 'Names hidden', 'Blue Team']]);
-      expect(JSON.parse(localStorage.getItem('uiState')).statementGrouping).toBe('user');
+      expect(
+        JSON.parse(localStorage.getItem('uiState')).statementGrouping,
+      ).toBe('user');
     });
 
     /**
@@ -1203,10 +1867,17 @@ describe('AssessorViewComponent', () => {
      * Data: TZ America/New_York; Ann views the article for Blue at 12:00 EDT on 20 Oct and at 09:00 EDT on 21 Oct.
      */
     it('dates the end of a range that ends on another day', async () => {
-      await openMoveWith([statement('s-1', 0), statement('s-2', 0, { timestamp: '2026-10-21T13:00:00Z' })]);
+      await openMoveWith([
+        statement('s-1', 0),
+        statement('s-2', 0, { timestamp: '2026-10-21T13:00:00Z' }),
+      ]);
 
-      const range = screen.getByRole('button', { name: /^×2/ }).querySelector('.statement-time-range');
-      expect(Array.from(range.children, (line) => line.textContent.trim())).toEqual(['20 Oct 2026 12:00 EDT', '– 21 Oct 2026 09:00 EDT']);
+      const range = screen
+        .getByRole('button', { name: /^×2/ })
+        .querySelector('.statement-time-range');
+      expect(
+        Array.from(range.children, (line) => line.textContent.trim()),
+      ).toEqual(['20 Oct 2026 12:00 EDT', '– 21 Oct 2026 09:00 EDT']);
     });
 
     /**
@@ -1214,12 +1885,19 @@ describe('AssessorViewComponent', () => {
      * Interacts with: statementGroupKey (move, group and inject parts), getGroupPart, toggleEvent (event row clicked).
      * Data: Blue views the same article for inject se-1 twice in group 1 and once in group 2; all three are routed to se-1.
      */
-    it('keeps an inject\'s repeats from different groups apart', async () => {
+    it("keeps an inject's repeats from different groups apart", async () => {
       const inGroup = (group: number) => ({
         platform: 'gallery',
-        team: { objectType: 'Group', name: BLUE.name, account: { homePage: 'https://blueprint.example', name: BLUE.id } },
+        team: {
+          objectType: 'Group',
+          name: BLUE.name,
+          account: { homePage: 'https://blueprint.example', name: BLUE.id },
+        },
         contextActivities: {
-          grouping: [{ id: 'https://blueprint.example/scenarioevents/se-1' }, { id: `https://blueprint.example/group/${group}` }],
+          grouping: [
+            { id: 'https://blueprint.example/scenarioevents/se-1' },
+            { id: `https://blueprint.example/group/${group}` },
+          ],
         },
       });
       const { fixture, user } = await openMoveWith([
@@ -1232,7 +1910,12 @@ describe('AssessorViewComponent', () => {
       fixture.detectChanges();
 
       expect(rowsShown().map(([count]) => count)).toEqual(['×2', '']);
-      expect(Array.from(document.querySelectorAll('.stmt-group'), (e) => e.textContent)).toEqual(['G1', 'G2']);
+      expect(
+        Array.from(
+          document.querySelectorAll('.stmt-group'),
+          (e) => e.textContent,
+        ),
+      ).toEqual(['G1', 'G2']);
     });
 
     /**
@@ -1247,7 +1930,9 @@ describe('AssessorViewComponent', () => {
       const { filtered, items } = move;
       const eventItems = view.getSectionStatementList('event-se-1').items;
 
-      TestBed.inject(MselStore).update('msel-1', { name: 'Exercise Alpha, renamed' });
+      TestBed.inject(MselStore).update('msel-1', {
+        name: 'Exercise Alpha, renamed',
+      });
       fixture.detectChanges();
       expect(view.getSectionStatementList('move-1').filtered).toBe(filtered);
 
@@ -1266,7 +1951,10 @@ describe('AssessorViewComponent', () => {
       const { fixture, user } = await openMoveWith([
         statement('s-ann', 0),
         statement('s-bo', 1, { actor: BO }),
-        statement('s-bo-launch', 2, { actor: BO, verb: 'http://adlnet.gov/expapi/verbs/launched' }),
+        statement('s-bo-launch', 2, {
+          actor: BO,
+          verb: 'http://adlnet.gov/expapi/verbs/launched',
+        }),
         statement('s-rex', 3, { actor: REX, team: RED }),
         statement('s-rex-2', 4, { actor: REX, team: RED }),
       ]);
@@ -1285,7 +1973,9 @@ describe('AssessorViewComponent', () => {
       fixture.detectChanges();
 
       expect(screen.getByText('2 / 5')).toBeInTheDocument();
-      expect(rowsShown()).toEqual([['×2', 'Ann Analyst + 1 other', 'Blue Team']]);
+      expect(rowsShown()).toEqual([
+        ['×2', 'Ann Analyst + 1 other', 'Blue Team'],
+      ]);
     });
   });
 
@@ -1304,20 +1994,29 @@ describe('AssessorViewComponent', () => {
     };
 
     /** Toggles one team in the evidence Team filter (a multiple select) and closes it. */
-    async function toggleTeamFilter(fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>, team: string) {
+    async function toggleTeamFilter(
+      fixture: ComponentFixture<unknown>,
+      user: ReturnType<typeof userEvent.setup>,
+      team: string,
+    ) {
       await user.click(screen.getByRole('combobox', { name: 'Team' }));
       await user.click(await screen.findByRole('option', { name: team }));
       await user.keyboard('{Escape}');
       fixture.detectChanges();
     }
 
-    async function pickAssessTeam(fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>, team: string) {
+    async function pickAssessTeam(
+      fixture: ComponentFixture<unknown>,
+      user: ReturnType<typeof userEvent.setup>,
+      team: string,
+    ) {
       await user.click(assessTeam());
       await user.click(await screen.findByRole('option', { name: team }));
       fixture.detectChanges();
     }
 
-    const assessTeam = () => screen.getByRole('combobox', { name: 'Assess Team' });
+    const assessTeam = () =>
+      screen.getByRole('combobox', { name: 'Assess Team' });
 
     describe('Assess Team', () => {
       /**
@@ -1363,7 +2062,10 @@ describe('AssessorViewComponent', () => {
        * Data: Move 1 with T0001 assigned to Blue and EXCON only; Red has no competency, so Assess Team does not offer it.
        */
       it('clears a chosen team when the filter moves to a team Assess Team does not offer', async () => {
-        const { fixture } = await renderAssessorView({ ...ASSESSABLE, teams: [BLUE, EXCON, RED] });
+        const { fixture } = await renderAssessorView({
+          ...ASSESSABLE,
+          teams: [BLUE, EXCON, RED],
+        });
         const user = await openMove(fixture);
         await toggleTeamFilter(fixture, user, 'Blue');
         expect(assessTeam()).toHaveTextContent('Blue');
@@ -1399,12 +2101,17 @@ describe('AssessorViewComponent', () => {
         const user = await openMove(fixture);
         await toggleTeamFilter(fixture, user, 'Blue');
 
-        await user.type(screen.getByRole('textbox', { name: 'Comment' }), 'Phished twice');
+        await user.type(
+          screen.getByRole('textbox', { name: 'Comment' }),
+          'Phished twice',
+        );
         await toggleTeamFilter(fixture, user, 'Blue');
         await toggleTeamFilter(fixture, user, 'EXCON');
 
         expect(assessTeam()).toHaveTextContent('Blue');
-        expect(screen.getByRole('textbox', { name: 'Comment' })).toHaveValue('Phished twice');
+        expect(screen.getByRole('textbox', { name: 'Comment' })).toHaveValue(
+          'Phished twice',
+        );
       });
 
       /**
@@ -1437,7 +2144,12 @@ describe('AssessorViewComponent', () => {
         const { fixture } = await renderAssessorView(ASSESSABLE);
         const user = await openMove(fixture);
         const preselect = vi.spyOn(
-          AssessorViewComponent.prototype as unknown as { preselectAssertionTeam: (contextKey: string, filterChanged?: boolean) => void },
+          AssessorViewComponent.prototype as unknown as {
+            preselectAssertionTeam: (
+              contextKey: string,
+              filterChanged?: boolean,
+            ) => void;
+          },
           'preselectAssertionTeam',
         );
 
@@ -1451,11 +2163,24 @@ describe('AssessorViewComponent', () => {
       });
 
       describe('with assertions already submitted', () => {
-        const PROFICIENT: ProficiencyLevel = { id: 'level-3', name: 'Proficient', value: 3, displayOrder: 3 };
+        const PROFICIENT: ProficiencyLevel = {
+          id: 'level-3',
+          name: 'Proficient',
+          value: 3,
+          displayOrder: 3,
+        };
         const SUBMITTED = {
           ...ASSESSABLE,
           // A competency with a framework, so the component loads the framework's proficiency scale.
-          mselCompetencies: [{ ...T0001[0], competency: { ...T0001[0].competency, competencyFrameworkId: 'framework-1' } }],
+          mselCompetencies: [
+            {
+              ...T0001[0],
+              competency: {
+                ...T0001[0].competency,
+                competencyFrameworkId: 'framework-1',
+              },
+            },
+          ],
           proficiencyLevels: [PROFICIENT],
         };
         /** Another assessor's assertion that Blue is Proficient at T0001 in Move 1. */
@@ -1466,13 +2191,19 @@ describe('AssessorViewComponent', () => {
           verb: { id: 'https://w3id.org/xapi/tla/verbs/asserted' },
           object: {
             id: 'https://blueprint.example/competencies/comp-1',
-            definition: { type: 'https://w3id.org/xapi/tla/activity-types/competency' },
+            definition: {
+              type: 'https://w3id.org/xapi/tla/activity-types/competency',
+            },
           },
           result: { score: { raw: 3 }, response: 'Clicked nothing' },
           context: {
             platform: 'blueprint',
             team: { name: 'Blue Team', account: { name: 'team-blue' } },
-            contextActivities: { grouping: [{ id: 'https://blueprint.example/msels/msel-1/moves/1' }] },
+            contextActivities: {
+              grouping: [
+                { id: 'https://blueprint.example/msels/msel-1/moves/1' },
+              ],
+            },
           },
         };
 
@@ -1487,7 +2218,9 @@ describe('AssessorViewComponent', () => {
           await openMove(fixture, [BLUE_ASSERTION]);
 
           expect(assessTeam()).toHaveTextContent('Blue');
-          expect(screen.getByRole('combobox', { name: 'Rating' })).toHaveTextContent('Proficient (3)');
+          expect(
+            screen.getByRole('combobox', { name: 'Rating' }),
+          ).toHaveTextContent('Proficient (3)');
           expect(screen.getByText('Submitted')).toBeInTheDocument();
         });
 
@@ -1497,22 +2230,39 @@ describe('AssessorViewComponent', () => {
          * Data: EXCON picked by hand, or the filter set to EXCON; the refresh returns Blue's T0001 assertion.
          */
         it.each([
-          ['picked by hand', (fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>) => pickAssessTeam(fixture, user, 'EXCON')],
-          ['chosen by the filter', (fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>) => toggleTeamFilter(fixture, user, 'EXCON')],
-        ])('keeps a team %s when Refresh evidence brings another team\'s assertion', async (_, choose) => {
-          const { fixture } = await renderAssessorView(SUBMITTED);
-          const user = await openMove(fixture);
-          await choose(fixture, user);
+          [
+            'picked by hand',
+            (
+              fixture: ComponentFixture<unknown>,
+              user: ReturnType<typeof userEvent.setup>,
+            ) => pickAssessTeam(fixture, user, 'EXCON'),
+          ],
+          [
+            'chosen by the filter',
+            (
+              fixture: ComponentFixture<unknown>,
+              user: ReturnType<typeof userEvent.setup>,
+            ) => toggleTeamFilter(fixture, user, 'EXCON'),
+          ],
+        ])(
+          "keeps a team %s when Refresh evidence brings another team's assertion",
+          async (_, choose) => {
+            const { fixture } = await renderAssessorView(SUBMITTED);
+            const user = await openMove(fixture);
+            await choose(fixture, user);
 
-          await user.click(screen.getByRole('button', { name: 'Refresh evidence' }));
-          TestBed.inject(HttpTestingController)
-            .expectOne((req) => req.url === '/api/xapi/statements')
-            .flush({ statements: [BLUE_ASSERTION] });
-          fixture.detectChanges();
+            await user.click(
+              screen.getByRole('button', { name: 'Refresh evidence' }),
+            );
+            TestBed.inject(HttpTestingController)
+              .expectOne((req) => req.url === '/api/xapi/statements')
+              .flush({ statements: [BLUE_ASSERTION] });
+            fixture.detectChanges();
 
-          expect(assessTeam()).toHaveTextContent('EXCON');
-          expect(screen.queryByText('Submitted')).not.toBeInTheDocument();
-        });
+            expect(assessTeam()).toHaveTextContent('EXCON');
+            expect(screen.queryByText('Submitted')).not.toBeInTheDocument();
+          },
+        );
       });
     });
 
@@ -1530,9 +2280,15 @@ describe('AssessorViewComponent', () => {
       await user.click(refresh);
 
       TestBed.inject(HttpTestingController)
-        .expectOne((req) => req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1')
+        .expectOne(
+          (req) =>
+            req.url === '/api/xapi/statements' &&
+            req.params.get('mselId') === 'msel-1',
+        )
         .flush({ statements: [] });
-      expect(screen.queryByRole('button', { name: 'Refresh xAPI statements' })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Refresh xAPI statements' }),
+      ).not.toBeInTheDocument();
     });
 
     /**
@@ -1545,18 +2301,28 @@ describe('AssessorViewComponent', () => {
       await openMove(fixture);
 
       const header = screen.getByText('T0001').closest('.rating-card-header');
-      expect(header).toContainElement(screen.getByRole('button', { name: 'Submit assertion' }));
-      const fields = screen.getByRole('combobox', { name: 'Rating' }).closest('.rating-fields');
+      expect(header).toContainElement(
+        screen.getByRole('button', { name: 'Submit assertion' }),
+      );
+      const fields = screen
+        .getByRole('combobox', { name: 'Rating' })
+        .closest('.rating-fields');
       const comment = screen.getByRole('textbox', { name: 'Comment' });
       expect(fields).toContainElement(comment);
       expect(comment.tagName).toBe('TEXTAREA');
-      expect(fixture.debugElement.query(By.directive(CdkTextareaAutosize)).nativeElement).toBe(comment);
+      expect(
+        fixture.debugElement.query(By.directive(CdkTextareaAutosize))
+          .nativeElement,
+      ).toBe(comment);
     });
   });
 
   describe('Team Responses', () => {
     const ANSWERED: CiteTeamResponses = {
-      mselId: 'msel-1', teamId: 'team-blue', moveNumber: 1, status: CiteTeamResponsesStatus.Answered,
+      mselId: 'msel-1',
+      teamId: 'team-blue',
+      moveNumber: 1,
+      status: CiteTeamResponsesStatus.Answered,
       teamSubmission: { score: 7.5, isAverage: false, categories: [] },
     };
     /** Each call to CiteService.getMselCiteTeamResponses, answered when the test says. */
@@ -1566,7 +2332,10 @@ describe('AssessorViewComponent', () => {
       calls.push(call);
       return call;
     };
-    const answer = (call: Subject<CiteTeamResponses>, responses: CiteTeamResponses) => {
+    const answer = (
+      call: Subject<CiteTeamResponses>,
+      responses: CiteTeamResponses,
+    ) => {
       call.next(responses);
       call.complete();
     };
@@ -1577,11 +2346,14 @@ describe('AssessorViewComponent', () => {
       values: ASSESSABLE_VALUES,
       teams: [BLUE],
       mselCompetencies: T0001,
-      teamCompetencies: [{ id: 'tc-1', teamId: 'team-blue', competencyId: 'comp-1' }],
+      teamCompetencies: [
+        { id: 'tc-1', teamId: 'team-blue', competencyId: 'comp-1' },
+      ],
       teamResponses,
     });
     const panel = (fixture: ComponentFixture<unknown>) =>
-      fixture.debugElement.query(By.directive(TeamResponsesStub))?.componentInstance as TeamResponsesStub | undefined;
+      fixture.debugElement.query(By.directive(TeamResponsesStub))
+        ?.componentInstance as TeamResponsesStub | undefined;
 
     beforeEach(() => {
       calls = [];
@@ -1591,20 +2363,31 @@ describe('AssessorViewComponent', () => {
       vi.restoreAllMocks();
     });
 
-    async function chooseBlue(fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>) {
+    async function chooseBlue(
+      fixture: ComponentFixture<unknown>,
+      user: ReturnType<typeof userEvent.setup>,
+    ) {
       await chooseTeam(fixture, user, 'Blue');
     }
 
     async function chooseTeam(
-      fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>, name: string, select = 0,
+      fixture: ComponentFixture<unknown>,
+      user: ReturnType<typeof userEvent.setup>,
+      name: string,
+      select = 0,
     ) {
-      await user.click(screen.getAllByRole('combobox', { name: 'Assess Team' })[select]);
+      await user.click(
+        screen.getAllByRole('combobox', { name: 'Assess Team' })[select],
+      );
       await user.click(await screen.findByRole('option', { name }));
       fixture.detectChanges();
     }
 
     /** Collapses Move 1 and opens it again, as an Evaluator coming back to it. */
-    async function reopenMove(fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>) {
+    async function reopenMove(
+      fixture: ComponentFixture<unknown>,
+      user: ReturnType<typeof userEvent.setup>,
+    ) {
       await user.click(screen.getByText('Move 1'));
       fixture.detectChanges();
       await user.click(screen.getByText('Move 1'));
@@ -1617,16 +2400,24 @@ describe('AssessorViewComponent', () => {
      * Data: MSEL uses CITE; Move 1 holds se-1 tagged with competency T0001, assigned to Blue; CITE answers Answered with a score of 7.5.
      */
     it('loads the answers of the team chosen in Assess Team', async () => {
-      const { fixture, citeApi } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
+      const { fixture, citeApi } = await renderAssessorView(
+        assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }),
+      );
       const user = await openMove(fixture);
 
-      expect(panel(fixture).prompt()).toBe('Choose a team in Assess Team to see its CITE answers.');
+      expect(panel(fixture).prompt()).toBe(
+        'Choose a team in Assess Team to see its CITE answers.',
+      );
       expect(panel(fixture).responses()).toBeNull();
       expect(citeApi.getMselCiteTeamResponses).not.toHaveBeenCalled();
 
       await chooseBlue(fixture, user);
 
-      expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledExactlyOnceWith('msel-1', 1, 'team-blue');
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledExactlyOnceWith(
+        'msel-1',
+        1,
+        'team-blue',
+      );
       expect(panel(fixture).loading()).toBe(true);
       expect(panel(fixture).teamName()).toBe('Blue');
       answer(calls[0], ANSWERED);
@@ -1642,26 +2433,42 @@ describe('AssessorViewComponent', () => {
      * Data: Blue's answers for move 1 loaded once as NotAnswered, then Answered on refresh.
      */
     it('reloads the answers with Refresh evidence', async () => {
-      const { fixture, citeApi } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
+      const { fixture, citeApi } = await renderAssessorView(
+        assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }),
+      );
       const user = await openMove(fixture);
       await chooseBlue(fixture, user);
-      answer(calls[0], { ...ANSWERED, status: CiteTeamResponsesStatus.NotAnswered, teamSubmission: null });
+      answer(calls[0], {
+        ...ANSWERED,
+        status: CiteTeamResponsesStatus.NotAnswered,
+        teamSubmission: null,
+      });
       fixture.detectChanges();
 
       const refresh = screen.getByRole('button', { name: 'Refresh evidence' });
-      expect(refresh).toHaveAccessibleDescription('Reload the xAPI statements and the CITE answers shown');
+      expect(refresh).toHaveAccessibleDescription(
+        'Reload the xAPI statements and the CITE answers shown',
+      );
       await user.click(refresh);
       fixture.detectChanges();
 
       expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledTimes(2);
-      expect(citeApi.getMselCiteTeamResponses).toHaveBeenLastCalledWith('msel-1', 1, 'team-blue');
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenLastCalledWith(
+        'msel-1',
+        1,
+        'team-blue',
+      );
       expect(panel(fixture).loading()).toBe(true);
-      TestBed.inject(HttpTestingController).expectOne((req) => req.url === '/api/xapi/statements').flush({ statements: [] });
+      TestBed.inject(HttpTestingController)
+        .expectOne((req) => req.url === '/api/xapi/statements')
+        .flush({ statements: [] });
       answer(calls[1], ANSWERED);
       fixture.detectChanges();
 
       expect(panel(fixture).loading()).toBe(false);
-      expect(panel(fixture).responses().status).toBe(CiteTeamResponsesStatus.Answered);
+      expect(panel(fixture).responses().status).toBe(
+        CiteTeamResponsesStatus.Answered,
+      );
     });
 
     /**
@@ -1670,7 +2477,9 @@ describe('AssessorViewComponent', () => {
      * Data: Blue chosen for move 1; the request fails.
      */
     it('passes a load failure to the panel', async () => {
-      const { fixture } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
+      const { fixture } = await renderAssessorView(
+        assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }),
+      );
       const user = await openMove(fixture);
       await chooseBlue(fixture, user);
 
@@ -1678,7 +2487,9 @@ describe('AssessorViewComponent', () => {
       fixture.detectChanges();
 
       expect(panel(fixture).loading()).toBe(false);
-      expect(panel(fixture).error()).toBe('Team responses could not be loaded.');
+      expect(panel(fixture).error()).toBe(
+        'Team responses could not be loaded.',
+      );
     });
 
     /**
@@ -1687,11 +2498,15 @@ describe('AssessorViewComponent', () => {
      * Data: useCite false; otherwise the same assessable move and team.
      */
     it('is not shown for a MSEL that does not use CITE', async () => {
-      const { fixture, citeApi } = await renderAssessorView(assessable({ ...MSEL, useCite: false }));
+      const { fixture, citeApi } = await renderAssessorView(
+        assessable({ ...MSEL, useCite: false }),
+      );
       const user = await openMove(fixture);
       await chooseBlue(fixture, user);
 
-      expect(screen.getByText('Move 1 — Competency Assessment')).toBeInTheDocument();
+      expect(
+        screen.getByText('Move 1 — Competency Assessment'),
+      ).toBeInTheDocument();
       expect(panel(fixture)).toBeUndefined();
       expect(citeApi.getMselCiteTeamResponses).not.toHaveBeenCalled();
     });
@@ -1702,10 +2517,16 @@ describe('AssessorViewComponent', () => {
      * Data: Blue chosen for move 1; CITE first answers MoveNotStarted, then Answered.
      */
     it('reads a move that had not started again when it is shown again', async () => {
-      const { fixture, citeApi } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
+      const { fixture, citeApi } = await renderAssessorView(
+        assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }),
+      );
       const user = await openMove(fixture);
       await chooseBlue(fixture, user);
-      answer(calls[0], { ...ANSWERED, status: CiteTeamResponsesStatus.MoveNotStarted, teamSubmission: null });
+      answer(calls[0], {
+        ...ANSWERED,
+        status: CiteTeamResponsesStatus.MoveNotStarted,
+        teamSubmission: null,
+      });
       fixture.detectChanges();
 
       await reopenMove(fixture, user);
@@ -1713,7 +2534,9 @@ describe('AssessorViewComponent', () => {
       expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledTimes(2);
       answer(calls[1], ANSWERED);
       fixture.detectChanges();
-      expect(panel(fixture).responses().status).toBe(CiteTeamResponsesStatus.Answered);
+      expect(panel(fixture).responses().status).toBe(
+        CiteTeamResponsesStatus.Answered,
+      );
     });
 
     /**
@@ -1722,7 +2545,9 @@ describe('AssessorViewComponent', () => {
      * Data: Blue chosen for move 1; the first request fails.
      */
     it('reads a failed load again when it is shown again', async () => {
-      const { fixture, citeApi } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
+      const { fixture, citeApi } = await renderAssessorView(
+        assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }),
+      );
       const user = await openMove(fixture);
       await chooseBlue(fixture, user);
       calls[0].error(new Error('500 Server Error'));
@@ -1742,7 +2567,9 @@ describe('AssessorViewComponent', () => {
      */
     it('keeps answers fresh for a while, then reads them again when shown', async () => {
       const now = vi.spyOn(Date, 'now').mockReturnValue(1_000_000);
-      const { fixture, citeApi } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
+      const { fixture, citeApi } = await renderAssessorView(
+        assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }),
+      );
       const user = await openMove(fixture);
       await chooseBlue(fixture, user);
       answer(calls[0], ANSWERED);
@@ -1765,10 +2592,16 @@ describe('AssessorViewComponent', () => {
      * Data: Blue chosen for move 1; CITE answers MoveNotStarted.
      */
     it('reads stale answers on screen again when the tab is shown', async () => {
-      const { fixture, citeApi } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
+      const { fixture, citeApi } = await renderAssessorView(
+        assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }),
+      );
       const user = await openMove(fixture);
       await chooseBlue(fixture, user);
-      answer(calls[0], { ...ANSWERED, status: CiteTeamResponsesStatus.MoveNotStarted, teamSubmission: null });
+      answer(calls[0], {
+        ...ANSWERED,
+        status: CiteTeamResponsesStatus.MoveNotStarted,
+        teamSubmission: null,
+      });
       fixture.detectChanges();
       fixture.detectChanges();
       expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledTimes(1);
@@ -1800,16 +2633,28 @@ describe('AssessorViewComponent', () => {
       answer(calls[1], { ...ANSWERED, teamId: 'team-red' });
       fixture.detectChanges();
 
-      await user.click(screen.getByRole('button', { name: 'Refresh evidence' }));
-      TestBed.inject(HttpTestingController).expectOne((req) => req.url === '/api/xapi/statements').flush({ statements: [] });
+      await user.click(
+        screen.getByRole('button', { name: 'Refresh evidence' }),
+      );
+      TestBed.inject(HttpTestingController)
+        .expectOne((req) => req.url === '/api/xapi/statements')
+        .flush({ statements: [] });
       fixture.detectChanges();
 
       expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledTimes(3);
-      expect(citeApi.getMselCiteTeamResponses).toHaveBeenLastCalledWith('msel-1', 1, 'team-red');
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenLastCalledWith(
+        'msel-1',
+        1,
+        'team-red',
+      );
 
       await chooseBlue(fixture, user);
       expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledTimes(4);
-      expect(citeApi.getMselCiteTeamResponses).toHaveBeenLastCalledWith('msel-1', 1, 'team-blue');
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenLastCalledWith(
+        'msel-1',
+        1,
+        'team-blue',
+      );
       expect(panel(fixture).responses()).toBeNull();
     });
 
@@ -1819,7 +2664,9 @@ describe('AssessorViewComponent', () => {
      * Data: Blue chosen on Move 1 and on its event se-1.
      */
     it('reads a team and move once for every panel showing it', async () => {
-      const { fixture, citeApi } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
+      const { fixture, citeApi } = await renderAssessorView(
+        assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }),
+      );
       const user = await openMove(fixture);
       await chooseBlue(fixture, user);
       answer(calls[0], ANSWERED);
@@ -1828,10 +2675,11 @@ describe('AssessorViewComponent', () => {
       await chooseTeam(fixture, user, 'Blue', 1);
 
       expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledTimes(1);
-      const panels = fixture.debugElement.queryAll(By.directive(TeamResponsesStub))
-        .map(d => d.componentInstance as TeamResponsesStub);
+      const panels = fixture.debugElement
+        .queryAll(By.directive(TeamResponsesStub))
+        .map((d) => d.componentInstance as TeamResponsesStub);
       expect(panels).toHaveLength(2);
-      expect(panels.map(p => p.responses())).toEqual([ANSWERED, ANSWERED]);
+      expect(panels.map((p) => p.responses())).toEqual([ANSWERED, ANSWERED]);
     });
 
     /**
@@ -1840,7 +2688,9 @@ describe('AssessorViewComponent', () => {
      * Data: Blue chosen for move 1; CITE has not answered yet.
      */
     it('cancels a read in flight when the view is left', async () => {
-      const { fixture } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
+      const { fixture } = await renderAssessorView(
+        assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }),
+      );
       const user = await openMove(fixture);
       await chooseBlue(fixture, user);
       expect(calls[0].observed).toBe(true);

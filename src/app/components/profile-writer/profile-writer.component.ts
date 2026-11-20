@@ -23,7 +23,16 @@ import { svgImagesToPng } from 'src/app/utilities/svg-to-png';
   selector: 'app-profile-writer',
   templateUrl: './profile-writer.component.html',
   styleUrls: ['./profile-writer.component.scss'],
-  imports: [FormsModule, MatButton, MatIconButton, MatFormField, MatLabel, MatIcon, MatInput, MatProgressSpinner],
+  imports: [
+    FormsModule,
+    MatButton,
+    MatIconButton,
+    MatFormField,
+    MatLabel,
+    MatIcon,
+    MatInput,
+    MatProgressSpinner,
+  ],
 })
 export class ProfileWriterComponent {
   private mselDataService = inject(MselDataService);

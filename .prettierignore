@@ -3,3 +3,11 @@
 .github
 src/app/generated
 .browserslistrc
+package-lock.json
+# Written by eslint --suppress-all / --prune-suppressions; keep it as ESLint writes it.
+eslint-suppressions.json
+swagger.json
+LICENSE.md
+# Playwright report and exported MSEL fixtures, written by tools
+e2e/test-results
+e2e/data

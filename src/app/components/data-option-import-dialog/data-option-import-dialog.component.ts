@@ -7,7 +7,11 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DataOption, DataOptionService } from 'src/app/generated/blueprint.api';
 import { v4 as uuidv4 } from 'uuid';
 import { take } from 'rxjs/operators';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective, CrucibleDialogActionsDirective } from '@cmusei/crucible-common';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+  CrucibleDialogActionsDirective,
+} from '@cmusei/crucible-common';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatError } from '@angular/material/input';
@@ -25,19 +29,31 @@ export interface ImportPreviewItem {
 }
 
 @Component({
-    selector: 'app-data-option-import-dialog',
-    templateUrl: './data-option-import-dialog.component.html',
-    styleUrls: ['./data-option-import-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatButton, MatIcon, MatError, MatProgressSpinner, MatCheckbox, FormsModule, MatTooltip, CrucibleDialogActionsDirective]
+  selector: 'app-data-option-import-dialog',
+  templateUrl: './data-option-import-dialog.component.html',
+  styleUrls: ['./data-option-import-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatButton,
+    MatIcon,
+    MatError,
+    MatProgressSpinner,
+    MatCheckbox,
+    FormsModule,
+    MatTooltip,
+    CrucibleDialogActionsDirective,
+  ],
 })
 export class DataOptionImportDialogComponent {
-  dialogRef = inject<MatDialogRef<DataOptionImportDialogComponent>>(MatDialogRef);
+  dialogRef =
+    inject<MatDialogRef<DataOptionImportDialogComponent>>(MatDialogRef);
   data = inject<{
     dataFieldId: string;
     existingOptions: DataOption[];
     instructions?: string;
     showDescription?: boolean;
-}>(MAT_DIALOG_DATA);
+  }>(MAT_DIALOG_DATA);
   private dataOptionService = inject(DataOptionService);
 
   previewItems: ImportPreviewItem[] = [];
@@ -63,19 +79,20 @@ export class DataOptionImportDialogComponent {
       this.fileName = file.name;
 
       // Upload file to API for server-side parsing
-      this.dataOptionService.previewDataOptionImport(this.data.dataFieldId, file)
+      this.dataOptionService
+        .previewDataOptionImport(this.data.dataFieldId, file)
         .pipe(take(1))
         .subscribe({
           next: (preview) => {
             if (preview.error) {
               this.parseError = preview.error;
             } else {
-              this.previewItems = preview.items.map(item => ({
+              this.previewItems = preview.items.map((item) => ({
                 optionName: item.optionName,
                 optionValue: item.optionValue,
                 optionDescription: item.optionDescription,
                 willImport: !item.exists,
-                exists: item.exists
+                exists: item.exists,
               }));
             }
             this.isProcessing = false;
@@ -83,37 +100,36 @@ export class DataOptionImportDialogComponent {
           error: (err) => {
             this.parseError = `Error processing file: ${err.error?.title || err.message || 'Unknown error'}`;
             this.isProcessing = false;
-          }
+          },
         });
     }
   }
 
-
   getImportCount(): number {
-    return this.previewItems.filter(item => item.willImport).length;
+    return this.previewItems.filter((item) => item.willImport).length;
   }
 
   getSkipCount(): number {
-    return this.previewItems.filter(item => !item.willImport).length;
+    return this.previewItems.filter((item) => !item.willImport).length;
   }
 
   getAvailableCount(): number {
-    return this.previewItems.filter(item => !item.exists).length;
+    return this.previewItems.filter((item) => !item.exists).length;
   }
 
   areAllSelected(): boolean {
-    const available = this.previewItems.filter(item => !item.exists);
-    return available.length > 0 && available.every(item => item.willImport);
+    const available = this.previewItems.filter((item) => !item.exists);
+    return available.length > 0 && available.every((item) => item.willImport);
   }
 
   isSomeSelected(): boolean {
-    const available = this.previewItems.filter(item => !item.exists);
-    const selected = available.filter(item => item.willImport);
+    const available = this.previewItems.filter((item) => !item.exists);
+    const selected = available.filter((item) => item.willImport);
     return selected.length > 0 && selected.length < available.length;
   }
 
   toggleAll(checked: boolean) {
-    this.previewItems.forEach(item => {
+    this.previewItems.forEach((item) => {
       if (!item.exists) {
         item.willImport = checked;
       }
@@ -122,14 +138,14 @@ export class DataOptionImportDialogComponent {
 
   handleImport() {
     const itemsToImport = this.previewItems
-      .filter(item => item.willImport)
+      .filter((item) => item.willImport)
       .map((item, index) => ({
         id: uuidv4(),
         dataFieldId: this.data.dataFieldId,
         optionName: item.optionName,
         optionValue: item.optionValue,
         optionDescription: item.optionDescription || null,
-        displayOrder: this.data.existingOptions.length + index + 1
+        displayOrder: this.data.existingOptions.length + index + 1,
       }));
 
     this.dialogRef.close(itemsToImport);

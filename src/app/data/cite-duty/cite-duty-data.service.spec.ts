@@ -18,7 +18,10 @@ import { CiteDutyQuery } from './cite-duty.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function duty(overrides: Partial<CiteDuty> = {}): CiteDuty {
   return {
@@ -47,7 +50,10 @@ function setup(queryParams: Record<string, string> = {}) {
   TestBed.configureTestingModule({
     providers: [
       { provide: CiteDutyService, useValue: citeDutyApi },
-      { provide: Router, useValue: { navigate } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -98,7 +104,9 @@ describe('CiteDutyDataService', () => {
    */
   it('a failed loadByMsel empties the store', () => {
     const { service, query, citeDutyApi } = setup();
-    citeDutyApi.getDutiesByMsel.mockReturnValue(throwError(() => new Error('boom')));
+    citeDutyApi.getDutiesByMsel.mockReturnValue(
+      throwError(() => new Error('boom')),
+    );
     service.updateStore(duty());
 
     service.loadByMsel('msel-1');
@@ -114,9 +122,15 @@ describe('CiteDutyDataService', () => {
    */
   it('single-duty calls keep the store in step with the API', () => {
     const { service, query, citeDutyApi } = setup();
-    citeDutyApi.getCiteDuty.mockReturnValue(of(duty({ id: 'duty-2', name: 'Analyst' })));
-    citeDutyApi.createCiteDuty.mockReturnValue(of(duty({ id: 'duty-3', name: 'Scribe' })));
-    citeDutyApi.updateCiteDuty.mockReturnValue(of(duty({ id: 'duty-2', name: 'Lead Analyst' })));
+    citeDutyApi.getCiteDuty.mockReturnValue(
+      of(duty({ id: 'duty-2', name: 'Analyst' })),
+    );
+    citeDutyApi.createCiteDuty.mockReturnValue(
+      of(duty({ id: 'duty-3', name: 'Scribe' })),
+    );
+    citeDutyApi.updateCiteDuty.mockReturnValue(
+      of(duty({ id: 'duty-2', name: 'Lead Analyst' })),
+    );
     citeDutyApi.deleteCiteDuty.mockReturnValue(of(null));
 
     service.loadById('duty-2');
@@ -145,11 +159,17 @@ describe('CiteDutyDataService', () => {
     const progress = recordEmissions(service.uploadProgress);
     citeDutyApi.uploadJsonCiteDuties.mockReturnValueOnce(
       of(
-        { type: HttpEventType.UploadProgress, loaded: 2, total: 8 } satisfies HttpUploadProgressEvent,
+        {
+          type: HttpEventType.UploadProgress,
+          loaded: 2,
+          total: 8,
+        } satisfies HttpUploadProgressEvent,
         new HttpResponse({ status: 200, body: [duty()] }),
       ),
     );
-    citeDutyApi.uploadJsonCiteDuties.mockReturnValueOnce(throwError(() => new Error('bad')));
+    citeDutyApi.uploadJsonCiteDuties.mockReturnValueOnce(
+      throwError(() => new Error('bad')),
+    );
 
     service.uploadJson(new File(['[]'], 'duties.json'), 'events', true);
     service.uploadJson(new File(['[]'], 'duties.json'), 'events', true);
@@ -207,25 +227,48 @@ describe('CiteDutyDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'loadTemplates', endpoint: 'getCiteDutyTemplates', escapes: false, call: (s: CiteDutyDataService) => s.loadTemplates() },
-    { method: 'loadById', endpoint: 'getCiteDuty', escapes: true, call: (s: CiteDutyDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createCiteDuty', escapes: true, call: (s: CiteDutyDataService) => s.add({ id: 'x-1' }) },
-    { method: 'updateCiteDuty', endpoint: 'updateCiteDuty', escapes: true, call: (s: CiteDutyDataService) => s.updateCiteDuty({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, citeDutyApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(CiteDutyStore).setLoading(false);
-    citeDutyApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'loadTemplates',
+      endpoint: 'getCiteDutyTemplates',
+      escapes: false,
+      call: (s: CiteDutyDataService) => s.loadTemplates(),
+    },
+    {
+      method: 'loadById',
+      endpoint: 'getCiteDuty',
+      escapes: true,
+      call: (s: CiteDutyDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createCiteDuty',
+      escapes: true,
+      call: (s: CiteDutyDataService) => s.add({ id: 'x-1' }),
+    },
+    {
+      method: 'updateCiteDuty',
+      endpoint: 'updateCiteDuty',
+      escapes: true,
+      call: (s: CiteDutyDataService) => s.updateCiteDuty({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, citeDutyApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(CiteDutyStore).setLoading(false);
+      citeDutyApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(CiteDutyQuery).getValue().loading).toBe(true);
-    // An empty error callback swallows the error; with no callback it escapes to
-    // ErrorService, the ErrorHandler app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(CiteDutyQuery).getValue().loading).toBe(true);
+      // An empty error callback swallows the error; with no callback it escapes to
+      // ErrorService, the ErrorHandler app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete escapes to the app's global ErrorHandler.
@@ -233,19 +276,26 @@ describe('CiteDutyDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteCiteDuty', call: (s: CiteDutyDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, citeDutyApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    citeDutyApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteCiteDuty',
+      call: (s: CiteDutyDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, citeDutyApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      citeDutyApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });

@@ -3,7 +3,10 @@
 
 import { describe, it, expect } from 'vitest';
 import { DataFieldType } from 'src/app/generated/blueprint.api';
-import { DataFieldTypeNamePipe, dataFieldTypeName } from './data-field-type-name';
+import {
+  DataFieldTypeNamePipe,
+  dataFieldTypeName,
+} from './data-field-type-name';
 
 describe('dataFieldTypeName', () => {
   /**

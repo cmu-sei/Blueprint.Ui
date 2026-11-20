@@ -24,7 +24,7 @@ export class CompetencyFrameworkQuery extends QueryEntity<CompetencyFrameworkSta
     const store = inject(CompetencyFrameworkStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

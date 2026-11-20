@@ -24,7 +24,7 @@ export class TeamCompetencyQuery extends QueryEntity<TeamCompetencyState> {
     const store = inject(TeamCompetencyStore);
 
     super(store);
-  
+
     this.store = store;
   }
 

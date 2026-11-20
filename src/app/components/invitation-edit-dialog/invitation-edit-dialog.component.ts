@@ -4,12 +4,27 @@
 
 import { Component, inject, output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
-import { MatFormField, MatLabel, MatInput, MatSuffix, MatHint } from '@angular/material/input';
+import {
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
+import {
+  MatFormField,
+  MatLabel,
+  MatInput,
+  MatSuffix,
+  MatHint,
+} from '@angular/material/input';
 import { MatSelect } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { MatOption } from '@angular/material/autocomplete';
-import { NgxMatDatepickerInput, NgxMatDatetimepicker, NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel } from '@ngxmc/datetime-picker';
+import {
+  NgxMatDatepickerInput,
+  NgxMatDatetimepicker,
+  NgxMatDatepickerActions,
+  NgxMatDatepickerApply,
+  NgxMatDatepickerCancel,
+} from '@ngxmc/datetime-picker';
 import { MatDatepickerToggle } from '@angular/material/datepicker';
 import { MatButton } from '@angular/material/button';
 import { MatCheckbox } from '@angular/material/checkbox';
@@ -17,24 +32,44 @@ import { DatePipe } from '@angular/common';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
 
 @Component({
-    selector: 'app-invitation-edit-dialog',
-    templateUrl: './invitation-edit-dialog.component.html',
-    styleUrls: ['./invitation-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatHint, MatSelect, FormsModule, MatOption, MatInput, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, MatCheckbox, DatePipe, TimezoneAbbrPipe]
+  selector: 'app-invitation-edit-dialog',
+  templateUrl: './invitation-edit-dialog.component.html',
+  styleUrls: ['./invitation-edit-dialog.component.scss'],
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    MatFormField,
+    MatLabel,
+    MatHint,
+    MatSelect,
+    FormsModule,
+    MatOption,
+    MatInput,
+    NgxMatDatepickerInput,
+    MatDatepickerToggle,
+    MatSuffix,
+    NgxMatDatetimepicker,
+    NgxMatDatepickerActions,
+    MatButton,
+    NgxMatDatepickerApply,
+    NgxMatDatepickerCancel,
+    MatCheckbox,
+    DatePipe,
+    TimezoneAbbrPipe,
+  ],
 })
-
 export class InvitationEditDialogComponent {
   data = inject(MAT_DIALOG_DATA);
 
   readonly editComplete = output<any>();
 
   errorFree() {
-    return this.data.invitation.teamId &&
+    return (
+      this.data.invitation.teamId &&
       (!this.data.invitation.emailDomain ||
         (this.data.invitation.emailDomain.length > 3 &&
-          this.data.invitation.emailDomain.includes('@')
-        )
-      );
+          this.data.invitation.emailDomain.includes('@')))
+    );
   }
 
   /**
@@ -54,8 +89,7 @@ export class InvitationEditDialogComponent {
   }
 
   getTeamName(teamId: string) {
-    const team = this.data.teamList.find(t => t.id === teamId);
+    const team = this.data.teamList.find((t) => t.id === teamId);
     return team.shortName + ' - ' + team.name;
   }
-
 }

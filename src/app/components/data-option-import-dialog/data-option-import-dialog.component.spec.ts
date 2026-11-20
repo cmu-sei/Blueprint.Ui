@@ -13,7 +13,10 @@ import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
-import { DataOptionImportPreview, DataOptionService } from 'src/app/generated/blueprint.api';
+import {
+  DataOptionImportPreview,
+  DataOptionService,
+} from 'src/app/generated/blueprint.api';
 import { DataOptionImportDialogComponent } from './data-option-import-dialog.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
@@ -46,7 +49,12 @@ async function renderImport() {
       { provide: DataOptionService, useValue: optionApi },
       {
         provide: MAT_DIALOG_DATA,
-        useValue: { dataFieldId: 'df-1', existingOptions: [{ id: 'opt-1', optionName: 'HIGH', optionValue: 'High priority' }] },
+        useValue: {
+          dataFieldId: 'df-1',
+          existingOptions: [
+            { id: 'opt-1', optionName: 'HIGH', optionValue: 'High priority' },
+          ],
+        },
       },
       { provide: MatDialogRef, useValue: ref.dialogRef },
     ],
@@ -56,8 +64,15 @@ async function renderImport() {
 
 async function chooseFile(container: Element) {
   const user = userEvent.setup();
-  const input = container.querySelector('input[type="file"]') as HTMLInputElement;
-  await user.upload(input, new File(['ID,Name\nLOW,Low priority'], 'options.csv', { type: 'text/csv' }));
+  const input = container.querySelector(
+    'input[type="file"]',
+  ) as HTMLInputElement;
+  await user.upload(
+    input,
+    new File(['ID,Name\nLOW,Low priority'], 'options.csv', {
+      type: 'text/csv',
+    }),
+  );
   return user;
 }
 
@@ -70,9 +85,15 @@ describe('DataOptionImportDialogComponent', () => {
   it('renders with the default test providers', async () => {
     const { fixture } = await renderImport();
 
-    expect(fixture.componentInstance).toBeInstanceOf(DataOptionImportDialogComponent);
-    expect(screen.getByRole('heading', { name: 'Import Options' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Import 0 Options' })).toBeDisabled();
+    expect(fixture.componentInstance).toBeInstanceOf(
+      DataOptionImportDialogComponent,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Import Options' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Import 0 Options' }),
+    ).toBeDisabled();
   });
 
   /**
@@ -84,12 +105,22 @@ describe('DataOptionImportDialogComponent', () => {
     const { container, optionApi, close } = await renderImport();
 
     const user = await chooseFile(container);
-    expect(optionApi.previewDataOptionImport).toHaveBeenCalledWith('df-1', expect.any(File));
-    expect(screen.getByRole('heading', { name: 'Preview (1 to import, 1 to skip)' })).toBeInTheDocument();
+    expect(optionApi.previewDataOptionImport).toHaveBeenCalledWith(
+      'df-1',
+      expect.any(File),
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Preview (1 to import, 1 to skip)' }),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Import 1 Option' }));
 
     expect(close).toHaveBeenCalledWith([
-      expect.objectContaining({ dataFieldId: 'df-1', optionName: 'LOW', optionValue: 'Low priority', displayOrder: 2 }),
+      expect.objectContaining({
+        dataFieldId: 'df-1',
+        optionName: 'LOW',
+        optionValue: 'Low priority',
+        displayOrder: 2,
+      }),
     ]);
   });
 

@@ -4,8 +4,14 @@
 import { describe, it, expect, vi } from 'vitest';
 import { screen, within } from '@testing-library/angular';
 import { of, Subject, throwError } from 'rxjs';
-import { AiDraftProgress, SignalRService } from 'src/app/services/signalr.service';
-import { AiUsageService, AiUsageSummary } from 'src/app/generated/blueprint.api';
+import {
+  AiDraftProgress,
+  SignalRService,
+} from 'src/app/services/signalr.service';
+import {
+  AiUsageService,
+  AiUsageSummary,
+} from 'src/app/generated/blueprint.api';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { AiUsageComponent } from './ai-usage.component';
 
@@ -19,9 +25,31 @@ const USAGE: AiUsageSummary = {
   estimatedCostMicros: 572860,
   unpriced: [],
   byOperation: [
-    { name: 'article', calls: 2, refused: 1, inputTokens: 3000, outputTokens: 4000, images: 0, estimatedCostMicros: 46000 },
-    { name: 'draft', calls: 1, inputTokens: 45565, outputTokens: 39573, images: 0, estimatedCostMicros: 486860 },
-    { name: 'photo', calls: 1, inputTokens: 0, outputTokens: 0, images: 1, estimatedCostMicros: 40000 },
+    {
+      name: 'article',
+      calls: 2,
+      refused: 1,
+      inputTokens: 3000,
+      outputTokens: 4000,
+      images: 0,
+      estimatedCostMicros: 46000,
+    },
+    {
+      name: 'draft',
+      calls: 1,
+      inputTokens: 45565,
+      outputTokens: 39573,
+      images: 0,
+      estimatedCostMicros: 486860,
+    },
+    {
+      name: 'photo',
+      calls: 1,
+      inputTokens: 0,
+      outputTokens: 0,
+      images: 1,
+      estimatedCostMicros: 40000,
+    },
   ],
 };
 
@@ -29,7 +57,10 @@ async function renderUsage(answer: () => any) {
   const getMselAiUsage = vi.fn(answer);
   const progress = new Subject<AiDraftProgress>();
   const rendered = await renderComponent(AiUsageComponent, {
-    providers: [{ provide: AiUsageService, useValue: { getMselAiUsage } }, { provide: SignalRService, useValue: { aiDraftProgress$: progress } }],
+    providers: [
+      { provide: AiUsageService, useValue: { getMselAiUsage } },
+      { provide: SignalRService, useValue: { aiDraftProgress$: progress } },
+    ],
     inputs: { mselId: 'msel-1' },
   });
   return { ...rendered, getMselAiUsage, progress };
@@ -45,15 +76,29 @@ describe('AiUsageComponent', () => {
     const { getMselAiUsage } = await renderUsage(() => of(USAGE));
 
     expect(getMselAiUsage).toHaveBeenCalledWith('msel-1');
-    expect(screen.getByRole('heading', { name: 'AI usage' })).toBeInTheDocument();
-    expect(screen.getByText(/4 calls to AI models drafted and changed this MSEL\s*, about \$0\.57 at list prices/)).toBeInTheDocument();
-    expect(screen.getByText(/1 was declined by the model's safety checks/)).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'AI usage' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /4 calls to AI models drafted and changed this MSEL\s*, about \$0\.57 at list prices/,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/1 was declined by the model's safety checks/),
+    ).toBeInTheDocument();
     const draft = screen.getByRole('row', { name: /Draft MSEL with AI/ });
     expect(within(draft).getByText('45,565')).toBeInTheDocument();
     expect(within(draft).getByText('$0.49')).toBeInTheDocument();
-    expect(screen.getByRole('row', { name: /Gallery articles/ })).toHaveTextContent('$0.05');
-    expect(screen.getByRole('row', { name: /News photos/ })).toHaveTextContent('$0.04');
-    expect(screen.getByRole('row', { name: /Total/ })).toHaveTextContent('$0.57');
+    expect(
+      screen.getByRole('row', { name: /Gallery articles/ }),
+    ).toHaveTextContent('$0.05');
+    expect(screen.getByRole('row', { name: /News photos/ })).toHaveTextContent(
+      '$0.04',
+    );
+    expect(screen.getByRole('row', { name: /Total/ })).toHaveTextContent(
+      '$0.57',
+    );
   });
 
   /**
@@ -68,17 +113,38 @@ describe('AiUsageComponent', () => {
         ...USAGE,
         characters: 1800,
         byOperation: [
-          { name: 'audio', calls: 2, inputTokens: 0, outputTokens: 0, images: 0, characters: 1800, estimatedCostMicros: 28800 },
-          { name: 'script', calls: 1, inputTokens: 1000, outputTokens: 500, images: 0, estimatedCostMicros: 7000 },
+          {
+            name: 'audio',
+            calls: 2,
+            inputTokens: 0,
+            outputTokens: 0,
+            images: 0,
+            characters: 1800,
+            estimatedCostMicros: 28800,
+          },
+          {
+            name: 'script',
+            calls: 1,
+            inputTokens: 1000,
+            outputTokens: 500,
+            images: 0,
+            estimatedCostMicros: 7000,
+          },
         ],
-      })
+      }),
     );
 
-    expect(screen.getByRole('columnheader', { name: 'Characters voiced' })).toBeInTheDocument();
-    const audio = screen.getAllByRole('row').find((row) => row.querySelector('th')?.textContent.trim() === 'Audio');
+    expect(
+      screen.getByRole('columnheader', { name: 'Characters voiced' }),
+    ).toBeInTheDocument();
+    const audio = screen
+      .getAllByRole('row')
+      .find((row) => row.querySelector('th')?.textContent.trim() === 'Audio');
     expect(audio).toHaveTextContent('1,800');
     expect(audio).toHaveTextContent('$0.03');
-    expect(screen.getByRole('row', { name: /Audio scripts/ })).toHaveTextContent('1,000');
+    expect(
+      screen.getByRole('row', { name: /Audio scripts/ }),
+    ).toHaveTextContent('1,000');
   });
 
   /**
@@ -89,7 +155,9 @@ describe('AiUsageComponent', () => {
   it('has no characters column without audio', async () => {
     await renderUsage(() => of(USAGE));
 
-    expect(screen.queryByRole('columnheader', { name: 'Characters voiced' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('columnheader', { name: 'Characters voiced' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -98,10 +166,23 @@ describe('AiUsageComponent', () => {
    * Data: the usage above with the photo model unpriced; the rest comes to $0.53.
    */
   it('totals what has a price and names what has none', async () => {
-    await renderUsage(() => of({ ...USAGE, estimatedCostMicros: 532_860, unpriced: ['stability.stable-image-core-v1:1'], refused: 0 }));
+    await renderUsage(() =>
+      of({
+        ...USAGE,
+        estimatedCostMicros: 532_860,
+        unpriced: ['stability.stable-image-core-v1:1'],
+        refused: 0,
+      }),
+    );
 
-    expect(screen.getByText(/about \$0\.53 at list prices/)).toBeInTheDocument();
-    expect(screen.getByText(/The estimate leaves out stability\.stable-image-core-v1:1, which has no price set/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/about \$0\.53 at list prices/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /The estimate leaves out stability\.stable-image-core-v1:1, which has no price set/,
+      ),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -110,10 +191,19 @@ describe('AiUsageComponent', () => {
    * Data: every call on other-model, which has no price.
    */
   it('shows no estimate when nothing has a price', async () => {
-    await renderUsage(() => of({ ...USAGE, estimatedCostMicros: null, unpriced: ['other-model'], refused: 0 }));
+    await renderUsage(() =>
+      of({
+        ...USAGE,
+        estimatedCostMicros: null,
+        unpriced: ['other-model'],
+        refused: 0,
+      }),
+    );
 
     expect(screen.queryByText(/at list prices/)).not.toBeInTheDocument();
-    expect(screen.getByText(/The estimate leaves out other-model/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/The estimate leaves out other-model/),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -122,12 +212,20 @@ describe('AiUsageComponent', () => {
    * Data: zero calls; a refused request.
    */
   it.each([
-    { label: 'built without AI', answer: () => of({ calls: 0, byOperation: [] }) },
-    { label: 'not visible to the user', answer: () => throwError(() => ({ status: 403 })) },
+    {
+      label: 'built without AI',
+      answer: () => of({ calls: 0, byOperation: [] }),
+    },
+    {
+      label: 'not visible to the user',
+      answer: () => throwError(() => ({ status: 403 })),
+    },
   ])('shows nothing for a MSEL $label', async ({ answer }) => {
     await renderUsage(answer);
 
-    expect(screen.queryByRole('heading', { name: 'AI usage' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: 'AI usage' }),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -143,10 +241,28 @@ describe('AiUsageComponent', () => {
       expect(getMselAiUsage).toHaveBeenCalledTimes(1);
 
       for (let i = 0; i < 3; i++) {
-        progress.next({ operation: 'article', mselId: 'msel-1', characters: 900, counts: {}, done: true });
+        progress.next({
+          operation: 'article',
+          mselId: 'msel-1',
+          characters: 900,
+          counts: {},
+          done: true,
+        });
       }
-      progress.next({ operation: 'article', mselId: 'msel-2', characters: 900, counts: {}, done: true });
-      progress.next({ operation: 'article', mselId: 'msel-1', characters: 100, counts: {}, done: false });
+      progress.next({
+        operation: 'article',
+        mselId: 'msel-2',
+        characters: 900,
+        counts: {},
+        done: true,
+      });
+      progress.next({
+        operation: 'article',
+        mselId: 'msel-1',
+        characters: 100,
+        counts: {},
+        done: false,
+      });
       vi.advanceTimersByTime(2100);
 
       expect(getMselAiUsage).toHaveBeenCalledTimes(2);
@@ -164,7 +280,13 @@ describe('AiUsageComponent', () => {
   it('waits for the MSEL to load', async () => {
     const getMselAiUsage = vi.fn(() => of(USAGE));
     const { fixture } = await renderComponent(AiUsageComponent, {
-      providers: [{ provide: AiUsageService, useValue: { getMselAiUsage } }, { provide: SignalRService, useValue: { aiDraftProgress$: new Subject<AiDraftProgress>() } }],
+      providers: [
+        { provide: AiUsageService, useValue: { getMselAiUsage } },
+        {
+          provide: SignalRService,
+          useValue: { aiDraftProgress$: new Subject<AiDraftProgress>() },
+        },
+      ],
       inputs: { mselId: undefined },
     });
     expect(getMselAiUsage).not.toHaveBeenCalled();

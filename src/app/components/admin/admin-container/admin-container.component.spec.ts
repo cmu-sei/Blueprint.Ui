@@ -30,7 +30,10 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
-import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
+import {
+  ApplicationArea,
+  SignalRService,
+} from 'src/app/services/signalr.service';
 import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
 import { AdminContainerComponent } from './admin-container.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
@@ -52,7 +55,10 @@ import { CardListComponent } from '../../card-list/card-list.component';
 import { CiteActionListComponent } from '../../cite-action-list/cite-action-list.component';
 import { CiteDutyListComponent } from '../../cite-duty-list/cite-duty-list.component';
 import { PlayerApplicationListComponent } from '../../player-application-list/player-application-list.component';
-import { captureUnhandledRejections, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRejections,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 @Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
@@ -126,13 +132,19 @@ class PlayerApplicationListStub {
   readonly showTemplates = input<boolean>(undefined);
 }
 
-
 async function renderAdmin(
-  overrides: { permissions?: SystemPermission[]; savedTab?: string; logout?: ComnAuthService['logout'] } = {},
+  overrides: {
+    permissions?: SystemPermission[];
+    savedTab?: string;
+    logout?: ComnAuthService['logout'];
+  } = {},
 ) {
   const { permissions = [], savedTab } = overrides;
   if (savedTab) {
-    localStorage.setItem('uiState', JSON.stringify({ selectedAdminTab: savedTab }));
+    localStorage.setItem(
+      'uiState',
+      JSON.stringify({ selectedAdminTab: savedTab }),
+    );
   }
   const health = {
     getVersion: vi.fn(() => of('2.4.0+abc123')),
@@ -161,12 +173,20 @@ async function renderAdmin(
   // real service is provided over the stubbed endpoint, without priming it.
   const permissionApis = permissionApiStubs({ system: permissions });
   const auth: Pick<ComnAuthService, 'user$' | 'logout'> = {
-    user$: of({ profile: { sub: 'user-1', name: 'Alice Admin' } }) as ComnAuthService['user$'],
+    user$: of({
+      profile: { sub: 'user-1', name: 'Alice Admin' },
+    }) as ComnAuthService['user$'],
     logout: overrides.logout ?? vi.fn(() => Promise.resolve()),
   };
 
   const rendered = await renderComponent(AdminContainerComponent, {
-    imports: [MatSidenavModule, MatToolbarModule, MatListModule, MatIconModule, MatButtonModule],
+    imports: [
+      MatSidenavModule,
+      MatToolbarModule,
+      MatListModule,
+      MatIconModule,
+      MatButtonModule,
+    ],
     childStubs: [
       { replace: TopbarComponent, with: TopbarStub },
       { replace: AdminUnitsComponent, with: AdminUnitsStub },
@@ -175,17 +195,29 @@ async function renderAdmin(
       { replace: AdminGroupsComponent, with: AdminGroupsStub },
       { replace: DataFieldListComponent, with: DataFieldListStub },
       { replace: AdminInjectTypesComponent, with: AdminInjectTypesStub },
-      { replace: AdminCompetencyFrameworksComponent, with: AdminCompetencyFrameworksStub },
-      { replace: AdminProficiencyScalesComponent, with: AdminProficiencyScalesStub },
+      {
+        replace: AdminCompetencyFrameworksComponent,
+        with: AdminCompetencyFrameworksStub,
+      },
+      {
+        replace: AdminProficiencyScalesComponent,
+        with: AdminProficiencyScalesStub,
+      },
       { replace: AdminCatalogListComponent, with: AdminCatalogListStub },
       { replace: OrganizationListComponent, with: OrganizationListStub },
       { replace: CardListComponent, with: CardListStub },
       { replace: CiteActionListComponent, with: CiteActionListStub },
       { replace: CiteDutyListComponent, with: CiteDutyListStub },
-      { replace: PlayerApplicationListComponent, with: PlayerApplicationListStub },
+      {
+        replace: PlayerApplicationListComponent,
+        with: PlayerApplicationListStub,
+      },
     ],
     providers: [
-      { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       PermissionDataService,
       { provide: HealthCheckService, useValue: health },
       { provide: UserService, useValue: users },
@@ -200,7 +232,8 @@ async function renderAdmin(
   return { ...rendered, signalR, users, units, injectTypes, permissionApis };
 }
 
-const nav = () => screen.getByRole('navigation', { name: 'Administration sections' });
+const nav = () =>
+  screen.getByRole('navigation', { name: 'Administration sections' });
 
 // The View* permissions that open an admin section. Everything else is a near
 // miss for "no sections".
@@ -220,10 +253,15 @@ const SECTION_VIEWS: SystemPermission[] = [
   SystemPermission.ViewGroups,
 ];
 const ALL_PERMISSIONS = Object.values(SystemPermission);
-const MANAGE_PERMISSIONS = ALL_PERMISSIONS.filter((p) => p.startsWith('Manage'));
+const MANAGE_PERMISSIONS = ALL_PERMISSIONS.filter((p) =>
+  p.startsWith('Manage'),
+);
 
 // The rendered instance of a child stub, to read the inputs the container bound.
-function child<T>(fixture: ComponentFixture<unknown>, stub: Type<T>): T | undefined {
+function child<T>(
+  fixture: ComponentFixture<unknown>,
+  stub: Type<T>,
+): T | undefined {
   return fixture.debugElement.query(By.directive(stub))?.componentInstance;
 }
 
@@ -240,7 +278,9 @@ describe('AdminContainerComponent', () => {
   it('leaves a rejected logout unhandled', async () => {
     const failure = new Error('signout metadata request failed');
     const rejections = captureUnhandledRejections();
-    const { fixture } = await renderAdmin({ logout: () => Promise.reject(failure) });
+    const { fixture } = await renderAdmin({
+      logout: () => Promise.reject(failure),
+    });
 
     fixture.componentInstance.logout();
     await flush();
@@ -258,10 +298,25 @@ describe('AdminContainerComponent', () => {
       permissions: ALL_PERMISSIONS.filter((p) => !SECTION_VIEWS.includes(p)),
     });
 
-    expect(permissionApis.systemPermissions.getMySystemPermissions).toHaveBeenCalledTimes(1);
+    expect(
+      permissionApis.systemPermissions.getMySystemPermissions,
+    ).toHaveBeenCalledTimes(1);
     for (const label of [
-      'Units', 'Data Fields', 'Inject Types', 'Catalogs', 'Organizations', 'Gallery Cards',
-      'CITE Actions', 'CITE Duties', 'Player Apps', 'Competencies', 'Proficiency Scales', 'Techniques', 'Users', 'Roles', 'Groups',
+      'Units',
+      'Data Fields',
+      'Inject Types',
+      'Catalogs',
+      'Organizations',
+      'Gallery Cards',
+      'CITE Actions',
+      'CITE Duties',
+      'Player Apps',
+      'Competencies',
+      'Proficiency Scales',
+      'Techniques',
+      'Users',
+      'Roles',
+      'Groups',
     ]) {
       expect(within(nav()).queryByText(label)).not.toBeInTheDocument();
     }
@@ -283,15 +338,31 @@ describe('AdminContainerComponent', () => {
     [SystemPermission.ViewCiteActions, ['CITE Actions']],
     [SystemPermission.ViewCiteDuties, ['CITE Duties']],
     [SystemPermission.ViewPlayerApplications, ['Player Apps']],
-    [SystemPermission.ViewCompetencyFrameworks, ['Competencies', 'Proficiency Scales', 'Techniques']],
+    [
+      SystemPermission.ViewCompetencyFrameworks,
+      ['Competencies', 'Proficiency Scales', 'Techniques'],
+    ],
     [SystemPermission.ViewUsers, ['Users']],
     [SystemPermission.ViewRoles, ['Roles']],
     [SystemPermission.ViewGroups, ['Groups']],
   ])('%s unlocks only its sections', async (permission, labels) => {
     await renderAdmin({ permissions: [permission] });
     const all = [
-      'Units', 'Data Fields', 'Inject Types', 'Catalogs', 'Organizations', 'Gallery Cards',
-      'CITE Actions', 'CITE Duties', 'Player Apps', 'Competencies', 'Proficiency Scales', 'Techniques', 'Users', 'Roles', 'Groups',
+      'Units',
+      'Data Fields',
+      'Inject Types',
+      'Catalogs',
+      'Organizations',
+      'Gallery Cards',
+      'CITE Actions',
+      'CITE Duties',
+      'Player Apps',
+      'Competencies',
+      'Proficiency Scales',
+      'Techniques',
+      'Users',
+      'Roles',
+      'Groups',
     ];
 
     for (const label of all) {
@@ -339,7 +410,10 @@ describe('AdminContainerComponent', () => {
    */
   it('opens Player Apps as the template list', async () => {
     const { fixture } = await renderAdmin({
-      permissions: [SystemPermission.ViewPlayerApplications, SystemPermission.ManagePlayerApplications],
+      permissions: [
+        SystemPermission.ViewPlayerApplications,
+        SystemPermission.ManagePlayerApplications,
+      ],
     });
     const user = userEvent.setup();
 
@@ -354,16 +428,75 @@ describe('AdminContainerComponent', () => {
   // Each section that passes a Manage permission down to its child, with the
   // nav label, the permissions, and how to read the bound input off the stub.
   const MANAGED_SECTIONS = [
-    { label: 'Units', view: SystemPermission.ViewUnits, manage: SystemPermission.ManageUnits, gate: (f: ComponentFixture<unknown>) => child(f, AdminUnitsStub)?.canManage() },
-    { label: 'Inject Types', view: SystemPermission.ViewInjectTypes, manage: SystemPermission.ManageInjectTypes, gate: (f: ComponentFixture<unknown>) => child(f, AdminInjectTypesStub)?.canEdit() },
-    { label: 'Competencies', view: SystemPermission.ViewCompetencyFrameworks, manage: SystemPermission.ManageCompetencyFrameworks, gate: (f: ComponentFixture<unknown>) => child(f, AdminCompetencyFrameworksStub)?.canEdit() },
-    { label: 'Proficiency Scales', view: SystemPermission.ViewCompetencyFrameworks, manage: SystemPermission.ManageCompetencyFrameworks, gate: (f: ComponentFixture<unknown>) => child(f, AdminProficiencyScalesStub)?.canEdit() },
-    { label: 'Catalogs', view: SystemPermission.ViewCatalogs, manage: SystemPermission.ManageCatalogs, gate: (f: ComponentFixture<unknown>) => child(f, AdminCatalogListStub)?.canEdit() },
-    { label: 'Organizations', view: SystemPermission.ViewOrganizations, manage: SystemPermission.ManageOrganizations, gate: (f: ComponentFixture<unknown>) => child(f, OrganizationListStub)?.canEdit() },
-    { label: 'Gallery Cards', view: SystemPermission.ViewGalleryCards, manage: SystemPermission.ManageGalleryCards, gate: (f: ComponentFixture<unknown>) => child(f, CardListStub)?.canEdit() },
-    { label: 'CITE Actions', view: SystemPermission.ViewCiteActions, manage: SystemPermission.ManageCiteActions, gate: (f: ComponentFixture<unknown>) => child(f, CiteActionListStub)?.canEdit() },
-    { label: 'CITE Duties', view: SystemPermission.ViewCiteDuties, manage: SystemPermission.ManageCiteDuties, gate: (f: ComponentFixture<unknown>) => child(f, CiteDutyListStub)?.canEdit() },
-    { label: 'Player Apps', view: SystemPermission.ViewPlayerApplications, manage: SystemPermission.ManagePlayerApplications, gate: (f: ComponentFixture<unknown>) => child(f, PlayerApplicationListStub)?.canEdit() },
+    {
+      label: 'Units',
+      view: SystemPermission.ViewUnits,
+      manage: SystemPermission.ManageUnits,
+      gate: (f: ComponentFixture<unknown>) =>
+        child(f, AdminUnitsStub)?.canManage(),
+    },
+    {
+      label: 'Inject Types',
+      view: SystemPermission.ViewInjectTypes,
+      manage: SystemPermission.ManageInjectTypes,
+      gate: (f: ComponentFixture<unknown>) =>
+        child(f, AdminInjectTypesStub)?.canEdit(),
+    },
+    {
+      label: 'Competencies',
+      view: SystemPermission.ViewCompetencyFrameworks,
+      manage: SystemPermission.ManageCompetencyFrameworks,
+      gate: (f: ComponentFixture<unknown>) =>
+        child(f, AdminCompetencyFrameworksStub)?.canEdit(),
+    },
+    {
+      label: 'Proficiency Scales',
+      view: SystemPermission.ViewCompetencyFrameworks,
+      manage: SystemPermission.ManageCompetencyFrameworks,
+      gate: (f: ComponentFixture<unknown>) =>
+        child(f, AdminProficiencyScalesStub)?.canEdit(),
+    },
+    {
+      label: 'Catalogs',
+      view: SystemPermission.ViewCatalogs,
+      manage: SystemPermission.ManageCatalogs,
+      gate: (f: ComponentFixture<unknown>) =>
+        child(f, AdminCatalogListStub)?.canEdit(),
+    },
+    {
+      label: 'Organizations',
+      view: SystemPermission.ViewOrganizations,
+      manage: SystemPermission.ManageOrganizations,
+      gate: (f: ComponentFixture<unknown>) =>
+        child(f, OrganizationListStub)?.canEdit(),
+    },
+    {
+      label: 'Gallery Cards',
+      view: SystemPermission.ViewGalleryCards,
+      manage: SystemPermission.ManageGalleryCards,
+      gate: (f: ComponentFixture<unknown>) => child(f, CardListStub)?.canEdit(),
+    },
+    {
+      label: 'CITE Actions',
+      view: SystemPermission.ViewCiteActions,
+      manage: SystemPermission.ManageCiteActions,
+      gate: (f: ComponentFixture<unknown>) =>
+        child(f, CiteActionListStub)?.canEdit(),
+    },
+    {
+      label: 'CITE Duties',
+      view: SystemPermission.ViewCiteDuties,
+      manage: SystemPermission.ManageCiteDuties,
+      gate: (f: ComponentFixture<unknown>) =>
+        child(f, CiteDutyListStub)?.canEdit(),
+    },
+    {
+      label: 'Player Apps',
+      view: SystemPermission.ViewPlayerApplications,
+      manage: SystemPermission.ManagePlayerApplications,
+      gate: (f: ComponentFixture<unknown>) =>
+        child(f, PlayerApplicationListStub)?.canEdit(),
+    },
   ];
 
   /**
@@ -373,17 +506,31 @@ describe('AdminContainerComponent', () => {
    */
   it.each(
     MANAGED_SECTIONS.flatMap((section) => [
-      { ...section, granted: true, permissions: [section.view, section.manage] },
-      { ...section, granted: false, permissions: [section.view, ...MANAGE_PERMISSIONS.filter((p) => p !== section.manage)] },
+      {
+        ...section,
+        granted: true,
+        permissions: [section.view, section.manage],
+      },
+      {
+        ...section,
+        granted: false,
+        permissions: [
+          section.view,
+          ...MANAGE_PERMISSIONS.filter((p) => p !== section.manage),
+        ],
+      },
     ]),
-  )('$label passes its Manage permission down (granted: $granted)', async ({ label, granted, permissions, gate }) => {
-    const { fixture } = await renderAdmin({ permissions });
-    const user = userEvent.setup();
+  )(
+    '$label passes its Manage permission down (granted: $granted)',
+    async ({ label, granted, permissions, gate }) => {
+      const { fixture } = await renderAdmin({ permissions });
+      const user = userEvent.setup();
 
-    await user.click(within(nav()).getByText(label));
+      await user.click(within(nav()).getByText(label));
 
-    expect(gate(fixture)).toBe(granted);
-  });
+      expect(gate(fixture)).toBe(granted);
+    },
+  );
 
   /**
    * Verifies: the Units section opens by default and receives canManage from ManageUnits; units are loaded once the user may see any admin section.
@@ -406,7 +553,9 @@ describe('AdminContainerComponent', () => {
    * Data: ViewUnits.
    */
   it('reloads the shared admin data when the hub connection is replaced', async () => {
-    const { users, units, injectTypes } = await renderAdmin({ permissions: [SystemPermission.ViewUnits] });
+    const { users, units, injectTypes } = await renderAdmin({
+      permissions: [SystemPermission.ViewUnits],
+    });
 
     TestBed.inject(HubReconnectService).announceReconnected();
 
@@ -421,7 +570,9 @@ describe('AdminContainerComponent', () => {
    * Data: ViewGalleryCards only.
    */
   it('does not load units for a ViewGalleryCards-only user', async () => {
-    const { units } = await renderAdmin({ permissions: [SystemPermission.ViewGalleryCards] });
+    const { units } = await renderAdmin({
+      permissions: [SystemPermission.ViewGalleryCards],
+    });
 
     expect(units.getUnits).not.toHaveBeenCalled();
   });
@@ -432,7 +583,9 @@ describe('AdminContainerComponent', () => {
    * Data: ViewUsers only; no saved tab.
    */
   it('defaults to the Units tab even without ViewUnits', async () => {
-    const { fixture } = await renderAdmin({ permissions: [SystemPermission.ViewUsers] });
+    const { fixture } = await renderAdmin({
+      permissions: [SystemPermission.ViewUsers],
+    });
 
     expect(TestBed.inject(UIDataService).getAdminTab()).toBe('Units');
     expect(child(fixture, AdminUsersStub)).toBeUndefined();
@@ -459,7 +612,9 @@ describe('AdminContainerComponent', () => {
    * Data: API version "2.4.0+abc123".
    */
   it('joins the admin hub and shows the API version', async () => {
-    const { fixture, signalR } = await renderAdmin({ permissions: [SystemPermission.ViewUnits] });
+    const { fixture, signalR } = await renderAdmin({
+      permissions: [SystemPermission.ViewUnits],
+    });
     await fixture.whenStable();
 
     expect(signalR.startConnection).toHaveBeenCalledWith(ApplicationArea.admin);
@@ -477,7 +632,9 @@ describe('AdminContainerComponent', () => {
    */
   it('exits administration to the return URL', async () => {
     await renderAdmin({ permissions: [SystemPermission.ViewUnits] });
-    const navigateByUrl = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    const navigateByUrl = vi
+      .spyOn(TestBed.inject(Router), 'navigateByUrl')
+      .mockResolvedValue(true);
     const user = userEvent.setup();
 
     await user.click(within(nav()).getByText('Administration'));

@@ -2,19 +2,36 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, ElementRef, OnDestroy, AfterViewInit, inject, input, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  AfterViewInit,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import {
-  CiteDuty,
-  Team
-} from 'src/app/generated/blueprint.api';
+import { CiteDuty, Team } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
-import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+  MatTableDataSource,
+  MatTable,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { CiteDutyDataService } from 'src/app/data/cite-duty/cite-duty-data.service';
 import { CiteDutyQuery } from 'src/app/data/cite-duty/cite-duty.query';
@@ -25,17 +42,49 @@ import { CiteDutyEditDialogComponent } from '../cite-duty-edit-dialog/cite-duty-
 import { ItemDownloadDialogComponent } from '../item-download-dialog/item-download-dialog.component';
 import { MatIcon } from '@angular/material/icon';
 
-import { MatFormField, MatInput, MatSuffix, MatLabel } from '@angular/material/input';
+import {
+  MatFormField,
+  MatInput,
+  MatSuffix,
+  MatLabel,
+} from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
-    selector: 'app-cite-duty-list',
-    templateUrl: './cite-duty-list.component.html',
-    styleUrls: ['./cite-duty-list.component.scss'],
-    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatLabel, MatSelect, MatOption, MatPaginator, MatMenu, MatMenuItem, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
+  selector: 'app-cite-duty-list',
+  templateUrl: './cite-duty-list.component.html',
+  styleUrls: ['./cite-duty-list.component.scss'],
+  imports: [
+    MatIcon,
+    MatFormField,
+    MatInput,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconButton,
+    MatSuffix,
+    MatLabel,
+    MatSelect,
+    MatOption,
+    MatPaginator,
+    MatMenu,
+    MatMenuItem,
+    MatTable,
+    MatSort,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatMenuTrigger,
+    MatCellDef,
+    MatCell,
+    MatSortHeader,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+  ],
 })
 export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
   private mselQuery = inject(MselQuery);
@@ -72,40 +121,56 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
 
   constructor() {
     // subscribe to citeDuties
-    this.citeDutyQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(citeDuties => {
-      this.citeDutyList = citeDuties;
-      this.sortChanged(this.sort);
-    });
+    this.citeDutyQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((citeDuties) => {
+        this.citeDutyList = citeDuties;
+        this.sortChanged(this.sort);
+      });
     // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel && this.msel.id !== msel.id) {
-        const showTemplates = this.showTemplates();
-        if (showTemplates) {
-          this.msel = new MselPlus();
-        } else {
-          Object.assign(this.msel, msel);
-        }
-        this.displayedColumns = showTemplates ? ['action', 'name'] : ['action', 'name', 'team'];
-        this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
-        this.citeDutyDataSource.data = this.sortedCiteDuties;
-      }
-    });
-    // subscribe to Teams
-    this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
-      const mtList: Team[] = [];
-      teams.forEach(mt => {
-        if (mt.mselId === this.msel.id) {
-          mtList.push(mt);
+    (this.mselQuery.selectActive() as Observable<MselPlus>)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((msel) => {
+        if (msel && this.msel.id !== msel.id) {
+          const showTemplates = this.showTemplates();
+          if (showTemplates) {
+            this.msel = new MselPlus();
+          } else {
+            Object.assign(this.msel, msel);
+          }
+          this.displayedColumns = showTemplates
+            ? ['action', 'name']
+            : ['action', 'name', 'team'];
+          this.sortedCiteDuties = this.getSortedCiteDuties(
+            this.getFilteredCiteDuties(false),
+          );
+          this.citeDutyDataSource.data = this.sortedCiteDuties;
         }
       });
-      this.mselTeamList = mtList.sort((a, b) => a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1);
-    });
+    // subscribe to Teams
+    this.teamQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((teams) => {
+        const mtList: Team[] = [];
+        teams.forEach((mt) => {
+          if (mt.mselId === this.msel.id) {
+            mtList.push(mt);
+          }
+        });
+        this.mselTeamList = mtList.sort((a, b) =>
+          a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1,
+        );
+      });
     // subscribe to filter term changes
     this.filterControl.valueChanges
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((term) => {
         this.filterString = term;
-        this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
+        this.sortedCiteDuties = this.getSortedCiteDuties(
+          this.getFilteredCiteDuties(false),
+        );
         this.citeDutyDataSource.data = this.sortedCiteDuties;
       });
     // load CiteDuty templates
@@ -118,26 +183,30 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
     this.citeDutyDataSource.paginator = this.paginator();
   }
 
-  addOrEditCiteDuty(citeDuty: CiteDuty, makeTemplate: boolean, makeFromTemplate: boolean) {
+  addOrEditCiteDuty(
+    citeDuty: CiteDuty,
+    makeTemplate: boolean,
+    makeFromTemplate: boolean,
+  ) {
     if (!citeDuty) {
       citeDuty = {
         mselId: this.showTemplates() ? '' : this.msel.id,
         name: '',
         isTemplate: this.showTemplates(),
-        teamId: ''
+        teamId: '',
       };
     } else {
       if (makeTemplate) {
         citeDuty = {
           name: citeDuty.name,
           isTemplate: true,
-          teamId: ''
+          teamId: '',
         };
       } else if (makeFromTemplate) {
         citeDuty = {
           name: citeDuty.name,
           mselId: this.msel.id,
-          isTemplate: false
+          isTemplate: false,
         };
       } else {
         citeDuty = { ...citeDuty };
@@ -149,7 +218,7 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
       width: 'auto',
       data: {
         citeDuty: { ...citeDuty },
-        teamList: this.mselTeamList
+        teamList: this.mselTeamList,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -171,11 +240,11 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
       if (citeDuty.teamId) {
         teams.push(citeDuty.teamId);
       } else {
-        this.mselTeamList.forEach(team => {
+        this.mselTeamList.forEach((team) => {
           teams.push(team.id);
         });
       }
-      teams.forEach(team => {
+      teams.forEach((team) => {
         citeDuty.teamId = team;
         this.citeDutyDataService.add(citeDuty);
       });
@@ -225,18 +294,29 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
       },
       (err) => {
         window.alert('Error downloading file');
-      }
+      },
     );
   }
 
   deleteCiteDuty(citeDuty: CiteDuty): void {
-    if (this.isAddingCiteDuty || (this.editingId && this.editingId !== citeDuty.id)) {
+    if (
+      this.isAddingCiteDuty ||
+      (this.editingId && this.editingId !== citeDuty.id)
+    ) {
       return;
     }
-    const title = citeDuty.mselId ? 'Delete CITE Duty' : 'Delete CITE Duty Template';
+    const title = citeDuty.mselId
+      ? 'Delete CITE Duty'
+      : 'Delete CITE Duty Template';
     this.dialogService
-      .confirm({ title: title, message: 'Are you sure that you want to delete ' + citeDuty.name + '?', confirmText: 'Delete', cancelText: 'Cancel'
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: title,
+        message: 'Are you sure that you want to delete ' + citeDuty.name + '?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.citeDutyDataService.delete(citeDuty.id);
           this.editingId = '';
@@ -246,18 +326,24 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
+    this.sortedCiteDuties = this.getSortedCiteDuties(
+      this.getFilteredCiteDuties(false),
+    );
     this.citeDutyDataSource.data = this.sortedCiteDuties;
     const paginator = this.paginator();
     if (paginator) {
       paginator.length = this.sortedCiteDuties.length;
     }
-    this.templateList = this.getSortedCiteDuties(this.getFilteredCiteDuties(true));
+    this.templateList = this.getSortedCiteDuties(
+      this.getFilteredCiteDuties(true),
+    );
   }
 
   getSortedCiteDuties(citeDuties: CiteDuty[]) {
     if (citeDuties) {
-      citeDuties = citeDuties.sort((a, b) => this.sortCiteDuties(a, b, this.sort.active, this.sort.direction));
+      citeDuties = citeDuties.sort((a, b) =>
+        this.sortCiteDuties(a, b, this.sort.active, this.sort.direction),
+      );
     }
     return citeDuties;
   }
@@ -266,21 +352,21 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
     a: CiteDuty,
     b: CiteDuty,
     column: string,
-    direction: string
+    direction: string,
   ) {
     const isAsc = direction !== 'desc';
     switch (column) {
       case 'name':
         if (a.name.toLowerCase() === b.name.toLowerCase()) {
-          return ((a.team?.name < b.team?.name ? -1 : 1) * (isAsc ? 1 : -1));
+          return (a.team?.name < b.team?.name ? -1 : 1) * (isAsc ? 1 : -1);
         }
-        return ((a.name < b.name ? -1 : 1) * (isAsc ? 1 : -1));
+        return (a.name < b.name ? -1 : 1) * (isAsc ? 1 : -1);
         break;
       case 'team':
         if (a.team?.name === b.team?.name) {
-          return ((a.name < b.name ? -1 : 1) * (isAsc ? 1 : -1));
+          return (a.name < b.name ? -1 : 1) * (isAsc ? 1 : -1);
         }
-        return ((a.team?.name < b.team?.name ? -1 : 1) * (isAsc ? 1 : -1));
+        return (a.team?.name < b.team?.name ? -1 : 1) * (isAsc ? 1 : -1);
         break;
       default:
         return 0;
@@ -292,22 +378,27 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
     const mselId = getTemplatesOnly || this.showTemplates() ? '' : this.msel.id;
     let filteredCiteDuties: CiteDuty[] = [];
     if (citeDuties) {
-      citeDuties.forEach(citeDuty => {
-        if ((mselId && citeDuty.mselId === mselId) || (!mselId && !citeDuty.mselId)) {
+      citeDuties.forEach((citeDuty) => {
+        if (
+          (mselId && citeDuty.mselId === mselId) ||
+          (!mselId && !citeDuty.mselId)
+        ) {
           filteredCiteDuties.push({ ...citeDuty });
         }
       });
       if (filteredCiteDuties && filteredCiteDuties.length > 0) {
         if (this.filterString) {
           const filterString = this.filterString.toLowerCase();
-          filteredCiteDuties = filteredCiteDuties
-            .filter((a) =>
+          filteredCiteDuties = filteredCiteDuties.filter(
+            (a) =>
               a.name.toLowerCase().includes(filterString) ||
-              a.team?.name.toLowerCase().includes(filterString)
-            );
+              a.team?.name.toLowerCase().includes(filterString),
+          );
         }
         if (this.selectedTeamId) {
-          filteredCiteDuties = filteredCiteDuties.filter((a) => a.teamId === this.selectedTeamId);
+          filteredCiteDuties = filteredCiteDuties.filter(
+            (a) => a.teamId === this.selectedTeamId,
+          );
         }
       }
     }
@@ -316,7 +407,9 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
 
   selectTeam(teamId: string) {
     this.selectedTeamId = teamId;
-    this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
+    this.sortedCiteDuties = this.getSortedCiteDuties(
+      this.getFilteredCiteDuties(false),
+    );
     this.citeDutyDataSource.data = this.sortedCiteDuties;
   }
 

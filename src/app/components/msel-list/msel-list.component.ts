@@ -1,17 +1,46 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, OnDestroy, ViewChild, ElementRef, OnInit, inject, input, viewChild } from '@angular/core';
-import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatSort, MatSortable, Sort, MatSortHeader } from '@angular/material/sort';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+  OnInit,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
+import {
+  UntypedFormControl,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import {
+  MatSort,
+  MatSortable,
+  Sort,
+  MatSortHeader,
+} from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+  MatTableDataSource,
+  MatTable,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 import { Router, RouterLink } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
-import {
-  ComnSettingsService,
-} from '@cmusei/crucible-common';
+import { ComnSettingsService } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { UserQuery, CurrentUserQuery } from 'src/app/data/user/user.query';
 import { SignalRService } from 'src/app/services/signalr.service';
@@ -42,10 +71,42 @@ import { OverflowTooltipDirective } from '../shared/overflow-tooltip/overflow-to
 import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
-    selector: 'app-msel-list',
-    templateUrl: './msel-list.component.html',
-    styleUrls: ['./msel-list.component.scss'],
-    imports: [MatIconButton, MatIcon, MatSelect, FormsModule, MatOption, MatFormField, MatInput, ReactiveFormsModule, MatSuffix, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatMenu, MatMenuItem, MatCellDef, MatCell, MatSortHeader, RouterLink, MatCheckbox, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatPaginator, MatCard, MatProgressSpinner, DatePipe, OverflowTooltipDirective]
+  selector: 'app-msel-list',
+  templateUrl: './msel-list.component.html',
+  styleUrls: ['./msel-list.component.scss'],
+  imports: [
+    MatIconButton,
+    MatIcon,
+    MatSelect,
+    FormsModule,
+    MatOption,
+    MatFormField,
+    MatInput,
+    ReactiveFormsModule,
+    MatSuffix,
+    MatTable,
+    MatSort,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatMenuTrigger,
+    MatMenu,
+    MatMenuItem,
+    MatCellDef,
+    MatCell,
+    MatSortHeader,
+    RouterLink,
+    MatCheckbox,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+    MatPaginator,
+    MatCard,
+    MatProgressSpinner,
+    DatePipe,
+    OverflowTooltipDirective,
+  ],
 })
 export class MselListComponent implements OnDestroy, OnInit {
   dialogService = inject(CrucibleDialogService);
@@ -113,7 +174,7 @@ export class MselListComponent implements OnDestroy, OnInit {
   constructor() {
     // Initial datasource
     this.mselDataSource = new MatTableDataSource<MselPlus>(
-      new Array<MselPlus>()
+      new Array<MselPlus>(),
     );
     // a new hub connection missed what was broadcast while the old one was down
     reloadOnReconnect(() => {
@@ -128,10 +189,13 @@ export class MselListComponent implements OnDestroy, OnInit {
 
   ngOnInit() {
     // Load permissions, then load MSELs based on access level
-    this.permissionDataService.load()
+    this.permissionDataService
+      .load()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
-        if (this.permissionDataService.hasPermission(SystemPermission.ViewMsels)) {
+        if (
+          this.permissionDataService.hasPermission(SystemPermission.ViewMsels)
+        ) {
           this.mselDataService.load();
           this.allMselsAreLoaded = true;
         } else {
@@ -140,7 +204,8 @@ export class MselListComponent implements OnDestroy, OnInit {
         this.changeDetectorRef.markForCheck();
       });
     // subscribe to users
-    this.userQuery.selectAll()
+    this.userQuery
+      .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((users) => {
         this.userList = users;
@@ -196,12 +261,12 @@ export class MselListComponent implements OnDestroy, OnInit {
     // set image
     this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace(
       'white',
-      'blue'
+      'blue',
     );
     // remove case sensitivity from mat-table sort, and sort dates as times
     this.mselDataSource.sortingDataAccessor = (
       data: any,
-      sortHeaderId: string
+      sortHeaderId: string,
     ): string | number => {
       if (sortHeaderId === 'dateCreated' || sortHeaderId === 'dateModified') {
         const time = new Date(data[sortHeaderId]).getTime();
@@ -238,12 +303,7 @@ export class MselListComponent implements OnDestroy, OnInit {
     this.uploadProgress = 0;
     this.isReady = false;
     if (this.fileType === 'xlsx') {
-      this.mselDataService.uploadXlsx(
-        this.uploadMselId,
-        file,
-        'events',
-        true
-      );
+      this.mselDataService.uploadXlsx(this.uploadMselId, file, 'events', true);
     } else {
       this.isReady = true;
       this.importJson(file);
@@ -318,7 +378,7 @@ export class MselListComponent implements OnDestroy, OnInit {
       },
       () => {
         this.isReady = true;
-      }
+      },
     );
   }
 
@@ -346,7 +406,7 @@ export class MselListComponent implements OnDestroy, OnInit {
       },
       () => {
         this.isReady = true;
-      }
+      },
     );
   }
 
@@ -355,8 +415,7 @@ export class MselListComponent implements OnDestroy, OnInit {
     this.mselDataService
       .add({
         name: 'New MSEL',
-        description:
-          'Created from Default Settings by ' + this.currentUserName,
+        description: 'Created from Default Settings by ' + this.currentUserName,
         status: 'Pending',
         dataFields: this.settingsService.settings.DefaultDataFields,
       })
@@ -372,12 +431,16 @@ export class MselListComponent implements OnDestroy, OnInit {
   }
 
   copyMsel(mselId: string): void {
-    const msel = this.mselList.find(m => m.id === mselId);
+    const msel = this.mselList.find((m) => m.id === mselId);
     if (!msel) return;
 
     this.dialogService
-      .confirm({ title: 'Copy MSEL', message: 'Are you sure that you want to copy ' + msel.name + '?'
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Copy MSEL',
+        message: 'Are you sure that you want to copy ' + msel.name + '?',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.mselDataService.copy(msel.id);
         }
@@ -386,8 +449,14 @@ export class MselListComponent implements OnDestroy, OnInit {
 
   delete(msel: MselPlus): void {
     this.dialogService
-      .confirm({ title: 'Delete MSEL', message: 'Are you sure that you want to delete ' + msel.name + '?', confirmText: 'Delete', cancelText: 'Cancel'
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Delete MSEL',
+        message: 'Are you sure that you want to delete ' + msel.name + '?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.mselDataService.delete(msel.id);
         }
@@ -410,27 +479,27 @@ export class MselListComponent implements OnDestroy, OnInit {
     switch (this.selectedMselStatus) {
       case 'Pending':
         filteredMselList = filteredMselList.filter(
-          (m) => m.status.toString() === 'Pending'
+          (m) => m.status.toString() === 'Pending',
         );
         break;
       case 'Entered':
         filteredMselList = filteredMselList.filter(
-          (m) => m.status.toString() === 'Entered'
+          (m) => m.status.toString() === 'Entered',
         );
         break;
       case 'Approved':
         filteredMselList = filteredMselList.filter(
-          (m) => m.status.toString() === 'Approved'
+          (m) => m.status.toString() === 'Approved',
         );
         break;
       case 'Deployed':
         filteredMselList = filteredMselList.filter(
-          (m) => m.status.toString() === 'Deployed'
+          (m) => m.status.toString() === 'Deployed',
         );
         break;
       case 'Completed':
         filteredMselList = filteredMselList.filter(
-          (m) => m.status.toString() === 'Completed'
+          (m) => m.status.toString() === 'Completed',
         );
         break;
       default:
@@ -465,25 +534,34 @@ export class MselListComponent implements OnDestroy, OnInit {
   }
 
   canCreateMsels(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
+    return this.permissionDataService.hasPermission(
+      SystemPermission.CreateMsels,
+    );
   }
 
   // whether the MSEL opens on the build page: any role on it (Viewer and up) opens it, read-only
   // unless canEditMsel; editing stays gated there and in the MSEL's own components
   canViewMsel(msel: MselPlus): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.ViewMsels) ||
+    return (
+      this.permissionDataService.hasPermission(SystemPermission.ViewMsels) ||
       msel?.hasRole(this.loggedInUserId(), '').viewer ||
-      (msel?.isTemplate && this.permissionDataService.hasPermission(SystemPermission.CreateMsels));
+      (msel?.isTemplate &&
+        this.permissionDataService.hasPermission(SystemPermission.CreateMsels))
+    );
   }
 
   canEditMsel(msel: MselPlus): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      msel?.hasRole(this.loggedInUserId(), '').editor;
+    return (
+      this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
+      msel?.hasRole(this.loggedInUserId(), '').editor
+    );
   }
 
   canManageMsel(msel: MselPlus): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
-      msel?.hasRole(this.loggedInUserId(), '').owner;
+    return (
+      this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
+      msel?.hasRole(this.loggedInUserId(), '').owner
+    );
   }
 
   getDeleteTooltip(msel: MselPlus): string {

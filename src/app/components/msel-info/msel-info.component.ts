@@ -3,7 +3,17 @@
 // project root for license information.
 import { AiUsageComponent } from '../ai-usage/ai-usage.component';
 import { CdkTextareaAutosize } from '@angular/cdk/text-field';
-import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, inject, input, output, viewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  inject,
+  input,
+  output,
+  viewChild,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -25,15 +35,26 @@ import {
   SteamfitterScenarioStartMode,
   SystemPermission,
   Team,
-  User
+  User,
 } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { canUpdateMsel, integrationsLocked, isPipelineStatus } from 'src/app/utilities/msel-permissions';
+import {
+  canUpdateMsel,
+  integrationsLocked,
+  isPipelineStatus,
+} from 'src/app/utilities/msel-permissions';
 import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
-import { MselImageDialogComponent, MselImageDialogData, MselImageDialogResult } from '../msel-image-dialog/msel-image-dialog.component';
-import { MselPageDraftDialogComponent, MselPageDraftDialogData } from '../msel-page-draft-dialog/msel-page-draft-dialog.component';
+import {
+  MselImageDialogComponent,
+  MselImageDialogData,
+  MselImageDialogResult,
+} from '../msel-image-dialog/msel-image-dialog.component';
+import {
+  MselPageDraftDialogComponent,
+  MselPageDraftDialogData,
+} from '../msel-page-draft-dialog/msel-page-draft-dialog.component';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
 import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
@@ -57,7 +78,10 @@ import { CompetencyFrameworkDataService } from 'src/app/data/competency-framewor
 import { MatDialog } from '@angular/material/dialog';
 import { ShowOnDirtyErrorStateMatcher } from '@angular/material/core';
 import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/competency-options-dialog.component';
-import { EDITOR_CONFIG_PARAGRAPH, VIEW_CONFIG } from 'src/app/utilities/editor-config';
+import {
+  EDITOR_CONFIG_PARAGRAPH,
+  VIEW_CONFIG,
+} from 'src/app/utilities/editor-config';
 import { casterVmAppWarning } from 'src/app/utilities/caster-vm-app';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import { MoveQuery } from 'src/app/data/move/move.query';
@@ -68,30 +92,94 @@ import { TopologyMapPanelComponent } from '../topology-map-panel/topology-map-pa
 import { MatTabGroup, MatTab, MatTabLabel } from '@angular/material/tabs';
 import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
-import { MatLabel, MatFormField, MatInput, MatError, MatHint, MatSuffix } from '@angular/material/input';
+import {
+  MatLabel,
+  MatFormField,
+  MatInput,
+  MatError,
+  MatHint,
+  MatSuffix,
+} from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatCheckbox } from '@angular/material/checkbox';
-import { NgxMatDatepickerInput, NgxMatDatetimepicker, NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel } from '@ngxmc/datetime-picker';
+import {
+  NgxMatDatepickerInput,
+  NgxMatDatetimepicker,
+  NgxMatDatepickerActions,
+  NgxMatDatepickerApply,
+  NgxMatDatepickerCancel,
+} from '@ngxmc/datetime-picker';
 import { MatDatepickerToggle } from '@angular/material/datepicker';
 import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { ClipboardModule } from 'ngx-clipboard';
-import { MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
+import {
+  MatExpansionPanel,
+  MatExpansionPanelHeader,
+  MatExpansionPanelTitle,
+} from '@angular/material/expansion';
 import { MatTooltip } from '@angular/material/tooltip';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
 import { DatePipe, formatDate } from '@angular/common';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
-import { normalizeScoringModel, scoringModelCounts } from 'src/app/utilities/scoring-model';
-import { CLASSIFICATION_MAX_LENGTH, MSEL_MARKINGS, TLP_LEVELS } from '../../utilities/msel-marking';
+import {
+  normalizeScoringModel,
+  scoringModelCounts,
+} from 'src/app/utilities/scoring-model';
+import {
+  CLASSIFICATION_MAX_LENGTH,
+  MSEL_MARKINGS,
+  TLP_LEVELS,
+} from '../../utilities/msel-marking';
 import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
-    selector: 'app-msel-info',
-    templateUrl: './msel-info.component.html',
-    styleUrls: ['./msel-info.component.scss'],
-    imports: [AiUsageComponent, IntegrationStatusComponent, MatTabGroup, MatTab, MatIconButton, MatIcon, MatLabel, MatMenuTrigger, MatMenu, MatMenuItem, MatFormField, MatInput, CdkTextareaAutosize, FormsModule, MatError, MatHint, MatCheckbox, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, DurationEditComponent, MatSelect, MatOption, ClipboardModule, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatTooltip, AngularEditorModule, MatTabLabel, CardEditDialogComponent, DatePipe, TimezoneAbbrPipe, TopologyMapPanelComponent]
+  selector: 'app-msel-info',
+  templateUrl: './msel-info.component.html',
+  styleUrls: ['./msel-info.component.scss'],
+  imports: [
+    AiUsageComponent,
+    IntegrationStatusComponent,
+    MatTabGroup,
+    MatTab,
+    MatIconButton,
+    MatIcon,
+    MatLabel,
+    MatMenuTrigger,
+    MatMenu,
+    MatMenuItem,
+    MatFormField,
+    MatInput,
+    CdkTextareaAutosize,
+    FormsModule,
+    MatError,
+    MatHint,
+    MatCheckbox,
+    NgxMatDatepickerInput,
+    MatDatepickerToggle,
+    MatSuffix,
+    NgxMatDatetimepicker,
+    NgxMatDatepickerActions,
+    MatButton,
+    NgxMatDatepickerApply,
+    NgxMatDatepickerCancel,
+    DurationEditComponent,
+    MatSelect,
+    MatOption,
+    ClipboardModule,
+    MatExpansionPanel,
+    MatExpansionPanelHeader,
+    MatExpansionPanelTitle,
+    MatTooltip,
+    AngularEditorModule,
+    MatTabLabel,
+    CardEditDialogComponent,
+    DatePipe,
+    TimezoneAbbrPipe,
+    TopologyMapPanelComponent,
+  ],
 })
 export class MselInfoComponent implements OnDestroy, OnInit {
   dialogService = inject(CrucibleDialogService);
@@ -113,7 +201,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   private mselCompetencyDataService = inject(MselCompetencyDataService);
   private mselCompetencyQuery = inject(MselCompetencyQuery);
   private competencyFrameworkQuery = inject(CompetencyFrameworkQuery);
-  private competencyFrameworkDataService = inject(CompetencyFrameworkDataService);
+  private competencyFrameworkDataService = inject(
+    CompetencyFrameworkDataService,
+  );
   private dialog = inject(MatDialog);
   private permissionDataService = inject(PermissionDataService);
   private changeDetectorRef = inject(ChangeDetectorRef);
@@ -176,13 +266,26 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     MselItemStatus.Archived,
   ];
   // Steamfitter runs no task until its scenario is started
-  readonly steamfitterStartModes: { value: SteamfitterScenarioStartMode; label: string }[] = [
+  readonly steamfitterStartModes: {
+    value: SteamfitterScenarioStartMode;
+    label: string;
+  }[] = [
     { value: SteamfitterScenarioStartMode.Manual, label: 'Manually' },
-    { value: SteamfitterScenarioStartMode.OnPush, label: 'When the push finishes' },
-    { value: SteamfitterScenarioStartMode.AtStartTime, label: 'At the MSEL start time' },
+    {
+      value: SteamfitterScenarioStartMode.OnPush,
+      label: 'When the push finishes',
+    },
+    {
+      value: SteamfitterScenarioStartMode.AtStartTime,
+      label: 'At the MSEL start time',
+    },
   ];
   educationalLevels: string[] = ['Beginner', 'Intermediate', 'Advanced'];
-  educationalUses: string[] = ['Assessment', 'Instruction', 'Professional Support'];
+  educationalUses: string[] = [
+    'Assessment',
+    'Instruction',
+    'Professional Support',
+  ];
   courseModes: string[] = ['Online', 'Onsite', 'Blended'];
   viewUrl: string;
   starterUrl: string;
@@ -240,7 +343,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
             this.viewUrl = document.baseURI + 'msel/' + this.msel.id + '/view';
             this.starterUrl =
               document.baseURI + 'starter/?msel=' + this.msel.id;
-            this.assessorUrl = document.baseURI + 'assess/?msel=' + this.msel.id;
+            this.assessorUrl =
+              document.baseURI + 'assess/?msel=' + this.msel.id;
             this.mselPageDataService.loadByMsel(msel.id);
             this.mselCompetencyDataService.loadByMsel(msel.id);
             // the Caster warning needs to know whether any application opens the VM UI
@@ -254,7 +358,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
             this.clearDismissedIntegrationError();
           } else if (this.msel.integrationStatus.startsWith('ERROR')) {
             this.integrationDismissed =
-              sessionStorage.getItem(this.dismissedIntegrationErrorKey) === this.msel.integrationStatus;
+              sessionStorage.getItem(this.dismissedIntegrationErrorKey) ===
+              this.msel.integrationStatus;
           } else if (!this.msel.integrationStatus.startsWith('ERROR')) {
             this.integrationDismissed = false;
             this.clearDismissedIntegrationError();
@@ -280,7 +385,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
         this.isBusy = isLoading;
       });
     // subscribe to users
-    this.userQuery.selectAll()
+    this.userQuery
+      .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((users) => {
         this.userList = users;
@@ -308,17 +414,19 @@ export class MselInfoComponent implements OnDestroy, OnInit {
         this.mselCompetencyList = mselCompetencies;
         const isWorkRole = (mc: MselCompetency) => {
           const id = mc.competency?.idNumber || '';
-          return id.includes('WRL')
-            || /^[A-Z]{2}-[A-Z]{3}-\d+$/.test(id)
-            || /^[A-Z]{2}-\d+[A-Z]?$/.test(id);
+          return (
+            id.includes('WRL') ||
+            /^[A-Z]{2}-[A-Z]{3}-\d+$/.test(id) ||
+            /^[A-Z]{2}-\d+[A-Z]?$/.test(id)
+          );
         };
         this.workRoleCompetencies = mselCompetencies
-          .filter(mc => isWorkRole(mc) && mc.competency)
-          .map(mc => mc.competency)
+          .filter((mc) => isWorkRole(mc) && mc.competency)
+          .map((mc) => mc.competency)
           .sort((a, b) => (a.idNumber || '').localeCompare(b.idNumber || ''));
         this.nonWorkRoleCompetencies = mselCompetencies
-          .filter(mc => !isWorkRole(mc) && mc.competency)
-          .map(mc => mc.competency)
+          .filter((mc) => !isWorkRole(mc) && mc.competency)
+          .map((mc) => mc.competency)
           .sort((a, b) => (a.idNumber || '').localeCompare(b.idNumber || ''));
         this.workRoleCount = this.workRoleCompetencies.length;
         this.updateFrameworkNames();
@@ -334,9 +442,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
         // If a new page was added, switch to it and start editing
         if (this.newlyAddedPageName && pages.length > previousLength) {
-          const newPage = pages.find(p => p.name === this.newlyAddedPageName);
+          const newPage = pages.find((p) => p.name === this.newlyAddedPageName);
           if (newPage) {
-            const newPageIndex = pages.findIndex(p => p.id === newPage.id);
+            const newPageIndex = pages.findIndex((p) => p.id === newPage.id);
             // Switch to the new page tab
             setTimeout(() => {
               this.currentTabIndex = newPageIndex + 1;
@@ -348,9 +456,14 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           }
         }
         // If we were on an existing page and not switching to a new one, keep the page updated
-        else if (currentPageId && this.currentTabIndex > 0 && this.currentTabIndex <= pages.length && !this.newlyAddedPageName) {
+        else if (
+          currentPageId &&
+          this.currentTabIndex > 0 &&
+          this.currentTabIndex <= pages.length &&
+          !this.newlyAddedPageName
+        ) {
           // Find the updated page object
-          const updatedPage = pages.find(p => p.id === currentPageId);
+          const updatedPage = pages.find((p) => p.id === currentPageId);
           if (updatedPage) {
             this.changedMselPage = { ...updatedPage };
           }
@@ -360,14 +473,16 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     this.citeService.getScoringModels().subscribe(
       (scoringModels) => {
         // Filter out evaluation-specific scoring models (keep only templates with evaluationId == null)
-        this.scoringModelList = (scoringModels || []).filter(sm => !sm.evaluationId);
+        this.scoringModelList = (scoringModels || []).filter(
+          (sm) => !sm.evaluationId,
+        );
         // Update the scoring model name after list is loaded
         this.updateCiteScoringModelName();
       },
       (error) => {
         console.error('Failed to load CITE scoring models:', error);
         this.scoringModelList = [];
-      }
+      },
     );
     // subscribe to player applications
     this.playerApplicationQuery
@@ -400,13 +515,15 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   ngOnInit() {
     // Load permissions and trigger change detection when loaded
-    this.permissionDataService.load()
+    this.permissionDataService
+      .load()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
       });
     this.competencyFrameworkDataService.load();
-    this.competencyFrameworkQuery.selectAll()
+    this.competencyFrameworkQuery
+      .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => this.updateFrameworkNames());
   }
@@ -420,8 +537,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     }
     const frameworks = this.competencyFrameworkQuery.getAll();
     this.competencyFrameworkNames = [...fwIds]
-      .map(id => frameworks.find(f => f.id === id)?.name || '')
-      .filter(n => n)
+      .map((id) => frameworks.find((f) => f.id === id)?.name || '')
+      .filter((n) => n)
       .sort();
   }
 
@@ -445,7 +562,10 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       type = 'Work Role';
     } else if (/^[TKSA][\d-]/.test(idNumber)) {
       const prefixMap: Record<string, string> = {
-        'T': 'Task', 'K': 'Knowledge', 'S': 'Skill', 'A': 'Ability',
+        T: 'Task',
+        K: 'Knowledge',
+        S: 'Skill',
+        A: 'Ability',
       };
       type = prefixMap[idNumber.charAt(0)] || '';
     } else if (/^[A-Z]{2}-[A-Z]{3}-\d+$/.test(idNumber)) {
@@ -476,16 +596,21 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       this.creatorName = 'unknown';
       return;
     }
-    const user = this.userList.find(u => u.id === this.msel.createdBy);
+    const user = this.userList.find((u) => u.id === this.msel.createdBy);
     if (user) {
       this.creatorName = user.name;
     } else if (this.creatorLookupId !== this.msel.createdBy) {
       this.creatorLookupId = this.msel.createdBy;
-      this.userDataService.loadById(this.msel.createdBy)
+      this.userDataService
+        .loadById(this.msel.createdBy)
         .pipe(takeUntil(this.unsubscribe$))
         .subscribe({
-          next: (u) => { this.creatorName = u?.name || 'unknown'; },
-          error: () => { this.creatorName = 'unknown'; }
+          next: (u) => {
+            this.creatorName = u?.name || 'unknown';
+          },
+          error: () => {
+            this.creatorName = 'unknown';
+          },
         });
     }
   }
@@ -527,8 +652,14 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     if (this.canManageMsel()) {
       this.dialogService
         .confirm({
-          title: 'Delete MSEL', message: 'Are you sure that you want to delete ' + this.msel.name + '?', confirmText: 'Delete', cancelText: 'Cancel'
-        }).afterClosed().subscribe((result) => {
+          title: 'Delete MSEL',
+          message:
+            'Are you sure that you want to delete ' + this.msel.name + '?',
+          confirmText: 'Delete',
+          cancelText: 'Cancel',
+        })
+        .afterClosed()
+        .subscribe((result) => {
           if (result) {
             this.deleteThisMsel.emit(this.msel.id);
           }
@@ -537,8 +668,10 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   }
 
   canEditMsel(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId(), '').editor;
+    return (
+      this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
+      this.msel.hasRole(this.loggedInUserId(), '').editor
+    );
   }
 
   isPipelineStatus(): boolean {
@@ -551,7 +684,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   // the current status is listed even when it is one the user cannot choose, so the field still shows it
   statusOptions(): MselItemStatus[] {
-    return this.isPipelineStatus() ? [...this.itemStatus, this.msel.status] : this.itemStatus;
+    return this.isPipelineStatus()
+      ? [...this.itemStatus, this.msel.status]
+      : this.itemStatus;
   }
 
   // Setting the image follows the API's MSEL update rule: the owner or EditMsels.
@@ -562,7 +697,11 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   // The API's MSEL update rule: the owner or EditMsels. Hiding names is held to it rather than to
   // canEditMsel, since an Editor is one of the people it hides names from.
   canUpdateMsel(): boolean {
-    return canUpdateMsel(this.msel, this.loggedInUserId(), this.permissionDataService.hasPermission(SystemPermission.EditMsels));
+    return canUpdateMsel(
+      this.msel,
+      this.loggedInUserId(),
+      this.permissionDataService.hasPermission(SystemPermission.EditMsels),
+    );
   }
 
   uploadMselImage(input: HTMLInputElement) {
@@ -573,7 +712,10 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      this.systemMessageService.displayMessage('Image Too Large', 'Choose an image of 2 MB or less.');
+      this.systemMessageService.displayMessage(
+        'Image Too Large',
+        'Choose an image of 2 MB or less.',
+      );
       return;
     }
     this.isImageBusy = true;
@@ -590,12 +732,20 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   writePageWithAi() {
     const page = this.changedMselPage;
     this.dialog
-      .open<MselPageDraftDialogComponent, MselPageDraftDialogData, string>(MselPageDraftDialogComponent, {
-        // the current page and the proposed one sit side by side
-        width: '95vw',
-        maxWidth: '1600px',
-        data: { mselId: this.msel.id, pageId: page.id, name: page.name, content: page.content ?? '' },
-      })
+      .open<MselPageDraftDialogComponent, MselPageDraftDialogData, string>(
+        MselPageDraftDialogComponent,
+        {
+          // the current page and the proposed one sit side by side
+          width: '95vw',
+          maxWidth: '1600px',
+          data: {
+            mselId: this.msel.id,
+            pageId: page.id,
+            name: page.name,
+            content: page.content ?? '',
+          },
+        },
+      )
       .afterClosed()
       .subscribe((html) => {
         if (html) {
@@ -607,9 +757,18 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   // the image at full size, since the card preview is small, and the way to ask for a new one
   viewMselImage() {
-    const data: MselImageDialogData = { mselId: this.msel.id, url: this.mselImageUrl, name: this.msel.name, canGenerate: this.canSetMselImage() };
+    const data: MselImageDialogData = {
+      mselId: this.msel.id,
+      url: this.mselImageUrl,
+      name: this.msel.name,
+      canGenerate: this.canSetMselImage(),
+    };
     // the dialog makes, shows and saves a new picture itself; a kept one reaches the card through the MSEL's store
-    this.dialog.open<MselImageDialogComponent, MselImageDialogData, MselImageDialogResult>(MselImageDialogComponent, { data, maxWidth: '95vw' });
+    this.dialog.open<
+      MselImageDialogComponent,
+      MselImageDialogData,
+      MselImageDialogResult
+    >(MselImageDialogComponent, { data, maxWidth: '95vw' });
   }
 
   removeMselImage() {
@@ -643,19 +802,25 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   // what building the MSEL with AI cost, for its owner and ViewMsels holders, as the API allows
   canSeeAiUsage(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.ViewMsels) ||
-      this.msel.hasRole(this.loggedInUserId(), '').owner;
+    return (
+      this.permissionDataService.hasPermission(SystemPermission.ViewMsels) ||
+      this.msel.hasRole(this.loggedInUserId(), '').owner
+    );
   }
 
   // the scoring model the MSEL authors follows the API's rule for the MSEL's scoring model link: EditMsels or the owner
   canAuthorScoringModel(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId(), '').owner;
+    return (
+      this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
+      this.msel.hasRole(this.loggedInUserId(), '').owner
+    );
   }
 
   canManageMsel(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
-      this.msel.hasRole(this.loggedInUserId(), '').owner;
+    return (
+      this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
+      this.msel.hasRole(this.loggedInUserId(), '').owner
+    );
   }
 
   getDeleteTooltip(): string {
@@ -672,20 +837,26 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   }
 
   openCompetencyPicker(): void {
-    const existingIdNumbers = this.mselCompetencyList.map(mc => mc.competency?.idNumber).filter(Boolean);
+    const existingIdNumbers = this.mselCompetencyList
+      .map((mc) => mc.competency?.idNumber)
+      .filter(Boolean);
     const dialogRef = this.dialog.open(CompetencyOptionsDialogComponent, {
       width: '900px',
       maxWidth: '95vw',
       maxHeight: '90vh',
       data: {
         dataFieldId: null,
-        dataOptions: existingIdNumbers.map(idNumber => ({ optionName: idNumber })),
-        canEdit: this.canEditMsel()
-      }
+        dataOptions: existingIdNumbers.map((idNumber) => ({
+          optionName: idNumber,
+        })),
+        canEdit: this.canEditMsel(),
+      },
     });
     dialogRef.afterClosed().subscribe((updatedOptions) => {
       if (!updatedOptions) return;
-      const newIdNumbers = new Set(updatedOptions.map((o: any) => o.optionName));
+      const newIdNumbers = new Set(
+        updatedOptions.map((o: any) => o.optionName),
+      );
       const existingMap = new Map<string, MselCompetency>();
       for (const mc of this.mselCompetencyList) {
         if (mc.competency?.idNumber) {
@@ -705,7 +876,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
         if (!existingMap.has(opt.optionName) && opt.competencyId) {
           this.mselCompetencyDataService.add({
             mselId: this.msel.id,
-            competencyId: opt.competencyId
+            competencyId: opt.competencyId,
           });
         }
       }
@@ -747,21 +918,26 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     const id = this.msel?.id;
     return moveOrderPushProblems(
       this.moveList.filter((m) => m.mselId === id),
-      this.scenarioEventList.filter((e) => e.mselId === id).map((e) => e.deltaSeconds),
+      this.scenarioEventList
+        .filter((e) => e.mselId === id)
+        .map((e) => e.deltaSeconds),
     );
   }
 
   hasGalleryEventsWithMissingData(): boolean {
     // Get the IDs of data fields that have a galleryArticleParameter assigned
     const galleryDataFieldIds = this.dataFieldList
-      .filter((df) => df.galleryArticleParameter && df.galleryArticleParameter !== '- - -')
+      .filter(
+        (df) =>
+          df.galleryArticleParameter && df.galleryArticleParameter !== '- - -',
+      )
       .map((df) => df.id);
     if (galleryDataFieldIds.length === 0) {
       return false;
     }
     // Check scenario events that target Gallery
-    const galleryEvents = this.scenarioEventList.filter(
-      (se) => se.integrationTarget?.includes('Gallery')
+    const galleryEvents = this.scenarioEventList.filter((se) =>
+      se.integrationTarget?.includes('Gallery'),
     );
     return galleryEvents.some((se) => {
       return galleryDataFieldIds.some((dfId) => {
@@ -774,7 +950,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   pushIntegrations() {
     let galleryWarning = '';
     if (this.msel.useGallery && this.hasGalleryEventsWithMissingData()) {
-      galleryWarning = '\n\n** WARNING: One or more Scenario Events marked as a Gallery integration is missing required fields. **';
+      galleryWarning =
+        '\n\n** WARNING: One or more Scenario Events marked as a Gallery integration is missing required fields. **';
     }
     // a push starts the exercise now, so a start time that is missing or past is moved to now first
     if (!this.hasStartTime() || this.msel.startTime.valueOf() < Date.now()) {
@@ -787,7 +964,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           message: `${reason} The start time will be set to the current date and time before pushing.${galleryWarning}`,
           confirmText: 'Continue',
           cancelText: 'Cancel',
-        }).afterClosed().subscribe((result) => {
+        })
+        .afterClosed()
+        .subscribe((result) => {
           if (result) {
             this.setStartTimeToNowAndPush();
           }
@@ -796,8 +975,13 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     }
     this.dialogService
       .confirm({
-        title: 'Push Integrations', message: 'Are you sure that you want to push MSEL data to the selected applications?' + galleryWarning
-      }).afterClosed().subscribe((result) => {
+        title: 'Push Integrations',
+        message:
+          'Are you sure that you want to push MSEL data to the selected applications?' +
+          galleryWarning,
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.startPush();
         }
@@ -807,10 +991,12 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   // Push Integrations is disabled while there are unsaved changes, so this saves the start time alone.
   // The push waits for the save; a failed save is reported by MselDataService and nothing is pushed.
   private setStartTimeToNowAndPush() {
-    this.mselDataService.updateMsel({ ...this.msel, startTime: new Date() }).subscribe({
-      next: () => this.startPush(),
-      error: () => {},
-    });
+    this.mselDataService
+      .updateMsel({ ...this.msel, startTime: new Date() })
+      .subscribe({
+        next: () => this.startPush(),
+        error: () => {},
+      });
   }
 
   private startPush() {
@@ -823,8 +1009,12 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   pullIntegrations() {
     this.dialogService
       .confirm({
-        title: 'Remove Integrations', message: 'Are you sure that you want to remove this MSEL from the associated applications?'
-      }).afterClosed().subscribe((result) => {
+        title: 'Remove Integrations',
+        message:
+          'Are you sure that you want to remove this MSEL from the associated applications?',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           this.integrationDismissed = false;
           this.clearDismissedIntegrationError();
@@ -838,7 +1028,10 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     this.integrationRequested = '';
     this.integrationDismissed = true;
     if (this.msel?.integrationStatus?.startsWith('ERROR')) {
-      sessionStorage.setItem(this.dismissedIntegrationErrorKey, this.msel.integrationStatus);
+      sessionStorage.setItem(
+        this.dismissedIntegrationErrorKey,
+        this.msel.integrationStatus,
+      );
     }
   }
 
@@ -858,7 +1051,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
     // Save current page's unsaved changes to the map if editing
     if (this.editingPageId && this.changedMselPage && this.changedMselPage.id) {
-      this.unsavedPageChanges.set(this.editingPageId, { ...this.changedMselPage });
+      this.unsavedPageChanges.set(this.editingPageId, {
+        ...this.changedMselPage,
+      });
     }
 
     // Check if clicking on "Add Page" tab (last tab)
@@ -899,7 +1094,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
     // Save current page's unsaved changes if we're editing something else
     if (this.editingPageId && this.changedMselPage && this.changedMselPage.id) {
-      this.unsavedPageChanges.set(this.editingPageId, { ...this.changedMselPage });
+      this.unsavedPageChanges.set(this.editingPageId, {
+        ...this.changedMselPage,
+      });
     }
 
     // Start editing the new page
@@ -916,12 +1113,17 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   addNewPage() {
     // Save current page's unsaved changes if we're editing
     if (this.editingPageId && this.changedMselPage && this.changedMselPage.id) {
-      this.unsavedPageChanges.set(this.editingPageId, { ...this.changedMselPage });
+      this.unsavedPageChanges.set(this.editingPageId, {
+        ...this.changedMselPage,
+      });
     }
 
     // Create a unique name to avoid conflicts
-    const existingNewPages = this.mselPages.filter(p => p.name.startsWith('New Page'));
-    const pageNumber = existingNewPages.length > 0 ? existingNewPages.length + 1 : '';
+    const existingNewPages = this.mselPages.filter((p) =>
+      p.name.startsWith('New Page'),
+    );
+    const pageNumber =
+      existingNewPages.length > 0 ? existingNewPages.length + 1 : '';
     const pageName = pageNumber ? `New Page ${pageNumber}` : 'New Page';
 
     // Create a blank page immediately
@@ -929,7 +1131,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       mselId: this.originalMsel.id,
       name: pageName,
       content: '',
-      allCanView: false
+      allCanView: false,
     } as MselPage;
     this.newlyAddedPageName = newPage.name;
     this.mselPageDataService.add(newPage);
@@ -984,8 +1186,13 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   deletePage(page: MselPage): void {
     this.dialogService
       .confirm({
-        title: 'Delete Page', message: 'Are you sure that you want to delete ' + page.name + '?', confirmText: 'Delete', cancelText: 'Cancel'
-      }).afterClosed().subscribe((result) => {
+        title: 'Delete Page',
+        message: 'Are you sure that you want to delete ' + page.name + '?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      })
+      .afterClosed()
+      .subscribe((result) => {
         if (result) {
           // Clear any unsaved changes for this page
           this.unsavedPageChanges.delete(page.id);
@@ -998,7 +1205,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   openContent(id: string) {
     const themeParam = this.activatedRoute.snapshot.queryParamMap.get('theme');
-    const url = themeParam ? `${this.basePageUrl}${id}?theme=${themeParam}` : `${this.basePageUrl}${id}`;
+    const url = themeParam
+      ? `${this.basePageUrl}${id}?theme=${themeParam}`
+      : `${this.basePageUrl}${id}`;
     window.open(url);
   }
 
@@ -1008,17 +1217,20 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     }
 
     // Find the original page
-    const originalPage = this.mselPages.find(p => p.id === this.editingPageId);
+    const originalPage = this.mselPages.find(
+      (p) => p.id === this.editingPageId,
+    );
     if (!originalPage) {
       return false;
     }
 
     // Compare the changed page with the original
-    return this.changedMselPage.name !== originalPage.name ||
+    return (
+      this.changedMselPage.name !== originalPage.name ||
       this.changedMselPage.content !== originalPage.content ||
-      this.changedMselPage.allCanView !== originalPage.allCanView;
+      this.changedMselPage.allCanView !== originalPage.allCanView
+    );
   }
-
 
   galleryToDo(): boolean {
     let hasToDos = false;
@@ -1026,7 +1238,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     if (todoList && todoList.length > 0) {
       todoList = todoList.filter(
         (x) =>
-          !this.dataFieldList.some((df) => df.galleryArticleParameter === x)
+          !this.dataFieldList.some((df) => df.galleryArticleParameter === x),
       );
       hasToDos = todoList.length > 0;
     }
@@ -1036,7 +1248,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   citeToDo(): boolean {
     // every team on this MSEL must have a CITE team type assigned before pushing
     return this.teamList.some(
-      (t) => t.mselId === this.msel.id && !t.citeTeamTypeId
+      (t) => t.mselId === this.msel.id && !t.citeTeamTypeId,
     );
   }
 
@@ -1082,9 +1294,12 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           if (this.msel.id !== mselId) {
             return;
           }
-          this.authoredScoringModel = model ? normalizeScoringModel(model) : null;
+          this.authoredScoringModel = model
+            ? normalizeScoringModel(model)
+            : null;
         },
-        error: (error) => console.error('Failed to load the MSEL scoring model:', error),
+        error: (error) =>
+          console.error('Failed to load the MSEL scoring model:', error),
       });
   }
 
@@ -1114,11 +1329,15 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     // the ones with no evaluation). Either way, leave the name fetchIntegrationNames supplied
     // alone rather than blanking it -- this runs again when the list arrives, so a stale empty
     // name here would clobber a good one.
-    const scoringModel = this.scoringModelList.find(sm => sm.id === this.msel.citeScoringModelId);
+    const scoringModel = this.scoringModelList.find(
+      (sm) => sm.id === this.msel.citeScoringModelId,
+    );
     if (scoringModel) {
       this.citeScoringModelName = scoringModel.description;
     } else if (this.scoringModelList.length > 0) {
-      console.warn(`Scoring Model ID ${this.msel.citeScoringModelId} not found in list of ${this.scoringModelList.length} scoring models`);
+      console.warn(
+        `Scoring Model ID ${this.msel.citeScoringModelId} not found in list of ${this.scoringModelList.length} scoring models`,
+      );
     }
   }
 
@@ -1171,13 +1390,17 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   }
 
   get selectedCasterDirectory(): CasterDirectory {
-    return this.casterDirectoryList.find(d => d.id === this.msel.casterDirectoryId);
+    return this.casterDirectoryList.find(
+      (d) => d.id === this.msel.casterDirectoryId,
+    );
   }
 
   // On its project page, Caster opens a workspace's tab from ?workspace= and expands a directory from ?directory=;
   // a Caster without them opens the project
   getCasterWorkspaceUrl(): string {
-    return this.msel.casterWorkspaceId ? this.getCasterProjectUrl(`workspace=${this.msel.casterWorkspaceId}`) : '';
+    return this.msel.casterWorkspaceId
+      ? this.getCasterProjectUrl(`workspace=${this.msel.casterWorkspaceId}`)
+      : '';
   }
 
   getCasterDirectoryUrl(): string {
@@ -1196,13 +1419,19 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   casterWarningMessage(): string {
     if (!this.msel.useCaster) return '';
-    if (!this.msel.usePlayer) return 'Caster requires Player: the VMs are added to the Player view and its teams.';
-    if (!this.msel.casterDirectoryId) return 'Select the Caster directory to deploy.';
+    if (!this.msel.usePlayer)
+      return 'Caster requires Player: the VMs are added to the Player view and its teams.';
+    if (!this.msel.casterDirectoryId)
+      return 'Select the Caster directory to deploy.';
     return '';
   }
 
   casterVmAppWarningMessage(): string {
-    return casterVmAppWarning(this.msel, this.playerApplicationList, this.settingsService.settings.VmUrl);
+    return casterVmAppWarning(
+      this.msel,
+      this.playerApplicationList,
+      this.settingsService.settings.VmUrl,
+    );
   }
 
   fetchIntegrationNames() {
@@ -1228,14 +1457,15 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           this.citeEvaluationName = names.citeEvaluationName || '';
           this.citeScoringModelName = names.citeScoringModelName || '';
           this.steamfitterScenarioName = names.steamfitterScenarioName || '';
-          this.steamfitterScenarioStatus = names.steamfitterScenarioStatus || '';
+          this.steamfitterScenarioStatus =
+            names.steamfitterScenarioStatus || '';
           this.casterDirectoryName = names.casterDirectoryName || '';
           this.casterWorkspaceName = names.casterWorkspaceName || '';
         },
         (error) => {
           console.error('Failed to load integration names:', error);
           this.clearIntegrationNames();
-        }
+        },
       );
   }
 
@@ -1254,10 +1484,11 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       (error) => {
         console.error('Failed to load Caster directories:', error);
         this.casterDirectoryList = [];
-        this.casterDirectoryError = 'Caster directories could not be loaded. You need access to Caster to choose one.';
+        this.casterDirectoryError =
+          'Caster directories could not be loaded. You need access to Caster to choose one.';
         // checking Caster again retries
         this.casterDirectoriesRequested = false;
-      }
+      },
     );
   }
 
@@ -1296,7 +1527,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       },
       (err) => {
         window.alert('Error downloading file');
-      }
+      },
     );
   }
 
@@ -1314,7 +1545,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       },
       (err) => {
         window.alert('Error downloading file');
-      }
+      },
     );
   }
 
@@ -1324,5 +1555,4 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
   }
-
 }

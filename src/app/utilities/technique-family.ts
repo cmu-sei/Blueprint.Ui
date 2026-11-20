@@ -11,6 +11,8 @@ export interface HasFamily {
 }
 
 /** The family of a release or technique: defensive when flagged so, else attack. */
-export function techniqueFamily(item: HasFamily | null | undefined): TechniqueFamily {
+export function techniqueFamily(
+  item: HasFamily | null | undefined,
+): TechniqueFamily {
   return item?.isDefensive ? 'defensive' : 'attack';
 }

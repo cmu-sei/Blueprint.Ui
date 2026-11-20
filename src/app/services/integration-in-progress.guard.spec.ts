@@ -44,10 +44,15 @@ describe('IntegrationInProgressGuard', () => {
   it.each([
     { answer: false, label: 'stays' },
     { answer: true, label: 'leaves' },
-  ])('asks before leaving a push in progress and $label when the answer is $answer', ({ answer }) => {
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(answer);
+  ])(
+    'asks before leaving a push in progress and $label when the answer is $answer',
+    ({ answer }) => {
+      const confirm = vi.spyOn(window, 'confirm').mockReturnValue(answer);
 
-    expect(setup('Pushing to CITE').canDeactivate()).toBe(answer);
-    expect(confirm).toHaveBeenCalledWith('An integration push is in progress. Are you sure you want to leave?');
-  });
+      expect(setup('Pushing to CITE').canDeactivate()).toBe(answer);
+      expect(confirm).toHaveBeenCalledWith(
+        'An integration push is in progress. Are you sure you want to leave?',
+      );
+    },
+  );
 });

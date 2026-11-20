@@ -23,23 +23,43 @@ function dataField(overrides: Partial<DataField> = {}): DataField {
     dataType: DataFieldType.String,
     displayOrder: 3,
     isChosenFromList: true,
-    dataOptions: [{ id: 'opt-1', optionName: 'HIGH', optionValue: 'High', displayOrder: 1 }],
+    dataOptions: [
+      { id: 'opt-1', optionName: 'HIGH', optionValue: 'High', displayOrder: 1 },
+    ],
     ...overrides,
   };
 }
 
-async function renderDataFieldEdit(flags: { canEdit?: boolean } = {}, field = dataField()) {
+async function renderDataFieldEdit(
+  flags: { canEdit?: boolean } = {},
+  field = dataField(),
+) {
   const { canEdit = false } = flags;
   const open = vi.fn();
   const rendered = await renderComponent(DataFieldEditDialogComponent, {
-    imports: [...CRUCIBLE_DIALOG_IMPORTS, MatCheckboxModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+    imports: [
+      ...CRUCIBLE_DIALOG_IMPORTS,
+      MatCheckboxModule,
+      MatFormFieldModule,
+      MatInputModule,
+      MatSelectModule,
+    ],
     declarations: [DataFieldEditDialogComponent],
     providers: [
       {
         provide: MAT_DIALOG_DATA,
-        useValue: { title: 'Edit Data Field', dataField: field, canEdit, dataFieldTypes: DataFieldType, useGallery: false },
+        useValue: {
+          title: 'Edit Data Field',
+          dataField: field,
+          canEdit,
+          dataFieldTypes: DataFieldType,
+          useGallery: false,
+        },
       },
-      { provide: MatDialog, useValue: { open } satisfies Pick<MatDialog, 'open'> },
+      {
+        provide: MatDialog,
+        useValue: { open } satisfies Pick<MatDialog, 'open'>,
+      },
     ],
   });
   // ngModel applies [disabled] in a microtask.
@@ -50,7 +70,8 @@ async function renderDataFieldEdit(flags: { canEdit?: boolean } = {}, field = da
 
 // Queries go by label, and buttons are looked up in the dialog actions: the
 // form is large enough that whole-dialog role queries time out under coverage.
-const actions = () => within(document.querySelector('mat-dialog-actions') as HTMLElement);
+const actions = () =>
+  within(document.querySelector('mat-dialog-actions') as HTMLElement);
 const nameInput = () => screen.getByLabelText('Name');
 const orderInput = () => screen.getByLabelText('Display Order');
 const dataTypeSelect = () => screen.getByLabelText('Data Type');
@@ -68,10 +89,18 @@ describe('DataFieldEditDialogComponent', () => {
     const user = userEvent.setup();
 
     await user.click(dataTypeSelect());
-    expect(screen.getByRole('option', { name: 'Attack Technique' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'DateTime' })).toBeInTheDocument();
-    expect(screen.queryByRole('option', { name: 'DefensiveTechnique' })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('option', { name: 'Defensive Technique' }));
+    expect(
+      screen.getByRole('option', { name: 'Attack Technique' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('option', { name: 'DateTime' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('option', { name: 'DefensiveTechnique' }),
+    ).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole('option', { name: 'Defensive Technique' }),
+    );
     fixture.detectChanges();
 
     const field = fixture.componentInstance.data.dataField as DataField;
@@ -79,7 +108,9 @@ describe('DataFieldEditDialogComponent', () => {
     expect(field.isChosenFromList).toBe(false);
     expect(field.isMultiSelect).toBe(true);
     expect(field.isFacilitationField).toBe(true);
-    expect(screen.getByText("Techniques come from the MSEL's Techniques tab")).toBeInTheDocument();
+    expect(
+      screen.getByText("Techniques come from the MSEL's Techniques tab"),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -94,7 +125,9 @@ describe('DataFieldEditDialogComponent', () => {
     expect(orderInput()).toBeEnabled();
     expect(dataTypeSelect()).toHaveAttribute('aria-disabled', 'false');
     expect(screen.getByLabelText('Display on the Events list')).toBeEnabled();
-    expect(screen.getByLabelText('Column Metadata (Width)')).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Column Metadata (Width)'),
+    ).toBeInTheDocument();
   });
 
   /**
@@ -110,7 +143,9 @@ describe('DataFieldEditDialogComponent', () => {
     expect(dataTypeSelect()).toHaveAttribute('aria-disabled', 'true');
     expect(screen.getByLabelText('Display on the Events list')).toBeDisabled();
     expect(screen.getByLabelText('Use Option List')).toBeDisabled();
-    expect(screen.queryByLabelText('Column Metadata (Width)')).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText('Column Metadata (Width)'),
+    ).not.toBeInTheDocument();
   });
 
   /**
@@ -121,17 +156,23 @@ describe('DataFieldEditDialogComponent', () => {
   it.each([
     { flags: { canEdit: true }, canAddOptions: true },
     { flags: {}, canAddOptions: false },
-  ])('opens the option list with canEdit $canAddOptions', async ({ flags, canAddOptions }) => {
-    const { open } = await renderDataFieldEdit(flags);
-    const user = userEvent.setup();
+  ])(
+    'opens the option list with canEdit $canAddOptions',
+    async ({ flags, canAddOptions }) => {
+      const { open } = await renderDataFieldEdit(flags);
+      const user = userEvent.setup();
 
-    await user.click(screen.getByTitle('Click to manage options'));
+      await user.click(screen.getByTitle('Click to manage options'));
 
-    expect(open).toHaveBeenCalledWith(DataOptionListDialogComponent, expect.anything());
-    const data = open.mock.calls[0][1].data;
-    expect(data.canEdit).toBe(canAddOptions);
-    expect(data.canImport).toBe(canAddOptions);
-  });
+      expect(open).toHaveBeenCalledWith(
+        DataOptionListDialogComponent,
+        expect.anything(),
+      );
+      const data = open.mock.calls[0][1].data;
+      expect(data.canEdit).toBe(canAddOptions);
+      expect(data.canImport).toBe(canAddOptions);
+    },
+  );
 
   /**
    * Verifies: Save emits the data field, and is disabled without a display order.
@@ -145,7 +186,12 @@ describe('DataFieldEditDialogComponent', () => {
     const user = userEvent.setup();
 
     await user.click(actions().getByRole('button', { name: 'Save' }));
-    expect(results).toEqual([{ saveChanges: true, dataField: fixture.componentInstance.data.dataField }]);
+    expect(results).toEqual([
+      {
+        saveChanges: true,
+        dataField: fixture.componentInstance.data.dataField,
+      },
+    ]);
 
     await user.clear(orderInput());
     await user.type(orderInput(), '0');
@@ -158,14 +204,21 @@ describe('DataFieldEditDialogComponent', () => {
    * Data: canEdit true; display order 0.
    */
   it('saves an incomplete data field when handleEditComplete is called', async () => {
-    const { fixture } = await renderDataFieldEdit({ canEdit: true }, dataField({ displayOrder: 0 }));
+    const { fixture } = await renderDataFieldEdit(
+      { canEdit: true },
+      dataField({ displayOrder: 0 }),
+    );
     const results: unknown[] = [];
     fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
 
     fixture.componentInstance.handleEditComplete(true);
 
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
-    expect(results).toEqual([{ saveChanges: true, dataField: fixture.componentInstance.data.dataField }]);
+    expect(results).toEqual([
+      {
+        saveChanges: true,
+        dataField: fixture.componentInstance.data.dataField,
+      },
+    ]);
   });
-
 });

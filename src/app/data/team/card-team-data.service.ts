@@ -40,24 +40,26 @@ export class CardTeamDataService implements OnDestroy {
         },
         (error) => {
           this.updateCardTeams([]);
-        }
+        },
       );
   }
 
   addTeamToCard(cardId: string, team: Team) {
-    this.cardTeamService.createCardTeam({
-      cardId: cardId,
-      teamId: team.id,
-      isShownOnWall: true,
-      canPostArticles: false
-    }).subscribe(
-      (et) => {
-        this.updateStore(et);
-      },
-      (error) => {
-        this.updateCardTeams(this._cardTeams);
-      }
-    );
+    this.cardTeamService
+      .createCardTeam({
+        cardId: cardId,
+        teamId: team.id,
+        isShownOnWall: true,
+        canPostArticles: false,
+      })
+      .subscribe(
+        (et) => {
+          this.updateStore(et);
+        },
+        (error) => {
+          this.updateCardTeams(this._cardTeams);
+        },
+      );
   }
 
   removeCardTeam(id: string) {
@@ -68,7 +70,7 @@ export class CardTeamDataService implements OnDestroy {
       },
       (error) => {
         this.updateCardTeams(this._cardTeams);
-      }
+      },
     );
   }
 
@@ -79,18 +81,20 @@ export class CardTeamDataService implements OnDestroy {
       },
       (error) => {
         this.updateCardTeams(this._cardTeams);
-      }
+      },
     );
   }
 
   updateStore(cardTeam: CardTeam) {
-    const updatedCardTeams = this._cardTeams.filter(tu => tu.id !== cardTeam.id);
+    const updatedCardTeams = this._cardTeams.filter(
+      (tu) => tu.id !== cardTeam.id,
+    );
     updatedCardTeams.unshift(cardTeam);
     this.updateCardTeams(updatedCardTeams);
   }
 
   deleteFromStore(id: string) {
-    const updatedCardTeams = this._cardTeams.filter(tu => tu.id !== id);
+    const updatedCardTeams = this._cardTeams.filter((tu) => tu.id !== id);
     this.updateCardTeams(updatedCardTeams);
   }
 

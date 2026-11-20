@@ -13,19 +13,28 @@ describe('svgImagesToPng', () => {
    * Data: a 300x60 masthead and an 80x80 logo; a PNG image already in the HTML is left alone.
    */
   it('replaces each SVG image with a PNG of the same size', async () => {
-    const rasterize = vi.fn(async (_src: string, width: number, height: number) => `data:image/png;base64,${width}x${height}`);
+    const rasterize = vi.fn(
+      async (_src: string, width: number, height: number) =>
+        `data:image/png;base64,${width}x${height}`,
+    );
 
     const html = await svgImagesToPng(
       `<table><tbody><tr><td><img src="${SVG}" width="300" height="60" alt="Masthead"></td></tr></tbody></table>` +
         `<img src="${SVG}" width="80" height="80" alt="Logo"><img src="data:image/png;base64,AAAA" alt="Photo">`,
-      rasterize
+      rasterize,
     );
 
     expect(rasterize).toHaveBeenCalledTimes(2);
     expect(rasterize).toHaveBeenCalledWith(SVG, 300, 60);
-    expect(html).toContain('<img src="data:image/png;base64,300x60" width="300" height="60" alt="Masthead">');
-    expect(html).toContain('<img src="data:image/png;base64,80x80" width="80" height="80" alt="Logo">');
-    expect(html).toContain('<img src="data:image/png;base64,AAAA" alt="Photo">');
+    expect(html).toContain(
+      '<img src="data:image/png;base64,300x60" width="300" height="60" alt="Masthead">',
+    );
+    expect(html).toContain(
+      '<img src="data:image/png;base64,80x80" width="80" height="80" alt="Logo">',
+    );
+    expect(html).toContain(
+      '<img src="data:image/png;base64,AAAA" alt="Photo">',
+    );
     expect(hasSvgImages(html)).toBe(false);
   });
 
@@ -36,13 +45,16 @@ describe('svgImagesToPng', () => {
    */
   it('keeps the SVG of an image that cannot be drawn', async () => {
     let calls = 0;
-    const html = await svgImagesToPng(`<img src="${SVG}" alt="A"><img src="${SVG}" alt="B">`, async () => {
-      calls++;
-      if (calls === 1) {
-        throw new Error('broken');
-      }
-      return 'data:image/png;base64,OK';
-    });
+    const html = await svgImagesToPng(
+      `<img src="${SVG}" alt="A"><img src="${SVG}" alt="B">`,
+      async () => {
+        calls++;
+        if (calls === 1) {
+          throw new Error('broken');
+        }
+        return 'data:image/png;base64,OK';
+      },
+    );
 
     expect(html).toContain(`<img src="${SVG}" alt="A">`);
     expect(html).toContain('<img src="data:image/png;base64,OK" alt="B">');
@@ -56,7 +68,9 @@ describe('svgImagesToPng', () => {
   it('leaves HTML without SVG images alone', async () => {
     const rasterize = vi.fn();
 
-    expect(await svgImagesToPng('<p>Port closed</p>', rasterize)).toBe('<p>Port closed</p>');
+    expect(await svgImagesToPng('<p>Port closed</p>', rasterize)).toBe(
+      '<p>Port closed</p>',
+    );
     expect(await svgImagesToPng('', rasterize)).toBe('');
     expect(rasterize).not.toHaveBeenCalled();
     expect(hasSvgImages('<p>x</p>')).toBe(false);
@@ -70,16 +84,21 @@ describe('shrinkPhotos', () => {
    * Data: one JPEG photo and one PNG logo.
    */
   it('redraws each photo at article size', async () => {
-    const shrink = vi.fn(async (_src: string, maxWidth: number) => `data:image/jpeg;base64,${maxWidth}`);
+    const shrink = vi.fn(
+      async (_src: string, maxWidth: number) =>
+        `data:image/jpeg;base64,${maxWidth}`,
+    );
 
     const html = await shrinkPhotos(
       '<img src="data:image/jpeg;base64,BIG" width="720" height="405" alt="Crews"><img src="data:image/png;base64,LOGO" alt="Logo">',
-      shrink
+      shrink,
     );
 
     expect(shrink).toHaveBeenCalledTimes(1);
     expect(shrink).toHaveBeenCalledWith('data:image/jpeg;base64,BIG', 1080);
-    expect(html).toBe('<img src="data:image/jpeg;base64,1080" width="720" height="405" alt="Crews"><img src="data:image/png;base64,LOGO" alt="Logo">');
+    expect(html).toBe(
+      '<img src="data:image/jpeg;base64,1080" width="720" height="405" alt="Crews"><img src="data:image/png;base64,LOGO" alt="Logo">',
+    );
   });
 
   /**
@@ -88,9 +107,12 @@ describe('shrinkPhotos', () => {
    * Data: one JPEG photo.
    */
   it('keeps a photo that cannot be drawn', async () => {
-    const html = await shrinkPhotos('<img src="data:image/jpeg;base64,BIG" alt="Crews">', async () => {
-      throw new Error('no canvas');
-    });
+    const html = await shrinkPhotos(
+      '<img src="data:image/jpeg;base64,BIG" alt="Crews">',
+      async () => {
+        throw new Error('no canvas');
+      },
+    );
 
     expect(html).toBe('<img src="data:image/jpeg;base64,BIG" alt="Crews">');
   });

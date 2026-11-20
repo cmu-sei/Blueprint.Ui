@@ -2,16 +2,37 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, DestroyRef, computed, effect, inject, input, output, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { EMPTY, interval, of } from 'rxjs';
-import { catchError, distinctUntilChanged, map, switchMap } from 'rxjs/operators';
+import {
+  catchError,
+  distinctUntilChanged,
+  map,
+  switchMap,
+} from 'rxjs/operators';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { MselAiBuild, MselAiBuildService } from 'src/app/data/msel/msel-ai-build.service';
-import { MselBuildBuilder, MselBuildService, MselBuildStatus } from 'src/app/generated/blueprint.api';
+import {
+  MselAiBuild,
+  MselAiBuildService,
+} from 'src/app/data/msel/msel-ai-build.service';
+import {
+  MselBuildBuilder,
+  MselBuildService,
+  MselBuildStatus,
+} from 'src/app/generated/blueprint.api';
 import { CurrentUserQuery } from 'src/app/data/user/user.query';
 
 /**
@@ -45,12 +66,17 @@ export class MselAiBuildComponent {
   // who is building the MSEL in a browser tab, this one or another
   readonly builder = signal<MselBuildBuilder | null>(null);
   // another tab has the build, so this one offers Take over rather than Continue drafting
-  readonly buildingElsewhere = computed(() => !!this.builder() && !this.build()?.running);
+  readonly buildingElsewhere = computed(
+    () => !!this.builder() && !this.build()?.running,
+  );
 
   readonly visible = computed(() => !!this.build() || !!this.stage());
   readonly remaining = computed(() => this.build()?.remaining ?? this.saved());
   readonly left = computed(
-    () => (this.remaining()?.injects?.length ?? 0) + (this.remaining()?.articles?.length ?? 0) + (this.remaining()?.profiles?.length ?? 0)
+    () =>
+      (this.remaining()?.injects?.length ?? 0) +
+      (this.remaining()?.articles?.length ?? 0) +
+      (this.remaining()?.profiles?.length ?? 0),
   );
   // the step's own time, and the whole run's after it once it has more than one step behind it
   readonly elapsed = computed(() => {
@@ -58,20 +84,24 @@ export class MselAiBuildComponent {
     const now = this.now();
     const step = clock(now - (build?.stepStarted ?? build?.started ?? now));
     const total = clock(now - (build?.started ?? now));
-    return build && build.stepStarted && build.stepStarted - build.started > 1000 ? `${step} (${total} in all)` : step;
+    return build &&
+      build.stepStarted &&
+      build.stepStarted - build.started > 1000
+      ? `${step} (${total} in all)`
+      : step;
   });
 
   constructor() {
     toObservable(this.mselId)
       .pipe(
         switchMap((id) => this.buildService.build$(id)),
-        takeUntilDestroyed()
+        takeUntilDestroyed(),
       )
       .subscribe((build) => this.build.set(build));
     toObservable(this.mselId)
       .pipe(
         switchMap((id) => this.buildService.builder$(id)),
-        takeUntilDestroyed()
+        takeUntilDestroyed(),
       )
       .subscribe((builder) => this.builder.set(builder));
     // the clock ticks only while a run is writing, so an idle page has nothing pending
@@ -80,7 +110,7 @@ export class MselAiBuildComponent {
         map((build) => !!build?.running),
         distinctUntilChanged(),
         switchMap((running) => (running ? interval(1000) : EMPTY)),
-        takeUntilDestroyed()
+        takeUntilDestroyed(),
       )
       .subscribe(() => this.now.set(Date.now()));
     // what is left is read when the page opens, and again when the stage changes or a run here stops
@@ -117,15 +147,26 @@ export class MselAiBuildComponent {
       // the design planned how many injects; the model's count runs up to about it
       // the plan is the design's estimate; past it, the count says so rather than "55 of about 52"
       const written = counts['injects'];
-      const injects = !build.planned || !written ? plural(written, 'inject')
-        : written <= build.planned ? `${written} of about ${build.planned} injects`
-        : `${written} injects (about ${build.planned} planned)`;
+      const injects =
+        !build.planned || !written
+          ? plural(written, 'inject')
+          : written <= build.planned
+            ? `${written} of about ${build.planned} injects`
+            : `${written} injects (about ${build.planned} planned)`;
       // the move briefings are written first, so they are what shows for the first minutes
-      const parts = [plural(counts['moves'], 'move briefing'), injects, plural(counts['citeActions'], 'CITE task')].filter((p) => p);
-      return parts.length ? `${parts.join(', ')} so far.` : 'This usually takes a few minutes.';
+      const parts = [
+        plural(counts['moves'], 'move briefing'),
+        injects,
+        plural(counts['citeActions'], 'CITE task'),
+      ].filter((p) => p);
+      return parts.length
+        ? `${parts.join(', ')} so far.`
+        : 'This usually takes a few minutes.';
     }
     if (build?.step === 'articles') {
-      const now = build.inProgress ? `, ${build.inProgress} being written now` : '';
+      const now = build.inProgress
+        ? `, ${build.inProgress} being written now`
+        : '';
       const last = build.lastDone ? ` Last done: ${build.lastDone}.` : '';
       return `${build.written} of ${build.total} done${now}.${last}`;
     }
@@ -134,7 +175,8 @@ export class MselAiBuildComponent {
 
   get elsewhereText(): string {
     const builder = this.builder();
-    return builder?.userId && builder.userId === this.currentUserQuery.getValue()?.id
+    return builder?.userId &&
+      builder.userId === this.currentUserQuery.getValue()?.id
       ? 'You are building this MSEL with AI in another tab.'
       : `${builder?.userName || 'Someone else'} is building this MSEL with AI.`;
   }
@@ -199,7 +241,7 @@ export class MselAiBuildComponent {
       .getMselBuildStatus(this.mselId())
       .pipe(
         catchError(() => of(undefined)),
-        takeUntilDestroyed(this.destroyRef)
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((status) => {
         this.saved.set(status);

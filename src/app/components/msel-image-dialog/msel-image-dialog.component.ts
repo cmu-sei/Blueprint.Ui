@@ -2,14 +2,23 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button';
 import { MatFormField, MatHint, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { CrucibleDialogActionsDirective, CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import {
+  CrucibleDialogActionsDirective,
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
 import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 
 export interface MselImageDialogData {
@@ -50,7 +59,9 @@ export interface MselImageDialogResult {
 })
 export class MselImageDialogComponent {
   readonly data = inject<MselImageDialogData>(MAT_DIALOG_DATA);
-  private readonly dialogRef = inject(MatDialogRef<MselImageDialogComponent, MselImageDialogResult>);
+  private readonly dialogRef = inject(
+    MatDialogRef<MselImageDialogComponent, MselImageDialogResult>,
+  );
   private readonly images = inject(MselImageDataService);
   prompt = '';
   /** The new picture, as a data URI, until it is kept or discarded */

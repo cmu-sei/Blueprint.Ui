@@ -5,8 +5,17 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { describe, it, expect, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { NEVER, Observable, of, Subject, throwError } from 'rxjs';
-import { MselBuildBuilder, MselBuildService, MselBuildStatus } from 'src/app/generated/blueprint.api';
-import { AiBuilderChange, AiBuildTakenOver, AiDraftProgress, SignalRService } from 'src/app/services/signalr.service';
+import {
+  MselBuildBuilder,
+  MselBuildService,
+  MselBuildStatus,
+} from 'src/app/generated/blueprint.api';
+import {
+  AiBuilderChange,
+  AiBuildTakenOver,
+  AiDraftProgress,
+  SignalRService,
+} from 'src/app/services/signalr.service';
 import { MselAiBuild, MselAiBuildService } from './msel-ai-build.service';
 
 const ARTICLES: MselBuildStatus = {
@@ -18,18 +27,45 @@ const ARTICLES: MselBuildStatus = {
   warnings: [],
 };
 
-function setup(api: Partial<Record<keyof MselBuildService, (...args: never[]) => Observable<unknown>>> = {}) {
-  const status = [{ mselId: 'msel-1', stage: 'Injects', plannedInjects: 54, articles: [], profiles: [] }, { ...ARTICLES, articles: [], profiles: [] }];
+function setup(
+  api: Partial<
+    Record<keyof MselBuildService, (...args: never[]) => Observable<unknown>>
+  > = {},
+) {
+  const status = [
+    {
+      mselId: 'msel-1',
+      stage: 'Injects',
+      plannedInjects: 54,
+      articles: [],
+      profiles: [],
+    },
+    { ...ARTICLES, articles: [], profiles: [] },
+  ];
   const stub = {
-    getMselBuildStatus: vi.fn(() => of(status.shift() ?? { mselId: 'msel-1', stage: null })),
-    writeMselInjects: vi.fn(() => of({ ...ARTICLES, warnings: ['Dropped a row with no time.'] })),
+    getMselBuildStatus: vi.fn(() =>
+      of(status.shift() ?? { mselId: 'msel-1', stage: null }),
+    ),
+    writeMselInjects: vi.fn(() =>
+      of({ ...ARTICLES, warnings: ['Dropped a row with no time.'] }),
+    ),
     writeMselRow: vi.fn(() => of({ html: '<p>Check in with each lead.</p>' })),
-    writeMselArticle: vi.fn(() => of({ fieldName: 'Description', html: '<svg></svg>' })),
+    writeMselArticle: vi.fn(() =>
+      of({ fieldName: 'Description', html: '<svg></svg>' }),
+    ),
     saveMselArticle: vi.fn(() => of(null)),
     writeMselProfile: vi.fn(() => of({ html: '<p>SOC</p>' })),
     saveMselProfile: vi.fn(() => of(null)),
-    finishMselBuild: vi.fn(() => of({ mselId: 'msel-1', stage: null, warnings: ['Created the scoring model in CITE.'] })),
-    claimMselBuild: vi.fn(() => of({ userId: 'user-1', userName: 'Ada Lovelace' })),
+    finishMselBuild: vi.fn(() =>
+      of({
+        mselId: 'msel-1',
+        stage: null,
+        warnings: ['Created the scoring model in CITE.'],
+      }),
+    ),
+    claimMselBuild: vi.fn(() =>
+      of({ userId: 'user-1', userName: 'Ada Lovelace' }),
+    ),
     releaseMselBuild: vi.fn(() => of(null)),
     ...api,
   };
@@ -41,20 +77,36 @@ function setup(api: Partial<Record<keyof MselBuildService, (...args: never[]) =>
       { provide: MselBuildService, useValue: stub },
       {
         provide: SignalRService,
-        useValue: { aiDraftProgress$: progress, aiBuilderChanged$: builderChanged, aiBuildTakenOver$: takenOver, connectionId: 'tab-1' },
+        useValue: {
+          aiDraftProgress$: progress,
+          aiBuilderChanged$: builderChanged,
+          aiBuildTakenOver$: takenOver,
+          connectionId: 'tab-1',
+        },
       },
     ],
   });
   const service = TestBed.inject(MselAiBuildService);
   // the browser draws SVG as PNG; here an SVG becomes a marked PNG and anything else is left alone
-  service.toPng = async (html) => html.replace('<svg></svg>', '<img src="data:image/png">');
+  service.toPng = async (html) =>
+    html.replace('<svg></svg>', '<img src="data:image/png">');
   const builds: MselAiBuild[] = [];
   service.build$('msel-1').subscribe((b) => builds.push(b));
   const finished: string[] = [];
   service.finished$.subscribe((id) => finished.push(id));
   const builders: (MselBuildBuilder | null)[] = [];
   service.builder$('msel-1').subscribe((b) => builders.push(b));
-  return { service, api: stub, progress, builderChanged, takenOver, builds, builders, finished, last: () => builds[builds.length - 1] };
+  return {
+    service,
+    api: stub,
+    progress,
+    builderChanged,
+    takenOver,
+    builds,
+    builders,
+    finished,
+    last: () => builds[builds.length - 1],
+  };
 }
 
 // lets the PNG drawing, a promise, settle
@@ -74,15 +126,38 @@ describe('MselAiBuildService', () => {
 
     expect(api.writeMselInjects).toHaveBeenCalledWith('msel-1', 'tab-1');
     expect(api.writeMselRow).toHaveBeenCalledWith('msel-1', 'event-2', 'tab-1');
-    expect(api.writeMselArticle).toHaveBeenCalledWith('msel-1', 'event-1', 'tab-1');
-    expect(api.saveMselArticle).toHaveBeenCalledWith('msel-1', 'event-1', 'tab-1', { html: '<img src="data:image/png">' });
-    expect(api.writeMselProfile).toHaveBeenCalledWith('msel-1', 'team-1', 'tab-1');
+    expect(api.writeMselArticle).toHaveBeenCalledWith(
+      'msel-1',
+      'event-1',
+      'tab-1',
+    );
+    expect(api.saveMselArticle).toHaveBeenCalledWith(
+      'msel-1',
+      'event-1',
+      'tab-1',
+      { html: '<img src="data:image/png">' },
+    );
+    expect(api.writeMselProfile).toHaveBeenCalledWith(
+      'msel-1',
+      'team-1',
+      'tab-1',
+    );
     expect(api.saveMselProfile).not.toHaveBeenCalled();
     expect(api.finishMselBuild).toHaveBeenCalledWith('msel-1', 'tab-1');
-    expect(last()).toMatchObject({ step: 'done', running: false, written: 3, total: 3, planned: 54, inProgress: 0 });
+    expect(last()).toMatchObject({
+      step: 'done',
+      running: false,
+      written: 3,
+      total: 3,
+      planned: 54,
+      inProgress: 0,
+    });
     // the last item done is named, so the count is not the only sign of progress
     expect(['Check in', 'Cables cut', 'SOC']).toContain(last().lastDone);
-    expect(last().warnings).toEqual(['Dropped a row with no time.', 'Created the scoring model in CITE.']);
+    expect(last().warnings).toEqual([
+      'Dropped a row with no time.',
+      'Created the scoring model in CITE.',
+    ]);
     expect(finished).toEqual(['msel-1']);
   });
 
@@ -94,7 +169,9 @@ describe('MselAiBuildService', () => {
   it('writes only as many items at once as the API says', async () => {
     const writes = [vi.fn(() => NEVER), vi.fn(() => NEVER), vi.fn(() => NEVER)];
     const { service, last } = setup({
-      writeMselInjects: vi.fn(() => of({ ...ARTICLES, parallel: '2' as unknown as number })),
+      writeMselInjects: vi.fn(() =>
+        of({ ...ARTICLES, parallel: '2' as unknown as number }),
+      ),
       writeMselRow: writes[0],
       writeMselArticle: writes[1],
       writeMselProfile: writes[2],
@@ -103,9 +180,17 @@ describe('MselAiBuildService', () => {
     service.run('msel-1');
     await settle();
 
-    const started = writes.reduce((sum, write) => sum + write.mock.calls.length, 0);
+    const started = writes.reduce(
+      (sum, write) => sum + write.mock.calls.length,
+      0,
+    );
     expect(started).toBe(2);
-    expect(last()).toMatchObject({ step: 'articles', total: 3, written: 0, inProgress: 2 });
+    expect(last()).toMatchObject({
+      step: 'articles',
+      total: 3,
+      written: 0,
+      inProgress: 2,
+    });
   });
 
   /**
@@ -115,8 +200,23 @@ describe('MselAiBuildService', () => {
    */
   it('adds what the check replaced in each item to the warnings', async () => {
     const { service, last } = setup({
-      writeMselRow: vi.fn(() => of({ html: '<p>Block it.</p>', warnings: ['Replaced 1 value not in the scenario\'s indicator set in "Check in": 8.8.4.4 with 203.0.113.10.'] })),
-      writeMselArticle: vi.fn(() => of({ fieldName: 'Description', html: '<p>Beacon</p>', warnings: ['Replaced 2 values not in the scenario\'s indicator set in "Cables cut".'] })),
+      writeMselRow: vi.fn(() =>
+        of({
+          html: '<p>Block it.</p>',
+          warnings: [
+            'Replaced 1 value not in the scenario\'s indicator set in "Check in": 8.8.4.4 with 203.0.113.10.',
+          ],
+        }),
+      ),
+      writeMselArticle: vi.fn(() =>
+        of({
+          fieldName: 'Description',
+          html: '<p>Beacon</p>',
+          warnings: [
+            'Replaced 2 values not in the scenario\'s indicator set in "Cables cut".',
+          ],
+        }),
+      ),
     });
 
     service.run('msel-1');
@@ -126,7 +226,7 @@ describe('MselAiBuildService', () => {
       expect.arrayContaining([
         'Replaced 1 value not in the scenario\'s indicator set in "Check in": 8.8.4.4 with 203.0.113.10.',
         'Replaced 2 values not in the scenario\'s indicator set in "Cables cut".',
-      ])
+      ]),
     );
     expect(last().warnings).toHaveLength(4);
   });
@@ -138,10 +238,14 @@ describe('MselAiBuildService', () => {
    */
   it('stops before the finish when an article fails', async () => {
     const { service, api, last } = setup({
-      writeMselArticle: vi.fn(() => throwError(() => ({ error: { title: 'The model declined.' } }))),
+      writeMselArticle: vi.fn(() =>
+        throwError(() => ({ error: { title: 'The model declined.' } })),
+      ),
       getMselBuildStatus: vi
         .fn()
-        .mockReturnValueOnce(of({ mselId: 'msel-1', stage: 'Articles', ...ARTICLES }))
+        .mockReturnValueOnce(
+          of({ mselId: 'msel-1', stage: 'Articles', ...ARTICLES }),
+        )
         .mockReturnValueOnce(of({ ...ARTICLES, injects: [], profiles: [] })),
     });
 
@@ -150,7 +254,11 @@ describe('MselAiBuildService', () => {
 
     expect(api.writeMselInjects).not.toHaveBeenCalled();
     expect(api.finishMselBuild).not.toHaveBeenCalled();
-    expect(last()).toMatchObject({ step: 'stopped', running: false, errors: ['Cables cut: The model declined.'] });
+    expect(last()).toMatchObject({
+      step: 'stopped',
+      running: false,
+      errors: ['Cables cut: The model declined.'],
+    });
     expect(last().remaining.articles).toHaveLength(1);
   });
 
@@ -160,7 +268,9 @@ describe('MselAiBuildService', () => {
    * Data: a MSEL at the Articles stage with one article left.
    */
   it('finishes without the articles that are left', async () => {
-    const { service, api, last } = setup({ getMselBuildStatus: vi.fn(() => of(ARTICLES)) });
+    const { service, api, last } = setup({
+      getMselBuildStatus: vi.fn(() => of(ARTICLES)),
+    });
 
     service.finishNow('msel-1');
     await settle();
@@ -176,12 +286,30 @@ describe('MselAiBuildService', () => {
    * Data: an inject call that never answers; progress for this MSEL and for another.
    */
   it('shows the injects being written and cancels', async () => {
-    const { service, api, progress, last } = setup({ writeMselInjects: vi.fn(() => NEVER) });
+    const { service, api, progress, last } = setup({
+      writeMselInjects: vi.fn(() => NEVER),
+    });
     service.run('msel-1');
 
-    progress.next({ operation: 'injects', mselId: 'msel-1', characters: 4000, counts: { moves: 3, injects: 12 }, done: false });
-    progress.next({ operation: 'injects', mselId: 'msel-2', characters: 10, counts: { injects: 1 }, done: false });
-    expect(last()).toMatchObject({ step: 'injects', running: true, counts: { moves: 3, injects: 12 } });
+    progress.next({
+      operation: 'injects',
+      mselId: 'msel-1',
+      characters: 4000,
+      counts: { moves: 3, injects: 12 },
+      done: false,
+    });
+    progress.next({
+      operation: 'injects',
+      mselId: 'msel-2',
+      characters: 10,
+      counts: { injects: 1 },
+      done: false,
+    });
+    expect(last()).toMatchObject({
+      step: 'injects',
+      running: true,
+      counts: { moves: 3, injects: 12 },
+    });
 
     service.cancel('msel-1');
 
@@ -202,12 +330,20 @@ describe('MselAiBuildService', () => {
    */
   it('creates the MSEL under the chosen id and then builds it', async () => {
     const created$ = new Subject<{ msel: { id: string } }>();
-    const { service, api, builds, last } = setup({ createMselFromDesign: vi.fn(() => created$) });
+    const { service, api, builds, last } = setup({
+      createMselFromDesign: vi.fn(() => created$),
+    });
     const created: { requestedId: string; mselId: string }[] = [];
     service.created$.subscribe((c) => created.push(c));
 
-    service.create({ mselId: 'msel-1', templateMselId: 'tpl-1', draft: { name: 'Deep Bite' } });
-    expect(api.createMselFromDesign).toHaveBeenCalledWith(expect.objectContaining({ mselId: 'msel-1', templateMselId: 'tpl-1' }));
+    service.create({
+      mselId: 'msel-1',
+      templateMselId: 'tpl-1',
+      draft: { name: 'Deep Bite' },
+    });
+    expect(api.createMselFromDesign).toHaveBeenCalledWith(
+      expect.objectContaining({ mselId: 'msel-1', templateMselId: 'tpl-1' }),
+    );
     expect(last()).toMatchObject({ step: 'creating', running: true });
     expect(service.isCreating('msel-1')).toBe(true);
 
@@ -225,8 +361,19 @@ describe('MselAiBuildService', () => {
    * Data: a 500 then the created MSEL.
    */
   it('keeps a failed create to try again', async () => {
-    const answers = [throwError(() => new HttpErrorResponse({ status: 500, error: { title: 'CITE is down' } })), of({ msel: { id: 'msel-1' } })];
-    const { service, api, last } = setup({ createMselFromDesign: vi.fn(() => answers.shift()) });
+    const answers = [
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 500,
+            error: { title: 'CITE is down' },
+          }),
+      ),
+      of({ msel: { id: 'msel-1' } }),
+    ];
+    const { service, api, last } = setup({
+      createMselFromDesign: vi.fn(() => answers.shift()),
+    });
 
     service.create({ mselId: 'msel-1', templateMselId: 'tpl-1' });
     expect(last()).toMatchObject({ step: 'createFailed', running: false });
@@ -241,12 +388,23 @@ describe('MselAiBuildService', () => {
 
   it('says why the injects failed', () => {
     const { service, last } = setup({
-      writeMselInjects: vi.fn(() => throwError(() => ({ error: { title: 'The draft could not be read.', detail: '   at Blueprint.Api...' } }))),
+      writeMselInjects: vi.fn(() =>
+        throwError(() => ({
+          error: {
+            title: 'The draft could not be read.',
+            detail: '   at Blueprint.Api...',
+          },
+        })),
+      ),
     });
 
     service.run('msel-1');
 
-    expect(last()).toMatchObject({ step: 'failed', running: false, errors: ['The draft could not be read.'] });
+    expect(last()).toMatchObject({
+      step: 'failed',
+      running: false,
+      errors: ['The draft could not be read.'],
+    });
   });
   /**
    * Verifies: a run claims the build for this tab first, then builds; the build is no tab's once it is done.
@@ -260,7 +418,10 @@ describe('MselAiBuildService', () => {
     await settle();
 
     expect(api.claimMselBuild).toHaveBeenCalledWith('msel-1', 'tab-1', false);
-    expect(builders).toContainEqual({ userId: 'user-1', userName: 'Ada Lovelace' });
+    expect(builders).toContainEqual({
+      userId: 'user-1',
+      userName: 'Ada Lovelace',
+    });
     expect(builders[builders.length - 1]).toBeNull();
   });
 
@@ -272,9 +433,24 @@ describe('MselAiBuildService', () => {
   it('writes nothing while another tab has the build', async () => {
     const { service, api, last, builders } = setup({
       claimMselBuild: vi.fn(() =>
-        throwError(() => new HttpErrorResponse({ status: 409, error: { title: 'Grace Hopper is building this MSEL with AI. Take over to build it here.' } }))
+        throwError(
+          () =>
+            new HttpErrorResponse({
+              status: 409,
+              error: {
+                title:
+                  'Grace Hopper is building this MSEL with AI. Take over to build it here.',
+              },
+            }),
+        ),
       ),
-      getMselBuildStatus: vi.fn(() => of({ mselId: 'msel-1', stage: 'Articles', builder: { userId: 'user-2', userName: 'Grace Hopper' } })),
+      getMselBuildStatus: vi.fn(() =>
+        of({
+          mselId: 'msel-1',
+          stage: 'Articles',
+          builder: { userId: 'user-2', userName: 'Grace Hopper' },
+        }),
+      ),
     });
 
     service.run('msel-1');
@@ -282,7 +458,10 @@ describe('MselAiBuildService', () => {
 
     expect(api.writeMselInjects).not.toHaveBeenCalled();
     expect(last()).toMatchObject({ step: 'busy', running: false });
-    expect(builders[builders.length - 1]).toEqual({ userId: 'user-2', userName: 'Grace Hopper' });
+    expect(builders[builders.length - 1]).toEqual({
+      userId: 'user-2',
+      userName: 'Grace Hopper',
+    });
     expect(api.releaseMselBuild).not.toHaveBeenCalled();
   });
 
@@ -305,13 +484,21 @@ describe('MselAiBuildService', () => {
    * Data: Grace Hopper takes the build over while the injects are being written.
    */
   it('stops when another tab takes the build over', () => {
-    const { service, api, takenOver, last } = setup({ writeMselInjects: vi.fn(() => NEVER) });
+    const { service, api, takenOver, last } = setup({
+      writeMselInjects: vi.fn(() => NEVER),
+    });
     service.run('msel-1');
     expect(last()).toMatchObject({ step: 'injects', running: true });
 
     takenOver.next({ mselId: 'msel-1', userName: 'Grace Hopper' });
 
-    expect(last()).toMatchObject({ step: 'takenOver', running: false, errors: ['Grace Hopper took over building this MSEL. What was written here is saved.'] });
+    expect(last()).toMatchObject({
+      step: 'takenOver',
+      running: false,
+      errors: [
+        'Grace Hopper took over building this MSEL. What was written here is saved.',
+      ],
+    });
     // it no longer has the build, so it frees nothing
     expect(api.releaseMselBuild).not.toHaveBeenCalled();
   });
@@ -324,10 +511,17 @@ describe('MselAiBuildService', () => {
     const cancelled = setup({ writeMselInjects: vi.fn(() => NEVER) });
     cancelled.service.run('msel-1');
     cancelled.service.cancel('msel-1');
-    expect(cancelled.api.releaseMselBuild).toHaveBeenCalledWith('msel-1', 'tab-1');
+    expect(cancelled.api.releaseMselBuild).toHaveBeenCalledWith(
+      'msel-1',
+      'tab-1',
+    );
 
     TestBed.resetTestingModule();
-    const failed = setup({ writeMselInjects: vi.fn(() => throwError(() => ({ error: { title: 'Bedrock is down.' } }))) });
+    const failed = setup({
+      writeMselInjects: vi.fn(() =>
+        throwError(() => ({ error: { title: 'Bedrock is down.' } })),
+      ),
+    });
     failed.service.run('msel-1');
     expect(failed.last()).toMatchObject({ step: 'failed' });
     expect(failed.api.releaseMselBuild).toHaveBeenCalledWith('msel-1', 'tab-1');
@@ -340,10 +534,20 @@ describe('MselAiBuildService', () => {
   it('follows who is building as the hub says', () => {
     const { builderChanged, builders } = setup();
 
-    builderChanged.next({ mselId: 'msel-1', builder: { userId: 'user-2', userName: 'Grace Hopper' } });
-    builderChanged.next({ mselId: 'other', builder: { userId: 'user-3', userName: 'Someone' } });
+    builderChanged.next({
+      mselId: 'msel-1',
+      builder: { userId: 'user-2', userName: 'Grace Hopper' },
+    });
+    builderChanged.next({
+      mselId: 'other',
+      builder: { userId: 'user-3', userName: 'Someone' },
+    });
     builderChanged.next({ mselId: 'msel-1', builder: null });
 
-    expect(builders).toEqual([null, { userId: 'user-2', userName: 'Grace Hopper' }, null]);
+    expect(builders).toEqual([
+      null,
+      { userId: 'user-2', userName: 'Grace Hopper' },
+      null,
+    ]);
   });
 });

@@ -7,10 +7,7 @@ import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
-import {
-  MselPage,
-  MselPageService,
-} from 'src/app/generated/blueprint.api';
+import { MselPage, MselPageService } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 
@@ -26,7 +23,7 @@ export class MselPageDataService {
 
   private _requestedMselPageId: string;
   private _requestedMselPageId$ = this.activatedRoute.queryParamMap.pipe(
-    map((params) => params.get('mselPageId') || '')
+    map((params) => params.get('mselPageId') || ''),
   );
   readonly MselPageList: Observable<MselPage[]>;
   readonly filterControl = new UntypedFormControl();
@@ -42,7 +39,7 @@ export class MselPageDataService {
     const activatedRoute = this.activatedRoute;
 
     this.filterTerm = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('mselPagemask') || '')
+      map((params) => params.get('mselPagemask') || ''),
     );
     this.filterControl.valueChanges.subscribe((term) => {
       this.router.navigate([], {
@@ -51,16 +48,16 @@ export class MselPageDataService {
       });
     });
     this.sortColumn = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('sorton') || 'name')
+      map((params) => params.get('sorton') || 'name'),
     );
     this.sortIsAscending = activatedRoute.queryParamMap.pipe(
-      map((params) => (params.get('sortdir') || 'asc') === 'asc')
+      map((params) => (params.get('sortdir') || 'asc') === 'asc'),
     );
     this.pageSize = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pagesize') || '20', 10))
+      map((params) => parseInt(params.get('pagesize') || '20', 10)),
     );
     this.pageIndex = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pageindex') || '0', 10))
+      map((params) => parseInt(params.get('pageindex') || '0', 10)),
     );
     this.MselPageList = combineLatest([
       this.mselPageQuery.selectAll(),
@@ -80,14 +77,11 @@ export class MselPageDataService {
           pageIndex,
         ]) =>
           items
-            ? (items as MselPage[])
-              .filter(
-                (mselPage) =>
-                  mselPage.id
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase()))
-            : []
-      )
+            ? (items as MselPage[]).filter((mselPage) =>
+                mselPage.id.toLowerCase().includes(filterTerm.toLowerCase()),
+              )
+            : [],
+      ),
     );
   }
 
@@ -99,17 +93,16 @@ export class MselPageDataService {
         tap(() => {
           this.mselPageStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe(
         (mselPages) => {
-          mselPages.forEach(a => {
-          });
+          mselPages.forEach((a) => {});
           this.mselPageStore.set(mselPages);
         },
         (error) => {
           this.mselPageStore.set([]);
-        }
+        },
       );
   }
 
@@ -121,7 +114,7 @@ export class MselPageDataService {
         tap(() => {
           this.mselPageStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.mselPageStore.upsert(s.id, { ...s });
@@ -140,7 +133,7 @@ export class MselPageDataService {
         tap(() => {
           this.mselPageStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((s) => {
         this.mselPageStore.add(s);
@@ -155,7 +148,7 @@ export class MselPageDataService {
         tap(() => {
           this.mselPageStore.setLoading(false);
         }),
-        take(1)
+        take(1),
       )
       .subscribe((n) => {
         this.updateStore(n);
@@ -186,5 +179,4 @@ export class MselPageDataService {
   deleteFromStore(id: string) {
     this.mselPageStore.remove(id);
   }
-
 }

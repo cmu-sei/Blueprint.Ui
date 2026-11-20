@@ -18,10 +18,18 @@ import { InjectTypeQuery } from './inject-type.query';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
-import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 
 function injectType(overrides: Partial<InjectType> = {}): InjectType {
-  return { id: 'it-email', name: 'Email', description: 'Email inject', ...overrides };
+  return {
+    id: 'it-email',
+    name: 'Email',
+    description: 'Email inject',
+    ...overrides,
+  };
 }
 
 function setup(queryParams: Record<string, string> = {}) {
@@ -32,14 +40,19 @@ function setup(queryParams: Record<string, string> = {}) {
     updateInjectType: vi.fn(() => of(injectType())),
     deleteInjectType: vi.fn(() => of<unknown>(null)),
     downloadJsonInjectTypes: vi.fn(() => of(new Blob())),
-    uploadJsonInjectTypes: vi.fn((): Observable<HttpEvent<InjectType[]>> => EMPTY),
+    uploadJsonInjectTypes: vi.fn(
+      (): Observable<HttpEvent<InjectType[]>> => EMPTY,
+    ),
   } satisfies ApiStub<InjectTypeService>;
   const navigate = vi.fn();
   const route = activatedRouteStub(queryParams);
   TestBed.configureTestingModule({
     providers: [
       { provide: InjectTypeService, useValue: injectTypeApi },
-      { provide: Router, useValue: { navigate } satisfies Pick<Router, 'navigate'> },
+      {
+        provide: Router,
+        useValue: { navigate } satisfies Pick<Router, 'navigate'>,
+      },
       { provide: ActivatedRoute, useValue: route.route },
     ],
   });
@@ -83,9 +96,15 @@ describe('InjectTypeDataService', () => {
    */
   it('single-type calls keep the store in step with the API', () => {
     const { service, query, injectTypeApi } = setup();
-    injectTypeApi.getInjectType.mockReturnValue(of(injectType({ id: 'it-call', name: 'Phone Call' })));
-    injectTypeApi.createInjectType.mockReturnValue(of(injectType({ id: 'it-sms', name: 'SMS' })));
-    injectTypeApi.updateInjectType.mockReturnValue(of(injectType({ id: 'it-call', name: 'Voice Call' })));
+    injectTypeApi.getInjectType.mockReturnValue(
+      of(injectType({ id: 'it-call', name: 'Phone Call' })),
+    );
+    injectTypeApi.createInjectType.mockReturnValue(
+      of(injectType({ id: 'it-sms', name: 'SMS' })),
+    );
+    injectTypeApi.updateInjectType.mockReturnValue(
+      of(injectType({ id: 'it-call', name: 'Voice Call' })),
+    );
     injectTypeApi.deleteInjectType.mockReturnValue(of(null));
 
     service.loadById('it-call');
@@ -114,11 +133,17 @@ describe('InjectTypeDataService', () => {
     const progress = recordEmissions(service.uploadProgress);
     injectTypeApi.uploadJsonInjectTypes.mockReturnValueOnce(
       of(
-        { type: HttpEventType.UploadProgress, loaded: 9, total: 10 } satisfies HttpUploadProgressEvent,
+        {
+          type: HttpEventType.UploadProgress,
+          loaded: 9,
+          total: 10,
+        } satisfies HttpUploadProgressEvent,
         new HttpResponse({ status: 200, body: [injectType()] }),
       ),
     );
-    injectTypeApi.uploadJsonInjectTypes.mockReturnValueOnce(throwError(() => new Error('bad')));
+    injectTypeApi.uploadJsonInjectTypes.mockReturnValueOnce(
+      throwError(() => new Error('bad')),
+    );
 
     service.uploadJson(new File(['[]'], 'types.json'), 'events', true);
     service.uploadJson(new File(['[]'], 'types.json'), 'events', true);
@@ -127,7 +152,9 @@ describe('InjectTypeDataService', () => {
     expect(progress).toEqual([90, 0, 0]);
     expect(query.getValue().loading).toBe(false);
     service.downloadJson(['it-email']);
-    expect(injectTypeApi.downloadJsonInjectTypes).toHaveBeenCalledWith(['it-email']);
+    expect(injectTypeApi.downloadJsonInjectTypes).toHaveBeenCalledWith([
+      'it-email',
+    ]);
   });
 
   /**
@@ -166,7 +193,9 @@ describe('InjectTypeDataService', () => {
     service.updateStore(injectType());
     service.updateStore(injectType({ id: 'it-sms', name: 'SMS' }));
 
-    expect(names(recordEmissions(service.InjectTypeList).at(-1))).toEqual(['SMS']);
+    expect(names(recordEmissions(service.InjectTypeList).at(-1))).toEqual([
+      'SMS',
+    ]);
   });
 
   /**
@@ -175,25 +204,48 @@ describe('InjectTypeDataService', () => {
    * Data: loading cleared first; each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'load', endpoint: 'getInjectTypes', escapes: false, call: (s: InjectTypeDataService) => s.load() },
-    { method: 'loadById', endpoint: 'getInjectType', escapes: true, call: (s: InjectTypeDataService) => s.loadById('x-1') },
-    { method: 'add', endpoint: 'createInjectType', escapes: true, call: (s: InjectTypeDataService) => s.add({ id: 'x-1' }) },
-    { method: 'update', endpoint: 'updateInjectType', escapes: true, call: (s: InjectTypeDataService) => s.update({ id: 'x-1' }) },
-  ] as const)('$method leaves loading stuck when its request fails', async ({ endpoint, escapes, call }) => {
-    const { service, injectTypeApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    TestBed.inject(InjectTypeStore).setLoading(false);
-    injectTypeApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'load',
+      endpoint: 'getInjectTypes',
+      escapes: false,
+      call: (s: InjectTypeDataService) => s.load(),
+    },
+    {
+      method: 'loadById',
+      endpoint: 'getInjectType',
+      escapes: true,
+      call: (s: InjectTypeDataService) => s.loadById('x-1'),
+    },
+    {
+      method: 'add',
+      endpoint: 'createInjectType',
+      escapes: true,
+      call: (s: InjectTypeDataService) => s.add({ id: 'x-1' }),
+    },
+    {
+      method: 'update',
+      endpoint: 'updateInjectType',
+      escapes: true,
+      call: (s: InjectTypeDataService) => s.update({ id: 'x-1' }),
+    },
+  ] as const)(
+    '$method leaves loading stuck when its request fails',
+    async ({ endpoint, escapes, call }) => {
+      const { service, injectTypeApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      TestBed.inject(InjectTypeStore).setLoading(false);
+      injectTypeApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    expect(TestBed.inject(InjectTypeQuery).getValue().loading).toBe(true);
-    // An empty error callback swallows the error; with no callback it escapes to
-    // ErrorService, the ErrorHandler app.config.ts provides, which shows it.
-    expect(errors).toEqual(escapes ? [failure] : []);
-  });
+      expect(TestBed.inject(InjectTypeQuery).getValue().loading).toBe(true);
+      // An empty error callback swallows the error; with no callback it escapes to
+      // ErrorService, the ErrorHandler app.config.ts provides, which shows it.
+      expect(errors).toEqual(escapes ? [failure] : []);
+    },
+  );
 
   /**
    * Verifies: a failed request from delete escapes to the app's global ErrorHandler.
@@ -201,19 +253,26 @@ describe('InjectTypeDataService', () => {
    * Data: each endpoint fails with "request failed".
    */
   it.each([
-    { method: 'delete', endpoint: 'deleteInjectType', call: (s: InjectTypeDataService) => s.delete('x-1') },
-  ] as const)('$method lets a failed request reach the global ErrorHandler', async ({ endpoint, call }) => {
-    const { service, injectTypeApi } = setup();
-    const errors = captureUnhandledRxErrors();
-    const failure = new Error('request failed');
-    injectTypeApi[endpoint].mockReturnValue(throwError(() => failure));
+    {
+      method: 'delete',
+      endpoint: 'deleteInjectType',
+      call: (s: InjectTypeDataService) => s.delete('x-1'),
+    },
+  ] as const)(
+    '$method lets a failed request reach the global ErrorHandler',
+    async ({ endpoint, call }) => {
+      const { service, injectTypeApi } = setup();
+      const errors = captureUnhandledRxErrors();
+      const failure = new Error('request failed');
+      injectTypeApi[endpoint].mockReturnValue(throwError(() => failure));
 
-    call(service);
-    await flush();
+      call(service);
+      await flush();
 
-    // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
-    // provides, which shows it to the user. Not a defect on its own.
-    expect(errors).toEqual([failure]);
-  });
+      // These methods subscribe with no error callback and set no loading flag,
+      // so the error escapes to ErrorService, the ErrorHandler app.config.ts
+      // provides, which shows it to the user. Not a defect on its own.
+      expect(errors).toEqual([failure]);
+    },
+  );
 });
