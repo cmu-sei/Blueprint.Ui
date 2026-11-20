@@ -87,6 +87,7 @@ import {
   runCounts,
   scoreTasks,
 } from 'src/app/utilities/facilitation';
+import { isFinal } from 'src/app/utilities/automation-tasks';
 import {
   MoveAndGroupNumbers,
   MselSectionExpansion,
@@ -611,6 +612,12 @@ export class FacilitatorViewComponent implements ScenarioEventView {
     return this.eventNumbers.get(eventId) ?? 0;
   }
 
+  /** Whether the task's newest run in the deployment has not ended: the start leaves it out, as a run by hand would. */
+  private isGoing(task: AutomationTask): boolean {
+    const latest = this.deploymentRuns.latest(task.id);
+    return !!latest && !isFinal(latest.status);
+  }
+
   eventLabel(eventId: string): string {
     return `Event ${this.eventNumber(eventId)}`;
   }
@@ -634,8 +641,9 @@ export class FacilitatorViewComponent implements ScenarioEventView {
       return {
         task,
         label: `${this.eventLabel(task.scenarioEventId)} › ${index + 1}. ${task.name}`,
-        cannotRun:
-          !task.repeatable && this.deploymentRuns.hasSucceeded(task.id)
+        cannotRun: this.isGoing(task)
+          ? 'it is already running'
+          : !task.repeatable && this.deploymentRuns.hasSucceeded(task.id)
             ? 'it has succeeded, and runs only once'
             : undefined,
       };

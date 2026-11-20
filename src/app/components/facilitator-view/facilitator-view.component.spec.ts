@@ -424,6 +424,38 @@ describe('FacilitatorViewComponent', () => {
   });
 
   /**
+   * Verifies: Start Move marks a task whose run is still going, which the start would leave out, rather than offering to run it.
+   * Interacts with: openAdvance, the advance dialog data.
+   * Data: move 2's Notify Blue (t-2) has a run that is still pending.
+   */
+  it('marks a task that is already running when starting a move', async () => {
+    const { open } = await renderView();
+    TestBed.inject(AutomationRunStore).add({
+      id: 'r-2',
+      mselId: 'msel-1',
+      automationTaskId: 't-2',
+      kind: AutomationRunKind.Exercise,
+      deploymentId: 'dep-1',
+      status: AutomationStatus.Pending,
+      dateCreated: new Date('2026-01-01T11:00:00Z'),
+      results: [],
+    });
+
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Start Move 2' }));
+
+    const [, config] = open.mock.calls[0] as [
+      unknown,
+      { data: MselAdvanceDialogData },
+    ];
+    expect(config.data.tasks.map((t) => t.cannotRun)).toEqual([
+      'it is already running',
+      undefined,
+    ]);
+  });
+
+  /**
    * Verifies: Pause Automation pauses it, and the view says so and offers Resume.
    * Interacts with: MselExecutionService.setMselAutomationPaused (stub).
    * Data: unpaused, then paused.
