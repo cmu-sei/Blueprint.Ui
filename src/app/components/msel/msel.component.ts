@@ -11,7 +11,7 @@ import {
   Theme,
   ComnAuthQuery
 } from '@cmusei/crucible-common';
-import { Msel } from 'src/app/generated/blueprint.api';
+import { CatalogUnit, Msel } from 'src/app/generated/blueprint.api';
 import { CardDataService } from 'src/app/data/card/card-data.service';
 import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
 import { CatalogDataService } from 'src/app/data/catalog/catalog-data.service';
@@ -44,7 +44,7 @@ import { ResizableDirective, ResizeHandleDirective } from 'angular-resizable-ele
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatList, MatDivider, MatListItem } from '@angular/material/list';
-import { NgClass, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { MselContributorsComponent } from '../msel-contributors/msel-contributors.component';
 import { MselTeamsComponent } from '../msel-teams/msel-teams.component';
 import { DataFieldListComponent } from '../data-field-list/data-field-list.component';
@@ -65,6 +65,7 @@ import { MselAssistantComponent } from '../msel-assistant/msel-assistant.compone
 import { MselAiBuildComponent } from '../msel-ai-build/msel-ai-build.component';
 import { MselAiBuildService } from 'src/app/data/msel/msel-ai-build.service';
 import { MselScoringModelTabComponent } from '../msel-scoring-model-tab/msel-scoring-model-tab.component';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 const ASSISTANT_DEFAULT_WIDTH = 420;
 const ASSISTANT_MIN_WIDTH = 320;
@@ -190,11 +191,11 @@ export class MselComponent implements OnDestroy {
         const mselId = params.get('msel');
         if (mselId && this.selectedMselId !== mselId) {
           this.selectedMselId = mselId;
-          this.contributorUnitIds = undefined;
           // Log xAPI viewed statement
           // a MSEL still being created from its design is loaded once it exists
           if (!this.mselAiBuildService.isCreating(mselId)) {
             this.xApiService.viewedMsel(mselId).subscribe();
+            this.mselDataService.setActive(mselId);
             this.loadMsel(mselId);
           }
         }
@@ -211,6 +212,7 @@ export class MselComponent implements OnDestroy {
           return;
         }
         this.xApiService.viewedMsel(mselId).subscribe();
+        this.mselDataService.setActive(mselId);
         this.loadMsel(mselId);
       });
     // a build with AI that finishes adds pages, Player applications and CITE settings, which are loaded again
@@ -218,6 +220,7 @@ export class MselComponent implements OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((mselId) => {
         if (mselId === this.selectedMselId) {
+          this.mselDataService.setActive(mselId);
           this.loadMsel(mselId);
           // the Info tab loads pages only when the MSEL changes, so the finish's pages are loaded here
           this.mselPageDataService.loadByMsel(mselId);
@@ -255,8 +258,55 @@ export class MselComponent implements OnDestroy {
     this.unitDataService.load();
     // load the organization templates
     this.organizationDataService.loadTemplates();
+    // a new hub connection missed what was broadcast while the old one was down
+    reloadOnReconnect(() => {
+      if (this.selectedMselId) {
+        this.loadMsel(this.selectedMselId);
+      }
+      this.unitDataService.load();
+      this.organizationDataService.loadTemplates();
+    });
     // set the side nav expansion
     this.sideNavCollapsed = this.uiDataService.isNavCollapsed();
+  }
+
+  /** Loads the MSEL and everything its tabs show. */
+  private loadMsel(mselId: string) {
+    // the users loaded with the MSEL include its contributors' members
+    this.contributorUnitIds = undefined;
+    this.mselDataService.loadById(mselId);
+    // load the MSELs moves
+    this.moveDataService.loadByMsel(mselId);
+    // load the gallery cards and cardTeams
+    this.cardDataService.loadByMsel(mselId);
+    this.cardTeamDataService.getCardTeamsFromApi(mselId);
+    // load CITE Actions and Roles
+    this.citeActionDataService.loadByMsel(mselId);
+    this.citeDutyDataService.loadByMsel(mselId);
+    // load the MSEL Teams
+    this.teamDataService.loadByMsel(mselId);
+    // load the MSEL organizations and templates
+    this.organizationDataService.loadByMsel(mselId);
+    // load data fields, options, and values
+    this.dataFieldDataService.loadByMsel(mselId);
+    this.dataOptionDataService.loadByMsel(mselId);
+    this.dataValueDataService.loadByMsel(mselId);
+    // load scenario events
+    this.scenarioEventDataService.loadByMsel(mselId);
+    // load user msel roles
+    this.userMselRoleDataService.loadByMsel(mselId);
+    // load msel units
+    this.mselUnitDataService.loadByMsel(mselId);
+    // load user team roles
+    this.userTeamRoleDataService.loadByMsel(mselId);
+    // load the MSEL organizations and templates
+    this.invitationDataService.loadByMsel(mselId);
+    // load the Msel TeamUsers
+    this.teamUserDataService.loadByMsel(mselId);
+    // load the Catalogs
+    this.catalogDataService.loadMine();
+    // load the users
+    this.userDataService.loadByMsel(mselId).subscribe();
   }
 
   tabChange(tabName: string) {
@@ -309,10 +359,10 @@ export class MselComponent implements OnDestroy {
   // the open tab's unsaved work, for the pages that hold edits until they are saved
   private unsavedChangesMessage(): string {
     if (this.selectedTab === 'Info' && this.mselInfoComponent()?.hasPendingChanges()) {
-      return 'You have unsaved changes on the MSEL Info page. Are you sure you want to discard them?';
+      return 'You have unsaved changes on the MSEL Info page. Are you sure that you want to discard them?';
     }
     if (this.selectedTab === 'Scoring Model' && this.scoringModelTab()?.hasPendingChanges()) {
-      return 'You have unsaved changes on the Scoring Model page. Are you sure you want to discard them?';
+      return 'You have unsaved changes on the Scoring Model page. Are you sure that you want to discard them?';
     }
     return '';
   }
@@ -397,44 +447,6 @@ export class MselComponent implements OnDestroy {
         queryParamsHandling: 'merge',
       });
     }
-  }
-
-  private loadMsel(mselId: string) {
-      // load the selected MSEL and make it active
-      this.mselDataService.loadById(mselId);
-      this.mselDataService.setActive(mselId);
-      // load the MSELs moves
-      this.moveDataService.loadByMsel(mselId);
-      // load the gallery cards and cardTeams
-      this.cardDataService.loadByMsel(mselId);
-      this.cardTeamDataService.getCardTeamsFromApi(mselId);
-      // load CITE Actions and Roles
-      this.citeActionDataService.loadByMsel(mselId);
-      this.citeDutyDataService.loadByMsel(mselId);
-      // load the MSEL Teams
-      this.teamDataService.loadByMsel(mselId);
-      // load the MSEL organizations and templates
-      this.organizationDataService.loadByMsel(mselId);
-      // load data fields, options, and values
-      this.dataFieldDataService.loadByMsel(mselId);
-      this.dataOptionDataService.loadByMsel(mselId);
-      this.dataValueDataService.loadByMsel(mselId);
-      // load scenario events
-      this.scenarioEventDataService.loadByMsel(mselId);
-      // load user msel roles
-      this.userMselRoleDataService.loadByMsel(mselId);
-      // load msel units
-      this.mselUnitDataService.loadByMsel(mselId);
-      // load user team roles
-      this.userTeamRoleDataService.loadByMsel(mselId);
-      // load the MSEL organizations and templates
-      this.invitationDataService.loadByMsel(mselId);
-      // load the Msel TeamUsers
-      this.teamUserDataService.loadByMsel(mselId);
-      // load the Catalogs
-      this.catalogDataService.loadMine();
-      // load the users
-      this.userDataService.loadByMsel(mselId).subscribe();
   }
 
   get mselName(): string {

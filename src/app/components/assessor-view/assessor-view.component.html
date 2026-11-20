@@ -566,7 +566,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </span>
                   <span class="stmt-move">{{ getMovePart(first) }}</span>
                   <span class="stmt-group">{{ getGroupPart(first) }}</span>
-                  <span class="platform-badge" [ngClass]="getPlatformClass(first)">{{ first.context?.platform || '?' }}</span>
+                  <span class="platform-badge" [class]="getPlatformClass(first)">{{ first.context?.platform || '?' }}</span>
                   <span class="stmt-actor">{{ group.actorLabel }}</span>
                   <span class="stmt-team">{{ first.context?.team?.name || '' }}</span>
                   <span class="stmt-verb">{{ first.verb?.display?.['en-US'] || first.verb?.id?.split('/').pop() || '?' }}</span>
@@ -584,7 +584,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
                 <span class="stmt-move">{{ getMovePart(stmt) }}</span>
                 <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
-                <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
+                <span class="platform-badge" [class]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
                 <span class="stmt-actor">{{ item.actorLabel }}</span>
                 <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
                 <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>

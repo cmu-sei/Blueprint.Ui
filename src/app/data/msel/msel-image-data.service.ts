@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, map, shareReplay, take, tap } from 'rxjs/operators';
 import { Msel, MselImagePreview, MselImageService } from 'src/app/generated/blueprint.api';
@@ -14,12 +14,10 @@ import { MselDataService } from './msel-data.service';
   providedIn: 'root',
 })
 export class MselImageDataService implements OnDestroy {
+  private mselImageService = inject(MselImageService);
+  private mselDataService = inject(MselDataService);
   private urls = new Map<string, { key: string; url$: Observable<string | null>; url?: string }>();
 
-  constructor(
-    private mselImageService: MselImageService,
-    private mselDataService: MselDataService
-  ) {}
 
   imageUrl(msel: Msel): Observable<string | null> {
     if (!msel?.imageDateModified) {

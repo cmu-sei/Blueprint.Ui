@@ -87,8 +87,8 @@ project root for license information.
                     @for (page of mselPages; track page.id) {
                       <li>{{ page.name }}</li>
                     }
-                    @for (printMove of printMoves; track printMove.firstEventId) {
-                      <li>Move {{ printMove.moveNumber }}@if (printMove.move?.description) {: {{ printMove.move.description }}}</li>
+                    @for (printMove of printMoves; track printMove.moveNumber) {
+                      <li>{{ printMove.label }}@if (printMove.move?.description) {: {{ printMove.move.description }}}</li>
                     }
                   </ol>
                 </nav>
@@ -98,7 +98,7 @@ project root for license information.
           @if (competencyGroups.length || teamCompetencyGroups.length) {
             <section class="playbook-competencies print-only" aria-label="Competencies">
               <h2>Competencies</h2>
-              @for (group of competencyGroups; track group.name) {
+              @for (group of competencyGroups; track group.key) {
                 <h3>{{ group.name }}</h3>
                 <ul>
                   @for (competency of group.competencies; track competency.id) {
@@ -108,7 +108,7 @@ project root for license information.
               }
               @if (teamCompetencyGroups.length) {
                 <h3>Team competencies</h3>
-                @for (team of teamCompetencyGroups; track team.name) {
+                @for (team of teamCompetencyGroups; track team.key) {
                   <h4>{{ team.name }}</h4>
                   <ul>
                     @for (competency of team.competencies; track competency.id) {
@@ -127,30 +127,39 @@ project root for license information.
               <div [innerHTML]="page.content"></div>
             </section>
           }
-          }
-          @for (scenarioEvent of getPagedScenarioEvents(); track scenarioEvent.id; let i = $index) {
-            @let move = getMoveForEvent(scenarioEvent.id);
-            @let prevEvent = i > 0 ? getPagedScenarioEvents()[i - 1] : null;
-            @if (isShowingAllEvents() && (i === 0 || isMoveBoundary(scenarioEvent.id, prevEvent.id))) {
-              <section class="move-title print-only" [attr.aria-label]="'Move ' + getMoveNumber(scenarioEvent.id)">
-                <div class="move-number">Move {{ getMoveNumber(scenarioEvent.id) }}</div>
-                @if (move?.description) {
-                  <h2 class="move-description">{{ move.description }}</h2>
-                }
-                @if (move?.situationTime) {
-                  <p class="move-situation-time">
-                    <strong>Situation Date/Time:</strong>
-                    {{ move.situationTime | date: 'dd MMM yyyy HH:mm' }} {{ move.situationTime | timezoneAbbr }}
-                  </p>
-                }
-                @if (move?.situationDescription) {
-                  <div class="move-briefing">
-                    <div class="move-briefing-label">Situation</div>
-                    <div [innerHTML]="move.situationDescription"></div>
-                  </div>
-                }
-              </section>
+          <!-- every move starts a printed page, one with no events saying so -->
+          @for (printMove of printMoves; track printMove.moveNumber) {
+            @let move = printMove.move;
+            <section class="move-title print-only" [attr.aria-label]="printMove.label">
+              <div class="move-number">{{ printMove.label }}</div>
+              @if (move?.description) {
+                <h2 class="move-description">{{ move.description }}</h2>
+              }
+              @if (move?.situationTime) {
+                <p class="move-situation-time">
+                  <strong>Situation Date/Time:</strong>
+                  {{ move.situationTime | date: 'dd MMM yyyy HH:mm' }} {{ move.situationTime | timezoneAbbr }}
+                </p>
+              }
+              @if (move?.situationDescription) {
+                <div class="move-briefing">
+                  <div class="move-briefing-label">Situation</div>
+                  <div [innerHTML]="move.situationDescription"></div>
+                </div>
+              }
+            </section>
+            @for (scenarioEvent of printMove.events; track scenarioEvent.id) {
+              <ng-container *ngTemplateOutlet="eventTable; context: { $implicit: scenarioEvent }" />
+            } @empty {
+              <p class="move-no-events print-only">No events for this move</p>
             }
+          }
+          } @else {
+            @for (scenarioEvent of getPagedScenarioEvents(); track scenarioEvent.id) {
+              <ng-container *ngTemplateOutlet="eventTable; context: { $implicit: scenarioEvent }" />
+            }
+          }
+          <ng-template #eventTable let-scenarioEvent>
             <table id="eventDetails">
               <thead>
                 <tr>
@@ -192,7 +201,7 @@ project root for license information.
                 }
               </tbody>
             </table>
-          }
+          </ng-template>
         </div>
       }
     </div>

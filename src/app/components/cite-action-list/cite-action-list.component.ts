@@ -31,6 +31,7 @@ import { MatFormField, MatInput, MatSuffix, MatLabel } from '@angular/material/i
 import { MatIconButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
     selector: 'app-cite-action-list',
@@ -136,6 +137,8 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
       });
     // load CiteAction templates
     this.citeActionDataService.loadTemplates();
+    // a new hub connection missed what was broadcast while the old one was down
+    reloadOnReconnect(() => this.citeActionDataService.loadTemplates());
   }
 
   ngOnInit() {
@@ -288,7 +291,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
     }
     const title = this.showTemplates() ? 'Delete CITE Action Template' : 'Delete CITE Action';
     this.dialogService
-      .confirm({ title: title, message: 'Are you sure that you want to delete ' + citeAction.description + '?'
+      .confirm({ title: title, message: 'Are you sure that you want to delete ' + citeAction.description + '?', confirmText: 'Delete', cancelText: 'Cancel'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.citeActionDataService.delete(citeAction.id);

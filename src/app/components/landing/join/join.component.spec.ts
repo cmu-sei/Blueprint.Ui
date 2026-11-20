@@ -1,8 +1,8 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Component, input, output } from '@angular/core';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { Component, input, output, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Params, Router, UrlTree } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,7 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { NEVER, Observable, of, throwError } from 'rxjs';
-import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
+import { ComnAuthService, ComnSettingsService, CrucibleThemeService } from '@cmusei/crucible-common';
 import { Msel, MselImageService, MselService, User, UserService } from 'src/app/generated/blueprint.api';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { XApiService } from 'src/app/services/xapi/xapi.service';
@@ -20,6 +20,7 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
+import { FakeImage } from 'src/app/test-utils/fake-image';
 
 @Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
@@ -58,6 +59,7 @@ async function renderJoin(join: () => Observable<string> = () => NEVER, queryPar
       { replace: TopbarComponent, with: TopbarStub },
     ],
     providers: [
+      { provide: CrucibleThemeService, useValue: { isDarkMode: signal(false) } },
       { provide: MselService, useValue: mselApi },
       { provide: MselImageService, useValue: imageApi },
       { provide: UserService, useValue: userApi },
@@ -175,19 +177,59 @@ describe('JoinComponent', () => {
     expect(handleError).toHaveBeenCalledWith(failure);
   });
 
+  // crucible-common remembers loaded images, so each test uses its own URL.
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    FakeImage.last = undefined;
+  });
+
   /**
-   * Verifies: the page shows the background image named in settings, and none without the setting.
-   * Interacts with: ComnSettingsService.settings (stub), JoinComponent template.
-   * Data: AppLandingBackgroundImage set to a relative asset URL, or unset.
+   * Verifies: the page shows the background image named in settings once it loads.
+   * Interacts with: ComnSettingsService.settings (stub), a stubbed Image, JoinComponent template.
+   * Data: AppLandingBackgroundImage set to a relative asset URL; the image load event fires.
    */
-  it.each([
-    { label: 'with', background: '/assets/local/landing-background.jpg', expected: 'url("/assets/local/landing-background.jpg")' },
-    { label: 'without', background: undefined as string, expected: '' },
-  ])('shows the landing background $label the setting', async ({ background, expected }) => {
-    const { container } = await renderJoin(undefined, {}, undefined, background);
+  it('shows the landing background once the image loads', async () => {
+    vi.stubGlobal('Image', FakeImage);
+    const { fixture, container } = await renderJoin(undefined, {}, undefined, '/assets/local/join-shows-the-landing-background-once-the-image-loads.jpg');
+
+    expect(FakeImage.last?.src).toBe('/assets/local/join-shows-the-landing-background-once-the-image-loads.jpg');
+    FakeImage.last!.onload!();
+    fixture.detectChanges();
 
     const page = container.querySelector('.join-page') as HTMLElement;
-    expect(page.style.getPropertyValue('--landing-background')).toBe(expected);
-    expect(page.classList.contains('has-background')).toBe(!!background);
+    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe('url("/assets/local/join-shows-the-landing-background-once-the-image-loads.jpg")');
+    expect(page.classList.contains('crucible-landing-background')).toBe(true);
+  });
+
+  /**
+   * Verifies: an image that fails to load leaves the normal page background, as if unset.
+   * Interacts with: ComnSettingsService.settings (stub), a stubbed Image, JoinComponent template.
+   * Data: AppLandingBackgroundImage set to a missing image; the image error event fires.
+   */
+  it('keeps the normal background when the image fails to load', async () => {
+    vi.stubGlobal('Image', FakeImage);
+    const { fixture, container } = await renderJoin(undefined, {}, undefined, '/assets/local/join-keeps-the-normal-background-when-the-image-fails-to-load.jpg');
+
+    FakeImage.last!.onerror?.();
+    fixture.detectChanges();
+
+    const page = container.querySelector('.join-page') as HTMLElement;
+    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe('');
+    expect(page.classList.contains('crucible-landing-background')).toBe(false);
+  });
+
+  /**
+   * Verifies: without the setting, no image is requested and the normal page background is kept.
+   * Interacts with: ComnSettingsService.settings (stub), a stubbed Image, JoinComponent template.
+   * Data: AppLandingBackgroundImage unset.
+   */
+  it('keeps the normal background without the setting', async () => {
+    vi.stubGlobal('Image', FakeImage);
+    const { container } = await renderJoin();
+
+    expect(FakeImage.last).toBeUndefined();
+    const page = container.querySelector('.join-page') as HTMLElement;
+    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe('');
+    expect(page.classList.contains('crucible-landing-background')).toBe(false);
   });
 });

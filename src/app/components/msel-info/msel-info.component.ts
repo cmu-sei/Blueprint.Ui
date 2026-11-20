@@ -20,6 +20,7 @@ import {
   MselScoringModelService,
   MselService,
   MselUnit,
+  Move,
   ScenarioEvent,
   SteamfitterScenarioStartMode,
   SystemPermission,
@@ -59,6 +60,8 @@ import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/c
 import { EDITOR_CONFIG_PARAGRAPH, VIEW_CONFIG } from 'src/app/utilities/editor-config';
 import { casterVmAppWarning } from 'src/app/utilities/caster-vm-app';
 import { ComnSettingsService } from '@cmusei/crucible-common';
+import { MoveQuery } from 'src/app/data/move/move.query';
+import { moveOrderPushProblems } from '../../utilities/move-order';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { IntegrationStatusComponent } from '../integration-status/integration-status.component';
 import { TopologyMapPanelComponent } from '../topology-map-panel/topology-map-panel.component';
@@ -82,6 +85,7 @@ import { DatePipe, formatDate } from '@angular/common';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
 import { normalizeScoringModel, scoringModelCounts } from 'src/app/utilities/scoring-model';
 import { CLASSIFICATION_MAX_LENGTH, MSEL_MARKINGS, TLP_LEVELS } from '../../utilities/msel-marking';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
     selector: 'app-msel-info',
@@ -116,6 +120,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   private activatedRoute = inject(ActivatedRoute);
   private settingsService = inject(ComnSettingsService);
   private scenarioEventQuery = inject(ScenarioEventQuery);
+  private moveQuery = inject(MoveQuery);
+  private moveList: Move[] = [];
   private mselScoringModelService = inject(MselScoringModelService);
 
   readonly loggedInUserId = input<string>(undefined);
@@ -215,6 +221,13 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       : integrationStatus;
   }
   constructor() {
+    // a new hub connection missed what was broadcast while the old one was down; the MSEL page reloads
+    // the rest of what this tab shows
+    reloadOnReconnect(() => {
+      if (this.msel.id) {
+        this.playerApplicationDataService.loadByMsel(this.msel.id);
+      }
+    });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>)
       .pipe(takeUntil(this.unsubscribe$))
@@ -370,6 +383,12 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       .subscribe((dataFields) => {
         this.dataFieldList = dataFields;
       });
+    this.moveQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((moves) => {
+        this.moveList = moves ?? [];
+      });
     // subscribe to scenario events
     this.scenarioEventQuery
       .selectAll()
@@ -508,7 +527,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     if (this.canManageMsel()) {
       this.dialogService
         .confirm({
-          title: 'Delete MSEL', message: 'Are you sure that you want to delete ' + this.msel.name + '?'
+          title: 'Delete MSEL', message: 'Are you sure that you want to delete ' + this.msel.name + '?', confirmText: 'Delete', cancelText: 'Cancel'
         }).afterClosed().subscribe((result) => {
           if (result) {
             this.deleteThisMsel.emit(this.msel.id);
@@ -722,6 +741,16 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     return this.citeToDo();
   }
 
+  // What stops a push: moves that share a start time or are out of order, and events that start in no move.
+  // The API refuses the push with the same list; this says why the button is off.
+  moveProblems(): string[] {
+    const id = this.msel?.id;
+    return moveOrderPushProblems(
+      this.moveList.filter((m) => m.mselId === id),
+      this.scenarioEventList.filter((e) => e.mselId === id).map((e) => e.deltaSeconds),
+    );
+  }
+
   hasGalleryEventsWithMissingData(): boolean {
     // Get the IDs of data fields that have a galleryArticleParameter assigned
     const galleryDataFieldIds = this.dataFieldList
@@ -794,7 +823,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   pullIntegrations() {
     this.dialogService
       .confirm({
-        title: 'Remove Integrations', message: 'Are you sure you want to remove this MSEL from the associated applications?'
+        title: 'Remove Integrations', message: 'Are you sure that you want to remove this MSEL from the associated applications?'
       }).afterClosed().subscribe((result) => {
         if (result) {
           this.integrationDismissed = false;
@@ -955,7 +984,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   deletePage(page: MselPage): void {
     this.dialogService
       .confirm({
-        title: 'Delete Page', message: 'Are you sure that you want to delete ' + page.name + '?'
+        title: 'Delete Page', message: 'Are you sure that you want to delete ' + page.name + '?', confirmText: 'Delete', cancelText: 'Cancel'
       }).afterClosed().subscribe((result) => {
         if (result) {
           // Clear any unsaved changes for this page

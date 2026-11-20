@@ -39,6 +39,7 @@ import { MatCard } from '@angular/material/card';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { DatePipe } from '@angular/common';
 import { OverflowTooltipDirective } from '../shared/overflow-tooltip/overflow-tooltip.directive';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
     selector: 'app-msel-list',
@@ -114,6 +115,15 @@ export class MselListComponent implements OnDestroy, OnInit {
     this.mselDataSource = new MatTableDataSource<MselPlus>(
       new Array<MselPlus>()
     );
+    // a new hub connection missed what was broadcast while the old one was down
+    reloadOnReconnect(() => {
+      if (this.allMselsAreLoaded) {
+        this.mselDataService.load();
+      } else {
+        this.mselDataService.loadMine();
+      }
+      this.userDataService.load().pipe(take(1)).subscribe();
+    });
   }
 
   ngOnInit() {
@@ -376,7 +386,7 @@ export class MselListComponent implements OnDestroy, OnInit {
 
   delete(msel: MselPlus): void {
     this.dialogService
-      .confirm({ title: 'Delete MSEL', message: 'Are you sure that you want to delete ' + msel.name + '?'
+      .confirm({ title: 'Delete MSEL', message: 'Are you sure that you want to delete ' + msel.name + '?', confirmText: 'Delete', cancelText: 'Cancel'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.mselDataService.delete(msel.id);

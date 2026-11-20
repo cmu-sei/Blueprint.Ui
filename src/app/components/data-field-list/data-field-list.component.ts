@@ -46,6 +46,7 @@ import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { DataFieldTypeNamePipe } from 'src/app/utilities/data-field-type-name';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
     selector: 'app-data-field-list',
@@ -130,6 +131,15 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
       });
     // load the dataField templates
     this.dataFieldDataService.loadTemplates();
+    // a new hub connection missed what was broadcast while the old one was down; an MSEL's own fields
+    // are reloaded by the MSEL page
+    reloadOnReconnect(() => {
+      this.dataFieldDataService.loadTemplates();
+      const injectTypeId = this.injectTypeId();
+      if (!this.showTemplates() && injectTypeId) {
+        this.dataFieldDataService.loadByInjectType(injectTypeId);
+      }
+    });
     // subscribe to the templates
     this.dataFieldTemplateQuery
       .selectAll()
@@ -412,7 +422,7 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
 
   deleteDataField(dataField: DataField): void {
     this.dialogService
-      .confirm({ title: 'Delete Data Field', message: 'Are you sure that you want to delete ' + dataField.name + '?'
+      .confirm({ title: 'Delete Data Field', message: 'Are you sure that you want to delete ' + dataField.name + '?', confirmText: 'Delete', cancelText: 'Cancel'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.dataFieldDataService.delete(dataField.id);

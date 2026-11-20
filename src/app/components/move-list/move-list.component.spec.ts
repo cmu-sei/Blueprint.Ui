@@ -16,8 +16,9 @@ import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { Move, MoveService, Msel, MselRole } from 'src/app/generated/blueprint.api';
+import { Move, MoveService, Msel, MselRole, ScenarioEvent } from 'src/app/generated/blueprint.api';
 import { MoveStore } from 'src/app/data/move/move.store';
+import { ScenarioEventStore } from 'src/app/data/scenario-event/scenario-event.store';
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { MoveListComponent } from './move-list.component';
 import { MoveEditDialogComponent } from '../move-edit-dialog/move-edit-dialog.component';
@@ -47,8 +48,8 @@ function msel(roles: MselRole[] = []): Msel {
   };
 }
 
-async function renderMoves(overrides: { canEditMsel?: boolean; roles?: MselRole[]; moves?: Move[] } = {}) {
-  const { canEditMsel = true, roles = [], moves = [MOVE] } = overrides;
+async function renderMoves(overrides: { canEditMsel?: boolean; roles?: MselRole[]; moves?: Move[]; events?: ScenarioEvent[] } = {}) {
+  const { canEditMsel = true, roles = [], moves = [MOVE], events = [] } = overrides;
   const moveApi = {
     deleteMove: vi.fn(() => of<unknown>(null)),
   } satisfies ApiStub<MoveService>;
@@ -84,6 +85,14 @@ async function renderMoves(overrides: { canEditMsel?: boolean; roles?: MselRole[
           const store = new MselStore();
           store.set([msel(roles)]);
           store.setActive('msel-1');
+          return store;
+        },
+      },
+      {
+        provide: ScenarioEventStore,
+        useFactory: () => {
+          const store = new ScenarioEventStore();
+          store.set(structuredClone(events));
           return store;
         },
       },
@@ -152,13 +161,14 @@ describe('MoveListComponent', () => {
 
     await user.click(within(table()).getByRole('button', { name: 'Delete Move 1' }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Move' }));
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Move', confirmText: 'Delete', cancelText: 'Cancel' }));
     expect(moveApi.deleteMove).toHaveBeenCalledWith('move-1');
     expect(within(table()).queryByText('Initial access')).not.toBeInTheDocument();
   });
 
   /**
-   * Verifies: a new move defaults to the next number and the latest start offset of this MSEL's moves, not of another MSEL's moves in the store.
+   * Verifies: a new move defaults to the next number and an hour after the latest start of this MSEL's moves; another
+   * MSEL's moves in the store count for neither.
    * Interacts with: the Add new move button, MoveListComponent.addOrEditMove, MatDialog.open (stub), real MoveQuery (seeded).
    * Data: this MSEL's Move 1 at +0s; another MSEL's Move 5 at +7200s.
    */
@@ -171,34 +181,103 @@ describe('MoveListComponent', () => {
 
     expect(open).toHaveBeenCalledTimes(1);
     expect(open.mock.calls[0][0]).toBe(MoveEditDialogComponent);
-    expect(open.mock.calls[0][1].data.move).toEqual(
-      expect.objectContaining({ moveNumber: 2, deltaSeconds: 0, mselId: 'msel-1' })
+    expect((open.mock.calls[0][1] as { data: { move: Move } }).data.move).toEqual(
+      expect.objectContaining({
+        moveNumber: 2,
+        deltaSeconds: 3600,
+        mselId: 'msel-1',
+      }),
     );
   });
 
   /**
-   * Verifies: the out-of-order warning shows when this MSEL's moves do not start in move order, and another MSEL's moves do not raise it.
-   * Interacts with: MoveListComponent.badMoveTimeOrder in the template, real MoveQuery (seeded).
-   * Data: this MSEL's Move 1 at +0s and Move 2 at +3600s or +0s; another MSEL's Move 1 at +9999s.
+   * Verifies: the first move of a MSEL defaults to the MSEL start.
+   * Interacts with: the Add new move button, MoveListComponent.addOrEditMove, MatDialog.open (stub).
+   * Data: no moves on this MSEL; another MSEL's Move 5 at +7200s.
+   */
+  it('defaults the first move to the MSEL start', async () => {
+    const { open } = await renderMoves({ moves: [OTHER_MSEL_MOVE] });
+    const user = userEvent.setup();
+
+    await user.click(
+      within(table()).getByRole('button', { name: 'Add new move' }),
+    );
+
+    expect((open.mock.calls[0][1] as { data: { move: Move } }).data.move).toEqual(
+      expect.objectContaining({ moveNumber: 1, deltaSeconds: 0 }),
+    );
+  });
+
+  /**
+   * Verifies: the Moves tab names each pair of this MSEL's moves that share a start time or are out of order, so the
+   * planner fixes them; moves in order, or another MSEL's moves, raise nothing.
+   * Interacts with: MoveListComponent.moveOrderProblems in the template, real MoveQuery (seeded).
+   * Data: this MSEL's Move 1 at +0s and Move 2 at +3600s, +0s or Move 2 at +3600s and Move 3 at +1800s; another MSEL's Move 1 at +9999s.
    */
   it.each([
-    { label: 'stays hidden when only another MSEL is out of order', moveTwoSeconds: 3600, shown: false },
-    { label: "shows when this MSEL's moves are out of order", moveTwoSeconds: 0, shown: true },
-  ])('the start time order warning $label', async ({ moveTwoSeconds, shown }) => {
+    {
+      label: 'stays hidden when only another MSEL is out of order',
+      extra: [{ moveNumber: 2, deltaSeconds: 3600 }],
+      expected: [],
+    },
+    {
+      label: 'names two moves that share a start time',
+      extra: [{ moveNumber: 2, deltaSeconds: 0 }],
+      expected: ['** Move 1 and Move 2 start at the same time.'],
+    },
+    {
+      label: 'names a move that starts before the one numbered before it',
+      extra: [
+        { moveNumber: 2, deltaSeconds: 3600 },
+        { moveNumber: 3, deltaSeconds: 1800 },
+      ],
+      expected: ['** Move 3 starts before Move 2.'],
+    },
+  ])('the start time order warning $label', async ({ extra, expected }) => {
     const moves: Move[] = [
       MOVE,
-      { ...MOVE, id: 'move-2', moveNumber: 2, deltaSeconds: moveTwoSeconds, description: 'Lateral movement' },
+      ...extra.map((m) => ({
+        ...MOVE,
+        id: `move-${m.moveNumber}`,
+        description: `Move ${m.moveNumber}`,
+        ...m,
+      })),
       { ...OTHER_MSEL_MOVE, moveNumber: 1, deltaSeconds: 9999 },
     ];
 
     await renderMoves({ moves });
 
-    const warning = screen.queryByText(/The moves are not in ascending start time order!/);
-    if (shown) {
-      expect(warning).toBeInTheDocument();
-    } else {
+    const warning = screen.queryByRole('status', { name: 'Move start times' });
+    if (expected.length === 0) {
       expect(warning).not.toBeInTheDocument();
+    } else {
+      for (const text of expected) {
+        expect(within(warning).getByText(text)).toBeInTheDocument();
+      }
+      expect(
+        within(warning).getByText(
+          'Each move must start after the move before it. Change the start times so each event is in the right move.',
+        ),
+      ).toBeInTheDocument();
     }
+  });
+
+  /**
+   * Verifies: the Moves tab names the scenario events that start before the first move, since they are in no move and the
+   * push refuses them; another MSEL's early events raise nothing.
+   * Interacts with: MoveListComponent.moveOrderProblems, real MoveQuery and ScenarioEventQuery (seeded).
+   * Data: this MSEL's Move 1 at +3600s; two of its events at +0s and +1800s, one at +3600s, another MSEL's event at +0s.
+   */
+  it('names the events that start before the first move', async () => {
+    const event = (id: string, mselId: string, deltaSeconds: number): ScenarioEvent => ({ id, mselId, deltaSeconds });
+
+    await renderMoves({
+      moves: [{ ...MOVE, deltaSeconds: 3600 }],
+      events: [event('e1', 'msel-1', 0), event('e2', 'msel-1', 1800), event('e3', 'msel-1', 3600), event('e4', 'msel-2', 0)],
+    });
+
+    const warning = screen.getByRole('status', { name: 'Move start times' });
+    expect(within(warning).getByText('** 2 scenario events start before Move 1, so they are in no move.')).toBeInTheDocument();
   });
 
   /**
