@@ -28,6 +28,14 @@ export interface MselCreate {
     galleryIntegrationType?: IntegrationType;
     useCite?: boolean;
     citeScoringModelId?: string | null;
+    /**
+     * The banner Blueprint puts on the MSEL\'s Gallery articles when it pushes them, and on its pages: None (the default), Exercise, Tlp or Classification. A value it does not know is saved as None.
+     */
+    articleMarking?: string | null;
+    /**
+     * The TLP level (CLEAR, GREEN, AMBER, AMBER+STRICT, RED), or the classification banner\'s text, up to 120 characters
+     */
+    articleMarkingText?: string | null;
     citeIntegrationType?: IntegrationType;
     useSteamfitter?: boolean;
     steamfitterIntegrationType?: IntegrationType;

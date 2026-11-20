@@ -5,10 +5,16 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
 
 <div class="article-container background">
   <div class="page">
+    @if (banner(); as marking) {
+      <app-marking-banner [banner]="marking" />
+    }
     <angular-editor
       [placeholder]="'Description'"
       [(ngModel)]="mselPage.content"
       [config]="viewConfig"
     />
+    @if (banner(); as marking) {
+      <app-marking-banner [banner]="marking" />
+    }
   </div>
 </div>
