@@ -325,6 +325,11 @@ export class MselComponent implements OnDestroy {
       }
       this.unitDataService.load();
       this.organizationDataService.loadTemplates();
+      // the Facilitator View tab's tasks, runs and position too, which the MSEL's load does not read
+      this.facilitationLoadedFor = '';
+      if (this.selectedTab === 'Facilitator View') {
+        this.loadFacilitation();
+      }
     });
     // set the side nav expansion
     this.sideNavCollapsed = this.uiDataService.isNavCollapsed();

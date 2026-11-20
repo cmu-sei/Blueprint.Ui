@@ -32,14 +32,21 @@ export class AutomationRunDataService {
   /** Replaces the MSEL's runs of the kind with the API's, newest 2000 first. */
   loadByMsel(mselId: string, kind: AutomationRunKind) {
     this.store.setLoading(true);
+    // a run that arrives over SignalR while the list is read is newer than the answer, and is kept
+    const asked = Date.now();
     this.automationService
       .getAutomationRunsByMsel(mselId, kind)
       .pipe(take(1))
       .subscribe({
         next: (runs) => {
           runs.forEach((r) => this.setAsDates(r));
+          const answered = new Set(runs.map((r) => r.id));
           this.store.remove(
-            (r: AutomationRun) => r.mselId === mselId && r.kind === kind,
+            (r: AutomationRun) =>
+              r.mselId === mselId &&
+              r.kind === kind &&
+              !answered.has(r.id) &&
+              !(r.dateCreated && new Date(r.dateCreated).valueOf() >= asked),
           );
           this.store.upsertMany(runs);
           this.store.setLoading(false);

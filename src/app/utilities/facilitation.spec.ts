@@ -140,6 +140,25 @@ describe('what a facilitator may do', () => {
     expect(cannotRerun(runs.latest('t-done'), task('t-done'), runs, true)).toBe(
       'The task is not repeatable, and has already succeeded.',
     );
+    expect(
+      cannotRerun(failed, task('t-failed', { enabled: false }), runs, true),
+    ).toBe('The task is disabled.');
+    // an older run of a task that is running again
+    const again = new DeploymentRuns(
+      [
+        run('newer', 't-again', AutomationStatus.Running),
+        run('older', 't-again', AutomationStatus.Failed),
+      ],
+      'dep-2',
+    );
+    expect(
+      cannotRerun(
+        run('older', 't-again', AutomationStatus.Failed),
+        task('t-again', { repeatable: true }),
+        again,
+        true,
+      ),
+    ).toBe('The task is already running.');
     expect(canCancel(running, true)).toBe(true);
     expect(canCancel({ ...running, cancelRequested: true }, true)).toBe(false);
     expect(canCancel(failed, true)).toBe(false);

@@ -43,6 +43,12 @@ const SSH: AutomationActionDefinition = {
       inputType: 'password',
       secret: true,
     },
+    {
+      key: 'PrivateKey',
+      display: 'Private key',
+      inputType: 'textArea',
+      secret: true,
+    },
   ],
 };
 
@@ -107,6 +113,45 @@ describe('AutomationParameterFormComponent', () => {
     await user.type(screen.getByLabelText('Password'), 's3cret');
     expect(draft.secretChanges).toEqual({ Password: 's3cret' });
     expect(draft.actionParameters).not.toHaveProperty('Password');
+  });
+
+  /**
+   * Verifies: emptying a field that replaces a stored secret changes nothing: only Clear removes it.
+   * Interacts with: setSecret, the secret changes.
+   * Data: a task holding a Password; Replace, a character typed, then deleted.
+   */
+  it('keeps a stored secret when its new value is emptied', async () => {
+    const draft = { ...newDraft(SSH), storedSecretKeys: ['Password'] };
+    await renderForm(draft);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Replace Password' }));
+    await user.type(screen.getByLabelText('Password'), 'x');
+    await user.clear(screen.getByLabelText('Password'));
+
+    expect(draft.secretChanges).toEqual({});
+    expect(
+      screen.queryByText('Cleared when the event is saved'),
+    ).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a secret that runs over several lines, a private key, is taken in a text area and kept as pasted, line breaks and all.
+   * Interacts with: the secret's text area, setSecret.
+   * Data: a two-line key.
+   */
+  it('takes a multi-line secret as it is pasted', async () => {
+    const draft = newDraft(SSH);
+    await renderForm(draft);
+    const key =
+      '-----BEGIN RSA PRIVATE KEY-----\nabc\n-----END RSA PRIVATE KEY-----';
+
+    const field = screen.getByLabelText('Private key');
+    expect(field.tagName).toBe('TEXTAREA');
+    await userEvent.setup().click(field);
+    await userEvent.setup().paste(key);
+
+    expect(draft.secretChanges).toEqual({ PrivateKey: key });
   });
 
   /**

@@ -193,9 +193,18 @@ export class SignalRService implements OnDestroy {
    * Joins a MSEL's Tasks page group, which is told only that the MSEL's participant tasks or score changed; it waits
    * for the connection as selectMsel does. A reconnect replaces the connection, so the page joins again then.
    */
+  // the Tasks pages that want their group: a join that waits for the connection gives up once its page has left
+  private readonly participantGroups = new Set<string>();
+
   public joinParticipantTasks(mselId: string) {
+    this.participantGroups.add(mselId);
+    this.joinWhenConnected(mselId);
+  }
+
+  private joinWhenConnected(mselId: string) {
+    if (!this.participantGroups.has(mselId)) return;
     if (this.hubConnection?.state !== signalR.HubConnectionState.Connected) {
-      setTimeout(() => this.joinParticipantTasks(mselId), 500);
+      setTimeout(() => this.joinWhenConnected(mselId), 500);
       return;
     }
     this.hubConnection.invoke('JoinParticipantTasks', mselId).catch(() => {
@@ -204,6 +213,7 @@ export class SignalRService implements OnDestroy {
   }
 
   public leaveParticipantTasks(mselId: string) {
+    this.participantGroups.delete(mselId);
     if (this.hubConnection?.state === signalR.HubConnectionState.Connected) {
       this.hubConnection.invoke('LeaveParticipantTasks', mselId).catch(() => {
         // the server drops the group with the connection

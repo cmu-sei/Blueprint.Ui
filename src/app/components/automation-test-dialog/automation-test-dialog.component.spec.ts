@@ -2,11 +2,12 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
+import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
-import { Subject, of, throwError } from 'rxjs';
+import { Observable, Subject, of, throwError } from 'rxjs';
 import {
   AutomationAction,
   AutomationActionDefinition,
@@ -19,6 +20,7 @@ import {
   PlayerService,
   View,
 } from 'src/app/generated/blueprint.api';
+import { AutomationRunDataService } from 'src/app/data/automation-run/automation-run-data.service';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import {
@@ -59,21 +61,27 @@ async function renderTest(
   data: Partial<AutomationTestDialogData> = {},
   apis: {
     preview?: AutomationVmPreview;
+    previewFor?: (viewId: string) => Observable<AutomationVmPreview>;
+    actions?: () => Observable<AutomationActionDefinition[]>;
+    run?: () => Observable<AutomationRun>;
     views?: () => ReturnType<PlayerService['getMyPlayerViews']>;
   } = {},
 ) {
   const runs = new Subject<AutomationRun>();
   const automationApi = {
-    getAutomationActions: vi.fn(() =>
-      of(structuredClone([POWER_ON, SITUATION])),
+    getAutomationActions: vi.fn(
+      apis.actions ?? (() => of(structuredClone([POWER_ON, SITUATION]))),
     ),
-    previewAutomationTaskVms: vi.fn(() =>
-      of(
-        apis.preview ?? {
-          matchMode: 'name',
-          vms: [{ id: 'vm-1', name: 'WS-01' }],
-        },
-      ),
+    previewAutomationTaskVms: vi.fn(
+      (_mselId: string, form?: { playerViewId?: string }) =>
+        apis.previewFor
+          ? apis.previewFor(form?.playerViewId)
+          : of(
+              apis.preview ?? {
+                matchMode: 'name',
+                vms: [{ id: 'vm-1', name: 'WS-01' }],
+              },
+            ),
     ),
     testAutomationTask: vi.fn((form?: AutomationTestForm) =>
       of<AutomationRun>({
@@ -84,7 +92,7 @@ async function renderTest(
         results: [],
       }),
     ),
-    getAutomationRun: vi.fn(() => runs.asObservable()),
+    getAutomationRun: vi.fn(apis.run ?? (() => runs.asObservable())),
     getAutomationRunsByMsel: vi.fn(() =>
       of<AutomationRun[]>([
         {
@@ -214,6 +222,101 @@ describe('AutomationTestDialogComponent', () => {
 
     expect(screen.getByRole('cell', { name: 'WS-01' })).toBeInTheDocument();
     expect(screen.getByText('powered on')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Run Test' })).toBeEnabled();
+  });
+
+  /**
+   * Verifies: until the action catalog arrives the dialog cannot tell what the task needs, so Run Test is off and no VMs are previewed; once it arrives, the preview follows.
+   * Interacts with: AutomationService.getAutomationActions (stub answering later), previewAutomationTaskVms (stub).
+   * Data: the Power on task; the catalog sent after the dialog renders.
+   */
+  it('waits for the action catalog', async () => {
+    const catalog = new Subject<AutomationActionDefinition[]>();
+    const { automationApi, fixture } = await renderTest(
+      {},
+      { actions: () => catalog },
+    );
+
+    expect(screen.getByRole('button', { name: 'Run Test' })).toBeDisabled();
+    expect(automationApi.previewAutomationTaskVms).not.toHaveBeenCalled();
+
+    catalog.next(structuredClone([POWER_ON, SITUATION]));
+    fixture.detectChanges();
+
+    expect(automationApi.previewAutomationTaskVms).toHaveBeenCalled();
+    expect(screen.getByText(/1 VM:\s*WS-01/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Run Test' })).toBeEnabled();
+  });
+
+  /**
+   * Verifies: the preview is of the view chosen last: an earlier view's answer that arrives late is dropped, and Run Test waits for the new view's.
+   * Interacts with: the Player view select, previewAutomationTaskVms (stub answering per view, out of order).
+   * Data: v-1 chosen first, then Range Dev Sandbox (v-2); v-1's answer comes after the switch.
+   */
+  it('previews the view chosen last', async () => {
+    const answers: Record<string, Subject<AutomationVmPreview>> = {
+      'v-1': new Subject(),
+      'v-2': new Subject(),
+    };
+    const { fixture } = await renderTest(
+      {},
+      { previewFor: (viewId) => answers[viewId] },
+    );
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('combobox', { name: 'Player view' }));
+    await user.click(
+      await screen.findByRole('option', { name: 'Range Dev Sandbox' }),
+    );
+    answers['v-1'].next({
+      matchMode: 'name',
+      vms: [{ id: 'vm-1', name: 'OLD-VIEW-VM' }],
+    });
+    fixture.detectChanges();
+
+    expect(screen.queryByText(/OLD-VIEW-VM/)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Run Test' })).toBeDisabled();
+
+    answers['v-2'].next({
+      matchMode: 'name',
+      vms: [{ id: 'vm-2', name: 'SANDBOX-VM' }],
+    });
+    fixture.detectChanges();
+    expect(screen.getByText(/1 VM:\s*SANDBOX-VM/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Run Test' })).toBeEnabled();
+  });
+
+  /**
+   * Verifies: when asking the API for the run keeps failing, the dialog keeps waiting without an error, and the run's end still arrives through the store.
+   * Interacts with: the two-second poll of getAutomationRun (stub that always fails), AutomationRunDataService.updateStore.
+   * Data: the saved Power on task; every poll errors; the run then succeeds over SignalR.
+   */
+  it('keeps following a run its polls cannot read', async () => {
+    const { automationApi, fixture } = await renderTest(
+      {},
+      { run: () => throwError(() => new Error('down')) },
+    );
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Run Test' }));
+
+    await vi.waitFor(
+      () =>
+        expect(automationApi.getAutomationRun).toHaveBeenCalledWith('test-1'),
+      { timeout: 4000 },
+    );
+    fixture.detectChanges();
+    expect(screen.getByRole('button', { name: 'Running…' })).toBeDisabled();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    TestBed.inject(AutomationRunDataService).updateStore({
+      id: 'test-1',
+      kind: AutomationRunKind.Test,
+      automationTaskId: 't-1',
+      status: AutomationStatus.Succeeded,
+      results: [],
+    });
+    fixture.detectChanges();
     expect(screen.getByRole('button', { name: 'Run Test' })).toBeEnabled();
   });
 

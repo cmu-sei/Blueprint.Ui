@@ -45,7 +45,9 @@ export interface MselAdvanceDialogData {
   template: `
     <crucible-dialog
       [dialogTitle]="title"
-      [submitLabel]="isGroup ? 'Start Group' : 'Start Move'"
+      [submitLabel]="
+        started() ? 'Close' : isGroup ? 'Start Group' : 'Start Move'
+      "
       [loading]="saving()"
       loadingLabel="Starting…"
       [errorMessage]="errorMessage()"
@@ -119,6 +121,8 @@ export class MselAdvanceDialogComponent {
   readonly saving = signal(false);
   readonly errorMessage = signal('');
   readonly messages = signal<string[]>([]);
+  // the server's answer once it made the move or group current: a second Start would run the tasks again
+  readonly started = signal<MselAdvanceResult | null>(null);
 
   choose(taskId: string, checked: boolean) {
     if (checked) this.chosen.add(taskId);
@@ -126,6 +130,10 @@ export class MselAdvanceDialogComponent {
   }
 
   start() {
+    if (this.started()) {
+      this.dialogRef.close(this.started());
+      return;
+    }
     const runTaskIds = this.data.tasks
       .map((t) => t.task.id)
       .filter((id) => this.chosen.has(id));
@@ -151,10 +159,11 @@ export class MselAdvanceDialogComponent {
         if (result.succeeded) {
           this.dialogRef.close(result);
         } else {
+          this.started.set(result);
           // the move was made current; what the integrations refused is said here
           this.messages.set(result.messages ?? []);
           this.errorMessage.set(
-            'Started, but not everything could be changed. Close this when you have read why.',
+            'Started, but not everything could be changed. Close this when you have read why; starting again would run the tasks again.',
           );
         }
       },

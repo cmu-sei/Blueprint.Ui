@@ -3,7 +3,11 @@
 
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import {
+  takeUntilDestroyed,
+  toObservable,
+  toSignal,
+} from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatCheckbox } from '@angular/material/checkbox';
@@ -24,8 +28,10 @@ import {
   switchMap,
   take,
   takeWhile,
+  tap,
 } from 'rxjs/operators';
 import {
+  AutomationActionDefinition,
   AutomationRun,
   AutomationRunKind,
   AutomationService,
@@ -118,8 +124,12 @@ export class AutomationTestDialogComponent {
   readonly task = computed(() =>
     this.data.tasks.find((t) => t.id === this.taskId()),
   );
+  // the catalog may arrive after the dialog opens, so the definition follows it
+  private readonly actions = toSignal(this.actionData.actions, {
+    initialValue: [] as AutomationActionDefinition[],
+  });
   readonly definition = computed(() =>
-    this.actionData.get(this.task()?.action),
+    this.actions().find((a) => a.action === this.task()?.action),
   );
   readonly isSaved = computed(() =>
     this.data.savedTaskIds.includes(this.taskId()),
@@ -170,13 +180,39 @@ export class AutomationTestDialogComponent {
         if (this.data.savedTaskIds.includes(id)) {
           this.runData.loadByTask(this.data.mselId, id, AutomationRunKind.Test);
         }
-        this.refreshPreview();
       });
+    // The VMs the task's mask matches in the chosen view. A newer task or view drops the request before it, and the
+    // preview is empty until its answer, so Run Test never goes by another task's or view's VMs.
+    toObservable(
+      computed(() => ({
+        task: this.task(),
+        viewId: this.playerViewId(),
+        requiresVm: !!this.definition()?.requiresVm,
+      })),
+    )
+      .pipe(
+        tap(() => this.preview.set(undefined)),
+        switchMap(({ task, viewId, requiresVm }) =>
+          !task || !viewId || !requiresVm || !task.vmMask
+            ? of(undefined)
+            : this.automationService
+                .previewAutomationTaskVms(this.data.mselId, {
+                  playerViewId: viewId,
+                  vmMask: task.vmMask,
+                })
+                .pipe(
+                  catchError(() =>
+                    of({ error: 'The VMs could not be listed.', vms: [] }),
+                  ),
+                ),
+        ),
+        takeUntilDestroyed(),
+      )
+      .subscribe((p) => this.preview.set(p));
   }
 
   setView(id: string | null) {
     this.playerViewId.set(id);
-    this.refreshPreview();
   }
 
   setTask(id: string) {
@@ -184,34 +220,10 @@ export class AutomationTestDialogComponent {
     this.runId.set(null);
   }
 
-  refreshPreview() {
-    const task = this.task();
-    const viewId = this.playerViewId();
-    if (
-      !task ||
-      !viewId ||
-      !this.actionData.get(task.action)?.requiresVm ||
-      !task.vmMask
-    ) {
-      this.preview.set(undefined);
-      return;
-    }
-    this.automationService
-      .previewAutomationTaskVms(this.data.mselId, {
-        playerViewId: viewId,
-        vmMask: task.vmMask,
-      })
-      .pipe(
-        take(1),
-        catchError(() =>
-          of({ error: 'The VMs could not be listed.', vms: [] }),
-        ),
-      )
-      .subscribe((p) => this.preview.set(p));
-  }
-
   canRun(): boolean {
     const definition = this.definition();
+    // until the catalog arrives, what the action needs is not known
+    if (!definition) return false;
     const needsView = (definition?.requires ?? []).includes('playerView');
     return (
       !!this.task() &&

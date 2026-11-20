@@ -125,15 +125,29 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
       } @else {
         <mat-form-field class="secret-input">
           <mat-label>{{ label(p) }}</mat-label>
-          <input
-            matInput
-            type="password"
-            autocomplete="new-password"
-            [ngModel]="secretValue(p.key)"
-            (ngModelChange)="setSecret(p.key, $event)"
-            [disabled]="!canEdit()"
-            [required]="p.required"
-          />
+          @if (p.inputType === 'textArea') {
+            <!-- a private key or a set of headers runs over several lines, which a password input would drop -->
+            <textarea
+              matInput
+              rows="4"
+              autocomplete="off"
+              spellcheck="false"
+              [ngModel]="secretValue(p.key)"
+              (ngModelChange)="setSecret(p.key, $event)"
+              [disabled]="!canEdit()"
+              [required]="p.required"
+            ></textarea>
+          } @else {
+            <input
+              matInput
+              type="password"
+              autocomplete="new-password"
+              [ngModel]="secretValue(p.key)"
+              (ngModelChange)="setSecret(p.key, $event)"
+              [disabled]="!canEdit()"
+              [required]="p.required"
+            />
+          }
           <mat-hint>{{
             p.hint || 'Stored encrypted, and never shown again'
           }}</mat-hint>

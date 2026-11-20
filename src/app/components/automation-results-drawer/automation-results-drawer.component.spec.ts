@@ -68,7 +68,7 @@ const RUNS: AutomationRun[] = [
   },
 ];
 
-async function renderDrawer(canAct = true) {
+async function renderDrawer(canAct = true, runs: AutomationRun[] = RUNS) {
   const api = {
     rerunAutomationRun: vi.fn<
       (id: string, form?: AutomationRunForm) => Observable<AutomationRun>
@@ -88,7 +88,7 @@ async function renderDrawer(canAct = true) {
     inputs: {
       task: TASK,
       label: 'Event 4 › 2. Collect IIS log',
-      runs: new DeploymentRuns(RUNS, 'dep-1'),
+      runs: new DeploymentRuns(runs, 'dep-1'),
       canAct,
       userNames: new Map([['user-1', 'Facilitator Fran']]),
     },
@@ -121,18 +121,35 @@ describe('AutomationResultsDrawerComponent', () => {
   });
 
   /**
-   * Verifies: a facilitator cancels the run that has not ended and reruns the one that has.
-   * Interacts with: AutomationService.cancelAutomationRun / rerunAutomationRun (stubs).
-   * Data: cancel r-3, rerun r-2.
+   * Verifies: a facilitator cancels the run that has not ended; an older run of the task is not rerun while that one goes.
+   * Interacts with: AutomationService.cancelAutomationRun (stub), cannotRerun.
+   * Data: r-3 running, r-2 failed, both of t-2.
    */
-  it('cancels and reruns runs', async () => {
+  it('cancels a run, and reruns none of the task while it goes', async () => {
     const { api } = await renderDrawer();
-    const user = userEvent.setup();
 
-    await user.click(screen.getByRole('button', { name: 'Cancel' }));
-    await user.click(screen.getByRole('button', { name: 'Rerun' }));
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Cancel' }));
 
     expect(api.cancelAutomationRun).toHaveBeenCalledWith('r-3');
+    expect(screen.getByRole('button', { name: 'Rerun' })).toBeDisabled();
+  });
+
+  /**
+   * Verifies: once the task's newest run has ended, a facilitator reruns an earlier one.
+   * Interacts with: AutomationService.rerunAutomationRun (stub).
+   * Data: r-3 cancelled, r-2 failed; rerun r-2.
+   */
+  it('reruns a run once the task has none going', async () => {
+    const { api } = await renderDrawer(true, [
+      { ...RUNS[0], status: AutomationStatus.Cancelled },
+      ...RUNS.slice(1),
+    ]);
+
+    const reruns = screen.getAllByRole('button', { name: 'Rerun' });
+    await userEvent.setup().click(reruns[reruns.length - 1]);
+
     expect(api.rerunAutomationRun).toHaveBeenCalledWith('r-2', {
       triggerChain: true,
     });

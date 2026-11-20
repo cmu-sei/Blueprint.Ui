@@ -312,7 +312,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
                     type="button"
                     (click)="toggleEvent(row.event.id)"
                     [attr.aria-expanded]="sections.eventIds.has(row.event.id)"
-                    [attr.aria-label]="'Event ' + row.rowIndex + ' automation'"
+                    [attr.aria-label]="eventLabel(row.event.id) + ' automation'"
                   >
                     <mat-icon
                       [fontIcon]="
@@ -323,7 +323,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
                     />
                   </button>
                 </td>
-                <td class="row-num-col">{{ row.rowIndex }}</td>
+                <td class="row-num-col">{{ eventNumber(row.event.id) }}</td>
                 @if (msel.showMoveOnFacilitatorView) {
                   <td>{{ row.moveNumber }}</td>
                 }

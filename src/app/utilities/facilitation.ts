@@ -72,6 +72,10 @@ export function cannotRerun(
     return 'Only a Facilitator or Owner of the deployed MSEL can run tasks.';
   if (!task) return 'The task this run ran has been deleted.';
   if (!isFinal(run.status)) return 'The run has not ended.';
+  if (!task.enabled) return 'The task is disabled.';
+  // an older run is rerun from the history while a newer one may still be going
+  const latest = runs.latest(task.id);
+  if (latest && !isFinal(latest.status)) return 'The task is already running.';
   if (!task.repeatable && runs.hasSucceeded(task.id)) {
     return 'The task is not repeatable, and has already succeeded.';
   }

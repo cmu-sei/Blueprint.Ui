@@ -28,7 +28,8 @@ const SSH: AutomationActionDefinition = {
   display: 'Run a remote command',
   parameters: [
     { key: 'Hosts', display: 'Hosts', required: true },
-    { key: 'Port', display: 'Port', default: '22' },
+    { key: 'Port', display: 'Port', inputType: 'number', default: '22' },
+    { key: 'At', display: 'Situation time', inputType: 'datetime' },
     { key: 'Password', display: 'Password', secret: true, required: true },
   ],
 };
@@ -238,13 +239,37 @@ describe('taskErrors', () => {
       label: 'no iterations',
       draft: ssh({ iterations: 0 }),
       definition: SSH,
-      error: 'Iterations must be from 1 to 1000.',
+      error: 'Iterations must be a whole number from 1 to 1000.',
     },
     {
       label: 'a negative delay',
       draft: ssh({ delaySeconds: -1 }),
       definition: SSH,
-      error: 'The delay must be from 0 seconds to 7 days.',
+      error: 'The delay must be a whole number of seconds, from 0 to 7 days.',
+    },
+    {
+      label: 'a fractional delay',
+      draft: ssh({ delaySeconds: 0.5 }),
+      definition: SSH,
+      error: 'The delay must be a whole number of seconds, from 0 to 7 days.',
+    },
+    {
+      label: 'an emptied delay',
+      draft: ssh({ delaySeconds: null }),
+      definition: SSH,
+      error: 'The delay must be a whole number of seconds, from 0 to 7 days.',
+    },
+    {
+      label: 'a port that is not a whole number',
+      draft: ssh({ actionParameters: { Hosts: 'h', Port: '22.5' } }),
+      definition: SSH,
+      error: 'Port must be a whole number.',
+    },
+    {
+      label: 'a time that is not a date',
+      draft: ssh({ actionParameters: { Hosts: 'h', At: 'tomorrow' } }),
+      definition: SSH,
+      error: 'Situation time must be a date and time.',
     },
   ])('names $label', ({ draft, definition, error }) => {
     expect(taskErrors(draft, definition, known)).toContain(error);
@@ -293,6 +318,31 @@ describe('triggers', () => {
         ]),
       ),
     ).toEqual(['A', 'B', 'C']);
+  });
+
+  /**
+   * Verifies: a task that only leads into a loop of other tasks, kept from older data, is not in that loop.
+   * Data: n after y, where y and z (another event) trigger each other.
+   */
+  it('triggerLoops leaves a task that only leads into a loop', () => {
+    const drafts = [
+      ssh({
+        id: 'n',
+        name: 'N',
+        triggerCondition: AutomationTrigger.OnSuccess,
+        triggerTaskId: 'y',
+      }),
+    ];
+
+    expect(
+      triggerLoops(
+        drafts,
+        new Map([
+          ['y', 'z'],
+          ['z', 'y'],
+        ]),
+      ),
+    ).toEqual([]);
   });
 
   /**

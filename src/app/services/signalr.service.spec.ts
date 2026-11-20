@@ -862,6 +862,29 @@ describe('SignalRService', () => {
     });
 
     /**
+     * Verifies: a Tasks page that leaves before the hub connects does not end up in its group: the join waiting for the connection gives up.
+     * Interacts with: SignalRService.joinParticipantTasks and leaveParticipantTasks, FakeHubConnection.state, Vitest fake timers.
+     * Data: a connection left Connecting; msel-1's page joins, leaves, and the connection then comes up.
+     */
+    it('drops a participant join whose page left before the connection', async () => {
+      const { service, hub } = await connect();
+      vi.useFakeTimers();
+      hub.state = signalR.HubConnectionState.Connecting;
+      hub.invoke.mockClear();
+
+      service.joinParticipantTasks('msel-1');
+      vi.advanceTimersByTime(500);
+      service.leaveParticipantTasks('msel-1');
+      hub.state = signalR.HubConnectionState.Connected;
+      vi.advanceTimersByTime(1000);
+
+      expect(hub.invoke).not.toHaveBeenCalledWith(
+        'JoinParticipantTasks',
+        'msel-1',
+      );
+    });
+
+    /**
      * Verifies: re-joining after a reconnect re-selects the previously selected MSEL after 100 ms.
      * Interacts with: FakeHubConnection.reconnect(), SignalRService.join, Vitest fake timers.
      * Data: msel-1 selected, then a reconnect.

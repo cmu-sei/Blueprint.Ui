@@ -86,7 +86,12 @@ export class AutomationParameterFormComponent {
   }
 
   setSecret(key: string, value: string) {
-    this.draft().secretChanges[key] = value;
+    // an empty field changes nothing: only Clear takes a stored secret away
+    if (value) {
+      this.draft().secretChanges[key] = value;
+    } else {
+      delete this.draft().secretChanges[key];
+    }
     this.changed.emit();
   }
 

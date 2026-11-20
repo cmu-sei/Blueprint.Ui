@@ -180,25 +180,32 @@ describe('MselAdvanceDialogComponent', () => {
   });
 
   /**
-   * Verifies: when an integration refused, the dialog stays open and says what was not changed; a failed request says nothing changed.
-   * Interacts with: MselExecutionService.startMselMove (stub), errorMessage.
-   * Data: a result that did not succeed with Gallery's message; then a failed request.
+   * Verifies: when an integration refused, the dialog stays open and says what was not changed; the move was still made current, so its button becomes Close, which starts nothing again.
+   * Interacts with: MselExecutionService.startMselMove (stub), errorMessage, the submit button.
+   * Data: a result that did not succeed with Gallery's message.
    */
   it('stays open to say what went wrong', async () => {
-    const { close } = await renderAdvance({}, () =>
-      of<MselAdvanceResult>({
-        succeeded: false,
-        messages: ['The Gallery exhibit could not be moved: 404'],
-      }),
+    const result: MselAdvanceResult = {
+      succeeded: false,
+      messages: ['The Gallery exhibit could not be moved: 404'],
+    };
+    const { api, close } = await renderAdvance({}, () =>
+      of<MselAdvanceResult>(result),
     );
-    await userEvent
-      .setup()
-      .click(screen.getByRole('button', { name: 'Start Move' }));
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Start Move' }));
 
     expect(close).not.toHaveBeenCalled();
     expect(screen.getByRole('status')).toHaveTextContent(
       'The Gallery exhibit could not be moved',
     );
+    expect(
+      screen.queryByRole('button', { name: 'Start Move' }),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    expect(api.startMselMove).toHaveBeenCalledTimes(1);
+    expect(close).toHaveBeenCalledWith(result);
   });
 
   /**

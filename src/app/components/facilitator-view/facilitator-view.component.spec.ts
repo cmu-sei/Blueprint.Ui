@@ -217,6 +217,8 @@ async function renderView(
     msel?: Partial<Msel>;
     fields?: DataField[];
     tasks?: AutomationTask[];
+    /** The MSEL becomes active only after the view renders, as the page's loadById answers after its tasks. */
+    mselLater?: boolean;
   } = {},
 ) {
   const {
@@ -224,6 +226,7 @@ async function renderView(
     msel = {},
     fields = [TITLE],
     tasks = TASKS,
+    mselLater = false,
   } = options;
   const executionApi = {
     getMselExecution: vi.fn(() => of(structuredClone(EXECUTION))),
@@ -248,7 +251,7 @@ async function renderView(
         useFactory: () => {
           const store = new MselStore();
           store.set([{ ...structuredClone(MSEL), ...msel }]);
-          store.setActive('msel-1');
+          if (!mselLater) store.setActive('msel-1');
           return store;
         },
       },
@@ -476,6 +479,65 @@ describe('FacilitatorViewComponent', () => {
    * Interacts with: toggleEvent, the automation panel's history output, the results drawer.
    * Data: se-1 with t-1, whose run failed.
    */
+  /**
+   * Verifies: another facilitator's pause and start, which reach this view as the MSEL's update, win over the execution read before them.
+   * Interacts with: the MSEL store's update (as SignalR's MselUpdated makes it), isPaused, currentMove.
+   * Data: unpaused at move 1; the MSEL then paused at move 2.
+   */
+  it('follows another facilitator through the MSEL', async () => {
+    const { fixture } = await renderView();
+
+    TestBed.inject(MselStore).update('msel-1', {
+      automationPaused: true,
+      currentMoveNumber: 2,
+      currentGroupNumber: 0,
+    });
+    fixture.detectChanges();
+
+    expect(screen.getByText('Automation is paused')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Resume Automation' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Now: Move 2 · Group 0/)).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: tasks read before the MSEL arrived are shown once it does, rather than left out for belonging to no MSEL yet.
+   * Interacts with: the task store's first emission before the active MSEL, the MSEL subscription.
+   * Data: the tasks seeded; the MSEL made active after the view renders.
+   */
+  it('shows the tasks that arrived before the MSEL', async () => {
+    const { fixture } = await renderView({ mselLater: true });
+
+    TestBed.inject(MselStore).setActive('msel-1');
+    fixture.detectChanges();
+    await expandAll();
+
+    expect(
+      within(
+        screen.getByText('Phishing wave').closest('tr') as HTMLElement,
+      ).getByText('1 of 1 failed'),
+    ).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a row's number is the event's place in the MSEL, as the labels in the Start dialog and the history are, so hiding rows does not renumber the others.
+   * Interacts with: eventNumber, the Only events with tasks toggle (on).
+   * Data: se-2 hidden for having no tasks; se-3 is the MSEL's third event.
+   */
+  it('numbers each row by its place in the MSEL', async () => {
+    await renderView();
+    await expandAll();
+
+    const defaced = screen
+      .getByText('Portal defaced')
+      .closest('tr') as HTMLElement;
+    expect(within(defaced).getAllByRole('cell')[1]).toHaveTextContent('3');
+    expect(
+      within(defaced).getByRole('button', { name: 'Event 3 automation' }),
+    ).toBeInTheDocument();
+  });
+
   it('opens a task history', async () => {
     const { fixture } = await renderView();
     const user = userEvent.setup();

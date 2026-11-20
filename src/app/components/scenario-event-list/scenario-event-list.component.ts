@@ -1,6 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 import {
   ChangeDetectorRef,
   Component,
@@ -278,6 +279,11 @@ export class ScenarioEventListComponent
   private testRunsLoadedFor = '';
 
   constructor() {
+    // a new hub connection missed the test runs that ended while the old one was down
+    reloadOnReconnect(() => {
+      this.testRunsLoadedFor = '';
+      this.loadTestRuns();
+    });
     // load the user's build MSELs for use when copying scenario events
     this.mselDataService
       .getMyBuildMsels()

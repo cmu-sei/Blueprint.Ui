@@ -199,6 +199,7 @@ export class FacilitatorViewComponent implements ScenarioEventView {
   readonly errorMessage = signal('');
   private positionsChanged = new Subject<void>();
   private executionMselId = '';
+  private eventNumbers = new Map<string, number>();
 
   blankDataValue = {
     id: '',
@@ -221,10 +222,31 @@ export class FacilitatorViewComponent implements ScenarioEventView {
       .subscribe((msel) => {
         if (!msel) return;
         const changed = this.msel.id !== msel.id;
+        const before = this.msel;
         this.msel = { ...msel } as MselPlus;
+        // another facilitator's start or pause reaches this view as the MSEL's update: it is newer than the execution
+        // read before it
+        if (
+          !changed &&
+          this.execution &&
+          (before.automationPaused !== msel.automationPaused ||
+            before.currentMoveNumber !== msel.currentMoveNumber ||
+            before.currentGroupNumber !== msel.currentGroupNumber)
+        ) {
+          this.execution = {
+            ...this.execution,
+            automationPaused: msel.automationPaused,
+            currentMoveNumber: msel.currentMoveNumber,
+            currentGroupNumber: msel.currentGroupNumber,
+          };
+        }
         this.rebuildRuns();
         if (changed && msel.id) {
           this.watchExecution(msel.id);
+          // tasks read before the MSEL arrived were left out, being of no MSEL yet
+          this.groupTasks(
+            [...this.automationTaskQuery.getAll()].sort(byDisplayOrder),
+          );
         }
       });
     this.dataFieldQuery
@@ -257,6 +279,9 @@ export class FacilitatorViewComponent implements ScenarioEventView {
         this.scenarioEventDataService.refreshScenarioEventViewEvents(
           this,
           scenarioEvents,
+        );
+        this.eventNumbers = new Map(
+          this.mselScenarioEvents.map((e, i) => [e.id, i + 1]),
         );
         this.renumber();
         this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
@@ -308,24 +333,7 @@ export class FacilitatorViewComponent implements ScenarioEventView {
     this.automationTaskQuery
       .selectAll({ sortBy: byDisplayOrder })
       .pipe(takeUntilDestroyed())
-      .subscribe((tasks) => {
-        const byEvent = new Map<string, AutomationTask[]>();
-        tasks
-          .filter((t) => t.mselId === this.msel.id)
-          .forEach((t) =>
-            byEvent.set(t.scenarioEventId, [
-              ...(byEvent.get(t.scenarioEventId) ?? []),
-              t,
-            ]),
-          );
-        this.tasksByEvent = byEvent;
-        this.taskNames = new Map(tasks.map((t) => [t.id, t.name]));
-        this.rescore();
-        if (this.drawerTask) {
-          this.drawerTask =
-            tasks.find((t) => t.id === this.drawerTask.id) ?? this.drawerTask;
-        }
-      });
+      .subscribe((tasks) => this.groupTasks(tasks));
     this.automationRunQuery
       .selectAll({
         filterBy: (r) => r.kind === AutomationRunKind.Exercise,
@@ -392,6 +400,26 @@ export class FacilitatorViewComponent implements ScenarioEventView {
       (p) => (byEvent[p.scenarioEventId] = [p.moveNumber, p.groupNumber]),
     );
     this.moveAndGroupNumbers = numbers;
+  }
+
+  /** The MSEL's tasks by event, in their order, from the store's tasks. */
+  private groupTasks(tasks: AutomationTask[]) {
+    const byEvent = new Map<string, AutomationTask[]>();
+    tasks
+      .filter((t) => t.mselId === this.msel.id)
+      .forEach((t) =>
+        byEvent.set(t.scenarioEventId, [
+          ...(byEvent.get(t.scenarioEventId) ?? []),
+          t,
+        ]),
+      );
+    this.tasksByEvent = byEvent;
+    this.taskNames = new Map(tasks.map((t) => [t.id, t.name]));
+    this.rescore();
+    if (this.drawerTask) {
+      this.drawerTask =
+        tasks.find((t) => t.id === this.drawerTask.id) ?? this.drawerTask;
+    }
   }
 
   private rebuildRuns() {
@@ -575,8 +603,16 @@ export class FacilitatorViewComponent implements ScenarioEventView {
       ).length;
   }
 
+  /**
+   * An event's number: its place in the MSEL, which the row shows and the labels in the Start dialog and the history
+   * use, so a filter that hides rows does not renumber the ones it shows.
+   */
+  eventNumber(eventId: string): number {
+    return this.eventNumbers.get(eventId) ?? 0;
+  }
+
   eventLabel(eventId: string): string {
-    return `Event ${this.mselScenarioEvents.findIndex((e) => e.id === eventId) + 1}`;
+    return `Event ${this.eventNumber(eventId)}`;
   }
 
   startMove(moveNumber: number, event?: Event) {

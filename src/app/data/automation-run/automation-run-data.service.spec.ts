@@ -3,7 +3,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { firstValueFrom, of } from 'rxjs';
+import { firstValueFrom, of, Subject } from 'rxjs';
 import {
   AutomationResult,
   AutomationRun,
@@ -106,6 +106,26 @@ describe('AutomationRunDataService', () => {
     expect(query.hasEntity('test')).toBe(true);
     expect(query.hasEntity('other')).toBe(true);
     expect(query.getEntity('late').dueAt).toBeInstanceOf(Date);
+  });
+
+  /**
+   * Verifies: a run that arrives over SignalR while the list is read, and so is not in the answer, is kept; an older one the answer lacks goes.
+   * Interacts with: AutomationService.getAutomationRunsByMsel (stub answering later), updateStore.
+   * Data: a stale run from before the load; a run created during it; the answer holds neither.
+   */
+  it('loadByMsel keeps a run that arrives while it loads', () => {
+    const { service, query, api } = setup();
+    service.updateStore(run({ id: 'stale' }));
+    const answer = new Subject<AutomationRun[]>();
+    api.getAutomationRunsByMsel.mockReturnValue(answer);
+
+    service.loadByMsel('msel-1', AutomationRunKind.Exercise);
+    service.updateStore(run({ id: 'arrived', dateCreated: new Date() }));
+    answer.next([run({ id: 'answered' })]);
+
+    expect(query.hasEntity('arrived')).toBe(true);
+    expect(query.hasEntity('answered')).toBe(true);
+    expect(query.hasEntity('stale')).toBe(false);
   });
 
   /**

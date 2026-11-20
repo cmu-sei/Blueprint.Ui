@@ -206,6 +206,24 @@ export function taskErrors(
         errors.push(`${p.display || p.key} is required.`);
       }
     });
+  // the values the API would refuse, so the dialog is not closed on a save that fails
+  (definition.parameters ?? [])
+    .filter((p) => !p.secret)
+    .forEach((p) => {
+      const value = `${draft.actionParameters?.[p.key] ?? ''}`.trim();
+      if (!value) return;
+      const name = p.display || p.key;
+      if (p.inputType === 'number' && !/^-?\d+$/.test(value)) {
+        errors.push(`${name} must be a whole number.`);
+      } else if (
+        p.inputType === 'datetime' &&
+        Number.isNaN(Date.parse(value))
+      ) {
+        errors.push(`${name} must be a date and time.`);
+      } else if (p.inputType === 'checkbox' && !/^(true|false)$/i.test(value)) {
+        errors.push(`${name} must be true or false.`);
+      }
+    });
   if (definition.requiresVm && !draft.vmMask?.trim()) {
     errors.push('A VM mask is required, since the action runs on VMs.');
   }
@@ -218,20 +236,32 @@ export function taskErrors(
       errors.push('The task that triggers it is no longer in this MSEL.');
     }
   }
-  if (!(draft.iterations >= 1 && draft.iterations <= 1000)) {
-    errors.push('Iterations must be from 1 to 1000.');
+  // whole numbers, as the API takes them: an emptied field is not 0
+  const whole = (value: unknown) =>
+    value !== null && value !== '' && Number.isInteger(+value);
+  if (!(
+    whole(draft.iterations) &&
+    draft.iterations >= 1 &&
+    draft.iterations <= 1000
+  )) {
+    errors.push('Iterations must be a whole number from 1 to 1000.');
   }
-  [
-    ['The expiration', draft.expirationSeconds],
-    ['The delay', draft.delaySeconds],
-    ['The interval', draft.intervalSeconds],
-  ].forEach(([name, value]) => {
-    if (!(+value >= 0 && +value <= 7 * 24 * 3600)) {
-      errors.push(`${name} must be from 0 seconds to 7 days.`);
+  (
+    [
+      ['The expiration', draft.expirationSeconds],
+      ['The delay', draft.delaySeconds],
+      ['The interval', draft.intervalSeconds],
+    ] as [string, unknown][]
+  ).forEach(([name, value]) => {
+    if (!(whole(value) && +value >= 0 && +value <= 7 * 24 * 3600)) {
+      errors.push(
+        `${name} must be a whole number of seconds, from 0 to 7 days.`,
+      );
     }
   });
-  if (!(+(draft.score ?? 0) >= 0 && +(draft.score ?? 0) <= 100000)) {
-    errors.push('The score must be from 0 to 100000.');
+  const score = draft.score ?? 0;
+  if (!(whole(score) && +score >= 0 && +score <= 100000)) {
+    errors.push('The score must be a whole number from 0 to 100000.');
   }
   return errors;
 }
@@ -250,9 +280,14 @@ export function triggerLoops(
   );
   return drafts
     .filter((d) => {
-      const seen = new Set([d.id]);
-      for (let at = triggers.get(d.id); at; at = triggers.get(at)) {
-        if (seen.has(at)) return true;
+      // only a task its triggers lead back to is in a loop: one that leads into a loop of others is not
+      const seen = new Set<string>();
+      for (
+        let at = triggers.get(d.id);
+        at && !seen.has(at);
+        at = triggers.get(at)
+      ) {
+        if (at === d.id) return true;
         seen.add(at);
       }
       return false;
