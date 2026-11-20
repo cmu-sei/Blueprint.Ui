@@ -4,12 +4,14 @@
 
 import { Component, inject, output } from '@angular/core';
 import {
+  FormControl,
   UntypedFormControl,
   Validators,
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Team } from 'src/app/generated/blueprint.api';
 import { EDITOR_CONFIG } from 'src/app/utilities/editor-config';
 import {
   CrucibleDialogComponent,
@@ -26,6 +28,11 @@ import { AngularEditorModule } from '@kolkov/angular-editor';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatCheckbox } from '@angular/material/checkbox';
+import { MatButton } from '@angular/material/button';
+import {
+  NetworkListEditComponent,
+  networksValid,
+} from '../network-list-edit/network-list-edit.component';
 
 const MIN_NAME_LENGTH = 3;
 
@@ -49,6 +56,8 @@ import { ProfileWriterComponent } from '../profile-writer/profile-writer.compone
     MatHint,
     MatCheckbox,
     ProfileWriterComponent,
+    MatButton,
+    NetworkListEditComponent,
   ],
 })
 export class TeamEditDialogComponent {
@@ -76,6 +85,12 @@ export class TeamEditDialogComponent {
     this.data.team.casterTeamVariable ?? '',
     [],
   );
+  // the team the dialog edits, typed, for the domain and networks
+  private readonly rangeTeam = (this.data as { team: Team }).team;
+  public domainFormControl = new FormControl<string>(
+    this.rangeTeam.domain ?? '',
+    { nonNullable: true },
+  );
   editorConfig = EDITOR_CONFIG;
 
   constructor() {
@@ -98,7 +113,10 @@ export class TeamEditDialogComponent {
     const hasCiteTeamTypeError =
       this.data.useCite && this.citeTeamTypeIdFormControl.hasError('required');
 
-    return !(hasNameErrors || hasCiteTeamTypeError);
+    return (
+      !(hasNameErrors || hasCiteTeamTypeError) &&
+      networksValid(this.rangeTeam.networks)
+    );
   }
 
   /**
@@ -153,6 +171,10 @@ export class TeamEditDialogComponent {
         this.data.team.casterTeamVariable =
           this.casterTeamVariableFormControl.value?.toString() || null;
         break;
+      case 'domain':
+        this.rangeTeam.domain =
+          this.domainFormControl.value.trim().toLowerCase() || null;
+        break;
       case 'citeTeamTypeId':
         this.data.team.citeTeamTypeId =
           this.citeTeamTypeIdFormControl.value?.toString() || '';
@@ -160,6 +182,28 @@ export class TeamEditDialogComponent {
       default:
         break;
     }
+  }
+
+  /**
+   * The part of the email after the @, offered as the domain; never applied
+   * unless the planner chooses it
+   */
+  emailDomain(): string {
+    const value: unknown = this.emailFormControl.value;
+    const email = typeof value === 'string' ? value : '';
+    const at = email.lastIndexOf('@');
+
+    return at > 0
+      ? email
+          .substring(at + 1)
+          .trim()
+          .toLowerCase()
+      : '';
+  }
+
+  useEmailDomain(): void {
+    this.domainFormControl.setValue(this.emailDomain());
+    this.saveTeam('domain');
   }
 
   // keeps a mapping the template no longer declares selectable, so opening the dialog does not drop it

@@ -13,6 +13,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { Network } from './network';
 
 
 export interface TeamCreate { 
@@ -24,6 +25,8 @@ export interface TeamCreate {
     canTeamLeaderInvite?: boolean;
     canTeamMemberInvite?: boolean;
     casterTeamVariable?: string | null;
+    domain?: string | null;
+    networks?: Array<Network> | null;
     id?: string;
     mselId?: string | null;
 }

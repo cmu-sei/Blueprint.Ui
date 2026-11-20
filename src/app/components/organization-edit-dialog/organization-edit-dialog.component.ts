@@ -4,12 +4,14 @@
 
 import { Component, inject, output } from '@angular/core';
 import {
+  FormControl,
   UntypedFormControl,
   Validators,
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Organization } from 'src/app/generated/blueprint.api';
 import { EDITOR_CONFIG } from 'src/app/utilities/editor-config';
 import {
   CrucibleDialogComponent,
@@ -20,7 +22,13 @@ import {
   MatLabel,
   MatInput,
   MatError,
+  MatHint,
 } from '@angular/material/input';
+import { MatButton } from '@angular/material/button';
+import {
+  NetworkListEditComponent,
+  networksValid,
+} from '../network-list-edit/network-list-edit.component';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 
 import { ProfileWriterComponent } from '../profile-writer/profile-writer.component';
@@ -37,6 +45,9 @@ import { ProfileWriterComponent } from '../profile-writer/profile-writer.compone
     FormsModule,
     ReactiveFormsModule,
     MatError,
+    MatHint,
+    MatButton,
+    NetworkListEditComponent,
     AngularEditorModule,
     ProfileWriterComponent,
   ],
@@ -66,6 +77,14 @@ export class OrganizationEditDialogComponent {
     this.data.organization.summary,
     [Validators.required],
   );
+  // the organization the dialog edits, typed, for the domain and networks
+  private readonly rangeOrganization = (
+    this.data as { organization: Organization }
+  ).organization;
+  public domainFormControl = new FormControl<string>(
+    this.rangeOrganization.domain ?? '',
+    { nonNullable: true },
+  );
   editorConfig = EDITOR_CONFIG;
 
   errorFree() {
@@ -77,7 +96,8 @@ export class OrganizationEditDialogComponent {
       this.organizationEmailFormControl.hasError('required') ||
       this.organizationEmailFormControl.hasError('minlength') ||
       this.summaryFormControl.hasError('required') ||
-      this.summaryFormControl.hasError('minlength')
+      this.summaryFormControl.hasError('minlength') ||
+      !networksValid(this.rangeOrganization.networks)
     );
   }
 
@@ -149,8 +169,34 @@ export class OrganizationEditDialogComponent {
           ? this.organizationEmailFormControl.value.toString()
           : '';
         break;
+      case 'domain':
+        this.rangeOrganization.domain =
+          this.domainFormControl.value.trim().toLowerCase() || null;
+        break;
       default:
         break;
     }
+  }
+
+  /**
+   * The part of the email after the @, offered as the domain; never applied
+   * unless the planner chooses it
+   */
+  emailDomain(): string {
+    const value: unknown = this.organizationEmailFormControl.value;
+    const email = typeof value === 'string' ? value : '';
+    const at = email.lastIndexOf('@');
+
+    return at > 0
+      ? email
+          .substring(at + 1)
+          .trim()
+          .toLowerCase()
+      : '';
+  }
+
+  useEmailDomain(): void {
+    this.domainFormControl.setValue(this.emailDomain());
+    this.saveOrganization('domain');
   }
 }
