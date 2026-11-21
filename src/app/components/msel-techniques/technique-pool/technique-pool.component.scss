@@ -190,7 +190,17 @@ mat-cell.col-see-also {
   color: var(--mat-sys-on-surface-variant);
 }
 
-::ng-deep .attack-description-tooltip {
-  max-width: 480px !important;
-  white-space: pre-line;
+.name-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
 }

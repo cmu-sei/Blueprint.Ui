@@ -151,14 +151,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-header-cell *matHeaderCellDef class="col-name"
             >Name</mat-header-cell
           >
-          <mat-cell
-            *matCellDef="let t"
-            class="col-name"
-            [matTooltip]="t.description"
-            matTooltipShowDelay="800"
-            matTooltipClass="attack-description-tooltip"
-            >{{ t.name }}</mat-cell
-          >
+          <mat-cell *matCellDef="let t" class="col-name">
+            <button
+              type="button"
+              class="name-link"
+              title="Show the description"
+              (click)="showDetail(t)"
+            >
+              {{ t.name }}
+            </button>
+          </mat-cell>
         </ng-container>
         <ng-container matColumnDef="tactics">
           <mat-header-cell *matHeaderCellDef class="col-tactics">{{
@@ -347,14 +349,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-header-cell *matHeaderCellDef class="col-name"
             >Name</mat-header-cell
           >
-          <mat-cell
-            *matCellDef="let item"
-            class="col-name"
-            [matTooltip]="item.technique?.description"
-            matTooltipShowDelay="800"
-            matTooltipClass="attack-description-tooltip"
-            >{{ item.technique?.name }}</mat-cell
-          >
+          <mat-cell *matCellDef="let item" class="col-name">
+            <button
+              type="button"
+              class="name-link"
+              title="Show the description"
+              (click)="showDetail(item.technique)"
+            >
+              {{ item.technique?.name }}
+            </button>
+          </mat-cell>
         </ng-container>
         <ng-container matColumnDef="tactics">
           <mat-header-cell *matHeaderCellDef class="col-tactics">{{

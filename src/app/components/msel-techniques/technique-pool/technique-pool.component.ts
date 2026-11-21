@@ -47,10 +47,14 @@ import {
 import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatCheckbox } from '@angular/material/checkbox';
-import { MatTooltip } from '@angular/material/tooltip';
+import { MatDialog } from '@angular/material/dialog';
 import { Observable, Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
+import {
+  TechniqueDetailDialogComponent,
+  TechniqueDetailDialogData,
+} from '../technique-detail-dialog/technique-detail-dialog.component';
 import {
   TechniqueRelease,
   TechniqueReleaseService,
@@ -132,7 +136,6 @@ export interface PinnedDomain {
     MatCheckbox,
     MatCellDef,
     MatCell,
-    MatTooltip,
     MatHeaderRowDef,
     MatHeaderRow,
     MatRowDef,
@@ -157,6 +160,7 @@ export class TechniquePoolComponent
   private dataValueQuery = inject(DataValueQuery);
   private messageService = inject(SystemMessageService);
   dialogService = inject(CrucibleDialogService);
+  private dialog = inject(MatDialog);
 
   readonly family = input<TechniqueFamily>('attack');
   readonly loggedInUserId = input<string>(undefined);
@@ -692,6 +696,21 @@ export class TechniquePoolComponent
   getTacticNames(technique: Technique): string {
     const names = this.tacticNamesByRelease.get(technique?.techniqueReleaseId);
     return (technique?.tactics || []).map((t) => names?.get(t) || t).join(', ');
+  }
+
+  /** Opens a technique's full description, which is too long for a tooltip. */
+  showDetail(technique: Technique) {
+    if (!technique) return;
+    this.dialog.open(TechniqueDetailDialogComponent, {
+      minWidth: '400px',
+      maxWidth: '90vw',
+      width: '700px',
+      data: {
+        technique,
+        groupsLabel: this.browserGroupsLabel,
+        groupNames: this.getTacticNames(technique),
+      } satisfies TechniqueDetailDialogData,
+    });
   }
 
   /** The site a technique's link opens, for its link title. */
