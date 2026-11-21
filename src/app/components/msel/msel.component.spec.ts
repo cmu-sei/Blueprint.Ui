@@ -29,6 +29,7 @@ import { MselContributorsComponent } from '../msel-contributors/msel-contributor
 import { MselTeamsComponent } from '../msel-teams/msel-teams.component';
 import { DataFieldListComponent } from '../data-field-list/data-field-list.component';
 import { OrganizationListComponent } from '../organization-list/organization-list.component';
+import { MselNetworksComponent } from '../msel-networks/msel-networks.component';
 import { MoveListComponent } from '../move-list/move-list.component';
 import { PlayerApplicationListComponent } from '../player-application-list/player-application-list.component';
 import { CardListComponent } from '../card-list/card-list.component';
@@ -72,6 +73,10 @@ class OrganizationListStub {
   readonly loggedInUserId = input<string>(undefined);
   readonly canEdit = input<boolean>(undefined);
   readonly showTemplates = input<boolean>(undefined);
+}
+@Component({ selector: 'app-msel-networks', template: '' })
+class MselNetworksStub {
+  readonly canEdit = input<boolean>(undefined);
 }
 @Component({ selector: 'app-move-list', template: '' })
 class MoveListStub {
@@ -178,6 +183,7 @@ async function renderMsel(
       { replace: MselTeamsComponent, with: MselTeamsStub },
       { replace: DataFieldListComponent, with: DataFieldListStub },
       { replace: OrganizationListComponent, with: OrganizationListStub },
+      { replace: MselNetworksComponent, with: MselNetworksStub },
       { replace: MoveListComponent, with: MoveListStub },
       {
         replace: PlayerApplicationListComponent,
@@ -231,6 +237,11 @@ const EDIT_TABS = [
     tab: 'Organizations',
     read: (f: ComponentFixture<unknown>) =>
       child(f, OrganizationListStub)?.canEdit(),
+  },
+  {
+    tab: 'Networks',
+    read: (f: ComponentFixture<unknown>) =>
+      child(f, MselNetworksStub)?.canEdit(),
   },
   {
     tab: 'Moves',
