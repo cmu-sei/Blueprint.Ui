@@ -4,6 +4,7 @@
 import {
   Component,
   OnDestroy,
+  effect,
   inject,
   input,
   output,
@@ -16,7 +17,22 @@ import { MselInfoComponent } from '../msel-info/msel-info.component';
 import { Subject, Observable } from 'rxjs';
 import { filter, map, takeUntil } from 'rxjs/operators';
 import { Theme, ComnAuthQuery } from '@cmusei/crucible-common';
-import { CatalogUnit, Msel } from 'src/app/generated/blueprint.api';
+import {
+  AutomationRunKind,
+  CatalogUnit,
+  Msel,
+  SystemPermission,
+} from 'src/app/generated/blueprint.api';
+import { AutomationRunDataService } from 'src/app/data/automation-run/automation-run-data.service';
+import { AutomationTaskDataService } from 'src/app/data/automation-task/automation-task-data.service';
+import { MselExecutionDataService } from 'src/app/data/msel-execution/msel-execution-data.service';
+import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
+import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.query';
+import {
+  canFacilitate,
+  canViewFacilitator,
+} from 'src/app/utilities/facilitator-msels';
+import { FacilitatorViewComponent } from '../facilitator-view/facilitator-view.component';
 import { CardDataService } from 'src/app/data/card/card-data.service';
 import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
 import { CatalogDataService } from 'src/app/data/catalog/catalog-data.service';
@@ -98,6 +114,7 @@ import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
     ScenarioEventListComponent,
     MselViewComponent,
     AssessorViewComponent,
+    FacilitatorViewComponent,
     InvitationListComponent,
     MselPlaybookComponent,
     MselScoringModelTabComponent,
@@ -135,6 +152,11 @@ export class MselComponent implements OnDestroy {
   private authQuery = inject(ComnAuthQuery);
   private dialogService = inject(CrucibleDialogService);
   private xApiService = inject(XApiService);
+  private permissionDataService = inject(PermissionDataService);
+  private userMselRoleQuery = inject(UserMselRoleQuery);
+  private automationTaskDataService = inject(AutomationTaskDataService);
+  private automationRunDataService = inject(AutomationRunDataService);
+  private executionDataService = inject(MselExecutionDataService);
 
   readonly loggedInUserId = input<string>(undefined);
   readonly canEditMsel = input<boolean>(undefined);
@@ -164,6 +186,7 @@ export class MselComponent implements OnDestroy {
     'Scenario Events',
     'Exercise View',
     'Assessor View',
+    'Facilitator View',
     'MSEL Playbook',
     'Invitations',
   ];
@@ -184,6 +207,7 @@ export class MselComponent implements OnDestroy {
     ['Scenario Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
     ['Assessor View', 'mdi-clipboard-check-multiple-outline'],
+    ['Facilitator View', 'mdi-robot-outline'],
     ['MSEL Playbook', 'mdi-book'],
     ['Invitations', 'mdi-email-open-outline'],
   ]);
@@ -197,6 +221,11 @@ export class MselComponent implements OnDestroy {
   private contributorUnitIds: string;
   sideNavCollapsed = false;
   theme$: Observable<Theme>;
+  // the Facilitator View tab: who can open it, who can act on it, and the MSEL its runs were read for
+  canViewFacilitatorTab = false;
+  canFacilitateTab = false;
+  private facilitationLoadedFor = '';
+  private permissionsLoaded = false;
 
   constructor() {
     // restore the saved tab before the active MSEL, which can arrive at once, checks it; a saved name that is no
@@ -225,11 +254,39 @@ export class MselComponent implements OnDestroy {
       .subscribe((msel) => {
         if (msel) {
           this.msel = msel;
-          // a saved tab this MSEL's settings hide (CITE, Player or Gallery not used) would show nothing
-          this.keepSelectedTabShown(this.getTabListItems());
+          this.updateFacilitatorAccess();
+          // a saved tab this MSEL's settings hide (CITE, Player or Gallery not used) would show nothing; the
+          // Facilitator View tab waits for the roles and permissions that decide it
+          if (this.selectedTab === 'Facilitator View') {
+            this.keepSelectedTabShownOnceLoaded();
+          } else {
+            this.keepSelectedTabShown(this.getTabListItems());
+          }
         } else {
           this.msel = { name: '' };
         }
+      });
+    // the user arrives as an input, after the MSEL and its roles may have
+    effect(() => {
+      this.loggedInUserId();
+      this.updateFacilitatorAccess();
+      this.keepSelectedTabShownOnceLoaded();
+    });
+    // the roles and the permissions decide whether the Facilitator View tab is shown
+    this.userMselRoleQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.updateFacilitatorAccess();
+        this.keepSelectedTabShownOnceLoaded();
+      });
+    this.permissionDataService
+      .load()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.permissionsLoaded = true;
+        this.updateFacilitatorAccess();
+        this.keepSelectedTabShownOnceLoaded();
       });
     // subscribe to mselUnits to reload users when contributors change
     this.mselUnitQuery
@@ -268,12 +325,71 @@ export class MselComponent implements OnDestroy {
       }
       this.unitDataService.load();
       this.organizationDataService.loadTemplates();
+      // the Facilitator View tab's tasks, runs and position too, which the MSEL's load does not read
+      this.facilitationLoadedFor = '';
+      if (this.selectedTab === 'Facilitator View') {
+        this.loadFacilitation();
+      }
     });
     // set the side nav expansion
     this.sideNavCollapsed = this.uiDataService.isNavCollapsed();
   }
 
   /** Loads the MSEL and everything its tabs show. */
+  /**
+   * Who can open and act on the Facilitator View tab, from the MSEL's roles in the role store and the system
+   * permissions. The roles and the permissions may arrive after the MSEL, so this runs as each does.
+   */
+  private updateFacilitatorAccess() {
+    const userId = this.loggedInUserId();
+    if (!this.msel?.id || !userId) {
+      this.canViewFacilitatorTab = false;
+      this.canFacilitateTab = false;
+      return;
+    }
+    const msel: Msel = {
+      ...this.msel,
+      userMselRoles: [
+        ...(this.msel.userMselRoles ?? []),
+        ...this.userMselRoleQuery
+          .getAll()
+          .filter((r) => r.mselId === this.msel.id && r.userId === userId),
+      ],
+    };
+    this.canViewFacilitatorTab = canViewFacilitator(
+      msel,
+      userId,
+      this.permissionDataService.hasPermission(SystemPermission.ViewMsels),
+    );
+    this.canFacilitateTab = canFacilitate(
+      msel,
+      userId,
+      this.permissionDataService.hasPermission(SystemPermission.EditMsels),
+    );
+    if (this.selectedTab === 'Facilitator View') {
+      this.loadFacilitation();
+    }
+  }
+
+  /** What the Facilitator View shows beyond the MSEL's own data: its tasks, its exercise runs and its position. */
+  private loadFacilitation() {
+    const mselId = this.msel?.id;
+    if (
+      !mselId ||
+      !this.canViewFacilitatorTab ||
+      this.facilitationLoadedFor === mselId
+    ) {
+      return;
+    }
+    this.facilitationLoadedFor = mselId;
+    this.automationTaskDataService.loadByMsel(mselId);
+    this.automationRunDataService.loadByMsel(
+      mselId,
+      AutomationRunKind.Exercise,
+    );
+    this.executionDataService.load(mselId);
+  }
+
   private loadMsel(mselId: string) {
     // the users loaded with the MSEL include its contributors' members
     this.contributorUnitIds = undefined;
@@ -322,6 +438,9 @@ export class MselComponent implements OnDestroy {
       } else {
         this.uiDataService.setMselTab(tabName);
         this.selectedTab = tabName;
+        if (tabName === 'Facilitator View') {
+          this.loadFacilitation();
+        }
       }
     };
 
@@ -387,6 +506,21 @@ export class MselComponent implements OnDestroy {
     return '';
   }
 
+  /**
+   * A saved Facilitator View tab waits for the roles and the permissions that show it; once both are in, a tab the
+   * user cannot open falls back to the default.
+   */
+  private keepSelectedTabShownOnceLoaded() {
+    if (
+      this.selectedTab === 'Facilitator View' &&
+      this.msel?.id &&
+      !this.userMselRoleQuery.getValue().loading &&
+      this.permissionsLoaded
+    ) {
+      this.keepSelectedTabShown(this.getTabListItems());
+    }
+  }
+
   // the content area has a page only for the tabs listed, so any other selection falls back to the default tab
   private keepSelectedTabShown(tabs: string[]) {
     if (!tabs.includes(this.selectedTab)) {
@@ -418,6 +552,11 @@ export class MselComponent implements OnDestroy {
         case 'Actions':
         case 'Duties':
           if (this.msel?.useCite) {
+            tabList.push(tab);
+          }
+          break;
+        case 'Facilitator View':
+          if (this.canViewFacilitatorTab) {
             tabList.push(tab);
           }
           break;

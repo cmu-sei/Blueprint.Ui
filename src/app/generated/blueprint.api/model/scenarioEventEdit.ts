@@ -13,9 +13,9 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { SteamfitterTaskFields } from './steamfitterTaskFields';
 import { EventType } from './eventType';
 import { ScenarioEventCell } from './scenarioEventCell';
+import { AutomationTaskFields } from './automationTaskFields';
 
 
 export interface ScenarioEventEdit { 
@@ -30,7 +30,10 @@ export interface ScenarioEventEdit {
      * The event\'s cells. Only cells for the MSEL\'s own Data Fields are written.
      */
     dataValues?: Array<ScenarioEventCell> | null;
-    steamfitterTask?: SteamfitterTaskFields;
+    /**
+     * The event\'s automation tasks, in order, replacing those it has. Null leaves them as they are, as an edit that only moves the event in time does.
+     */
+    automationTasks?: Array<AutomationTaskFields> | null;
 }
 export namespace ScenarioEventEdit {
 }

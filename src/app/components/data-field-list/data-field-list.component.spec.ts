@@ -477,6 +477,36 @@ describe('DataFieldListComponent', () => {
     );
   });
 
+  describe('Facilitate column', () => {
+    /**
+     * Verifies: chosen in the column list, the Facilitate column shows each field's Facilitator View flag, apart from the Facil
+     * (Facilitation events) column, and ticking it saves the field with the flag.
+     * Interacts with: displayOptions, the saved visible columns, DataFieldService.updateDataField (stub).
+     * Data: EditMsels; the Facilitate column chosen; Priority not yet on the Facilitator View.
+     */
+    it('saves a field to the Facilitator View', async () => {
+      localStorage.setItem(
+        'uiState',
+        JSON.stringify({ visibleDataFieldColumns: ['onFacilitatorView'] }),
+      );
+      const { dataFieldApi } = await renderDataFields({
+        permissions: [SystemPermission.EditMsels],
+      });
+      const box = within(
+        within(table()).getByText('Priority').closest<HTMLElement>('mat-row'),
+      )
+        .getByTitle('Display on the Facilitator View')
+        .querySelector<HTMLInputElement>('input');
+
+      await userEvent.setup().click(box);
+
+      expect(dataFieldApi.updateDataField).toHaveBeenCalledWith(
+        MSEL_FIELD.id,
+        expect.objectContaining({ onFacilitatorView: true }),
+      );
+    });
+  });
+
   describe('inject type data fields (admin)', () => {
     /**
      * Verifies: an inject type's data fields belong to no MSEL, so, as the API does, they are editable with ManageDataFields and

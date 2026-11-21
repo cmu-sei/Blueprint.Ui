@@ -1,0 +1,97 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+-->
+<div class="panel">
+  @if (errorMessage()) {
+    <p role="alert" class="panel-error">{{ errorMessage() }}</p>
+  }
+  <table class="panel-table">
+    <thead>
+      <tr>
+        <th scope="col">Task</th>
+        <th scope="col">Trigger</th>
+        <th scope="col">Status</th>
+        <th scope="col">VM</th>
+        <th scope="col">Ran</th>
+        <th scope="col">Output</th>
+        @if (hasScores()) {
+          <th scope="col">Score</th>
+        }
+        <th scope="col"><span class="cdk-visually-hidden">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (task of tasks(); track task.id; let i = $index) {
+        @let latestRun = latest(task);
+        <tr>
+          <td>{{ i + 1 }}. {{ task.name }}</td>
+          <td>
+            {{ trigger(task) }}
+            @if (!task.enabled) {
+              <span class="panel-note">(disabled)</span>
+            }
+          </td>
+          <td><app-automation-status-chip [status]="latestRun?.status" /></td>
+          <td>{{ vms(latestRun) }}</td>
+          <td>{{ (latestRun?.startedAt | date: 'mediumTime') ?? '—' }}</td>
+          <td class="panel-output" [title]="output(latestRun)">
+            {{ output(latestRun) }}
+          </td>
+          @if (hasScores()) {
+            <td>
+              @if (score(task)?.totalScore > 0) {
+                {{ score(task).totalScoreEarned }}/{{ score(task).totalScore }}
+              }
+            </td>
+          }
+          <td class="panel-actions">
+            @if (canCancel(latestRun)) {
+              <button
+                matButton
+                type="button"
+                (click)="cancel(task, latestRun)"
+                [attr.aria-label]="'Cancel ' + task.name"
+              >
+                Cancel
+              </button>
+            } @else if (canAct() && latestRun && !isRunning(latestRun)) {
+              <button
+                matButton
+                type="button"
+                (click)="rerun(task, latestRun)"
+                [disabled]="!!cannotRerun(task, latestRun)"
+                [matTooltip]="cannotRerun(task, latestRun)"
+                [attr.aria-label]="'Rerun ' + task.name"
+              >
+                <mat-icon fontIcon="mdi-refresh" aria-hidden="true" />
+                Rerun
+              </button>
+            } @else if (canAct() && !latestRun) {
+              <button
+                matButton
+                type="button"
+                (click)="run(task)"
+                [disabled]="!!cannotRun(task)"
+                [matTooltip]="cannotRun(task)"
+                [attr.aria-label]="'Run ' + task.name"
+              >
+                <mat-icon fontIcon="mdi-play" aria-hidden="true" />
+                Run
+              </button>
+            }
+            <button
+              matIconButton
+              type="button"
+              (click)="history.emit(task)"
+              [attr.aria-label]="'History of ' + task.name"
+              matTooltip="History"
+            >
+              <mat-icon fontIcon="mdi-format-list-bulleted" />
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

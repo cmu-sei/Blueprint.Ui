@@ -1,0 +1,344 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+-->
+<div class="automation-tab">
+  <div class="automation-toolbar">
+    <span class="automation-hint"
+      >Tasks run in list order unless a trigger says otherwise.</span
+    >
+    @if (canEdit()) {
+      <button matButton="outlined" type="button" (click)="add()">
+        <mat-icon fontIcon="mdi-plus" aria-hidden="true" />
+        Add Task
+      </button>
+    }
+  </div>
+  @if (drafts().length === 0) {
+    <p class="automation-empty">
+      This event has no automation tasks.
+      @if (canEdit()) {
+        Add one to power on a VM, run a command, send a notification or call an
+        API when the event comes up.
+      }
+    </p>
+  }
+  <mat-accordion
+    multi
+    cdkDropList
+    [cdkDropListDisabled]="!canEdit()"
+    (cdkDropListDropped)="drop($event)"
+  >
+    @for (draft of drafts(); track draft.id; let i = $index) {
+      <mat-expansion-panel
+        cdkDrag
+        cdkDragLockAxis="y"
+        [expanded]="expandedId === draft.id"
+        (opened)="expandedId = draft.id"
+      >
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            @if (canEdit()) {
+              <mat-icon
+                cdkDragHandle
+                class="drag-handle"
+                fontIcon="mdi-drag"
+                aria-label="Drag to reorder"
+                aria-hidden="false"
+                (click)="$event.stopPropagation()"
+              />
+            }
+            {{ i + 1 }}. {{ draft.name || 'New task' }}
+          </mat-panel-title>
+          <mat-panel-description>
+            <span class="panel-summary"
+              >{{ actionLabel(draft) }} · {{ summary(draft) }}</span
+            >
+            @if (draft.score > 0) {
+              <span class="panel-disabled">{{ draft.score }} pts</span>
+            }
+            @if (draft.userExecutable) {
+              <mat-icon
+                class="mdi-18px"
+                fontIcon="mdi-account-arrow-right-outline"
+                role="img"
+                aria-hidden="false"
+                aria-label="Participants can run it"
+              />
+            }
+            @if (!draft.enabled) {
+              <span class="panel-disabled">Disabled</span>
+            }
+            @if (errors(draft).length > 0) {
+              <mat-icon
+                class="panel-error"
+                fontIcon="mdi-alert-circle-outline"
+                role="img"
+                aria-hidden="false"
+                [attr.aria-label]="'Task ' + (i + 1) + ' needs attention'"
+              />
+            }
+            <app-automation-status-chip
+              [status]="latest(draft)?.status"
+              [compact]="true"
+            />
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <div class="task-form">
+          <div class="task-row">
+            <mat-form-field class="task-name">
+              <mat-label>Name</mat-label>
+              <input
+                matInput
+                required
+                [(ngModel)]="draft.name"
+                (ngModelChange)="touch()"
+                [disabled]="!canEdit()"
+              />
+            </mat-form-field>
+            <mat-form-field class="task-action">
+              <mat-label>Action</mat-label>
+              <mat-select
+                [value]="draft.action"
+                (valueChange)="setAction(draft, $event)"
+                [disabled]="!canEdit()"
+              >
+                @for (group of categories | async; track group.category) {
+                  <mat-optgroup [label]="group.category">
+                    @for (a of group.actions; track a.action) {
+                      <mat-option [value]="a.action">{{
+                        a.display
+                      }}</mat-option>
+                    }
+                  </mat-optgroup>
+                }
+              </mat-select>
+              @if (definition(draft)?.description) {
+                <mat-hint>{{ definition(draft).description }}</mat-hint>
+              }
+            </mat-form-field>
+          </div>
+
+          @if (definition(draft)?.requiresVm) {
+            <mat-form-field class="full-width">
+              <mat-label>VM mask</mat-label>
+              <input
+                matInput
+                required
+                [(ngModel)]="draft.vmMask"
+                (ngModelChange)="touch()"
+                [disabled]="!canEdit()"
+              />
+              <mat-hint
+                >Part of the VMs' names, or VM ids separated by commas. The
+                Player view is the MSEL's when it runs, and the one you choose
+                when you test it.</mat-hint
+              >
+            </mat-form-field>
+          }
+
+          <app-automation-parameter-form
+            [definition]="definition(draft)"
+            [draft]="draft"
+            [canEdit]="canEdit()"
+            (changed)="touch()"
+          />
+
+          <mat-form-field class="full-width">
+            <mat-label>Expected output</mat-label>
+            <input
+              matInput
+              [(ngModel)]="draft.expectedOutput"
+              (ngModelChange)="touch()"
+              [disabled]="!canEdit()"
+            />
+            <mat-hint
+              >The task succeeds when its output contains this text, ignoring
+              case. Empty always matches.</mat-hint
+            >
+          </mat-form-field>
+
+          <div class="task-row">
+            <mat-form-field>
+              <mat-label>Trigger</mat-label>
+              <mat-select
+                [value]="draft.triggerCondition"
+                (valueChange)="setTrigger(draft, $event)"
+                [disabled]="!canEdit()"
+              >
+                @for (t of triggers; track t.value) {
+                  <mat-option [value]="t.value">{{ t.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            @if (isChained(draft.triggerCondition)) {
+              <mat-form-field class="task-trigger">
+                <mat-label>Task</mat-label>
+                <mat-select
+                  required
+                  [(ngModel)]="draft.triggerTaskId"
+                  (ngModelChange)="touch()"
+                  [disabled]="!canEdit()"
+                >
+                  @if (localOptions(draft).length > 0) {
+                    <mat-optgroup label="This event">
+                      @for (o of localOptions(draft); track o.id) {
+                        <mat-option [value]="o.id">{{ o.label }}</mat-option>
+                      }
+                    </mat-optgroup>
+                  }
+                  @if (triggerOptions().length > 0) {
+                    <mat-optgroup label="Other events">
+                      @for (o of triggerOptions(); track o.id) {
+                        <mat-option [value]="o.id">{{ o.label }}</mat-option>
+                      }
+                    </mat-optgroup>
+                  }
+                </mat-select>
+              </mat-form-field>
+            }
+          </div>
+
+          <div class="task-row">
+            <mat-form-field class="task-seconds">
+              <mat-label>Delay (s)</mat-label>
+              <input
+                matInput
+                type="number"
+                min="0"
+                [(ngModel)]="draft.delaySeconds"
+                (ngModelChange)="touch()"
+                [disabled]="!canEdit()"
+              />
+            </mat-form-field>
+            <mat-form-field class="task-seconds">
+              <mat-label>Expiration (s)</mat-label>
+              <input
+                matInput
+                type="number"
+                min="0"
+                [(ngModel)]="draft.expirationSeconds"
+                (ngModelChange)="touch()"
+                [disabled]="!canEdit()"
+              />
+              <mat-hint>0 uses the API's default</mat-hint>
+            </mat-form-field>
+            <mat-checkbox
+              [(ngModel)]="draft.enabled"
+              (ngModelChange)="touch()"
+              [disabled]="!canEdit()"
+              >Enabled</mat-checkbox
+            >
+            <mat-checkbox
+              [(ngModel)]="draft.repeatable"
+              (ngModelChange)="touch()"
+              [disabled]="!canEdit()"
+              >Repeatable</mat-checkbox
+            >
+          </div>
+
+          <div class="task-row">
+            <mat-form-field class="task-seconds">
+              <mat-label>Score</mat-label>
+              <input
+                matInput
+                type="number"
+                min="0"
+                [(ngModel)]="draft.score"
+                (ngModelChange)="touch()"
+                [disabled]="!canEdit()"
+              />
+              <mat-hint>Earned when its newest run succeeds</mat-hint>
+            </mat-form-field>
+            <mat-checkbox
+              [(ngModel)]="draft.userExecutable"
+              (ngModelChange)="touch()"
+              [disabled]="!canEdit()"
+              >Participants can run it</mat-checkbox
+            >
+            @if (draft.userExecutable) {
+              <span class="automation-hint"
+                >Offered on the MSEL's Tasks page, by its name and description
+                only.</span
+              >
+            }
+          </div>
+
+          <div class="task-row">
+            <mat-form-field class="task-seconds">
+              <mat-label>Iterations</mat-label>
+              <input
+                matInput
+                type="number"
+                min="1"
+                max="1000"
+                [(ngModel)]="draft.iterations"
+                (ngModelChange)="touch()"
+                [disabled]="!canEdit()"
+              />
+            </mat-form-field>
+            @if (draft.iterations > 1) {
+              <mat-form-field class="task-seconds">
+                <mat-label>Interval (s)</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="0"
+                  [(ngModel)]="draft.intervalSeconds"
+                  (ngModelChange)="touch()"
+                  [disabled]="!canEdit()"
+                />
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>Until</mat-label>
+                <mat-select
+                  [(ngModel)]="draft.iterationTermination"
+                  (ngModelChange)="touch()"
+                  [disabled]="!canEdit()"
+                >
+                  @for (t of terminations; track t.value) {
+                    <mat-option [value]="t.value">{{ t.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            }
+          </div>
+
+          @for (error of errors(draft); track error) {
+            <mat-error>{{ error }}</mat-error>
+          }
+        </div>
+
+        @if (canEdit() || canTest()) {
+          <mat-action-row>
+            @if (canTest()) {
+              <button
+                matButton
+                type="button"
+                (click)="test.emit(draft)"
+                [disabled]="errors(draft).length > 0"
+              >
+                <mat-icon fontIcon="mdi-flask-outline" aria-hidden="true" />
+                Test Task
+              </button>
+            }
+            @if (canEdit()) {
+              <button matButton type="button" (click)="duplicate(draft)">
+                Duplicate
+              </button>
+              <button
+                matButton
+                type="button"
+                (click)="remove(draft)"
+                [attr.aria-label]="'Delete task ' + (i + 1)"
+              >
+                Delete
+              </button>
+            }
+          </mat-action-row>
+        }
+      </mat-expansion-panel>
+    }
+  </mat-accordion>
+</div>

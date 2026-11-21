@@ -14,7 +14,21 @@ import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { Theme } from '@cmusei/crucible-common';
-import { Msel, MselUnit } from 'src/app/generated/blueprint.api';
+import {
+  AutomationRun,
+  AutomationRunKind,
+  AutomationService,
+  AutomationTask,
+  Msel,
+  MselExecution,
+  MselExecutionService,
+  MselRole,
+  MselUnit,
+  SystemPermissionsService,
+  UserMselRole,
+} from 'src/app/generated/blueprint.api';
+import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
+import { ApiStub } from 'src/app/test-utils/api-stub';
 import { MselUnitStore } from 'src/app/data/msel-unit/msel-unit.store';
 import { XApiService } from 'src/app/services/xapi/xapi.service';
 import { MselComponent } from './msel.component';
@@ -38,6 +52,7 @@ import { MselCompetenciesComponent } from '../msel-competencies/msel-competencie
 import { ScenarioEventListComponent } from '../scenario-event-list/scenario-event-list.component';
 import { MselViewComponent } from '../msel-view/msel-view.component';
 import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
+import { FacilitatorViewComponent } from '../facilitator-view/facilitator-view.component';
 import { InvitationListComponent } from '../invitation-list/invitation-list.component';
 import { MselPlaybookComponent } from '../msel-playbook/msel-playbook.component';
 import { MselScoringModelTabComponent } from '../msel-scoring-model-tab/msel-scoring-model-tab.component';
@@ -119,6 +134,12 @@ class AssessorViewStub {
   readonly userTheme = input<Theme>(undefined);
   readonly canEditCheckboxes = input<boolean>(undefined);
 }
+@Component({ selector: 'app-facilitator-view', template: '' })
+class FacilitatorViewStub {
+  readonly loggedInUserId = input<string>(undefined);
+  readonly userTheme = input<Theme>(undefined);
+  readonly canFacilitate = input<boolean>(undefined);
+}
 @Component({ selector: 'app-invitation-list', template: '' })
 class InvitationListStub {
   readonly loggedInUserId = input<string>(undefined);
@@ -148,6 +169,7 @@ async function renderMsel(
     canEditCheckboxes?: boolean;
     msel?: Msel;
     mselUnits?: MselUnit[];
+    userMselRoles?: UserMselRole[];
   } = {},
 ) {
   const {
@@ -156,8 +178,20 @@ async function renderMsel(
     canEditCheckboxes = false,
     msel = MSEL,
     mselUnits = [],
+    userMselRoles = [],
   } = overrides;
-  const apis = mselLoadApiStubs({ msel, mselUnits });
+  const apis = mselLoadApiStubs({ msel, mselUnits, userMselRoles });
+  const automationApi = {
+    getAutomationTasksByMsel: vi.fn(() => of<AutomationTask[]>([])),
+    getAutomationRunsByMsel: vi.fn(() => of<AutomationRun[]>([])),
+  } satisfies ApiStub<AutomationService>;
+  const executionApi = {
+    getMselExecution: vi.fn(() =>
+      of<MselExecution>({ mselId: 'msel-1', positions: [] }),
+    ),
+  } satisfies ApiStub<MselExecutionService>;
+  // the Facilitator View tab depends on the system permissions, which the component loads itself
+  const permissionApis = permissionApiStubs({ system: [] });
   const xApi = { viewedMsel: vi.fn(() => of(null)) } satisfies Pick<
     XApiService,
     'viewedMsel'
@@ -184,12 +218,19 @@ async function renderMsel(
       { replace: ScenarioEventListComponent, with: ScenarioEventListStub },
       { replace: MselViewComponent, with: MselViewStub },
       { replace: AssessorViewComponent, with: AssessorViewStub },
+      { replace: FacilitatorViewComponent, with: FacilitatorViewStub },
       { replace: InvitationListComponent, with: InvitationListStub },
       { replace: MselPlaybookComponent, with: MselPlaybookStub },
     ],
     providers: [
       ...mselLoadApiProviders(apis),
       { provide: XApiService, useValue: xApi },
+      { provide: AutomationService, useValue: automationApi },
+      { provide: MselExecutionService, useValue: executionApi },
+      {
+        provide: SystemPermissionsService,
+        useValue: permissionApis.systemPermissions,
+      },
       { provide: ActivatedRoute, useValue: route },
     ],
     inputs: {
@@ -200,7 +241,14 @@ async function renderMsel(
       userTheme$: of(Theme.LIGHT),
     },
   });
-  return { ...rendered, apis, xApi, setQueryParams };
+  return {
+    ...rendered,
+    apis,
+    xApi,
+    setQueryParams,
+    automationApi,
+    executionApi,
+  };
 }
 
 const nav = () =>
@@ -484,6 +532,66 @@ describe('MselComponent', () => {
       expect(child(fixture, AssessorViewStub)?.canEditCheckboxes()).toBe(
         canEditCheckboxes,
       );
+    },
+  );
+
+  /**
+   * Verifies: the Facilitator View tab is offered to the roles that can open the view, and passes whether the user may act;
+   * opening it reads the MSEL's tasks, exercise runs and position.
+   * Interacts with: MselComponent.getTabListItems, updateFacilitatorAccess, FacilitatorViewStub input, the automation and
+   * execution endpoints (stubs).
+   * Data: the user holds one MSEL role per row; no system permission.
+   */
+  it.each([
+    { role: MselRole.Facilitator, canFacilitate: true },
+    { role: MselRole.Owner, canFacilitate: true },
+    { role: MselRole.Editor, canFacilitate: false },
+    { role: MselRole.Approver, canFacilitate: false },
+  ])(
+    'offers the Facilitator View to a $role, canFacilitate $canFacilitate',
+    async ({ role, canFacilitate }) => {
+      const { fixture, automationApi, executionApi } = await renderMsel({
+        userMselRoles: [
+          { id: 'umr-1', userId: 'user-me', mselId: 'msel-1', role },
+        ],
+      });
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      await openTab('Facilitator View');
+
+      expect(child(fixture, FacilitatorViewStub)?.canFacilitate()).toBe(
+        canFacilitate,
+      );
+      expect(automationApi.getAutomationTasksByMsel).toHaveBeenCalledWith(
+        'msel-1',
+      );
+      expect(automationApi.getAutomationRunsByMsel).toHaveBeenCalledWith(
+        'msel-1',
+        AutomationRunKind.Exercise,
+      );
+      expect(executionApi.getMselExecution).toHaveBeenCalledWith('msel-1');
+    },
+  );
+
+  /**
+   * Verifies: an Evaluator, a Viewer and a Move Editor are not offered the Facilitator View tab.
+   * Interacts with: MselComponent.getTabListItems.
+   * Data: one MSEL role per row; no system permission.
+   */
+  it.each([MselRole.Evaluator, MselRole.Viewer, MselRole.MoveEditor])(
+    'hides the Facilitator View from a %s',
+    async (role) => {
+      const { fixture } = await renderMsel({
+        userMselRoles: [
+          { id: 'umr-1', userId: 'user-me', mselId: 'msel-1', role },
+        ],
+      });
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(nav().queryByText('Facilitator View')).not.toBeInTheDocument();
+      expect(nav().getByText('Assessor View')).toBeInTheDocument();
     },
   );
 

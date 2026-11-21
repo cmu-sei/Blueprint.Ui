@@ -29,6 +29,12 @@ import {
   MselService,
   ScenarioEvent,
   ScenarioEventService,
+  AutomationRun,
+  AutomationRunKind,
+  AutomationService,
+  AutomationStatus,
+  AutomationTask,
+  AutomationTrigger,
   SystemPermission,
   SystemPermissionsService,
 } from 'src/app/generated/blueprint.api';
@@ -37,7 +43,11 @@ import { DataValueStore } from 'src/app/data/data-value/data-value.store';
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { ScenarioEventStore } from 'src/app/data/scenario-event/scenario-event.store';
-import { ScenarioEventEditDialogComponent } from '../scenario-event-edit-dialog/scenario-event-edit-dialog.component';
+import {
+  ScenarioEventEditDialogComponent,
+  ScenarioEventEditDialogData,
+} from '../scenario-event-edit-dialog/scenario-event-edit-dialog.component';
+import { AutomationTestDialogData } from '../automation-test-dialog/automation-test-dialog.component';
 import { ScenarioEventListComponent } from './scenario-event-list.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
@@ -169,6 +179,8 @@ async function renderEventList(
     myRoles?: MselRole[];
     isStarterMsel?: boolean;
     mselExtra?: Partial<Msel>;
+    tasks?: AutomationTask[];
+    testRuns?: AutomationRun[];
   } = {},
 ) {
   const {
@@ -176,7 +188,13 @@ async function renderEventList(
     myRoles = [],
     isStarterMsel = false,
     mselExtra = {},
+    tasks = [],
+    testRuns = [],
   } = overrides;
+  const automationApi = {
+    getAutomationTasksByMsel: vi.fn(() => of(structuredClone(tasks))),
+    getAutomationRunsByMsel: vi.fn(() => of(structuredClone(testRuns))),
+  } satisfies ApiStub<AutomationService>;
   const mselApi = {
     getMyMsels: vi.fn(() => of<Msel[]>([])),
   } satisfies ApiStub<MselService>;
@@ -226,6 +244,7 @@ async function renderEventList(
       PermissionDataService,
       { provide: MselService, useValue: mselApi },
       { provide: ScenarioEventService, useValue: eventApi },
+      { provide: AutomationService, useValue: automationApi },
       { provide: CrucibleDialogService, useValue: dialog },
       {
         provide: MatDialog,
@@ -247,7 +266,7 @@ async function renderEventList(
     ],
     inputs: { loggedInUserId: ME, isStarterMsel },
   });
-  return { ...rendered, eventApi, confirm, open };
+  return { ...rendered, eventApi, automationApi, confirm, open };
 }
 
 const table = () => screen.getByRole('table');
@@ -262,6 +281,11 @@ function dataValues(fixture: ComponentFixture<unknown>): DataValueStub[] {
     .queryAll(By.directive(DataValueStub))
     .map((d) => d.componentInstance);
 }
+/** The data the first dialog the list opened was given. */
+function openedWith<T>(open: { mock: { calls: unknown[][] } }): T {
+  return (open.mock.calls[0][1] as { data: T }).data;
+}
+
 async function openEventMenu(n: number) {
   const user = userEvent.setup();
   await user.click(
@@ -557,5 +581,191 @@ describe('ScenarioEventListComponent', () => {
         galleryItemStatuses: ['Green', 'Red'],
       }),
     );
+  });
+
+  describe('automation', () => {
+    const TASKS: AutomationTask[] = [
+      {
+        id: 't-1',
+        mselId: 'msel-1',
+        scenarioEventId: 'se-1',
+        displayOrder: 0,
+        name: 'Power on WS-01',
+        action: 'vm_hw_power_on',
+        vmMask: 'ws-01',
+        triggerCondition: AutomationTrigger.AtEventTime,
+        enabled: true,
+      },
+      {
+        id: 't-2',
+        mselId: 'msel-1',
+        scenarioEventId: 'se-1',
+        displayOrder: 1,
+        name: 'Drop beacon',
+        action: 'guest_process_run',
+        vmMask: 'ws-01',
+        triggerCondition: AutomationTrigger.OnSuccess,
+        triggerTaskId: 't-1',
+        enabled: true,
+        secretParameterKeys: ['Password'],
+      },
+    ];
+    const failedTest: AutomationRun = {
+      id: 'run-1',
+      mselId: 'msel-1',
+      automationTaskId: 't-2',
+      kind: AutomationRunKind.Test,
+      status: AutomationStatus.Failed,
+      dateCreated: new Date('2026-01-01T10:00:00Z'),
+      results: [],
+    };
+
+    /**
+     * Verifies: once the MSEL has a task, an Automation column counts each event's tasks with the newest test's outcome, and an event without tasks has an empty cell.
+     * Interacts with: AutomationService.getAutomationTasksByMsel / getAutomationRunsByMsel (stubs), the Automation cell.
+     * Data: EditMsels; two tasks on se-1, the second's newest test failed; se-2 has none.
+     */
+    it('counts each event tasks and shows the newest test', async () => {
+      const { automationApi } = await renderEventList({
+        permissions: [SystemPermission.EditMsels, SystemPermission.ViewMsels],
+        tasks: TASKS,
+        testRuns: [failedTest],
+      });
+
+      expect(automationApi.getAutomationRunsByMsel).toHaveBeenCalledWith(
+        'msel-1',
+        AutomationRunKind.Test,
+      );
+      expect(
+        within(table()).getByRole('columnheader', { name: 'Automation' }),
+      ).toBeInTheDocument();
+      const cell = row(1).getByRole('button', {
+        name: '2 automation tasks on event 1',
+      });
+      expect(
+        within(cell).getByRole('img', { name: 'Failed' }),
+      ).toBeInTheDocument();
+      expect(
+        row(2).queryByRole('button', { name: /automation tasks/ }),
+      ).not.toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: a MSEL without tasks shows no Automation column, and a Viewer, who cannot open the Facilitator View, does not ask for test runs.
+     * Interacts with: AutomationService stubs, canViewFacilitator.
+     * Data: every permission but EditMsels and ViewMsels; the Viewer role; no tasks.
+     */
+    it('hides the column without tasks and reads no runs for a Viewer', async () => {
+      const { automationApi } = await renderEventList({
+        permissions: ALL_BUT_EDIT_MSELS.filter(
+          (p) => p !== SystemPermission.ViewMsels,
+        ),
+        myRoles: [MselRole.Viewer],
+      });
+
+      expect(automationApi.getAutomationTasksByMsel).toHaveBeenCalledWith(
+        'msel-1',
+      );
+      expect(automationApi.getAutomationRunsByMsel).not.toHaveBeenCalled();
+      expect(
+        within(table()).queryByRole('columnheader', { name: 'Automation' }),
+      ).not.toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: clicking an event's Automation cell opens the edit dialog on its Automation tab, with the tasks as drafts that keep their ids and name the stored secrets.
+     * Interacts with: MatDialog.open (stub), the edit dialog data.
+     * Data: EditMsels; the two tasks on se-1.
+     */
+    it('opens the Automation tab with the event tasks', async () => {
+      const { open } = await renderEventList({
+        permissions: [SystemPermission.EditMsels],
+        tasks: TASKS,
+      });
+      const user = userEvent.setup();
+
+      await user.click(
+        row(1).getByRole('button', { name: '2 automation tasks on event 1' }),
+      );
+
+      const data = openedWith<ScenarioEventEditDialogData>(open);
+      expect(data.initialTab).toBe('Automation');
+      expect(data.savedTaskIds).toEqual(['t-1', 't-2']);
+      expect(data.canTest).toBe(true);
+      expect(
+        data.automationTasks.map(
+          (t) => `${t.id}:${t.triggerTaskId}:${t.storedSecretKeys.join()}`,
+        ),
+      ).toEqual(['t-1:undefined:', 't-2:t-1:Password']);
+    });
+
+    /**
+     * Verifies: copying an event copies its tasks with new ids, the chain between them following the copies, and no stored secrets.
+     * Interacts with: copyScenarioEvent, MatDialog.open (stub).
+     * Data: EditMsels; se-1 with t-2 triggered by t-1.
+     */
+    it('copies the event tasks with a chain of their own', async () => {
+      const { open } = await renderEventList({
+        permissions: [SystemPermission.EditMsels],
+        tasks: TASKS,
+      });
+
+      await openEventMenu(1);
+      await userEvent
+        .setup()
+        .click(screen.getByRole('menuitem', { name: 'Copy' }));
+
+      const data = openedWith<ScenarioEventEditDialogData>(open);
+      const [first, second] = data.automationTasks;
+      expect(first.id).not.toBe('t-1');
+      expect(second.triggerTaskId).toBe(first.id);
+      expect(second.storedSecretKeys).toEqual([]);
+      expect(data.savedTaskIds).toEqual([]);
+    });
+
+    /**
+     * Verifies: Test Automation is offered on an event with tasks to an Editor, and opens the test dialog with the saved tasks.
+     * Interacts with: canTestAutomation, openAutomationTest, MatDialog.open (stub).
+     * Data: every permission but EditMsels; the Editor role; the two tasks on se-1.
+     */
+    it('offers Test Automation to an editor', async () => {
+      const { open } = await renderEventList({
+        permissions: ALL_BUT_EDIT_MSELS,
+        myRoles: [MselRole.Editor],
+        tasks: TASKS,
+      });
+
+      await openEventMenu(1);
+      await userEvent
+        .setup()
+        .click(screen.getByRole('menuitem', { name: 'Test Automation…' }));
+
+      expect(openedWith<AutomationTestDialogData>(open)).toEqual(
+        expect.objectContaining({
+          scenarioEventId: 'se-1',
+          savedTaskIds: ['t-1', 't-2'],
+          eventLabel: 'Event 1',
+        }),
+      );
+    });
+
+    /**
+     * Verifies: a Viewer is not offered Test Automation.
+     * Interacts with: canTestAutomation.
+     * Data: every permission but EditMsels; the Viewer role; the two tasks on se-1.
+     */
+    it('does not offer Test Automation to a viewer', async () => {
+      await renderEventList({
+        permissions: ALL_BUT_EDIT_MSELS,
+        myRoles: [MselRole.Viewer],
+        tasks: TASKS,
+      });
+
+      await openEventMenu(1);
+
+      expect(
+        screen.queryByRole('menuitem', { name: 'Test Automation…' }),
+      ).not.toBeInTheDocument();
+    });
   });
 });

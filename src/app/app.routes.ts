@@ -66,6 +66,22 @@ export const ROUTES: Routes = [
     canActivate: [ComnAuthGuardService],
   },
   {
+    path: 'facilitate',
+    loadComponent: () =>
+      import('./components/facilitator-page/facilitator-page.component').then(
+        (m) => m.FacilitatorPageComponent,
+      ),
+    canActivate: [ComnAuthGuardService],
+  },
+  {
+    path: 'msel/:mselid/tasks',
+    loadComponent: () =>
+      import('./components/participant-tasks-page/participant-tasks-page.component').then(
+        (m) => m.ParticipantTasksPageComponent,
+      ),
+    canActivate: [ComnAuthGuardService],
+  },
+  {
     path: 'msel/:mselid/view',
     loadComponent: () =>
       import('./components/msel-view/msel-view.component').then(

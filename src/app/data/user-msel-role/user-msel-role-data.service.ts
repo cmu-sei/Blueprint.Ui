@@ -128,13 +128,11 @@ export class UserMselRoleDataService {
     userId: string,
     citeEvaluationRole: string | null,
     galleryExhibitRole: string | null,
-    steamfitterScenarioRole: string | null,
   ) {
     this.userMselRoleService
       .setUserMselIntegrationRoles(mselId, userId, {
         citeEvaluationRole,
         galleryExhibitRole,
-        steamfitterScenarioRole,
       })
       .pipe(take(1))
       .subscribe((updated) => {

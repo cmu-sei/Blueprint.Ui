@@ -205,6 +205,52 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
         </div>
 
+        <!-- FACILITATE card - always shown, greyed out unless the user can open the Facilitator View of a running exercise (Owner, Facilitator, Editor, Approver or ViewMsels) -->
+        <div
+          class="mission-card facilitate-card"
+          [class.disabled-card]="facilitateMselList.length === 0"
+          [attr.aria-disabled]="facilitateMselList.length === 0"
+          tabindex="0"
+          role="button"
+          (click)="facilitateMselList.length > 0 && gotoUrl('facilitate')"
+        >
+          <div class="card-corner-accent"></div>
+          <div class="card-header">
+            <div class="card-icon">
+              <mat-icon fontIcon="mdi-robot-outline" />
+            </div>
+            <div class="card-title-section">
+              <h2 class="card-title">FACILITATE</h2>
+              <p class="card-subtitle">Moves & Automation</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="metric">
+              <span class="metric-value">{{ facilitateMselList.length }}</span>
+              <span class="metric-label">Events Active</span>
+            </div>
+            <div class="card-description">
+              @if (facilitateMselList.length > 0) {
+                Start moves and run the automation of active exercises
+              } @else if (hasFacilitatorRole) {
+                No running events available to facilitate
+              } @else {
+                You are not a facilitator on any event
+              }
+            </div>
+          </div>
+          <div class="card-footer">
+            <button
+              mat-button
+              color="primary"
+              [disabled]="facilitateMselList.length === 0"
+            >
+              Facilitate Events
+              <mat-icon class="inline-icon" fontIcon="mdi-arrow-right" />
+            </button>
+          </div>
+        </div>
+
         @if (loadFailed) {
           <div class="mission-card empty-state">
             <div class="card-header">
@@ -227,7 +273,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
           launchMselList.length === 0 &&
           buildMselList.length === 0 &&
           !canCreateMsels &&
-          !hasAssessorRole
+          !hasAssessorRole &&
+          !hasFacilitatorRole
         ) {
           <div class="mission-card empty-state">
             <div class="card-header">

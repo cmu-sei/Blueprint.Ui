@@ -1,0 +1,35 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+-->
+@if (selectedMselId) {
+  <div class="background text app-content-container">
+    <app-topbar
+      [title]="topbarText"
+      [topbarView]="TopbarView.BLUEPRINT_HOME"
+      [imageFilePath]="topbarImage"
+      (urlNavigate)="goToUrl($event)"
+    />
+    @if (!canViewFacilitatorPage) {
+      <div class="no-access-message">
+        <mat-icon class="message-icon" fontIcon="mdi-alert-circle-outline" />
+        <h3>Access Denied</h3>
+        <p>
+          You need the Owner, Facilitator, Editor or Approver role on this MSEL
+          to open its Facilitator View.
+        </p>
+      </div>
+    } @else {
+      <app-facilitator-view
+        [loggedInUserId]="loggedInUserId"
+        [userTheme]="userTheme$ | async"
+        [canFacilitate]="canFacilitatePage"
+        [standalone]="true"
+        [canChooseFields]="canChooseFacilitatorFields"
+      />
+    }
+  </div>
+} @else {
+  <!-- No exercise chosen: list the ones the user can facilitate. -->
+  <app-facilitate />
+}

@@ -3,6 +3,7 @@ README.md
 api.base.service.ts
 api.module.ts
 api/api.ts
+api/automation.service.ts
 api/card.service.ts
 api/cardTeam.service.ts
 api/caster.service.ts
@@ -26,6 +27,7 @@ api/move.service.ts
 api/msel.service.ts
 api/mselCasterExport.service.ts
 api/mselCompetency.service.ts
+api/mselExecution.service.ts
 api/mselImage.service.ts
 api/mselPage.service.ts
 api/mselScoringModel.service.ts
@@ -54,6 +56,25 @@ git_push.sh
 index.ts
 model/applicationTemplate.ts
 model/assembly.ts
+model/automationAction.ts
+model/automationActionDefinition.ts
+model/automationIterationTermination.ts
+model/automationParameterChoice.ts
+model/automationParameterDefinition.ts
+model/automationPausedForm.ts
+model/automationResult.ts
+model/automationRun.ts
+model/automationRunForm.ts
+model/automationRunKind.ts
+model/automationRunSource.ts
+model/automationStatus.ts
+model/automationTask.ts
+model/automationTaskFields.ts
+model/automationTestForm.ts
+model/automationTrigger.ts
+model/automationVmPreview.ts
+model/automationVmPreviewForm.ts
+model/automationVmSummary.ts
 model/callingConventions.ts
 model/card.ts
 model/cardCreate.ts
@@ -143,6 +164,8 @@ model/move.ts
 model/moveCreate.ts
 model/moveEdit.ts
 model/msel.ts
+model/mselAdvanceForm.ts
+model/mselAdvanceResult.ts
 model/mselCasterExport.ts
 model/mselCasterExportDirectory.ts
 model/mselCasterExportEntry.ts
@@ -151,6 +174,7 @@ model/mselCasterImportResult.ts
 model/mselCompetency.ts
 model/mselCreate.ts
 model/mselEdit.ts
+model/mselExecution.ts
 model/mselImportCounts.ts
 model/mselImportFailure.ts
 model/mselImportMessage.ts
@@ -173,6 +197,8 @@ model/organizationCreate.ts
 model/organizationEdit.ts
 model/parameterAttributes.ts
 model/parameterInfo.ts
+model/participantTask.ts
+model/participantTasks.ts
 model/permission.ts
 model/playerApplication.ts
 model/playerApplicationCreate.ts
@@ -195,6 +221,7 @@ model/scenarioEvent.ts
 model/scenarioEventCell.ts
 model/scenarioEventCreate.ts
 model/scenarioEventEdit.ts
+model/scenarioEventPosition.ts
 model/scoringCategory.ts
 model/scoringModel.ts
 model/scoringModelPermission.ts
@@ -203,12 +230,6 @@ model/scoringOption.ts
 model/scoringOptionSelection.ts
 model/securityRuleSet.ts
 model/severityLevel.ts
-model/steamfitterIntegrationType.ts
-model/steamfitterScenarioStartMode.ts
-model/steamfitterTask.ts
-model/steamfitterTaskAction.ts
-model/steamfitterTaskFields.ts
-model/steamfitterTaskTrigger.ts
 model/structLayoutAttribute.ts
 model/systemPermission.ts
 model/systemRole.ts
@@ -228,6 +249,8 @@ model/unitUser.ts
 model/user.ts
 model/userMselRole.ts
 model/userTeamRole.ts
+model/view.ts
+model/viewStatus.ts
 param.ts
 provide-api.ts
 variables.ts

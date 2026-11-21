@@ -8,6 +8,9 @@ import { Injectable, OnDestroy, inject } from '@angular/core';
 import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
 import * as signalR from '@microsoft/signalr';
 import {
+  AutomationResult,
+  AutomationRun,
+  AutomationTask,
   Card,
   CardTeam,
   Catalog,
@@ -31,6 +34,8 @@ import {
   User,
   UserMselRole,
 } from 'src/app/generated/blueprint.api';
+import { AutomationRunDataService } from '../data/automation-run/automation-run-data.service';
+import { AutomationTaskDataService } from '../data/automation-task/automation-task-data.service';
 import { CardDataService } from '../data/card/card-data.service';
 import { CardTeamDataService } from '../data/team/card-team-data.service';
 import { CatalogDataService } from '../data/catalog/catalog-data.service';
@@ -74,6 +79,8 @@ export enum ApplicationArea {
 export class SignalRService implements OnDestroy {
   private authService = inject(ComnAuthService);
   private settingsService = inject(ComnSettingsService);
+  private automationRunDataService = inject(AutomationRunDataService);
+  private automationTaskDataService = inject(AutomationTaskDataService);
   private cardDataService = inject(CardDataService);
   private cardTeamDataService = inject(CardTeamDataService);
   private catalogDataService = inject(CatalogDataService);
@@ -110,6 +117,8 @@ export class SignalRService implements OnDestroy {
   private presenceActors: PresenceActor[] = [];
   private presenceColorMap = ['primary', 'accent', 'green', 'orange', 'purple'];
   actors$ = new BehaviorSubject<PresenceActor[]>([]);
+  /** The MSELs whose Tasks page was told its tasks or score changed, by id. */
+  readonly participantTasksChanged$ = new Subject<string>();
 
   constructor() {
     this.authService.user$.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
@@ -180,6 +189,38 @@ export class SignalRService implements OnDestroy {
     this.actors$.next([]);
   }
 
+  /**
+   * Joins a MSEL's Tasks page group, which is told only that the MSEL's participant tasks or score changed; it waits
+   * for the connection as selectMsel does. A reconnect replaces the connection, so the page joins again then.
+   */
+  // the Tasks pages that want their group: a join that waits for the connection gives up once its page has left
+  private readonly participantGroups = new Set<string>();
+
+  public joinParticipantTasks(mselId: string) {
+    this.participantGroups.add(mselId);
+    this.joinWhenConnected(mselId);
+  }
+
+  private joinWhenConnected(mselId: string) {
+    if (!this.participantGroups.has(mselId)) return;
+    if (this.hubConnection?.state !== signalR.HubConnectionState.Connected) {
+      setTimeout(() => this.joinWhenConnected(mselId), 500);
+      return;
+    }
+    this.hubConnection.invoke('JoinParticipantTasks', mselId).catch(() => {
+      // the page reads its tasks on load anyway; it only misses live updates
+    });
+  }
+
+  public leaveParticipantTasks(mselId: string) {
+    this.participantGroups.delete(mselId);
+    if (this.hubConnection?.state === signalR.HubConnectionState.Connected) {
+      this.hubConnection.invoke('LeaveParticipantTasks', mselId).catch(() => {
+        // the server drops the group with the connection
+      });
+    }
+  }
+
   public selectMsel(mselId: string) {
     if (this.hubConnection?.state !== signalR.HubConnectionState.Connected) {
       setTimeout(() => this.selectMsel(mselId), 500);
@@ -245,6 +286,7 @@ export class SignalRService implements OnDestroy {
   }
 
   private addHandlers() {
+    this.addAutomationHandlers();
     this.addCardHandlers();
     this.addCardTeamHandlers();
     this.addCatalogHandlers();
@@ -269,6 +311,46 @@ export class SignalRService implements OnDestroy {
     this.addUserHandlers();
     this.addUserMselRoleHandlers();
     this.addPresenceHandlers();
+  }
+
+  // Runs and results reach only the MSEL's facilitation group: those who can open its Facilitator View.
+  private addAutomationHandlers() {
+    this.hubConnection.on('AutomationTaskCreated', (task: AutomationTask) => {
+      this.automationTaskDataService.updateStore(task);
+    });
+    this.hubConnection.on('AutomationTaskUpdated', (task: AutomationTask) => {
+      this.automationTaskDataService.updateStore(task);
+    });
+    this.hubConnection.on('AutomationTaskDeleted', (id: string) => {
+      this.automationTaskDataService.deleteFromStore(id);
+    });
+    this.hubConnection.on('AutomationRunCreated', (run: AutomationRun) => {
+      this.automationRunDataService.updateStore(run);
+    });
+    this.hubConnection.on('AutomationRunUpdated', (run: AutomationRun) => {
+      this.automationRunDataService.updateStore(run);
+    });
+    this.hubConnection.on('AutomationRunDeleted', (id: string) => {
+      this.automationRunDataService.deleteFromStore(id);
+    });
+    this.hubConnection.on(
+      'AutomationResultCreated',
+      (result: AutomationResult) => {
+        this.automationRunDataService.updateResult(result);
+      },
+    );
+    this.hubConnection.on(
+      'AutomationResultUpdated',
+      (result: AutomationResult) => {
+        this.automationRunDataService.updateResult(result);
+      },
+    );
+    this.hubConnection.on('AutomationResultDeleted', (id: string) => {
+      this.automationRunDataService.deleteResult(id);
+    });
+    this.hubConnection.on('ParticipantTasksChanged', (mselId: string) => {
+      this.participantTasksChanged$.next(mselId);
+    });
   }
 
   private addCardHandlers() {

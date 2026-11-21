@@ -77,6 +77,11 @@ crucible-confirm-dialog mat-dialog-content p {
   white-space: pre-line;
 }
 
+// a tooltip that lists one thing per line, as the event list's Automation column does
+.multiline-tooltip {
+  white-space: pre-line;
+}
+
 // support color="warn" on icon buttons
 .mat-mdc-icon-button.mat-warn {
   --mat-icon-button-icon-color: var(--mat-sys-error);
