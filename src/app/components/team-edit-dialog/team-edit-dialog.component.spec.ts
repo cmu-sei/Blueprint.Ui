@@ -118,52 +118,18 @@ describe('TeamEditDialogComponent', () => {
   });
 
   /**
-   * Verifies: the domain and a network added in the dialog are saved with the team, trimmed, the domain lower-cased.
-   * Interacts with: the Domain input, the network list (Add Network and its fields), crucible-dialog submit.
-   * Data: Blue Team with no domain or networks; " Example-Bank.com ", then bank-lan 10.20.0.0/24 Office LAN with 40 hosts.
+   * Verifies: the domain is saved with the team, trimmed and lower-cased.
+   * Interacts with: the Domain input, saveTeam, crucible-dialog submit.
+   * Data: Blue Team with no domain; " Example-Bank.com " entered, then saved.
    */
-  it('saves the domain and the networks', async () => {
+  it('saves the domain', async () => {
     const { results } = await renderTeamEdit();
     const user = userEvent.setup();
 
     await user.type(screen.getByLabelText('Domain'), ' Example-Bank.com ');
-    await user.click(screen.getByRole('button', { name: /Add Network/ }));
-    await user.type(screen.getByLabelText('Network Name'), ' bank-lan ');
-    await user.type(screen.getByLabelText('Range'), '10.20.0.0/24');
-    await user.type(screen.getByLabelText('Purpose'), 'Office LAN');
-    await user.type(screen.getByLabelText('Hosts'), '40');
     await user.click(actions().getByRole('button', { name: 'Save' }));
 
     expect(results[0].team.domain).toBe('example-bank.com');
-    expect(results[0].team.networks).toEqual([
-      {
-        name: 'bank-lan',
-        range: '10.20.0.0/24',
-        purpose: 'Office LAN',
-        hostCount: 40,
-      },
-    ]);
-  });
-
-  /**
-   * Verifies: Save is disabled while a network has no name or a range that is not CIDR notation, and the problem is shown.
-   * Interacts with: the network list, networksValid, crucible-dialog submitDisabled.
-   * Data: Blue Team with a network named lan and range 10.20.0.0.
-   */
-  it('disables Save for a network with a range that is not CIDR', async () => {
-    await renderTeamEdit(
-      teamData({
-        team: {
-          id: 'team-1',
-          name: 'Blue Team',
-          shortName: 'BLUE',
-          networks: [{ id: 'n-1', name: 'lan', range: '10.20.0.0' }],
-        },
-      }),
-    );
-
-    expect(actions().getByRole('button', { name: 'Save' })).toBeDisabled();
-    expect(screen.getByText(/Range must be CIDR notation/)).toBeInTheDocument();
   });
 
   /**

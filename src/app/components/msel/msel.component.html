@@ -239,6 +239,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           >Organizations</app-organization-list
         >
       }
+      @if (selectedTab === 'Networks') {
+        <app-msel-networks [canEdit]="canEditMsel()" />
+      }
       @if (selectedTab === 'Moves') {
         <app-move-list
           [loggedInUserId]="loggedInUserId()"

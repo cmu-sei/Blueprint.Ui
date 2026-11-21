@@ -29,10 +29,6 @@ import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatButton } from '@angular/material/button';
-import {
-  NetworkListEditComponent,
-  networksValid,
-} from '../network-list-edit/network-list-edit.component';
 
 const MIN_NAME_LENGTH = 3;
 
@@ -57,7 +53,6 @@ import { ProfileWriterComponent } from '../profile-writer/profile-writer.compone
     MatCheckbox,
     ProfileWriterComponent,
     MatButton,
-    NetworkListEditComponent,
   ],
 })
 export class TeamEditDialogComponent {
@@ -85,10 +80,10 @@ export class TeamEditDialogComponent {
     this.data.team.casterTeamVariable ?? '',
     [],
   );
-  // the team the dialog edits, typed, for the domain and networks
-  private readonly rangeTeam = (this.data as { team: Team }).team;
+  // the team the dialog edits, typed, for its domain
+  private readonly editedTeam = (this.data as { team: Team }).team;
   public domainFormControl = new FormControl<string>(
-    this.rangeTeam.domain ?? '',
+    this.editedTeam.domain ?? '',
     { nonNullable: true },
   );
   editorConfig = EDITOR_CONFIG;
@@ -113,10 +108,7 @@ export class TeamEditDialogComponent {
     const hasCiteTeamTypeError =
       this.data.useCite && this.citeTeamTypeIdFormControl.hasError('required');
 
-    return (
-      !(hasNameErrors || hasCiteTeamTypeError) &&
-      networksValid(this.rangeTeam.networks)
-    );
+    return !(hasNameErrors || hasCiteTeamTypeError);
   }
 
   /**
@@ -172,7 +164,7 @@ export class TeamEditDialogComponent {
           this.casterTeamVariableFormControl.value?.toString() || null;
         break;
       case 'domain':
-        this.rangeTeam.domain =
+        this.editedTeam.domain =
           this.domainFormControl.value.trim().toLowerCase() || null;
         break;
       case 'citeTeamTypeId':

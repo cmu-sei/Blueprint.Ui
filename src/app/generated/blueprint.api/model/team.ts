@@ -13,7 +13,6 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { Network } from './network';
 import { CardTeam } from './cardTeam';
 import { User } from './user';
 import { PlayerApplicationTeam } from './playerApplicationTeam';
@@ -37,7 +36,6 @@ export interface Team {
     canTeamMemberInvite?: boolean;
     casterTeamVariable?: string | null;
     domain?: string | null;
-    networks?: Array<Network> | null;
     users?: Array<User> | null;
     cardTeams?: Array<CardTeam> | null;
     playerApplicationTeams?: Array<PlayerApplicationTeam> | null;

@@ -1,0 +1,155 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the
+project root for license information.
+-->
+
+<div class="range">
+  <section>
+    <div class="range-heading">
+      <h2>Networks</h2>
+      @if (canEdit()) {
+        <button
+          mat-icon-button
+          type="button"
+          (click)="editNetwork(null)"
+          title="Add a network"
+          aria-label="Add a network"
+        >
+          <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle" />
+        </button>
+      }
+    </div>
+    @if (!loading() && networks().length === 0) {
+      <p class="range-hint">
+        No networks yet. Add the networks of the exercise's range, or of the
+        network a tabletop describes.
+      </p>
+    } @else {
+      <table class="range-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Range</th>
+            <th>Purpose</th>
+            <th class="range-number">Hosts</th>
+            <th>Defended by</th>
+            <th>Belongs to</th>
+            @if (canEdit()) {
+              <th class="range-actions" aria-label="Actions"></th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (network of networks(); track network.id) {
+            <tr>
+              <td>{{ network.name }}</td>
+              <td class="range-mono">{{ network.range }}</td>
+              <td>{{ network.purpose }}</td>
+              <td class="range-number">{{ hostCount(network) }}</td>
+              <td>{{ teamNames(network.teamIds) || 'Shared' }}</td>
+              <td>{{ organizationNames(network.organizationIds) }}</td>
+              @if (canEdit()) {
+                <td class="range-actions">
+                  <button
+                    mat-icon-button
+                    type="button"
+                    (click)="editNetwork(network)"
+                    [attr.aria-label]="'Edit network ' + network.name"
+                    title="Edit this network"
+                  >
+                    <mat-icon class="mdi-24px" fontIcon="mdi-pencil" />
+                  </button>
+                  <button
+                    mat-icon-button
+                    type="button"
+                    (click)="deleteNetwork(network)"
+                    [attr.aria-label]="'Delete network ' + network.name"
+                    title="Delete this network"
+                  >
+                    <mat-icon class="mdi-24px" fontIcon="mdi-delete" />
+                  </button>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+  <section>
+    <div class="range-heading">
+      <h2>Hosts</h2>
+      @if (canEdit()) {
+        <button
+          mat-icon-button
+          type="button"
+          (click)="editHost(null)"
+          title="Add a host"
+          aria-label="Add a host"
+        >
+          <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle" />
+        </button>
+      }
+    </div>
+    @if (!loading() && hosts().length === 0) {
+      <p class="range-hint">
+        No hosts yet. A host row can stand for several identical hosts, such as
+        40 workstations.
+      </p>
+    } @else {
+      <table class="range-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th class="range-number">Count</th>
+            <th>Role</th>
+            <th>Operating System</th>
+            <th>Networks</th>
+            <th>Defended by</th>
+            <th>Belongs to</th>
+            @if (canEdit()) {
+              <th class="range-actions" aria-label="Actions"></th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (host of hosts(); track host.id) {
+            <tr>
+              <td>{{ host.name }}</td>
+              <td class="range-number">{{ host.count }}</td>
+              <td>{{ host.role }}</td>
+              <td>{{ host.operatingSystem }}</td>
+              <td class="range-mono">{{ interfaceText(host) }}</td>
+              <td>{{ teamNames(host.teamIds) }}</td>
+              <td>{{ organizationNames(host.organizationIds) }}</td>
+              @if (canEdit()) {
+                <td class="range-actions">
+                  <button
+                    mat-icon-button
+                    type="button"
+                    (click)="editHost(host)"
+                    [attr.aria-label]="'Edit host ' + host.name"
+                    title="Edit this host"
+                  >
+                    <mat-icon class="mdi-24px" fontIcon="mdi-pencil" />
+                  </button>
+                  <button
+                    mat-icon-button
+                    type="button"
+                    (click)="deleteHost(host)"
+                    [attr.aria-label]="'Delete host ' + host.name"
+                    title="Delete this host"
+                  >
+                    <mat-icon class="mdi-24px" fontIcon="mdi-delete" />
+                  </button>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+</div>

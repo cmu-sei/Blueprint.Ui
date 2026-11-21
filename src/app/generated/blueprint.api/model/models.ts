@@ -84,6 +84,8 @@ export * from './groupMembership';
 export * from './healthReport';
 export * from './healthReportEntry';
 export * from './healthStatus';
+export * from './host';
+export * from './hostInterface';
 export * from './injectType';
 export * from './injectTypeCreate';
 export * from './injectTypeDataField';

@@ -16,7 +16,6 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { OrganizationEditDialogComponent } from './organization-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
-import { Network } from 'src/app/generated/blueprint.api';
 
 const ORGANIZATION: {
   id: string;
@@ -27,7 +26,6 @@ const ORGANIZATION: {
   email: string;
   description: string;
   domain?: string;
-  networks?: Network[];
 } = {
   id: 'org-1',
   mselId: 'msel-1',
@@ -124,32 +122,19 @@ describe('OrganizationEditDialogComponent', () => {
   });
 
   /**
-   * Verifies: the domain is saved lower-cased, and removing a network leaves the others.
-   * Interacts with: the Domain input, the network list's remove buttons, crucible-dialog submit.
-   * Data: City Police with networks police-lan and police-dmz; " Example-Police.org " entered, police-dmz removed.
+   * Verifies: the domain is saved trimmed and lower-cased.
+   * Interacts with: the Domain input, saveOrganization, crucible-dialog submit.
+   * Data: City Police with no domain; " Example-Police.org " entered, then saved.
    */
-  it('saves the domain and the networks left after a remove', async () => {
-    const { data, results } = await renderOrganizationEditDialog(
-      dialogData({
-        networks: [
-          { id: 'n-1', name: 'police-lan', range: '10.30.0.0/24' },
-          { id: 'n-2', name: 'police-dmz' },
-        ],
-      }),
-    );
+  it('saves the domain', async () => {
+    const { data, results } = await renderOrganizationEditDialog();
     const user = userEvent.setup();
 
     await user.type(screen.getByLabelText('Domain'), ' Example-Police.org ');
-    await user.click(
-      screen.getByRole('button', { name: 'Remove network police-dmz' }),
-    );
     await user.click(actions().getByRole('button', { name: 'Save' }));
 
     expect(results).toHaveLength(1);
     expect(data.organization.domain).toBe('example-police.org');
-    expect(data.organization.networks).toEqual([
-      { id: 'n-1', name: 'police-lan', range: '10.30.0.0/24' },
-    ]);
   });
 
   /**
