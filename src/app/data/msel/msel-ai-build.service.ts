@@ -57,7 +57,7 @@ export interface MselAiBuild {
   started: number;
   stepStarted: number;
   // while the injects are written: what the model has written so far, and how many the design planned
-  counts: { [list: string]: number };
+  counts: Record<string, number>;
   planned?: number;
   // the articles and profiles written in this run, of those there were to write, those being written now, and the last done
   written: number;
@@ -265,7 +265,7 @@ export class MselAiBuildService {
       started: now,
       stepStarted: now,
       step: 'finish',
-    } as MselAiBuild);
+    });
     this.runs.set(
       mselId,
       this.claim(mselId, false)
@@ -424,17 +424,13 @@ export class MselAiBuildService {
   private writeItem(mselId: string, item: MselBuildItem): Observable<unknown> {
     // a row's text has no graphics, so it is saved once, as written
     if (item.kind === 'inject') {
-      return (
-        this.api.writeMselRow(
-          mselId,
-          item.id,
-          this.signalRService.connectionId,
-        ) as Observable<MselBuildContent>
-      ).pipe(
-        tap((written: MselBuildContent) =>
-          this.addWarnings(mselId, written?.warnings),
-        ),
-      );
+      return this.api
+        .writeMselRow(mselId, item.id, this.signalRService.connectionId)
+        .pipe(
+          tap((written: MselBuildContent) =>
+            this.addWarnings(mselId, written?.warnings),
+          ),
+        );
     }
     const isArticle = item.kind === 'article';
     const connectionId = this.signalRService.connectionId;

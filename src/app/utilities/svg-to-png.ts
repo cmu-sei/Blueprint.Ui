@@ -20,7 +20,7 @@ export async function svgImagesToPng(
   html: string,
   rasterize: Rasterize = drawOnCanvas,
 ): Promise<string> {
-  if (!html || !html.includes('data:image/svg+xml')) {
+  if (!html?.includes('data:image/svg+xml')) {
     return html;
   }
   const document = new DOMParser().parseFromString(html, 'text/html');
@@ -91,7 +91,7 @@ export async function shrinkPhotos(
   html: string,
   shrink: Shrink = shrinkOnCanvas,
 ): Promise<string> {
-  if (!html || !html.includes('data:image/jpeg')) {
+  if (!html?.includes('data:image/jpeg')) {
     return html;
   }
   const document = new DOMParser().parseFromString(html, 'text/html');

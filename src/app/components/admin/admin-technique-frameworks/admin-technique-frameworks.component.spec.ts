@@ -159,9 +159,7 @@ describe('AdminTechniqueFrameworksComponent', () => {
       expect(frameworkApi.createTechniqueFramework).toHaveBeenCalledTimes(2),
     );
     expect(
-      frameworkApi.createTechniqueFramework.mock.calls.map(
-        (c) => (c[0] as TechniqueFramework).domain,
-      ),
+      frameworkApi.createTechniqueFramework.mock.calls.map((c) => c[0].domain),
     ).toEqual(['defences', 'attacks']);
     expect(
       frameworkApi.createTechniqueFramework.mock.calls[0][0],

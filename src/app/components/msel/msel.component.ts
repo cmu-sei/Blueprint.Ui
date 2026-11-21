@@ -98,7 +98,6 @@ const ASSISTANT_WIDTH_KEY = 'blueprint.askAiPanelWidth';
     MatList,
     MatDivider,
     MatListItem,
-    NgClass,
     MatDrawerContent,
     MselInfoComponent,
     MselContributorsComponent,
@@ -261,7 +260,7 @@ export class MselComponent implements OnDestroy {
         }
         // the id the page was opened under was taken, so the MSEL has another
         if (mselId !== requestedId) {
-          this.router.navigate([], {
+          void this.router.navigate([], {
             queryParams: { msel: mselId },
             queryParamsHandling: 'merge',
           });

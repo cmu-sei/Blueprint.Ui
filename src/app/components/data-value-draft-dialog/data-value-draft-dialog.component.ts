@@ -44,7 +44,7 @@ export interface DataValueDraftDialogData {
   deltaSeconds: number;
   dataField: DataField;
   // the inject's values as the edit dialog holds them, unsaved edits included
-  values: { [dataFieldId: string]: string };
+  values: Record<string, string>;
   gallerySourceTypes: string[];
   // the inject's Gallery source type, which decides the audio and video it may have
   sourceType?: string;

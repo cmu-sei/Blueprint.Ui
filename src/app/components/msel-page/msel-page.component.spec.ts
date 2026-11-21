@@ -176,7 +176,9 @@ describe('MselPageComponent', () => {
           expect(banner).toHaveTextContent(subtext);
         }
       }
-      const page = fixture.nativeElement.querySelector('.page') as HTMLElement;
+      const page = (
+        fixture.nativeElement as HTMLElement
+      ).querySelector<HTMLElement>('.page');
       expect(page.firstElementChild).toBe(top);
       expect(page.lastElementChild).toBe(bottom);
       expect(page).toHaveTextContent('Welcome to the exercise');

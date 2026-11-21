@@ -118,7 +118,7 @@ export class MselDraftDialogComponent {
   // while the design is written: when it started, and what the model has written so far
   draftStarted = 0;
   elapsed = '0:00';
-  progress: { [list: string]: number } = {};
+  progress: Record<string, number> = {};
   private drafting: Subscription;
   // ticks only while the design is written, so nothing runs while the planner reviews
   private ticking: Subscription;
@@ -239,10 +239,10 @@ export class MselDraftDialogComponent {
   // what the design has so far, from the model's streamed answer
   get progressText(): string {
     const parts = [
-      plural(this.progress['moves'], 'move'),
-      plural(this.progress['teams'], 'team'),
-      plural(this.progress['organizations'], 'organization'),
-      plural(this.progress['questions'], 'question'),
+      plural(this.progress.moves, 'move'),
+      plural(this.progress.teams, 'team'),
+      plural(this.progress.organizations, 'organization'),
+      plural(this.progress.questions, 'question'),
     ].filter((p) => p);
     return parts.length ? `${parts.join(', ')} so far.` : '';
   }
@@ -314,7 +314,7 @@ export class MselDraftDialogComponent {
   }
 
   isTeam(owner: MselDraftTeam | MselDraftOrganization): boolean {
-    return (this.result?.draft?.teams ?? []).includes(owner as MselDraftTeam);
+    return (this.result?.draft?.teams ?? []).includes(owner);
   }
 
   removeOwner(owner: MselDraftTeam | MselDraftOrganization) {

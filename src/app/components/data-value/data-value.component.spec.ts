@@ -550,7 +550,7 @@ describe('DataValueComponent', () => {
   it.each([
     { value: 'CRITICAL', shown: 'Orange', color: 'rgb(250, 163, 2)' },
     { value: 'red', shown: 'Red', color: 'rgb(255, 51, 51)' },
-    { value: 'Pending review', shown: 'Pending review', color: null as string },
+    { value: 'Pending review', shown: 'Pending review', color: null },
   ])(
     'shows the Gallery status $value as $shown',
     async ({ value, shown, color }) => {
@@ -777,7 +777,7 @@ async function renderTechniqueField(
   rendered.fixture.detectChanges();
   const changes: string[] = [];
   rendered.fixture.componentInstance.valueChange.subscribe((v) =>
-    changes.push(v),
+    changes.push(v as string),
   );
   return { ...rendered, changes, ensureLoaded, poolApi };
 }

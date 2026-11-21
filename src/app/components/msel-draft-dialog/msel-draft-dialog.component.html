@@ -223,7 +223,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </details>
       @if (isDrafting) {
         <div class="drafting" aria-live="polite">
-          <mat-spinner diameter="32"></mat-spinner>
+          <mat-spinner diameter="32" />
           <div>
             <p>
               <strong>Writing the design.</strong> {{ progressText }}
@@ -238,7 +238,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </div>
       }
       @if (errorMessage) {
-        <ng-container *ngTemplateOutlet="error"></ng-container>
+        <ng-container *ngTemplateOutlet="error" />
       }
     } @else {
       <mat-tab-group
@@ -408,7 +408,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         [title]="'Remove ' + objective.id"
                         (click)="removeObjective(i)"
                       >
-                        <mat-icon fontIcon="mdi-close"></mat-icon>
+                        <mat-icon fontIcon="mdi-close" />
                       </button>
                     </td>
                   </tr>
@@ -421,7 +421,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               class="add-row"
               (click)="addObjective()"
             >
-              <mat-icon fontIcon="mdi-plus"></mat-icon> Add objective
+              <mat-icon fontIcon="mdi-plus" /> Add objective
             </button>
             @if (citeModelNote) {
               <p class="hint">{{ citeModelNote }}</p>
@@ -431,13 +431,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <ul class="message-list">
                 @for (warning of result.warnings; track $index) {
                   <li>
-                    <mat-icon fontIcon="mdi-alert-outline"></mat-icon>
+                    <mat-icon fontIcon="mdi-alert-outline" />
                     <span>{{ warning }}</span>
                   </li>
                 }
                 @for (note of result.draft.plannerNotes; track $index) {
                   <li>
-                    <mat-icon fontIcon="mdi-information-outline"></mat-icon>
+                    <mat-icon fontIcon="mdi-information-outline" />
                     <span>{{ note }}</span>
                   </li>
                 }
@@ -513,7 +513,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                       [title]="'Remove move ' + move.moveNumber"
                       (click)="removeMove(move)"
                     >
-                      <mat-icon fontIcon="mdi-close"></mat-icon>
+                      <mat-icon fontIcon="mdi-close" />
                     </button>
                   </td>
                 </tr>
@@ -521,7 +521,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </tbody>
           </table>
           <button matButton type="button" class="add-row" (click)="addMove()">
-            <mat-icon fontIcon="mdi-plus"></mat-icon> Add move
+            <mat-icon fontIcon="mdi-plus" /> Add move
           </button>
         </mat-tab>
 
@@ -654,7 +654,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                                 type="button"
                                 [attr.aria-label]="'Remove duty ' + duty"
                               >
-                                <mat-icon fontIcon="mdi-close"></mat-icon>
+                                <mat-icon fontIcon="mdi-close" />
                               </button>
                             </mat-chip>
                           }
@@ -692,7 +692,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                             competencyChips;
                             context: { owner: owner }
                           "
-                        ></ng-container>
+                        />
                         @if (availableCompetencies(owner).length) {
                           <select
                             class="cell-input add-input"
@@ -724,7 +724,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                       [title]="'Remove ' + owner.shortName"
                       (click)="removeOwner(owner)"
                     >
-                      <mat-icon fontIcon="mdi-close"></mat-icon>
+                      <mat-icon fontIcon="mdi-close" />
                     </button>
                   </td>
                 </tr>
@@ -732,7 +732,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </tbody>
           </table>
           <button matButton type="button" class="add-row" (click)="addTeam()">
-            <mat-icon fontIcon="mdi-plus"></mat-icon> Add team
+            <mat-icon fontIcon="mdi-plus" /> Add team
           </button>
           <button
             matButton
@@ -740,7 +740,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             class="add-row"
             (click)="addOrganization()"
           >
-            <mat-icon fontIcon="mdi-plus"></mat-icon> Add organization
+            <mat-icon fontIcon="mdi-plus" /> Add organization
           </button>
         </mat-tab>
 
@@ -787,7 +787,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         [title]="'Remove ' + card.name"
                         (click)="removeCard(i)"
                       >
-                        <mat-icon fontIcon="mdi-close"></mat-icon>
+                        <mat-icon fontIcon="mdi-close" />
                       </button>
                     </td>
                   </tr>
@@ -795,20 +795,20 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </tbody>
             </table>
             <button matButton type="button" class="add-row" (click)="addCard()">
-              <mat-icon fontIcon="mdi-plus"></mat-icon> Add card
+              <mat-icon fontIcon="mdi-plus" /> Add card
             </button>
           </mat-tab>
         }
       </mat-tab-group>
       @if (errorMessage) {
-        <ng-container *ngTemplateOutlet="error"></ng-container>
+        <ng-container *ngTemplateOutlet="error" />
       }
     }
   </div>
 
   <ng-template #error>
     <div class="error-message" role="alert">
-      <mat-icon fontIcon="mdi-alert-circle-outline"></mat-icon>
+      <mat-icon fontIcon="mdi-alert-circle-outline" />
       <span>{{ errorMessage }}</span>
     </div>
   </ng-template>
@@ -822,7 +822,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         >
           {{ idNumber }}
           <button matChipRemove [attr.aria-label]="'Remove ' + idNumber">
-            <mat-icon fontIcon="mdi-close"></mat-icon>
+            <mat-icon fontIcon="mdi-close" />
           </button>
         </mat-chip>
       }

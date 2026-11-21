@@ -43,7 +43,6 @@ import {
   CrucibleDialogService,
 } from '@cmusei/crucible-common';
 import {
-  MselImageRequest,
   CasterDirectory,
   CasterService,
   CiteService,
@@ -294,7 +293,7 @@ async function renderInfo(
         imageDateModified: null,
       }),
     ),
-    generateMselImage: vi.fn((id: string, _request?: MselImageRequest) =>
+    generateMselImage: vi.fn((id: string) =>
       of<Msel>({
         ...msel(myRoles, startTime, mselExtra),
         id,
@@ -503,7 +502,9 @@ describe('MselInfoComponent', () => {
       const panel = fixture.debugElement.query(By.directive(AiUsageStub));
       expect(!!panel).toBe(shown);
       if (shown) {
-        expect(panel.componentInstance.mselId()).toBe('msel-1');
+        expect((panel.componentInstance as AiUsageStub).mselId()).toBe(
+          'msel-1',
+        );
       }
     },
   );
@@ -649,7 +650,7 @@ describe('MselInfoComponent', () => {
         data: expect.objectContaining({
           pageId: 'page-1',
           content: '<p>Welcome</p>',
-        }),
+        }) as unknown,
       }),
     );
     expect(info.changedMselPage.content).toBe('<p>Rewritten</p>');

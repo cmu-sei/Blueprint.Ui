@@ -71,7 +71,7 @@ export interface AiDraftProgress {
   draftId?: string;
   characters: number;
   // the items in each list of the answer so far: moves, injects, citeActions, ...
-  counts: { [list: string]: number };
+  counts: Record<string, number>;
   done: boolean;
 }
 

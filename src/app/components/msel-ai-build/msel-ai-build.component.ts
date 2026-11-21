@@ -146,7 +146,7 @@ export class MselAiBuildComponent {
       const counts = build.counts ?? {};
       // the design planned how many injects; the model's count runs up to about it
       // the plan is the design's estimate; past it, the count says so rather than "55 of about 52"
-      const written = counts['injects'];
+      const written = counts.injects;
       const injects =
         !build.planned || !written
           ? plural(written, 'inject')
@@ -155,9 +155,9 @@ export class MselAiBuildComponent {
             : `${written} injects (about ${build.planned} planned)`;
       // the move briefings are written first, so they are what shows for the first minutes
       const parts = [
-        plural(counts['moves'], 'move briefing'),
+        plural(counts.moves, 'move briefing'),
         injects,
-        plural(counts['citeActions'], 'CITE task'),
+        plural(counts.citeActions, 'CITE task'),
       ].filter((p) => p);
       return parts.length
         ? `${parts.join(', ')} so far.`

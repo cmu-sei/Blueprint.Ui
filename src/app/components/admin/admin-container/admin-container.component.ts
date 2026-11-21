@@ -70,7 +70,6 @@ import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
     MatIcon,
     MatList,
     MatListItem,
-    NgClass,
     MatListItemIcon,
     MatIconButton,
     MatSidenavContent,

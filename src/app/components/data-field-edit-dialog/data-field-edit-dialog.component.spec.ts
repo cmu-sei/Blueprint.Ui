@@ -103,7 +103,8 @@ describe('DataFieldEditDialogComponent', () => {
     );
     fixture.detectChanges();
 
-    const field = fixture.componentInstance.data.dataField as DataField;
+    const field = (fixture.componentInstance.data as { dataField: DataField })
+      .dataField;
     expect(field.dataType).toBe(DataFieldType.DefensiveTechnique);
     expect(field.isChosenFromList).toBe(false);
     expect(field.isMultiSelect).toBe(true);

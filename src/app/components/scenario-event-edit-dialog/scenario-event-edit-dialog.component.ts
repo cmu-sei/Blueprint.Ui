@@ -95,7 +95,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     value: '',
     valueArray: [],
   } as DataValuePlus;
-  scenarioEventBackgroundColors: Array<string>;
+  scenarioEventBackgroundColors: string[];
   sortedDataFields: DataField[] = [];
   selectedTab = 0;
   selectedTabName = '';
@@ -137,7 +137,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
 
   setDataValueArray(dataFieldName: string, newValues: string[]) {
     if (newValues.includes('None')) {
-      newValues = new Array();
+      newValues = [];
     }
     this.getDataValue(dataFieldName).valueArray = newValues;
     this.getDataValue(dataFieldName).value = newValues.join(', ');
@@ -154,9 +154,25 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     );
   }
 
+  // the dialog's data, typed, for the AI writer and the technique fields
+  private get aiData(): {
+    scenarioEvent: ScenarioEvent;
+    isNew?: boolean;
+    dataFields?: DataField[];
+    gallerySourceTypes?: string[];
+  } {
+    return this.data as {
+      scenarioEvent: ScenarioEvent;
+      isNew?: boolean;
+      dataFields?: DataField[];
+      gallerySourceTypes?: string[];
+    };
+  }
+
   writeWithAi(dataField: DataField) {
-    const values: { [dataFieldId: string]: string } = {};
-    this.data.scenarioEvent.dataValues.forEach((dv) => {
+    const data = this.aiData;
+    const values: Record<string, string> = {};
+    data.scenarioEvent.dataValues.forEach((dv) => {
       if (dv.value) {
         values[dv.dataFieldId] = dv.value;
       }
@@ -169,14 +185,12 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
           width: '95vw',
           maxWidth: '1600px',
           data: {
-            mselId: this.data.scenarioEvent.mselId,
-            scenarioEventId: this.data.isNew
-              ? null
-              : this.data.scenarioEvent.id,
-            deltaSeconds: this.data.scenarioEvent.deltaSeconds ?? 0,
+            mselId: data.scenarioEvent.mselId,
+            scenarioEventId: data.isNew ? null : data.scenarioEvent.id,
+            deltaSeconds: data.scenarioEvent.deltaSeconds ?? 0,
             dataField,
             values,
-            gallerySourceTypes: this.data.gallerySourceTypes ?? [],
+            gallerySourceTypes: data.gallerySourceTypes ?? [],
             sourceType: this.sourceTypeOf(values),
           },
         },
@@ -187,14 +201,14 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
         if (value === undefined || value === null) {
           return;
         }
-        const dataValue = this.data.scenarioEvent.dataValues.find(
+        const dataValue = data.scenarioEvent.dataValues.find(
           (dv) => dv.dataFieldId === dataField.id,
         );
         if (dataValue) {
           dataValue.value = value;
         } else {
           // never write into blankDataValue, which every missing field shares
-          this.data.scenarioEvent.dataValues.push({
+          data.scenarioEvent.dataValues.push({
             dataFieldId: dataField.id,
             value,
           });
@@ -203,10 +217,8 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   }
 
   // the Gallery source type the inject's values give it, which decides the audio and video it may have
-  private sourceTypeOf(values: {
-    [dataFieldId: string]: string;
-  }): string | undefined {
-    const field = this.data.dataFields?.find(
+  private sourceTypeOf(values: Record<string, string>): string | undefined {
+    const field = this.aiData.dataFields?.find(
       (df) =>
         df.galleryArticleParameter === 'SourceType' ||
         df.dataType === DataFieldType.SourceType,
@@ -216,7 +228,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
 
   /** The event's Attack Technique values, for a Defensive Technique field to suggest their countermeasures first. */
   techniqueValues(): string {
-    return (this.data.dataFields as DataField[])
+    return (this.aiData.dataFields ?? [])
       .filter((df) => df.dataType === DataFieldType.AttackTechnique)
       .map((df) => this.getDataValue(df.name).value)
       .filter((v) => v)
@@ -235,7 +247,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   }
 
   verifyNumber(newValue: DataValuePlus) {
-    if (!newValue || !newValue.value) {
+    if (!newValue?.value) {
       return;
     }
     // remove non numeric characters, but allow '.' and '-'

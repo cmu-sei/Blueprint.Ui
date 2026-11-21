@@ -170,7 +170,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             />
           </mat-list-item>
           <mat-list-item
-            [ngClass]="getSelectedClass(techniqueReleasesText)"
+            [class]="getSelectedClass(techniqueReleasesText)"
             (click)="gotoSection(techniqueReleasesText)"
             [title]="techniqueReleasesText"
           >
@@ -178,7 +178,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               matListItemIcon
               class="mat-list-item-icon"
               fontIcon="mdi-shield-bug-outline"
-            ></mat-icon>
+            />
           </mat-list-item>
         }
         @if (canViewUsers) {
@@ -508,7 +508,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </mat-list-item>
             <!-- Technique Frameworks -->
             <mat-list-item
-              [ngClass]="getSelectedClass(techniqueReleasesText)"
+              [class]="getSelectedClass(techniqueReleasesText)"
               id="wrapper showhand"
               (click)="gotoSection(techniqueReleasesText)"
             >
@@ -516,14 +516,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 matListItemIcon
                 class="mat-list-item-icon"
                 fontIcon="mdi-shield-bug-outline"
-              ></mat-icon>
+              />
               {{ techniqueReleasesSidebarText }}
               <button
                 aria-labelledby="techniqueReleasesText"
                 mat-icon-button
                 class="pull-right"
               >
-                <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+                <mat-icon fontIcon="mdi-chevron-right" />
               </button>
             </mat-list-item>
           }
@@ -672,7 +672,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <app-admin-technique-releases
         [loggedInUserId]="loggedInUserId"
         [canEdit]="canManageCompetencyFrameworks"
-      ></app-admin-technique-releases>
+      />
     }
     @if (canViewCatalogs && selectedTab === catalogsText) {
       <span>

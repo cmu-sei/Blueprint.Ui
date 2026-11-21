@@ -15,10 +15,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           aria-label="Add a technique framework"
           (click)="add()"
         >
-          <mat-icon
-            class="mdi-24px"
-            fontIcon="mdi-plus-circle-outline"
-          ></mat-icon>
+          <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle-outline" />
         </button>
         <button
           mat-icon-button
@@ -26,7 +23,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           aria-label="Import technique framework definitions"
           (click)="chooseFile()"
         >
-          <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
+          <mat-icon class="mdi-24px" fontIcon="mdi-upload" />
         </button>
       }
     </mat-header-cell>
@@ -39,10 +36,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           title="Edit {{ framework.name }}"
           [attr.aria-label]="'Edit ' + framework.name"
         >
-          <mat-icon
-            class="mdi-18px"
-            fontIcon="mdi-square-edit-outline"
-          ></mat-icon>
+          <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" />
         </button>
       }
       <button
@@ -52,7 +46,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         title="Download {{ framework.name }} as JSON"
         [attr.aria-label]="'Download ' + framework.name + ' as JSON'"
       >
-        <mat-icon class="mdi-18px" fontIcon="mdi-download"></mat-icon>
+        <mat-icon class="mdi-18px" fontIcon="mdi-download" />
       </button>
       @if (canEdit()) {
         <button
@@ -62,10 +56,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           title="Delete {{ framework.name }}"
           [attr.aria-label]="'Delete ' + framework.name"
         >
-          <mat-icon
-            class="mdi-18px"
-            fontIcon="mdi-trash-can-outline"
-          ></mat-icon>
+          <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
         </button>
       }
     </mat-cell>
@@ -112,8 +103,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
       framework.releaseCount
     }}</mat-cell>
   </ng-container>
-  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-  <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+  <mat-header-row *matHeaderRowDef="displayedColumns" />
+  <mat-row *matRowDef="let row; columns: displayedColumns" />
 </mat-table>
 @if (dataSource.data.length === 0) {
   <div class="empty-text">

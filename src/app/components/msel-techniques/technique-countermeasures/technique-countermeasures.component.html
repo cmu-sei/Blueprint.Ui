@@ -15,7 +15,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <mat-icon
       class="mdi-18px"
       [fontIcon]="expanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
-    ></mat-icon>
+    />
     {{ relation }}
     @if (count > 0) {
       ({{ count }})
@@ -52,13 +52,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         ? 'In this MSEL\'s defensive techniques'
                         : 'Add to this MSEL\'s defensive techniques'
                     "
-                  ></mat-checkbox>
+                  />
                 } @else if (isPooled(c)) {
                   <mat-icon
                     class="mdi-18px pooled-icon"
                     fontIcon="mdi-check"
                     title="In this MSEL's defensive techniques"
-                  ></mat-icon>
+                  />
                 }
                 @if (c.defensiveTechnique?.url) {
                   <a

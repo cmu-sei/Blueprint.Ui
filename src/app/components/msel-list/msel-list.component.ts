@@ -220,7 +220,7 @@ export class MselListComponent implements OnDestroy, OnInit {
         this.currentUserName = cu.name;
       });
     // newest first, so a MSEL just created or drafted is at the top
-    this.sort().sort(<MatSortable>{ id: 'dateCreated', start: 'desc' });
+    this.sort().sort({ id: 'dateCreated', start: 'desc' } as MatSortable);
     this.mselDataSource.sort = this.sort();
     // subscribe to MSELs loading
     this.mselQuery
@@ -326,10 +326,12 @@ export class MselListComponent implements OnDestroy, OnInit {
       })
       .afterClosed()
       .pipe(take(1))
-      .subscribe((mselId) => {
+      .subscribe((mselId: string) => {
         if (mselId) {
           this.openMsel(mselId);
-          this.router.navigate(['/build'], { queryParams: { msel: mselId } });
+          void this.router.navigate(['/build'], {
+            queryParams: { msel: mselId },
+          });
         }
       });
   }

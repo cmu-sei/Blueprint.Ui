@@ -79,7 +79,7 @@ import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatProgressBar } from '@angular/material/progress-bar';
-import { DatePipe, DOCUMENT, NgClass, NgTemplateOutlet } from '@angular/common';
+import { DatePipe, DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
 import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import {
@@ -279,7 +279,6 @@ interface StatementListCacheEntry {
     MatOption,
     MatSortHeader,
     MatProgressBar,
-    NgClass,
     NgTemplateOutlet,
     MatTooltip,
     MatButton,
@@ -384,10 +383,10 @@ export class AssessorViewComponent
   expandedEventIds = new Set<string>();
   expandedMoveNumbers = new Set<number>();
   expandedGroupKeys = new Set<string>();
-  eventStatements: Map<string, XApiStatement[]> = new Map();
-  moveStatements: Map<number, XApiStatement[]> = new Map();
-  groupStatements: Map<string, XApiStatement[]> = new Map();
-  loadingStatements: Set<string> = new Set();
+  eventStatements = new Map<string, XApiStatement[]>();
+  moveStatements = new Map<number, XApiStatement[]>();
+  groupStatements = new Map<string, XApiStatement[]>();
+  loadingStatements = new Set<string>();
 
   // Statement grouping. The saved choice is kept while User isn't offered, so it comes back
   // on a MSEL whose statements carry names.
@@ -666,7 +665,7 @@ export class AssessorViewComponent
   }
 
   getRowStyle(scenarioEvent: ScenarioEvent) {
-    if (!scenarioEvent || !scenarioEvent.rowMetadata) {
+    if (!scenarioEvent?.rowMetadata) {
       return '';
     }
     const rowMetadata = scenarioEvent.rowMetadata
@@ -1832,7 +1831,7 @@ export class AssessorViewComponent
         const existing = this.eventRatings
           .get(ratingMapKey)
           .get(mc.competency.id);
-        if (!existing || !existing.levelId) {
+        if (!existing?.levelId) {
           this.eventRatings.get(ratingMapKey).set(mc.competency.id, ratingData);
         }
         const ak = `${ck}:${mc.competency.id}:${teamId}`;
@@ -1887,10 +1886,10 @@ export class AssessorViewComponent
           !(g.id || '').includes('/groups/'),
       );
       if (groupGrouping) {
-        const parts = groupGrouping.id.match(/moves\/(\d+)\/groups\/(\d+)/);
+        const parts = /moves\/(\d+)\/groups\/(\d+)/.exec(groupGrouping.id);
         if (parts) contextKey = `group-${parts[1]}-${parts[2]}`;
       } else if (moveGrouping) {
-        const parts = moveGrouping.id.match(/moves\/(\d+)/);
+        const parts = /moves\/(\d+)/.exec(moveGrouping.id);
         if (parts) contextKey = `move-${parts[1]}`;
       }
     }
@@ -1898,9 +1897,9 @@ export class AssessorViewComponent
 
     const objectId = stmt.object?.id || '';
     const compIdentifier =
-      stmt.object?.definition?.extensions?.[
+      (stmt.object?.definition?.extensions?.[
         'https://w3id.org/xapi/tla/extensions/competency-identifier'
-      ] || '';
+      ] as string | undefined) || '';
     const mc = this.mselCompetencies.find((mc) => {
       const comp = mc.competency;
       if (!comp) return false;
@@ -1937,18 +1936,18 @@ export class AssessorViewComponent
       const id = g.id || '';
       const name = g.definition?.name?.['en-US'] || '';
       if (id.includes('/group/')) {
-        const numMatch = id.match(/\/group\/(\d+)$/);
+        const numMatch = /\/group\/(\d+)$/.exec(id);
         if (numMatch) groupNumber = parseInt(numMatch[1], 10);
       } else if (id.includes('/inject/')) {
-        const numMatch = id.match(/\/inject\/(\d+)$/);
+        const numMatch = /\/inject\/(\d+)$/.exec(id);
         if (numMatch) groupNumber = parseInt(numMatch[1], 10);
       } else if (id.includes('/move/')) {
-        const numMatch = id.match(/\/move\/(\d+)$/);
+        const numMatch = /\/move\/(\d+)$/.exec(id);
         if (numMatch) {
           moveNumber = parseInt(numMatch[1], 10);
           moveName = name.toLowerCase() || null;
         } else {
-          const uuidMatch = id.match(/\/move\/([0-9a-f-]{36})$/i);
+          const uuidMatch = /\/move\/([0-9a-f-]{36})$/i.exec(id);
           const move =
             (uuidMatch && this.moveList.find((m) => m.id === uuidMatch[1])) ||
             this.moveList.find(
@@ -1968,7 +1967,7 @@ export class AssessorViewComponent
     }
 
     const objectName = stmt.object?.definition?.name?.['en-US'] || '';
-    const prefixMatch = objectName.match(/^(\d+)-(\d+)\s/);
+    const prefixMatch = /^(\d+)-(\d+)\s/.exec(objectName);
     if (prefixMatch) {
       return {
         name: null,
@@ -2142,9 +2141,9 @@ export class AssessorViewComponent
         !id.includes('/group/') &&
         !id.includes('/inject/')
       ) {
-        const numMatch = id.match(/\/move\/(\d+)$/);
+        const numMatch = /\/move\/(\d+)$/.exec(id);
         if (numMatch) return `M${numMatch[1]}`;
-        const uuidMatch = id.match(/\/move\/([0-9a-f-]{36})$/i);
+        const uuidMatch = /\/move\/([0-9a-f-]{36})$/i.exec(id);
         const move =
           (uuidMatch && this.moveList.find((m) => m.id === uuidMatch[1])) ||
           this.moveList.find(
@@ -2154,7 +2153,7 @@ export class AssessorViewComponent
       }
     }
     const objectName = stmt.object?.definition?.name?.['en-US'] || '';
-    const prefixMatch = objectName.match(/^(\d+)-\d+\s/);
+    const prefixMatch = /^(\d+)-\d+\s/.exec(objectName);
     if (prefixMatch) return `M${parseInt(prefixMatch[1], 10)}`;
     return '';
   }
@@ -2164,15 +2163,15 @@ export class AssessorViewComponent
     for (const g of grouping) {
       const id = g.id || '';
       if (id.includes('/group/')) {
-        const numMatch = id.match(/\/group\/(\d+)$/);
+        const numMatch = /\/group\/(\d+)$/.exec(id);
         if (numMatch) return `G${numMatch[1]}`;
       } else if (id.includes('/inject/')) {
-        const numMatch = id.match(/\/inject\/(\d+)$/);
+        const numMatch = /\/inject\/(\d+)$/.exec(id);
         if (numMatch) return `G${numMatch[1]}`;
       }
     }
     const objectName = stmt.object?.definition?.name?.['en-US'] || '';
-    const prefixMatch = objectName.match(/^\d+-(\d+)\s/);
+    const prefixMatch = /^\d+-(\d+)\s/.exec(objectName);
     if (prefixMatch) return `G${parseInt(prefixMatch[1], 10)}`;
     return '';
   }
@@ -2473,7 +2472,7 @@ export class AssessorViewComponent
   }
 
   private getCompetencyType(comp: Competency): string {
-    if (!comp || !comp.id) return '';
+    if (!comp?.id) return '';
 
     // Check cache first
     if (this.competencyTypeCache.has(comp.id)) {
@@ -2993,7 +2992,7 @@ export class AssessorViewComponent
       this.document.getElementById('assessment-print-area')?.innerHTML ?? '';
     this.document.body.innerHTML = printContents;
     window.print();
-    location.reload();
+    window.location.reload();
   }
 
   // Puts the MSEL name in the print footer; the page number is in the scss.
@@ -3188,7 +3187,7 @@ export class AssessorViewComponent
               .map((e) => this.injectTitle(e))
           : [],
         levelCounts: countLevels(mine),
-      } as AssessmentReportTeam;
+      };
     });
 
     return {
@@ -3240,7 +3239,7 @@ export class AssessorViewComponent
     contextKey: string,
     events: ScenarioEvent[],
   ): AssessmentReportRow | null {
-    const moveMatch = contextKey.match(/^move-(\d+)$/);
+    const moveMatch = /^move-(\d+)$/.exec(contextKey);
     if (moveMatch) {
       const moveNumber = +moveMatch[1];
       const move = this.moveList.find((m) => +m.moveNumber === moveNumber);
@@ -3252,13 +3251,13 @@ export class AssessorViewComponent
         ratings: [],
       };
     }
-    const groupMatch = contextKey.match(/^group-(\d+)-(\d+)$/);
+    const groupMatch = /^group-(\d+)-(\d+)$/.exec(contextKey);
     if (groupMatch) {
       const moveNumber = +groupMatch[1];
       const groupNumber = +groupMatch[2];
       const first = events.find((e) => {
-        const nums = this.moveAndGroupNumbers[e.id];
-        return nums && +nums[0] === moveNumber && +nums[1] === groupNumber;
+        const nums = this.moveAndGroupNumbers[e.id] as number[] | undefined;
+        return !!nums && +nums[0] === moveNumber && +nums[1] === groupNumber;
       });
       return {
         key: contextKey,

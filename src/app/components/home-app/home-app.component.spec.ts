@@ -28,7 +28,6 @@ import {
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { SignalRService } from 'src/app/services/signalr.service';
 import { MselStore } from 'src/app/data/msel/msel.store';
-import { Msel } from 'src/app/generated/blueprint.api';
 import { HomeAppComponent } from './home-app.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
@@ -173,13 +172,13 @@ describe('HomeAppComponent', () => {
       .spyOn(TestBed.inject(Router), 'navigate')
       .mockResolvedValue(true);
     const store = TestBed.inject(MselStore);
-    store.add({ id: 'msel-1', name: 'Earlier' } as Msel);
+    store.add({ id: 'msel-1', name: 'Earlier' });
     store.setActive('msel-1');
 
     store.setActive('msel-2');
     expect(navigate).not.toHaveBeenCalledWith(['/build']);
 
-    store.add({ id: 'msel-2', name: 'Cold Iron' } as Msel);
+    store.add({ id: 'msel-2', name: 'Cold Iron' });
     store.setActive('msel-2');
     store.remove('msel-2');
     expect(navigate).toHaveBeenCalledWith(['/build']);
@@ -343,7 +342,7 @@ describe('HomeAppComponent', () => {
     expect(FakeImage.last?.src).toBe(
       '/assets/local/home-shows-the-landing-background-once-the-image-loads.jpg',
     );
-    FakeImage.last!.onload!();
+    FakeImage.last.onload();
     fixture.detectChanges();
 
     const page = container.querySelector(
@@ -367,7 +366,7 @@ describe('HomeAppComponent', () => {
       dark: true,
     });
 
-    FakeImage.last!.onload!();
+    FakeImage.last.onload();
     fixture.detectChanges();
 
     const page = container.querySelector(
@@ -389,7 +388,7 @@ describe('HomeAppComponent', () => {
         '/assets/local/home-keeps-the-normal-background-when-the-image-fails-to-load.jpg',
     });
 
-    FakeImage.last!.onerror?.();
+    FakeImage.last.onerror?.();
     fixture.detectChanges();
 
     const page = container.querySelector(
@@ -433,7 +432,7 @@ describe('HomeAppComponent', () => {
       mselId: 'msel-1',
     });
 
-    FakeImage.last!.onload!();
+    FakeImage.last.onload();
     fixture.detectChanges();
 
     const page = container.querySelector(

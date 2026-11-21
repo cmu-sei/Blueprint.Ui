@@ -79,7 +79,7 @@ export class TechniqueFrameworkDataService {
     definition: TechniqueFrameworkDefinition,
   ): Observable<TechniqueFramework> {
     return this.techniqueFrameworkService
-      .updateTechniqueFramework(id, { ...definition, id } as TechniqueFramework)
+      .updateTechniqueFramework(id, { ...definition, id })
       .pipe(
         take(1),
         tap((framework) => {

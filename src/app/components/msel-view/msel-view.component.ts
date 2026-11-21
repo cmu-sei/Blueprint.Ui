@@ -172,7 +172,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     this.activatedRoute.params
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((params) => {
-        const mselId = params['mselid'];
+        const mselId = params.mselid;
         if (mselId) {
           this.standaloneMselId = mselId;
           this.mselDataService.loadById(mselId);
@@ -180,8 +180,8 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
           // on its own route there is no MSEL page to load the rest of what the view shows
           this.moveDataService.loadByMsel(mselId);
           this.cardDataService.loadByMsel(mselId);
-          this.teamDataService.loadByMsel(mselId);
-          this.organizationDataService.loadByMsel(mselId);
+          this.teamDataService.loadByMsel(mselId as string);
+          this.organizationDataService.loadByMsel(mselId as string);
           this.mselDataService.setActive(mselId);
           // Call xAPI for viewed event (only on view page, not build page)
           const baseUrl = this.settingsService.settings.ApiUrl.endsWith('/')
@@ -458,7 +458,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   }
 
   private getCompetencyType(comp: Competency): string {
-    if (!comp || !comp.id) return '';
+    if (!comp?.id) return '';
 
     // Check cache first
     if (this.competencyTypeCache.has(comp.id)) {
@@ -544,7 +544,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     newValue: string,
   ) {
     let dataValue = this.getDataValue(scenarioEvent, dataField.name);
-    if (!dataValue || !dataValue.id) {
+    if (!dataValue?.id) {
       // the dataValue doesn't exist, so create a new one
       const dataFieldId = this.sortedDataFields.find(
         (df) => df.name === dataField.name,
@@ -559,7 +559,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   }
 
   getRowStyle(scenarioEvent: ScenarioEvent) {
-    if (!scenarioEvent || !scenarioEvent.rowMetadata) {
+    if (!scenarioEvent?.rowMetadata) {
       return '';
     }
     const rowMetadata = scenarioEvent.rowMetadata
@@ -604,7 +604,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   }
 
   shouldShowMoveSeparators(): boolean {
-    if (!this.sort || !this.sort.active || !this.sort.direction) return true;
+    if (!this.sort?.active || !this.sort.direction) return true;
     if (this.sort.direction !== 'asc') return false;
     return (
       this.sort.active === 'moveNumber' || this.sort.active === 'deltaSeconds'
@@ -614,7 +614,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   isMoveStartRow(rowIndex: number): boolean {
     if (!this.shouldShowMoveSeparators()) return false;
     const events = this.sortedScenarioEvents;
-    if (!events || !events[rowIndex]) return false;
+    if (!events?.[rowIndex]) return false;
     const currMove = this.moveAndGroupNumbers[events[rowIndex].id]?.[0];
     if (currMove == null || currMove < 0) return false;
     if (rowIndex === 0) return true;

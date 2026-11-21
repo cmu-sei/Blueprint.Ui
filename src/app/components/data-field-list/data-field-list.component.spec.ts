@@ -426,9 +426,7 @@ describe('DataFieldListComponent', () => {
       ).not.toBeInTheDocument();
       // no option list to manage, so the Options cell is plain text pointing at the tab
       const row = (name: string) =>
-        within(
-          within(table()).getByText(name).closest('mat-row') as HTMLElement,
-        );
+        within(within(table()).getByText(name).closest('mat-row'));
       expect(row('Techniques').getByText('Techniques tab')).not.toHaveClass(
         'clickable',
       );

@@ -42,7 +42,7 @@ function dialogData(
   body: string | undefined,
   sourceType?: string,
 ): DataValueDraftDialogData {
-  const values: { [id: string]: string } = {
+  const values: Record<string, string> = {
     'df-title': 'Storm warning issued',
   };
   if (body !== undefined) {

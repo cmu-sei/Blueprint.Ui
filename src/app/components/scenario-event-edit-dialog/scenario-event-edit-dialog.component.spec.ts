@@ -492,7 +492,7 @@ describe('ScenarioEventEditDialogComponent', () => {
           dataField: BODY,
           values: { 'df-title': 'Phishing wave' },
           gallerySourceTypes: ['News', 'Social'],
-        }),
+        }) as unknown,
       }),
     );
     expect(data.scenarioEvent.dataValues).toContainEqual({
@@ -535,7 +535,7 @@ describe('ScenarioEventEditDialogComponent', () => {
     expect(open).toHaveBeenCalledWith(
       DataValueDraftDialogComponent,
       expect.objectContaining({
-        data: expect.objectContaining({ sourceType: 'Phone' }),
+        data: expect.objectContaining({ sourceType: 'Phone' }) as unknown,
       }),
     );
   });

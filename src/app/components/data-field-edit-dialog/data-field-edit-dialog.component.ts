@@ -84,9 +84,10 @@ export class DataFieldEditDialogComponent {
         selectedDataType === DataFieldType.AttackTechnique ||
         selectedDataType === DataFieldType.DefensiveTechnique
       ) {
-        this.data.dataField.isChosenFromList = false;
-        this.data.dataField.isMultiSelect = true;
-        this.data.dataField.isFacilitationField = true;
+        const dataField = (this.data as { dataField: DataField }).dataField;
+        dataField.isChosenFromList = false;
+        dataField.isMultiSelect = true;
+        dataField.isFacilitationField = true;
       }
     }
   }
@@ -231,9 +232,10 @@ export class DataFieldEditDialogComponent {
 
   /** An Attack Technique or Defensive Technique field, whose values come from the MSEL's Techniques tab. */
   isTechniqueField(): boolean {
+    const dataType = (this.data as { dataField: DataField }).dataField.dataType;
     return (
-      this.data.dataField.dataType === DataFieldType.AttackTechnique ||
-      this.data.dataField.dataType === DataFieldType.DefensiveTechnique
+      dataType === DataFieldType.AttackTechnique ||
+      dataType === DataFieldType.DefensiveTechnique
     );
   }
 

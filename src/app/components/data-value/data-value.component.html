@@ -211,7 +211,7 @@ project root for license information.
               title="Write {{ dataField.name }} with AI"
               [attr.aria-label]="'Write ' + dataField.name + ' with AI'"
             >
-              <mat-icon class="mdi-24px" fontIcon="mdi-creation"></mat-icon>
+              <mat-icon class="mdi-24px" fontIcon="mdi-creation" />
             </button>
           }
         </mat-form-field>
@@ -361,7 +361,7 @@ project root for license information.
                 title="Write {{ dataField.name }} with AI"
                 [attr.aria-label]="'Write ' + dataField.name + ' with AI'"
               >
-                <mat-icon class="mdi-24px" fontIcon="mdi-creation"></mat-icon>
+                <mat-icon class="mdi-24px" fontIcon="mdi-creation" />
               </button>
             }
           </div>
@@ -811,7 +811,7 @@ project root for license information.
     <span>
       @if (!showValueOnly()) {
         <div class="competency-field">
-          <label class="competency-label">{{ dataField.name }}</label>
+          <span class="competency-label">{{ dataField.name }}</span>
           <mat-chip-set>
             @for (id of selectedTechniques; track id) {
               <mat-chip
@@ -836,7 +836,7 @@ project root for license information.
                     <mat-icon
                       fontIcon="mdi-close-circle-outline"
                       style="transform: scale(0.85)"
-                    ></mat-icon>
+                    />
                   </button>
                 }
               </mat-chip>
@@ -853,7 +853,7 @@ project root for license information.
                 panelClass="competency-select-panel"
               >
                 <div class="competency-search-box">
-                  <mat-icon fontIcon="mdi-magnify"></mat-icon>
+                  <mat-icon fontIcon="mdi-magnify" />
                   <input
                     [(ngModel)]="techniqueFilter"
                     placeholder="Search techniques..."
@@ -865,7 +865,7 @@ project root for license information.
                       (click)="techniqueFilter = ''; $event.stopPropagation()"
                       title="Clear"
                     >
-                      <mat-icon fontIcon="mdi-close"></mat-icon>
+                      <mat-icon fontIcon="mdi-close" />
                     </button>
                   }
                 </div>
@@ -886,8 +886,8 @@ project root for license information.
                         <mat-option [value]="option.externalId"
                           >{{ option.externalId }} - {{ option.name }}
                           @if (showsTechniqueDomains) {
-                            <span class="technique-domain">
-                              ({{ option.domain }})</span
+                            <span class="technique-domain"
+                              >({{ option.domain }})</span
                             >
                           }
                         </mat-option>
@@ -903,8 +903,8 @@ project root for license information.
                         <mat-option [value]="option.externalId"
                           >{{ option.externalId }} - {{ option.name }}
                           @if (showsTechniqueDomains) {
-                            <span class="technique-domain">
-                              ({{ option.domain }})</span
+                            <span class="technique-domain"
+                              >({{ option.domain }})</span
                             >
                           }
                         </mat-option>
@@ -919,8 +919,8 @@ project root for license information.
                     <mat-option [value]="option.externalId"
                       >{{ option.externalId }} - {{ option.name }}
                       @if (showsTechniqueDomains) {
-                        <span class="technique-domain">
-                          ({{ option.domain }})</span
+                        <span class="technique-domain"
+                          >({{ option.domain }})</span
                         >
                       }
                     </mat-option>

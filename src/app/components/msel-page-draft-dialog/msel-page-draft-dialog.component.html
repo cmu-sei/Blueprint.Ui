@@ -39,13 +39,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-form-field>
       @if (isWriting) {
         <div class="writing">
-          <mat-spinner diameter="40"></mat-spinner>
+          <mat-spinner diameter="40" />
           <span>Writing. This can take a minute.</span>
         </div>
       }
       @if (errorMessage) {
         <div class="error-message" role="alert">
-          <mat-icon fontIcon="mdi-alert-circle-outline"></mat-icon>
+          <mat-icon fontIcon="mdi-alert-circle-outline" />
           <span>{{ errorMessage }}</span>
         </div>
       }
@@ -68,7 +68,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <ul class="message-list">
             @for (note of result.notes; track $index) {
               <li>
-                <mat-icon fontIcon="mdi-information-outline"></mat-icon>
+                <mat-icon fontIcon="mdi-information-outline" />
                 <span>{{ note }}</span>
               </li>
             }

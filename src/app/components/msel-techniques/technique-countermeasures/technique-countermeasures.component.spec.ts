@@ -323,7 +323,7 @@ describe('TechniqueCountermeasuresComponent', () => {
           hasMappings: false,
           techniques: [],
         },
-        group: undefined as MselTechniqueCountermeasures,
+        group: undefined,
         hasDefensiveRelease: false,
       },
       message:

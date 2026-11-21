@@ -134,7 +134,7 @@ export class DataValueComponent implements OnChanges, OnDestroy {
     MselItemStatus.Archived,
   ];
   // the color Gallery shows for each article status
-  galleryItemStatusColors: { [status: string]: string } = {
+  galleryItemStatusColors: Record<string, string> = {
     Gray: '#b5b5b5',
     Green: 'rgb(163, 235, 163)',
     Yellow: 'rgb(250, 235, 100)',
@@ -142,7 +142,7 @@ export class DataValueComponent implements OnChanges, OnDestroy {
     Red: '#ff3333',
   };
   // the names Gallery used before its statuses were named for colors; existing MSELs still hold them
-  legacyGalleryItemStatuses: { [status: string]: string } = {
+  legacyGalleryItemStatuses: Record<string, string> = {
     unused: 'Gray',
     closed: 'Red',
     critical: 'Orange',
@@ -351,8 +351,9 @@ export class DataValueComponent implements OnChanges, OnDestroy {
   }
 
   get selectedTechniques(): string[] {
-    return this.value
-      ? this.value
+    const text: string = typeof this.value === 'string' ? this.value : '';
+    return text
+      ? text
           .split(',')
           .map((v) => v.trim())
           .filter((v) => v)
@@ -417,7 +418,7 @@ export class DataValueComponent implements OnChanges, OnDestroy {
 
   setDataValueArray(newValues: string[]) {
     if (newValues.includes('None')) {
-      newValues = new Array();
+      newValues = [];
     }
     this.value = newValues.join(', ');
     this.valueChangeHandler();

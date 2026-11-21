@@ -1093,7 +1093,7 @@ export function browserMedia(): MediaEnv {
               width: job.width,
               height: job.height,
             });
-      const g = canvas.getContext('2d') as CanvasDrawingContext;
+      const g = canvas.getContext('2d');
       const frames = Math.ceil((pcm.length / RATE) * job.fps);
       for (let i = 0; i < frames && !failure; i++) {
         const t = i / job.fps;

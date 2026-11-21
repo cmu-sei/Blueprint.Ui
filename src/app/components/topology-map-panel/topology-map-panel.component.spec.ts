@@ -42,14 +42,16 @@ function preview(
   };
 }
 
+const DEFAULT_MSEL: TopologyMapMsel = {
+  id: 'msel-1',
+  usePlayer: true,
+  useCaster: true,
+  playerViewId: 'view-1',
+  casterWorkspaceId: 'ws-1',
+};
+
 async function renderPanel({
-  msel = {
-    id: 'msel-1',
-    usePlayer: true,
-    useCaster: true,
-    playerViewId: 'view-1',
-    casterWorkspaceId: 'ws-1',
-  } as TopologyMapMsel,
+  msel = DEFAULT_MSEL,
   canUpdate = true,
   casterWorkspaceUrl = CASTER_URL,
   previewAnswer = (): Observable<TopologyMapPreview> => of(preview()),

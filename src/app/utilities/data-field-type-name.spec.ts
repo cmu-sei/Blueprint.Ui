@@ -22,7 +22,7 @@ describe('dataFieldTypeName', () => {
     { key: DataFieldType.Competency, name: 'Competency' },
     { key: 'IntegrationTarget', name: 'IntegrationTarget' },
     { key: '', name: '' },
-    { key: undefined as string, name: '' },
+    { key: undefined, name: '' },
   ])('shows $key as "$name"', ({ key, name }) => {
     expect(dataFieldTypeName(key)).toBe(name);
     expect(new DataFieldTypeNamePipe().transform(key)).toBe(name);
