@@ -53,6 +53,17 @@ export class MselExecutionDataService {
     this.updateStore(execution);
   }
 
+  /**
+   * A live change of the MSEL's position or pause, from its Updated broadcast: newer than every answer asked for
+   * before it, which is then dropped even while the read asked for here is still on its way, or if that read fails.
+   */
+  live(mselId: string, change: Partial<MselExecution>) {
+    this.stored[mselId] = this.ask(mselId);
+    const current = this.get(mselId);
+    if (current) this.updateStore({ ...current, ...change });
+    this.load(mselId);
+  }
+
   load(mselId: string) {
     const ticket = this.ask(mselId);
     this.mselExecutionService

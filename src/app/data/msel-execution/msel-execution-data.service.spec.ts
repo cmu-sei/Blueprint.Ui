@@ -196,4 +196,24 @@ describe('MselExecutionDataService', () => {
 
     expect(service.get('msel-1').currentMoveNumber).toBe(3);
   });
+
+  /**
+   * Verifies: a live change outranks a read asked for before it while the read it asks for is still on its way (a read that fails stores nothing, as one on its way has not).
+   * Interacts with: load (an older read answering late), live (its own read not yet answered).
+   * Data: stored at move 1; an older read answers move 1 unpaused; the live change is move 2, paused.
+   */
+  it('a live change outranks an older read before its own read answers', () => {
+    const { service, api } = setup();
+    service.load('msel-1');
+    const older = new Subject<MselExecution>();
+    api.getMselExecution.mockReturnValueOnce(older);
+    service.load('msel-1');
+    api.getMselExecution.mockReturnValueOnce(new Subject<MselExecution>());
+
+    service.live('msel-1', { currentMoveNumber: 2, automationPaused: true });
+    older.next(execution({ currentMoveNumber: 1, automationPaused: false }));
+
+    expect(service.get('msel-1').currentMoveNumber).toBe(2);
+    expect(service.get('msel-1').automationPaused).toBe(true);
+  });
 });
