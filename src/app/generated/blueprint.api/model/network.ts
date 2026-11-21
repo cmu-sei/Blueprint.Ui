@@ -15,11 +15,21 @@
  */
 
 
+/**
+ * A network of a MSEL\'s range, with the teams (which defend it) and organizations (which it belongs to) linked to it. A save sends the whole lists of links, which replace the stored ones.
+ */
 export interface Network { 
+    dateCreated?: Date;
+    dateModified?: Date | null;
+    createdBy?: string;
+    modifiedBy?: string | null;
     id?: string;
+    mselId?: string;
     name?: string | null;
     range?: string | null;
     purpose?: string | null;
-    hostCount?: number | null;
+    casterId?: string | null;
+    teamIds?: Array<string> | null;
+    organizationIds?: Array<string> | null;
 }
 

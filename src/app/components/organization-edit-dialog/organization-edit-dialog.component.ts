@@ -25,10 +25,6 @@ import {
   MatHint,
 } from '@angular/material/input';
 import { MatButton } from '@angular/material/button';
-import {
-  NetworkListEditComponent,
-  networksValid,
-} from '../network-list-edit/network-list-edit.component';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 
 @Component({
@@ -46,7 +42,6 @@ import { AngularEditorModule } from '@kolkov/angular-editor';
     MatError,
     MatHint,
     MatButton,
-    NetworkListEditComponent,
     AngularEditorModule,
   ],
 })
@@ -75,12 +70,12 @@ export class OrganizationEditDialogComponent {
     this.data.organization.summary,
     [Validators.required],
   );
-  // the organization the dialog edits, typed, for the domain and networks
-  private readonly rangeOrganization = (
+  // the organization the dialog edits, typed, for its domain
+  private readonly editedOrganization = (
     this.data as { organization: Organization }
   ).organization;
   public domainFormControl = new FormControl<string>(
-    this.rangeOrganization.domain ?? '',
+    this.editedOrganization.domain ?? '',
     { nonNullable: true },
   );
   editorConfig = EDITOR_CONFIG;
@@ -94,8 +89,7 @@ export class OrganizationEditDialogComponent {
       this.organizationEmailFormControl.hasError('required') ||
       this.organizationEmailFormControl.hasError('minlength') ||
       this.summaryFormControl.hasError('required') ||
-      this.summaryFormControl.hasError('minlength') ||
-      !networksValid(this.rangeOrganization.networks)
+      this.summaryFormControl.hasError('minlength')
     );
   }
 
@@ -162,7 +156,7 @@ export class OrganizationEditDialogComponent {
           : '';
         break;
       case 'domain':
-        this.rangeOrganization.domain =
+        this.editedOrganization.domain =
           this.domainFormControl.value.trim().toLowerCase() || null;
         break;
       default:

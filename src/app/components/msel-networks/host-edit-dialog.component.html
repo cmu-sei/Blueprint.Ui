@@ -1,0 +1,141 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the
+project root for license information.
+-->
+
+<crucible-dialog
+  [dialogTitle]="host.id ? 'Edit Host' : 'Add Host'"
+  [submitDisabled]="!canSave()"
+  [guardUnsavedWork]="true"
+  (cancel)="cancel()"
+  (submit)="save()"
+>
+  <div crucibleDialogContent class="range-dialog">
+    <div class="range-row">
+      <mat-form-field class="range-grow">
+        <mat-label>Name</mat-label>
+        <input
+          matInput
+          type="text"
+          [(ngModel)]="host.name"
+          placeholder="ws"
+          required
+        />
+        <mat-hint
+          >With Caster, the name of the machine in the template</mat-hint
+        >
+      </mat-form-field>
+      <mat-form-field class="range-count">
+        <mat-label>Count</mat-label>
+        <input matInput type="number" min="1" [(ngModel)]="host.count" />
+        <mat-hint>Identical hosts this row stands for</mat-hint>
+      </mat-form-field>
+    </div>
+    @if (nameProblem(); as problem) {
+      <p class="range-problem">{{ problem }}</p>
+    }
+    @if (countProblem(); as problem) {
+      <p class="range-problem">{{ problem }}</p>
+    }
+    <div class="range-row">
+      <mat-form-field class="range-grow">
+        <mat-label>Role</mat-label>
+        <input
+          matInput
+          type="text"
+          [(ngModel)]="host.role"
+          placeholder="Workstation"
+        />
+      </mat-form-field>
+      <mat-form-field class="range-grow">
+        <mat-label>Operating System</mat-label>
+        <input
+          matInput
+          type="text"
+          [(ngModel)]="host.operatingSystem"
+          placeholder="Windows 11"
+        />
+      </mat-form-field>
+    </div>
+    <mat-form-field class="full-width">
+      <mat-label>Description</mat-label>
+      <textarea matInput rows="2" [(ngModel)]="host.description"></textarea>
+    </mat-form-field>
+
+    <p class="range-label">Interfaces</p>
+    @for (hostInterface of interfaces(); track $index; let i = $index) {
+      <div class="range-row">
+        <mat-form-field class="range-grow">
+          <mat-label>Network</mat-label>
+          <mat-select [(ngModel)]="hostInterface.networkId">
+            @for (network of data.networks; track network.id) {
+              <mat-option [value]="network.id">
+                {{ network.name
+                }}{{ network.range ? ' (' + network.range + ')' : '' }}
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="range-grow">
+          <mat-label>Address</mat-label>
+          <input
+            matInput
+            type="text"
+            [(ngModel)]="hostInterface.address"
+            placeholder="10.20.0.10"
+          />
+        </mat-form-field>
+        <button
+          mat-icon-button
+          type="button"
+          (click)="removeInterface(i)"
+          [attr.aria-label]="
+            'Remove the interface on ' +
+            (networkName(hostInterface.networkId) || 'no network')
+          "
+          title="Remove this interface"
+        >
+          <mat-icon class="mdi-24px" fontIcon="mdi-delete" />
+        </button>
+      </div>
+      @if (interfaceProblem(hostInterface); as problem) {
+        <p class="range-problem">{{ problem }}</p>
+      }
+    }
+    @if (data.networks.length) {
+      <button
+        mat-button
+        type="button"
+        (click)="addInterface()"
+        title="Put the host on a network"
+      >
+        <mat-icon fontIcon="mdi-plus-circle" />
+        Add Interface
+      </button>
+    } @else {
+      <p class="range-hint">Add a network first to put the host on it.</p>
+    }
+
+    <mat-form-field class="full-width">
+      <mat-label>Defended by</mat-label>
+      <mat-select multiple [(ngModel)]="host.teamIds">
+        @for (team of data.teams; track team.id) {
+          <mat-option [value]="team.id">{{ team.name }}</mat-option>
+        }
+      </mat-select>
+      <mat-hint>The teams that defend this host</mat-hint>
+    </mat-form-field>
+    <mat-form-field class="full-width">
+      <mat-label>Belongs to</mat-label>
+      <mat-select multiple [(ngModel)]="host.organizationIds">
+        @for (organization of data.organizations; track organization.id) {
+          <mat-option [value]="organization.id">{{
+            organization.name
+          }}</mat-option>
+        }
+      </mat-select>
+      <mat-hint>The organizations this host belongs to</mat-hint>
+    </mat-form-field>
+  </div>
+</crucible-dialog>

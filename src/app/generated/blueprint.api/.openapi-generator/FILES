@@ -1,4 +1,5 @@
 .gitignore
+.openapi-generator-ignore
 README.md
 api.base.service.ts
 api.module.ts
@@ -18,6 +19,7 @@ api/dataOption.service.ts
 api/dataValue.service.ts
 api/group.service.ts
 api/healthCheck.service.ts
+api/host.service.ts
 api/inject.service.ts
 api/injectType.service.ts
 api/invitation.service.ts
@@ -30,6 +32,7 @@ api/mselImage.service.ts
 api/mselPage.service.ts
 api/mselScoringModel.service.ts
 api/mselUnit.service.ts
+api/network.service.ts
 api/organization.service.ts
 api/player.service.ts
 api/playerApplication.service.ts
@@ -118,6 +121,8 @@ model/groupMembership.ts
 model/healthReport.ts
 model/healthReportEntry.ts
 model/healthStatus.ts
+model/host.ts
+model/hostInterface.ts
 model/injectType.ts
 model/injectTypeCreate.ts
 model/injectTypeDataField.ts
