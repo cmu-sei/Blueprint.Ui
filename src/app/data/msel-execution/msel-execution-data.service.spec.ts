@@ -3,7 +3,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { firstValueFrom, of } from 'rxjs';
+import { Subject, firstValueFrom, of, throwError } from 'rxjs';
 import {
   MselAdvanceResult,
   MselExecution,
@@ -139,6 +139,35 @@ describe('MselExecutionDataService', () => {
     expect(api.setMselAutomationPaused).toHaveBeenCalledWith('msel-1', {
       paused: true,
     });
+    expect(service.get('msel-1').automationPaused).toBe(true);
+  });
+
+  /**
+   * Verifies: a pause the API refuses does not make a read in flight count as overtaken, so its answer is still stored; one the API takes does.
+   * Interacts with: load (answering later), setPaused (refused, then taken).
+   * Data: a read answering move 3; a refused pause; a second read answering move 4, overtaken by a taken pause.
+   */
+  it('a refused action leaves the read in flight standing', async () => {
+    const { service, api } = setup();
+    const read = new Subject<MselExecution>();
+    api.getMselExecution.mockReturnValueOnce(read);
+    api.setMselAutomationPaused.mockReturnValueOnce(
+      throwError(() => new Error('409')),
+    );
+
+    service.load('msel-1');
+    await expect(
+      firstValueFrom(service.setPaused('msel-1', true)),
+    ).rejects.toThrow('409');
+    read.next(execution({ currentMoveNumber: 3 }));
+    expect(service.get('msel-1').currentMoveNumber).toBe(3);
+
+    const second = new Subject<MselExecution>();
+    api.getMselExecution.mockReturnValueOnce(second);
+    service.load('msel-1');
+    await firstValueFrom(service.setPaused('msel-1', true));
+    second.next(execution({ currentMoveNumber: 4 }));
+    expect(service.get('msel-1').currentMoveNumber).toBe(1);
     expect(service.get('msel-1').automationPaused).toBe(true);
   });
 });

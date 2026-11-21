@@ -219,6 +219,8 @@ async function renderView(
     tasks?: AutomationTask[];
     /** The MSEL becomes active only after the view renders, as the page's loadById answers after its tasks. */
     mselLater?: boolean;
+    /** The answer to the view's first read of the execution; later reads answer at once. */
+    firstExecution?: Observable<MselExecution>;
   } = {},
 ) {
   const {
@@ -227,6 +229,7 @@ async function renderView(
     fields = [TITLE],
     tasks = TASKS,
     mselLater = false,
+    firstExecution,
   } = options;
   const executionApi = {
     getMselExecution: vi.fn(() => of(structuredClone(EXECUTION))),
@@ -234,6 +237,8 @@ async function renderView(
       (id: string, form?: AutomationPausedForm) => Observable<MselExecution>
     >(() => of({ ...structuredClone(EXECUTION), automationPaused: true })),
   } satisfies ApiStub<MselExecutionService>;
+  if (firstExecution)
+    executionApi.getMselExecution.mockReturnValueOnce(firstExecution);
   const open = vi.fn();
   const rendered = await renderComponent(FacilitatorViewComponent, {
     childStubs: [
@@ -507,11 +512,6 @@ describe('FacilitatorViewComponent', () => {
   });
 
   /**
-   * Verifies: an event opens to its automation panel, and a task's history opens in the drawer named by event and task.
-   * Interacts with: toggleEvent, the automation panel's history output, the results drawer.
-   * Data: se-1 with t-1, whose run failed.
-   */
-  /**
    * Verifies: another facilitator's pause and start, which reach this view as the MSEL's update, win over the execution read before them.
    * Interacts with: the MSEL store's update (as SignalR's MselUpdated makes it), isPaused, currentMove.
    * Data: unpaused at move 1; the MSEL then paused at move 2.
@@ -567,6 +567,36 @@ describe('FacilitatorViewComponent', () => {
   });
 
   /**
+   * Verifies: another facilitator's start, arriving while the view's first read of the execution is unanswered, is not undone by that read's late answer.
+   * Interacts with: the first MselExecutionDataService.load (pending), the MSEL's update, the read that update asks for.
+   * Data: the first read answers move 1 late; the MSEL updated to move 2 and paused, whose read answers that.
+   */
+  it('keeps a live start over the first read of the execution', async () => {
+    const first = new Subject<MselExecution>();
+    const { executionApi, fixture } = await renderView({
+      firstExecution: first,
+    });
+    executionApi.getMselExecution.mockReturnValue(
+      of({
+        ...structuredClone(EXECUTION),
+        automationPaused: true,
+        currentMoveNumber: n(2),
+      }),
+    );
+
+    TestBed.inject(MselStore).update('msel-1', {
+      automationPaused: true,
+      currentMoveNumber: 2,
+      currentGroupNumber: 0,
+    });
+    first.next(structuredClone(EXECUTION));
+    fixture.detectChanges();
+
+    expect(screen.getByText(/Now: Move 2 · Group 0/)).toBeInTheDocument();
+    expect(screen.getByText('Automation is paused')).toBeInTheDocument();
+  });
+
+  /**
    * Verifies: tasks read before the MSEL arrived are shown once it does, rather than left out for belonging to no MSEL yet.
    * Interacts with: the task store's first emission before the active MSEL, the MSEL subscription.
    * Data: the tasks seeded; the MSEL made active after the view renders.
@@ -603,6 +633,11 @@ describe('FacilitatorViewComponent', () => {
     ).toBeInTheDocument();
   });
 
+  /**
+   * Verifies: an event opens to its automation panel, and a task's history opens in the drawer named by event and task.
+   * Interacts with: toggleEvent, the automation panel's history output, the results drawer.
+   * Data: se-1 with t-1, whose run failed.
+   */
   it('opens a task history', async () => {
     const { fixture } = await renderView();
     const user = userEvent.setup();

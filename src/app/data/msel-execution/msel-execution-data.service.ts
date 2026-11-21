@@ -34,8 +34,9 @@ export class MselExecutionDataService {
     return this.executions$.value[mselId];
   }
 
-  // per MSEL, the newest read or action: an answer to an older read, overtaken by a newer read or a start or pause, is
-  // dropped rather than put back over what came after it
+  // per MSEL, the newest read or action: an answer to an older read, overtaken by a newer read or by a start or pause
+  // the API took, is dropped rather than put back over what came after it. A refused action changes nothing, so the
+  // read it overlapped still counts.
   private readonly sequence: Record<string, number> = {};
   private next(mselId: string): number {
     this.sequence[mselId] = (this.sequence[mselId] ?? 0) + 1;
@@ -57,10 +58,9 @@ export class MselExecutionDataService {
     moveNumber: number,
     runTaskIds: string[],
   ): Observable<MselAdvanceResult> {
-    this.next(mselId);
     return this.mselExecutionService
       .startMselMove(mselId, moveNumber, { runTaskIds })
-      .pipe(tap((result) => this.updateStore(result.execution)));
+      .pipe(tap((result) => this.taken(mselId, result.execution)));
   }
 
   startGroup(
@@ -69,17 +69,21 @@ export class MselExecutionDataService {
     groupNumber: number,
     runTaskIds: string[],
   ): Observable<MselAdvanceResult> {
-    this.next(mselId);
     return this.mselExecutionService
       .startMselGroup(mselId, moveNumber, groupNumber, { runTaskIds })
-      .pipe(tap((result) => this.updateStore(result.execution)));
+      .pipe(tap((result) => this.taken(mselId, result.execution)));
   }
 
   setPaused(mselId: string, paused: boolean): Observable<MselExecution> {
-    this.next(mselId);
     return this.mselExecutionService
       .setMselAutomationPaused(mselId, { paused })
-      .pipe(tap((execution) => this.updateStore(execution)));
+      .pipe(tap((execution) => this.taken(mselId, execution)));
+  }
+
+  /** The position an action the API took left the MSEL in, newer than any read before it. */
+  private taken(mselId: string, execution: MselExecution | undefined) {
+    this.next(mselId);
+    this.updateStore(execution);
   }
 
   /** An execution from the API or a test; the API sends its numbers as strings, which are made numbers here. */

@@ -29,12 +29,24 @@ export class AutomationRunDataService {
   private query = inject(AutomationRunQuery);
   private automationService = inject(AutomationService);
 
+  // what each list read in flight has seen arrive since it was asked for: the runs updated, and the results updated
+  // (or, as null, deleted)
+  private readonly loadsInFlight = new Set<{
+    runs: Set<string>;
+    results: Map<string, AutomationResult | null>;
+  }>();
+
   /** Replaces the MSEL's runs of the kind with the API's, newest 2000 first. */
   loadByMsel(mselId: string, kind: AutomationRunKind) {
     this.store.setLoading(true);
-    // A run that arrives over SignalR while the list is read is newer than the answer: it is neither removed for being
-    // missing from it nor written over by it. What arrives meanwhile is recorded, rather than compared by clock.
-    const touched = new Set<string>();
+    // What arrives over SignalR while the list is read is newer than the answer, so it is recorded, rather than compared
+    // by clock: a run updated meanwhile is not removed for being missing from the answer, and keeps its newer status,
+    // and a result updated or deleted meanwhile stays as it arrived. The answer's other results are added, since a run's
+    // broadcast carries none.
+    const touched = {
+      runs: new Set<string>(),
+      results: new Map<string, AutomationResult | null>(),
+    };
     this.loadsInFlight.add(touched);
     this.automationService
       .getAutomationRunsByMsel(mselId, kind)
@@ -49,9 +61,25 @@ export class AutomationRunDataService {
               r.mselId === mselId &&
               r.kind === kind &&
               !answered.has(r.id) &&
-              !touched.has(r.id),
+              !touched.runs.has(r.id),
           );
-          this.store.upsertMany(runs.filter((r) => !touched.has(r.id)));
+          const newer = [...touched.results.values()].filter(
+            (r): r is AutomationResult => !!r,
+          );
+          this.store.upsertMany(
+            runs.map((run) => {
+              const results = byIteration([
+                ...(run.results ?? []).filter(
+                  (r) => !touched.results.has(r.id),
+                ),
+                ...newer.filter((r) => r.runId === run.id),
+              ]);
+              const current = touched.runs.has(run.id)
+                ? this.query.getEntity(run.id)
+                : undefined;
+              return { ...(current ?? run), results };
+            }),
+          );
           this.store.setLoading(false);
         },
         error: (error) => {
@@ -98,11 +126,8 @@ export class AutomationRunDataService {
   }
 
   /** A run from the API or a broadcast. One with no results keeps those the store has. */
-  // the runs each list read in flight has seen updated since it was asked for
-  private readonly loadsInFlight = new Set<Set<string>>();
-
   updateStore(run: AutomationRun) {
-    this.loadsInFlight.forEach((touched) => touched.add(run.id));
+    this.loadsInFlight.forEach((touched) => touched.runs.add(run.id));
     this.setAsDates(run);
     const existing = this.query.getEntity(run.id);
     const results =
@@ -118,20 +143,20 @@ export class AutomationRunDataService {
 
   /** A result broadcast, for a run the store holds; a result of another run is not this page's. */
   updateResult(result: AutomationResult) {
+    this.setResultDates(result);
+    // kept for a list read in flight, whose answer may hold an older copy, or the run this page does not have yet
+    this.loadsInFlight.forEach((touched) =>
+      touched.results.set(result.id, result),
+    );
     const run = this.query.getEntity(result.runId);
     if (!run) return;
-    this.setResultDates(result);
     const results = (run.results ?? []).filter((r) => r.id !== result.id);
     results.push(result);
-    results.sort(
-      (a, b) =>
-        (b.iteration ?? 0) - (a.iteration ?? 0) ||
-        (a.vmName ?? '').localeCompare(b.vmName ?? ''),
-    );
-    this.store.update(run.id, { results });
+    this.store.update(run.id, { results: byIteration(results) });
   }
 
   deleteResult(id: string) {
+    this.loadsInFlight.forEach((touched) => touched.results.set(id, null));
     const run = this.query
       .getAll()
       .find((r) => (r.results ?? []).some((x) => x.id === id));
@@ -157,4 +182,13 @@ export class AutomationRunDataService {
     result.sentAt = result.sentAt ? new Date(result.sentAt) : null;
     result.statusAt = result.statusAt ? new Date(result.statusAt) : null;
   }
+}
+
+/** A run's results, newest iteration first, then by VM. */
+function byIteration(results: AutomationResult[]): AutomationResult[] {
+  return [...results].sort(
+    (a, b) =>
+      (b.iteration ?? 0) - (a.iteration ?? 0) ||
+      (a.vmName ?? '').localeCompare(b.vmName ?? ''),
+  );
 }

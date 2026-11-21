@@ -152,6 +152,71 @@ describe('AutomationRunDataService', () => {
   });
 
   /**
+   * Verifies: a run first seen in a status broadcast while the list is read keeps that newer status and gains the earlier results the answer holds, as the broadcast carries none.
+   * Interacts with: loadByMsel (stub answering later), updateStore.
+   * Data: an empty store; run-1 Succeeded is broadcast with no results; the answer has run-1 Running with iterations 1 and 2.
+   */
+  it('loadByMsel adds the answer results to a run broadcast while it loads', () => {
+    const { service, query, api } = setup();
+    const answer = new Subject<AutomationRun[]>();
+    api.getAutomationRunsByMsel.mockReturnValue(answer);
+
+    service.loadByMsel('msel-1', AutomationRunKind.Exercise);
+    service.updateStore(
+      run({ id: 'run-1', status: AutomationStatus.Succeeded, results: [] }),
+    );
+    answer.next([
+      run({
+        id: 'run-1',
+        status: AutomationStatus.Running,
+        results: [
+          result({ id: 'i1', iteration: 1 }),
+          result({ id: 'i2', iteration: 2 }),
+        ],
+      }),
+    ]);
+
+    const stored = query.getEntity('run-1');
+    expect(stored.status).toBe(AutomationStatus.Succeeded);
+    expect(stored.results.map((r) => r.id)).toEqual(['i2', 'i1']);
+  });
+
+  /**
+   * Verifies: a result broadcast while the list is read, even for a run the store does not hold yet, is not written over by the older copy in the answer; one deleted meanwhile stays deleted.
+   * Interacts with: loadByMsel (stub answering later), updateResult, deleteResult.
+   * Data: an empty store; res-1 Succeeded with its output is broadcast and res-2 deleted; the answer has res-1 Running and res-2.
+   */
+  it('loadByMsel keeps a result broadcast while it loads', () => {
+    const { service, query, api } = setup();
+    const answer = new Subject<AutomationRun[]>();
+    api.getAutomationRunsByMsel.mockReturnValue(answer);
+
+    service.loadByMsel('msel-1', AutomationRunKind.Exercise);
+    service.updateResult(
+      result({
+        id: 'res-1',
+        status: AutomationStatus.Succeeded,
+        actualOutput: 'done',
+      }),
+    );
+    service.deleteResult('res-2');
+    answer.next([
+      run({
+        id: 'run-1',
+        results: [
+          result({ id: 'res-1', status: AutomationStatus.Running }),
+          result({ id: 'res-2', vmName: 'web-02' }),
+        ],
+      }),
+    ]);
+
+    const results = query.getEntity('run-1').results;
+    expect(results.map((r) => [r.id, r.status, r.actualOutput])).toEqual([
+      ['res-1', AutomationStatus.Succeeded, 'done'],
+    ]);
+  });
+
+  /**
    * Verifies: a run that arrives without results keeps the results the store has, and one with results replaces them.
    * Interacts with: updateStore, AutomationRunQuery.
    * Data: run-1 with res-1; an update with no results; then one carrying res-2.

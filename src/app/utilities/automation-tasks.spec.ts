@@ -279,8 +279,37 @@ describe('taskErrors', () => {
       definition: SSH,
       error: 'Situation time must be a date and time.',
     },
+    {
+      label: 'a day the month does not have, written month first',
+      draft: ssh({
+        actionParameters: { Hosts: 'h', At: '02/30/2026 10:00:00' },
+      }),
+      definition: SSH,
+      error: 'Situation time must be a date and time.',
+    },
+    {
+      label: 'an hour the day does not have',
+      draft: ssh({
+        actionParameters: { Hosts: 'h', At: '2026-02-28T24:00:00Z' },
+      }),
+      definition: SSH,
+      error: 'Situation time must be a date and time.',
+    },
   ])('names $label', ({ draft, definition, error }) => {
     expect(taskErrors(draft, definition, known)).toContain(error);
+  });
+
+  it.each([
+    '2026-03-01T10:00:00Z',
+    '2026-03-01T10:00',
+    '2026-03-01 10:00:00.5+02:00',
+    '2026-03-01',
+    '3/1/2026 10:00',
+    '02/28/2026',
+  ])('takes the date and time %s', (at) => {
+    expect(
+      taskErrors(ssh({ actionParameters: { Hosts: 'h', At: at } }), SSH, known),
+    ).not.toContain('Situation time must be a date and time.');
   });
 });
 

@@ -181,26 +181,42 @@ export function hasSecret(draft: AutomationTaskDraft, key: string): boolean {
 }
 
 /**
- * What is wrong with a draft, as the API would say before it refuses the save. Checked here so the dialog, which
- * closes on Save, keeps the author's work.
- */
-/**
- * Whether a date and time is one the API reads: Date.parse alone takes 2026-02-30 for March 2, which the API refuses,
- * so a date's year, month and day must come back as written.
+ * Whether a date and time is one the API reads, in the form the field asks for (2026-03-01T10:00:00Z, with or without
+ * seconds, fraction and offset) or as month/day/year: each part in its range, and the day one the month has. Date.parse
+ * alone takes 2026-02-30 for March 2, and other forms the API refuses.
  */
 function isRealDateTime(value: string): boolean {
-  if (Number.isNaN(Date.parse(value))) return false;
-  const day = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
-  if (!day) return true;
-  const [year, month, date] = [+day[1], +day[2], +day[3]];
-  const parsed = new Date(Date.UTC(year, month - 1, date));
+  const iso =
+    /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?)?(?:Z|[+-](\d{2}):?(\d{2}))?$/i.exec(
+      value,
+    );
+  const us =
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?: (\d{1,2}):(\d{2})(?::(\d{2}))?)?$/.exec(
+      value,
+    );
+  if (!iso && !us) return false;
+  const [year, month, day, hour, minute, second, offsetHours, offsetMinutes] =
+    iso
+      ? [iso[1], iso[2], iso[3], iso[4], iso[5], iso[6], iso[7], iso[8]]
+      : [us[3], us[1], us[2], us[4], us[5], us[6], undefined, undefined];
+  const n = (part: string | undefined) => (part === undefined ? 0 : +part);
+  const parsed = new Date(Date.UTC(n(year), n(month) - 1, n(day)));
   return (
-    parsed.getUTCFullYear() === year &&
-    parsed.getUTCMonth() === month - 1 &&
-    parsed.getUTCDate() === date
+    parsed.getUTCFullYear() === n(year) &&
+    parsed.getUTCMonth() === n(month) - 1 &&
+    parsed.getUTCDate() === n(day) &&
+    n(hour) <= 23 &&
+    n(minute) <= 59 &&
+    n(second) <= 59 &&
+    n(offsetHours) <= 14 &&
+    n(offsetMinutes) <= 59
   );
 }
 
+/**
+ * What is wrong with a draft, as the API would say before it refuses the save. Checked here so the dialog, which
+ * closes on Save, keeps the author's work.
+ */
 export function taskErrors(
   draft: AutomationTaskDraft,
   definition: AutomationActionDefinition | undefined,

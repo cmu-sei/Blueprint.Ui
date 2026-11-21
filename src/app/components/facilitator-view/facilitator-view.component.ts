@@ -226,25 +226,26 @@ export class FacilitatorViewComponent implements ScenarioEventView {
         const before = this.msel;
         this.msel = { ...msel } as MselPlus;
         // another facilitator's start or pause reaches this view as the MSEL's update: it is newer than the execution
-        // read before it
+        // read before it, including a first read still unanswered
         if (
           !changed &&
-          this.execution &&
           (before.automationPaused !== msel.automationPaused ||
             before.currentMoveNumber !== msel.currentMoveNumber ||
             before.currentGroupNumber !== msel.currentGroupNumber ||
             String(before.currentGroupStartedAt ?? '') !==
               String(msel.currentGroupStartedAt ?? ''))
         ) {
-          this.execution = {
-            ...this.execution,
-            automationPaused: msel.automationPaused,
-            currentMoveNumber: msel.currentMoveNumber,
-            currentGroupNumber: msel.currentGroupNumber,
-            currentGroupStartedAt: msel.currentGroupStartedAt
-              ? new Date(msel.currentGroupStartedAt)
-              : null,
-          };
+          if (this.execution) {
+            this.execution = {
+              ...this.execution,
+              automationPaused: msel.automationPaused,
+              currentMoveNumber: msel.currentMoveNumber,
+              currentGroupNumber: msel.currentGroupNumber,
+              currentGroupStartedAt: msel.currentGroupStartedAt
+                ? new Date(msel.currentGroupStartedAt)
+                : null,
+            };
+          }
           // and the execution is read again, so an older read's answer cannot put the earlier position back
           this.executionData.load(msel.id);
         }
