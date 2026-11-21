@@ -288,6 +288,14 @@ describe('taskErrors', () => {
       error: 'Situation time must be a date and time.',
     },
     {
+      label: 'an offset beyond 14 hours',
+      draft: ssh({
+        actionParameters: { Hosts: 'h', At: '2026-03-01T10:00:00+14:30' },
+      }),
+      definition: SSH,
+      error: 'Situation time must be a date and time.',
+    },
+    {
       label: 'an hour the day does not have',
       draft: ssh({
         actionParameters: { Hosts: 'h', At: '2026-02-28T24:00:00Z' },
@@ -306,6 +314,8 @@ describe('taskErrors', () => {
     '2026-03-01',
     '3/1/2026 10:00',
     '02/28/2026',
+    '2026-03-01T10:00:00+14:00',
+    '2026-03-01T10:00:00-12:45',
   ])('takes the date and time %s', (at) => {
     expect(
       taskErrors(ssh({ actionParameters: { Hosts: 'h', At: at } }), SSH, known),

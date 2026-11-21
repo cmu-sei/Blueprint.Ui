@@ -208,8 +208,8 @@ function isRealDateTime(value: string): boolean {
     n(hour) <= 23 &&
     n(minute) <= 59 &&
     n(second) <= 59 &&
-    n(offsetHours) <= 14 &&
-    n(offsetMinutes) <= 59
+    n(offsetMinutes) <= 59 &&
+    n(offsetHours) * 60 + n(offsetMinutes) <= 14 * 60
   );
 }
 

@@ -127,8 +127,12 @@ export class AutomationRunDataService {
 
   /** A run from the API or a broadcast. One with no results keeps those the store has. */
   updateStore(run: AutomationRun) {
-    this.loadsInFlight.forEach((touched) => touched.runs.add(run.id));
     this.setAsDates(run);
+    // a run answered with its results, as a test's poll is, brings them newer than a list read in flight
+    this.loadsInFlight.forEach((touched) => {
+      touched.runs.add(run.id);
+      (run.results ?? []).forEach((r) => touched.results.set(r.id, r));
+    });
     const existing = this.query.getEntity(run.id);
     const results =
       run.results && run.results.length > 0

@@ -217,6 +217,41 @@ describe('AutomationRunDataService', () => {
   });
 
   /**
+   * Verifies: a run answered with its results while the list is read, as a test's poll answers it, keeps those results over the older ones in the answer.
+   * Interacts with: loadByMsel (stub answering later), updateStore with results.
+   * Data: the poll answers run-1 Succeeded with res-1 done; the list's answer has run-1 Running and res-1 Running.
+   */
+  it('loadByMsel keeps the results of a run polled while it loads', () => {
+    const { service, query, api } = setup();
+    const answer = new Subject<AutomationRun[]>();
+    api.getAutomationRunsByMsel.mockReturnValue(answer);
+
+    service.loadByMsel('msel-1', AutomationRunKind.Exercise);
+    service.updateStore(
+      run({
+        id: 'run-1',
+        status: AutomationStatus.Succeeded,
+        results: [
+          result({ status: AutomationStatus.Succeeded, actualOutput: 'done' }),
+        ],
+      }),
+    );
+    answer.next([
+      run({
+        id: 'run-1',
+        status: AutomationStatus.Running,
+        results: [result({ status: AutomationStatus.Running })],
+      }),
+    ]);
+
+    const stored = query.getEntity('run-1');
+    expect(stored.status).toBe(AutomationStatus.Succeeded);
+    expect(stored.results.map((r) => [r.status, r.actualOutput])).toEqual([
+      [AutomationStatus.Succeeded, 'done'],
+    ]);
+  });
+
+  /**
    * Verifies: a run that arrives without results keeps the results the store has, and one with results replaces them.
    * Interacts with: updateStore, AutomationRunQuery.
    * Data: run-1 with res-1; an update with no results; then one carrying res-2.

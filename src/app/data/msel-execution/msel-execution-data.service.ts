@@ -34,23 +34,31 @@ export class MselExecutionDataService {
     return this.executions$.value[mselId];
   }
 
-  // per MSEL, the newest read or action: an answer to an older read, overtaken by a newer read or by a start or pause
-  // the API took, is dropped rather than put back over what came after it. A refused action changes nothing, so the
-  // read it overlapped still counts.
-  private readonly sequence: Record<string, number> = {};
-  private next(mselId: string): number {
-    this.sequence[mselId] = (this.sequence[mselId] ?? 0) + 1;
-    return this.sequence[mselId];
+  // Per MSEL, each read and action is numbered as it is sent, and an answer is stored only when it was asked for after
+  // the answer stored last: an older read's answer is dropped rather than put back over what came after it, whichever
+  // arrives first. A refused action has no answer, so it overtakes nothing.
+  private readonly asked: Record<string, number> = {};
+  private readonly stored: Record<string, number> = {};
+  private ask(mselId: string): number {
+    this.asked[mselId] = (this.asked[mselId] ?? 0) + 1;
+    return this.asked[mselId];
+  }
+  private answer(
+    mselId: string,
+    ticket: number,
+    execution: MselExecution | undefined,
+  ) {
+    if (ticket <= (this.stored[mselId] ?? 0)) return;
+    this.stored[mselId] = ticket;
+    this.updateStore(execution);
   }
 
   load(mselId: string) {
-    const asked = this.next(mselId);
+    const ticket = this.ask(mselId);
     this.mselExecutionService
       .getMselExecution(mselId)
       .pipe(take(1))
-      .subscribe((execution) => {
-        if (this.sequence[mselId] === asked) this.updateStore(execution);
-      });
+      .subscribe((execution) => this.answer(mselId, ticket, execution));
   }
 
   startMove(
@@ -58,9 +66,10 @@ export class MselExecutionDataService {
     moveNumber: number,
     runTaskIds: string[],
   ): Observable<MselAdvanceResult> {
+    const ticket = this.ask(mselId);
     return this.mselExecutionService
       .startMselMove(mselId, moveNumber, { runTaskIds })
-      .pipe(tap((result) => this.taken(mselId, result.execution)));
+      .pipe(tap((result) => this.answer(mselId, ticket, result.execution)));
   }
 
   startGroup(
@@ -69,21 +78,17 @@ export class MselExecutionDataService {
     groupNumber: number,
     runTaskIds: string[],
   ): Observable<MselAdvanceResult> {
+    const ticket = this.ask(mselId);
     return this.mselExecutionService
       .startMselGroup(mselId, moveNumber, groupNumber, { runTaskIds })
-      .pipe(tap((result) => this.taken(mselId, result.execution)));
+      .pipe(tap((result) => this.answer(mselId, ticket, result.execution)));
   }
 
   setPaused(mselId: string, paused: boolean): Observable<MselExecution> {
+    const ticket = this.ask(mselId);
     return this.mselExecutionService
       .setMselAutomationPaused(mselId, { paused })
-      .pipe(tap((execution) => this.taken(mselId, execution)));
-  }
-
-  /** The position an action the API took left the MSEL in, newer than any read before it. */
-  private taken(mselId: string, execution: MselExecution | undefined) {
-    this.next(mselId);
-    this.updateStore(execution);
+      .pipe(tap((execution) => this.answer(mselId, ticket, execution)));
   }
 
   /** An execution from the API or a test; the API sends its numbers as strings, which are made numbers here. */

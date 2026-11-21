@@ -170,4 +170,30 @@ describe('MselExecutionDataService', () => {
     expect(service.get('msel-1').currentMoveNumber).toBe(1);
     expect(service.get('msel-1').automationPaused).toBe(true);
   });
+
+  /**
+   * Verifies: a start whose answer is late does not make a read asked for after it count as overtaken: the start's answer is stored, then the newer read's.
+   * Interacts with: startMove (answering later), load (asked after it, answering later).
+   * Data: this facilitator's start of move 2; another's start of move 3 brings a read, which answers move 3 after the start answers.
+   */
+  it('a late answer to a start does not drop a newer read', async () => {
+    const { service, api } = setup();
+    const started = new Subject<MselAdvanceResult>();
+    api.startMselMove.mockReturnValueOnce(started);
+    const read = new Subject<MselExecution>();
+    api.getMselExecution.mockReturnValueOnce(read);
+
+    const start = firstValueFrom(service.startMove('msel-1', 2, []));
+    service.load('msel-1');
+    started.next({
+      execution: execution({ currentMoveNumber: 2 }),
+      succeeded: true,
+    });
+    started.complete();
+    await start;
+    expect(service.get('msel-1').currentMoveNumber).toBe(2);
+    read.next(execution({ currentMoveNumber: 3 }));
+
+    expect(service.get('msel-1').currentMoveNumber).toBe(3);
+  });
 });
