@@ -42,6 +42,16 @@ export class TechniqueDetailDialogComponent {
     return [t?.externalId, t?.name].filter(Boolean).join(' ');
   }
 
+  /** The site the technique's link opens. */
+  get linkHost(): string {
+    const url = this.data.technique?.url || '';
+    try {
+      return new URL(url).host;
+    } catch {
+      return url;
+    }
+  }
+
   close(): void {
     this.dialogRef.close();
   }

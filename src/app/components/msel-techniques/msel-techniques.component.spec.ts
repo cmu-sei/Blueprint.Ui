@@ -340,16 +340,13 @@ describe('MselTechniquesComponent', () => {
   /**
    * Verifies: with a technique in the pool, the release's copyright and trademark notice shows under its pinned row, with
    * its Terms of Use link and without the ATLAS or D3FEND marks.
-   * Interacts with: MselTechniqueService.getMselTechniques (stub), TechniqueNoticeComponent, linkHost.
+   * Interacts with: MselTechniqueService.getMselTechniques (stub), TechniqueNoticeComponent.
    * Data: T1059 in the pool; Enterprise ATT&CK 17.1 imported, carrying MITRE's notice.
    */
   it('attributes MITRE when the pool lists techniques', async () => {
     await renderTechniques([T1059], [ENTERPRISE_RELEASE]);
 
-    expect(screen.getByRole('link', { name: 'T1059' })).toHaveAttribute(
-      'title',
-      'Open T1059 on attack.mitre.org',
-    );
+    expect(screen.getByText('T1059')).toBeInTheDocument();
     // the link sits with the pinned release it covers, not at the foot of the tab, and nothing is shown until it is opened
     expect(
       screen.getAllByRole('button', { name: 'Copyright & terms' }),
@@ -395,8 +392,8 @@ describe('MselTechniquesComponent', () => {
 
   /**
    * Verifies: techniques from an ATLAS release carry MITRE's ATLAS trademark sentence and not ATT&CK's, because the
-   * notice is what the release carries, and their links say they open on atlas.mitre.org.
-   * Interacts with: TechniqueReleaseService.getTechniqueReleases/getTechniques (stubs), TechniqueNoticeComponent, linkHost.
+   * notice is what the release carries, and their IDs show in the pool.
+   * Interacts with: TechniqueReleaseService.getTechniqueReleases/getTechniques (stubs), TechniqueNoticeComponent.
    * Data: the ATLAS 2026.10 release imported, AML.T0000 in its pool and in the (collapsed) browser.
    */
   it('also credits MITRE ATLAS when the techniques are from an ATLAS release', async () => {
@@ -407,14 +404,7 @@ describe('MselTechniquesComponent', () => {
     );
 
     expect(releaseApi.getTechniques).toHaveBeenCalledWith('rel-1');
-    expect(screen.getByRole('link', { name: 'AML.T0000' })).toHaveAttribute(
-      'href',
-      'https://atlas.mitre.org/techniques/AML.T0000',
-    );
-    expect(screen.getByRole('link', { name: 'AML.T0000' })).toHaveAttribute(
-      'title',
-      'Open AML.T0000 on atlas.mitre.org',
-    );
+    expect(screen.getAllByText('AML.T0000').length).toBeGreaterThan(0);
     const dialog = within(await readNotice());
     expect(
       dialog.queryByText(/ATT&CK and ATT&CK are registered trademarks/),
@@ -445,10 +435,7 @@ describe('MselTechniquesComponent', () => {
     expect(attack.getByText('Weaknesses')).toBeInTheDocument();
     expect(attack.getByText('See also')).toBeInTheDocument();
     expect(attack.queryByText('Platforms')).not.toBeInTheDocument();
-    expect(attack.getByRole('link', { name: 'CAPEC-66' })).toHaveAttribute(
-      'title',
-      'Open CAPEC-66 on capec.mitre.org',
-    );
+    expect(attack.getByText('CAPEC-66')).toBeInTheDocument();
     expect(attack.getByRole('link', { name: 'CWE-89' })).toHaveAttribute(
       'href',
       'https://cwe.mitre.org/data/definitions/89.html',
@@ -484,12 +471,8 @@ describe('MselTechniquesComponent', () => {
       target: { value: 'cwe-120' },
     });
 
-    expect(
-      await attack.findByRole('link', { name: 'CAPEC-8' }),
-    ).toBeInTheDocument();
-    expect(
-      attack.queryByRole('link', { name: 'CAPEC-66' }),
-    ).not.toBeInTheDocument();
+    expect(await attack.findByText('CAPEC-8')).toBeInTheDocument();
+    expect(attack.queryByText('CAPEC-66')).not.toBeInTheDocument();
   });
 
   /**
@@ -598,9 +581,9 @@ describe('MselTechniquesComponent', () => {
   });
 
   /**
-   * Verifies: a D3FEND technique is listed by the defensive section, not the attack one, its link opens on
-   * d3fend.mitre.org, and the notice adds the D3FEND trademark sentence and the D3FEND Terms of Use link.
-   * Interacts with: TechniquePoolComponent.family, TechniqueNoticeComponent, linkHost.
+   * Verifies: a D3FEND technique is listed by the defensive section, not the attack one, and
+   *  the notice adds the D3FEND trademark sentence and the D3FEND Terms of Use link.
+   * Interacts with: TechniquePoolComponent.family, TechniqueNoticeComponent.
    * Data: T1059 and D3-CH in the pool; Enterprise ATT&CK 17.1 and MITRE D3FEND 1.6.0 imported.
    */
   it('credits MITRE D3FEND and its terms of use when the defensive pool lists techniques', async () => {
@@ -609,23 +592,14 @@ describe('MselTechniquesComponent', () => {
       [ENTERPRISE_RELEASE, D3FEND_RELEASE],
     );
 
+    expect(within(attackSection()).getByText('T1059')).toBeInTheDocument();
     expect(
-      within(attackSection()).getByRole('link', { name: 'T1059' }),
-    ).toBeInTheDocument();
-    expect(
-      within(attackSection()).queryByRole('link', { name: 'D3-CH' }),
+      within(attackSection()).queryByText('D3-CH'),
     ).not.toBeInTheDocument();
     expect(
       within(attackSection()).getByText('MSEL Techniques (1)'),
     ).toBeInTheDocument();
-    const d3ch = within(defensiveSection()).getByRole('link', {
-      name: 'D3-CH',
-    });
-    expect(d3ch).toHaveAttribute(
-      'href',
-      'https://d3fend.mitre.org/technique/d3f:CredentialHardening/',
-    );
-    expect(d3ch).toHaveAttribute('title', 'Open D3-CH on d3fend.mitre.org');
+    expect(within(defensiveSection()).getByText('D3-CH')).toBeInTheDocument();
     expect(
       within(defensiveSection()).getByText('MSEL Techniques (1)'),
     ).toBeInTheDocument();
@@ -703,9 +677,7 @@ describe('MselTechniquesComponent', () => {
     expect(
       within(defensiveSection()).queryByText('Platforms'),
     ).not.toBeInTheDocument();
-    expect(
-      within(defensiveSection()).getByRole('link', { name: 'D3-CH' }),
-    ).toBeInTheDocument();
+    expect(within(defensiveSection()).getByText('D3-CH')).toBeInTheDocument();
     expect(
       screen.getAllByRole('button', { name: 'Copyright & terms' }),
     ).toHaveLength(2);
@@ -878,9 +850,7 @@ describe('MselTechniquesComponent', () => {
   it('shows no notice for a custom release that carries none', async () => {
     await renderTechniques([CUSTOM_TECHNIQUE], [CUSTOM_RELEASE]);
 
-    expect(
-      within(attackSection()).getByRole('link', { name: 'AT-100' }),
-    ).toBeInTheDocument();
+    expect(within(attackSection()).getByText('AT-100')).toBeInTheDocument();
     expect(
       attackSection().closest('.content-area')?.querySelector('.attribution'),
     ).toBeNull();
@@ -888,5 +858,30 @@ describe('MselTechniquesComponent', () => {
     expect(
       screen.queryByRole('link', { name: /Terms of Use/ }),
     ).not.toBeInTheDocument();
+  });
+  /**
+   * Verifies: the technique's name opens a dialog with its description and a link to the framework's page, and its ID in
+   * the pool is plain text, not a link.
+   * Interacts with: TechniquePoolComponent.showDetail, TechniqueDetailDialogComponent.
+   * Data: T1059 in the pool; Enterprise ATT&CK 17.1 imported.
+   */
+  it('opens a technique description dialog from its name', async () => {
+    await renderTechniques([T1059], [ENTERPRISE_RELEASE]);
+    const user = userEvent.setup();
+
+    expect(
+      within(attackSection()).queryByRole('link', { name: 'T1059' }),
+    ).not.toBeInTheDocument();
+    await user.click(
+      within(attackSection()).getByRole('button', {
+        name: 'Command and Scripting Interpreter',
+      }),
+    );
+
+    expect(
+      await screen.findByRole('link', {
+        name: 'Open T1059 on attack.mitre.org',
+      }),
+    ).toHaveAttribute('href', 'https://attack.mitre.org/techniques/T1059');
   });
 });
