@@ -710,16 +710,6 @@ export class TechniquePoolComponent
     });
   }
 
-  /** The site a technique's link opens, for its link title. */
-  linkHost(technique: Technique): string {
-    const url = technique?.url || '';
-    try {
-      return new URL(url).host;
-    } catch {
-      return url;
-    }
-  }
-
   /** How many of this MSEL's scenario events name the technique. */
   getEventCount(item: MselTechnique): number {
     const externalId = item.technique?.externalId;

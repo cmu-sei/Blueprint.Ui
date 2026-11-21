@@ -60,7 +60,7 @@ describe('TechniqueDetailDialogComponent', () => {
     expect(screen.getByText('Exfiltration')).toBeInTheDocument();
     expect(screen.getByText('Linux, Windows')).toBeInTheDocument();
     expect(
-      screen.getByRole('link', { name: 'Open T1011 in the framework' }),
+      screen.getByRole('link', { name: 'Open T1011 on attack.mitre.org' }),
     ).toHaveAttribute('href', 'https://attack.mitre.org/techniques/T1011');
   });
 

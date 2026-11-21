@@ -138,13 +138,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             class="col-id"
             [class.sub-technique]="t.isSubTechnique"
           >
-            <a
-              [href]="t.url"
-              target="_blank"
-              rel="noopener"
-              title="Open {{ t.externalId }} on {{ linkHost(t) }}"
-              >{{ t.externalId }}</a
-            >
+            {{ t.externalId }}
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="name">
@@ -331,15 +325,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             class="col-id"
             [class.with-domain]="showsDomainLabels"
           >
-            <a
-              [href]="item.technique?.url"
-              target="_blank"
-              rel="noopener"
-              title="Open {{ item.technique?.externalId }} on {{
-                linkHost(item.technique)
-              }}"
-              >{{ item.technique?.externalId }}</a
-            >
+            {{ item.technique?.externalId }}
             @if (showsDomainLabels) {
               <span class="domain-tag">{{ item.technique?.domain }}</span>
             }
