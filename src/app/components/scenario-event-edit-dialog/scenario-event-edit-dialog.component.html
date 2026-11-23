@@ -127,6 +127,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <app-data-value
                     [(value)]="getDataValue(df.name).value"
                     [dataField]="df"
+                    [techniques]="techniqueValues()"
                     [canEdit]="canEditDataValues()"
                     [canApprove]="data.isApprover"
                     [isOwner]="data.isOwner"

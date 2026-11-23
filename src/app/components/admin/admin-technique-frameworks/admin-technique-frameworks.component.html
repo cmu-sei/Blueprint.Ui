@@ -1,0 +1,124 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<h3 class="section-title">Frameworks</h3>
+<mat-table [dataSource]="dataSource" aria-label="Technique frameworks">
+  <ng-container matColumnDef="action">
+    <mat-header-cell *matHeaderCellDef class="col-action">
+      @if (canEdit()) {
+        <button
+          mat-icon-button
+          title="Add a technique framework"
+          aria-label="Add a technique framework"
+          (click)="add()"
+        >
+          <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle-outline" />
+        </button>
+        <button
+          mat-icon-button
+          title="Import technique framework definitions"
+          aria-label="Import technique framework definitions"
+          (click)="chooseFile()"
+        >
+          <mat-icon class="mdi-24px" fontIcon="mdi-upload" />
+        </button>
+      }
+    </mat-header-cell>
+    <mat-cell *matCellDef="let framework" class="col-action">
+      @if (canEdit()) {
+        <button
+          mat-icon-button
+          class="msel-action"
+          (click)="edit(framework)"
+          title="Edit {{ framework.name }}"
+          [attr.aria-label]="'Edit ' + framework.name"
+        >
+          <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" />
+        </button>
+      }
+      <button
+        mat-icon-button
+        class="msel-action"
+        (click)="export(framework)"
+        title="Download {{ framework.name }} as JSON"
+        [attr.aria-label]="'Download ' + framework.name + ' as JSON'"
+      >
+        <mat-icon class="mdi-18px" fontIcon="mdi-download" />
+      </button>
+      @if (canEdit()) {
+        <button
+          mat-icon-button
+          class="msel-action"
+          (click)="delete(framework)"
+          title="Delete {{ framework.name }}"
+          [attr.aria-label]="'Delete ' + framework.name"
+        >
+          <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
+        </button>
+      }
+    </mat-cell>
+  </ng-container>
+  <ng-container matColumnDef="name">
+    <mat-header-cell *matHeaderCellDef class="col-name">Name</mat-header-cell>
+    <mat-cell
+      *matCellDef="let framework"
+      class="col-name"
+      [matTooltip]="framework.description"
+      matTooltipShowDelay="800"
+      >{{ framework.name }}</mat-cell
+    >
+  </ng-container>
+  <ng-container matColumnDef="domain">
+    <mat-header-cell *matHeaderCellDef class="col-small"
+      >Domain</mat-header-cell
+    >
+    <mat-cell *matCellDef="let framework" class="col-small">{{
+      framework.domain
+    }}</mat-cell>
+  </ng-container>
+  <ng-container matColumnDef="family">
+    <mat-header-cell *matHeaderCellDef class="col-small"
+      >Family</mat-header-cell
+    >
+    <mat-cell *matCellDef="let framework" class="col-small">{{
+      framework.isDefensive ? 'Defensive' : 'Attack'
+    }}</mat-cell>
+  </ng-container>
+  <ng-container matColumnDef="format">
+    <mat-header-cell *matHeaderCellDef class="col-small"
+      >File Format</mat-header-cell
+    >
+    <mat-cell *matCellDef="let framework" class="col-small">{{
+      formatName(framework.format)
+    }}</mat-cell>
+  </ng-container>
+  <ng-container matColumnDef="releaseCount">
+    <mat-header-cell *matHeaderCellDef class="col-count"
+      >Releases</mat-header-cell
+    >
+    <mat-cell *matCellDef="let framework" class="col-count">{{
+      framework.releaseCount
+    }}</mat-cell>
+  </ng-container>
+  <mat-header-row *matHeaderRowDef="displayedColumns" />
+  <mat-row *matRowDef="let row; columns: displayedColumns" />
+</mat-table>
+@if (dataSource.data.length === 0) {
+  <div class="empty-text">
+    No technique frameworks are defined. A release can only be imported once a
+    framework definition recognises its file: add one, or import a definition
+    file another installation exported.
+  </div>
+}
+
+<input
+  hidden
+  (change)="selectFile($event)"
+  #definitionInput
+  type="file"
+  accept=".json,application/json"
+  data-testid="definition-file"
+/>

@@ -171,10 +171,12 @@ project root for license information.
                 class="msel-page-content print-only"
                 [attr.aria-label]="page.name"
               >
+                <app-marking-banner [banner]="pageBanner" />
                 @if (!pagesTitledInContent.has(page.id)) {
                   <h2>{{ page.name }}</h2>
                 }
                 <div [innerHTML]="page.content"></div>
+                <app-marking-banner [banner]="pageBanner" />
               </section>
             }
             <!-- every move starts a printed page, one with no events saying so -->

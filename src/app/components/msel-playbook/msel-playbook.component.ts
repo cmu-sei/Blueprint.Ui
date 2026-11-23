@@ -61,6 +61,8 @@ import {
   formatPrintDuration,
   printFooterCss,
 } from 'src/app/utilities/print-report';
+import { MarkingBannerComponent } from 'src/app/components/marking-banner/marking-banner.component';
+import { MarkingBanner, markingBanner } from 'src/app/utilities/msel-marking';
 
 /** Competencies listed together in the print: a framework's, or a team's. */
 export interface PlaybookCompetencyGroup {
@@ -212,6 +214,7 @@ export function imagesReady(
   templateUrl: './msel-playbook.component.html',
   styleUrls: ['./msel-playbook.component.scss'],
   imports: [
+    MarkingBannerComponent,
     MatPaginator,
     MatIconButton,
     MatIcon,
@@ -272,6 +275,15 @@ export class MselPlaybookComponent implements OnDestroy {
   selectedScenarioEventId = '';
   private unsubscribe$ = new Subject();
   msel = new MselPlus();
+
+  /** The MSEL's marking, printed above and below each of its pages, as the page's own view shows it. */
+  get pageBanner(): MarkingBanner | null {
+    return markingBanner(
+      this.msel?.articleMarking,
+      this.msel?.articleMarkingText,
+      this.msel?.name,
+    );
+  }
   sortedDataFields: DataField[] = [];
   cardList: Card[] = [];
   allDataFields: DataField[] = [];

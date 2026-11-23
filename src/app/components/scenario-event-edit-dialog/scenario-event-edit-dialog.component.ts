@@ -31,6 +31,8 @@ import { MatTabGroup, MatTab } from '@angular/material/tabs';
 import { SteamfitterTaskComponent } from '../steamfitter-task/steamfitter-task.component';
 import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
 import { DataValueComponent } from '../data-value/data-value.component';
+import { MselTechniqueDataService } from 'src/app/data/msel-technique/msel-technique-data.service';
+import { MselCountermeasureDataService } from 'src/app/data/msel-technique/msel-countermeasure-data.service';
 
 @Component({
   selector: 'app-scenario-event-edit-dialog',
@@ -54,6 +56,8 @@ import { DataValueComponent } from '../data-value/data-value.component';
 })
 export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   data = inject(MAT_DIALOG_DATA);
+  private mselTechniqueDataService = inject(MselTechniqueDataService);
+  private mselCountermeasureDataService = inject(MselCountermeasureDataService);
 
   readonly editComplete = output<any>();
   sort: Sort = { active: '', direction: '' };
@@ -89,7 +93,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     value: '',
     valueArray: [],
   } as DataValuePlus;
-  scenarioEventBackgroundColors: Array<string>;
+  scenarioEventBackgroundColors: string[];
   sortedDataFields: DataField[] = [];
   selectedTab = 0;
   selectedTabName = '';
@@ -97,6 +101,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   integrationTarget = IntegrationTarget;
 
   ngOnInit() {
+    this.refreshTechniques();
     if (!this.data.isNew && this.showDefaultTab()) {
       this.sortedDataFields = this.getFilteredDataFields('default');
     } else {
@@ -131,10 +136,36 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
 
   setDataValueArray(dataFieldName: string, newValues: string[]) {
     if (newValues.includes('None')) {
-      newValues = new Array();
+      newValues = [];
     }
     this.getDataValue(dataFieldName).valueArray = newValues;
     this.getDataValue(dataFieldName).value = newValues.join(', ');
+  }
+
+  /**
+   * Reads the MSEL's technique pool and countermeasures again when the event has a technique field, so its
+   * pickers offer what another planner has added since they were first loaded: no hub event announces it.
+   */
+  private refreshTechniques() {
+    const { dataFields } = this.data as { dataFields: DataField[] };
+    const field = (dataFields || []).find(
+      (df) =>
+        df.dataType === DataFieldType.AttackTechnique ||
+        df.dataType === DataFieldType.DefensiveTechnique,
+    );
+    if (field?.mselId) {
+      this.mselTechniqueDataService.loadByMsel(field.mselId);
+      this.mselCountermeasureDataService.refresh();
+    }
+  }
+
+  /** The event's Attack Technique values, for a Defensive Technique field to suggest their countermeasures first. */
+  techniqueValues(): string {
+    return (this.data as { dataFields: DataField[] }).dataFields
+      .filter((df) => df.dataType === DataFieldType.AttackTechnique)
+      .map((df) => this.getDataValue(df.name).value)
+      .filter((v) => v)
+      .join(', ');
   }
 
   getDataFieldByName(name: string) {
@@ -149,7 +180,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   }
 
   verifyNumber(newValue: DataValuePlus) {
-    if (!newValue || !newValue.value) {
+    if (!newValue?.value) {
       return;
     }
     // remove non numeric characters, but allow '.' and '-'

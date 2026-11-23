@@ -26,6 +26,7 @@ import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { KeyValuePipe } from '@angular/common';
+import { DataFieldTypeNamePipe } from 'src/app/utilities/data-field-type-name';
 
 @Component({
   selector: 'app-data-field-edit-dialog',
@@ -42,6 +43,7 @@ import { KeyValuePipe } from '@angular/common';
     MatOption,
     MatCheckbox,
     KeyValuePipe,
+    DataFieldTypeNamePipe,
   ],
 })
 export class DataFieldEditDialogComponent {
@@ -76,6 +78,15 @@ export class DataFieldEditDialogComponent {
         this.data.dataField.isChosenFromList = true;
         this.data.dataField.isMultiSelect = true;
         this.data.dataField.isFacilitationField = true;
+      }
+      // technique fields offer the MSEL's technique pool (attack or defensive), not an option list
+      if (
+        selectedDataType === DataFieldType.AttackTechnique ||
+        selectedDataType === DataFieldType.DefensiveTechnique
+      ) {
+        this.field.isChosenFromList = false;
+        this.field.isMultiSelect = true;
+        this.field.isFacilitationField = true;
       }
     }
   }
@@ -216,6 +227,19 @@ export class DataFieldEditDialogComponent {
 
   isCompetency(): boolean {
     return this.data.dataField.dataType === DataFieldType.Competency;
+  }
+
+  /** An Attack Technique or Defensive Technique field, whose values come from the MSEL's Techniques tab. */
+  isTechniqueField(): boolean {
+    return (
+      this.field.dataType === DataFieldType.AttackTechnique ||
+      this.field.dataType === DataFieldType.DefensiveTechnique
+    );
+  }
+
+  /** The field being edited, typed. */
+  private get field(): DataField {
+    return (this.data as { dataField: DataField }).dataField;
   }
 
   optionListNotAllowed(): boolean {

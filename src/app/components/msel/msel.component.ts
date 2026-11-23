@@ -30,6 +30,8 @@ import { InvitationDataService } from 'src/app/data/invitation/invitation-data.s
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
+import { MselTechniqueDataService } from 'src/app/data/msel-technique/msel-technique-data.service';
+import { MselCountermeasureDataService } from 'src/app/data/msel-technique/msel-countermeasure-data.service';
 import { MatTabGroup, MatTab } from '@angular/material/tabs';
 import { MselUnitDataService } from 'src/app/data/msel-unit/msel-unit-data.service';
 import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
@@ -62,12 +64,14 @@ import { CardListComponent } from '../card-list/card-list.component';
 import { CiteActionListComponent } from '../cite-action-list/cite-action-list.component';
 import { CiteDutyListComponent } from '../cite-duty-list/cite-duty-list.component';
 import { MselCompetenciesComponent } from '../msel-competencies/msel-competencies.component';
+import { MselTechniquesComponent } from '../msel-techniques/msel-techniques.component';
 import { ScenarioEventListComponent } from '../scenario-event-list/scenario-event-list.component';
 import { MselViewComponent } from '../msel-view/msel-view.component';
 import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
 import { InvitationListComponent } from '../invitation-list/invitation-list.component';
 import { MselPlaybookComponent } from '../msel-playbook/msel-playbook.component';
 import { MselScoringModelTabComponent } from '../msel-scoring-model-tab/msel-scoring-model-tab.component';
+import { MselCasterTabComponent } from '../msel-caster-tab/msel-caster-tab.component';
 import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
@@ -94,12 +98,14 @@ import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
     CiteActionListComponent,
     CiteDutyListComponent,
     MselCompetenciesComponent,
+    MselTechniquesComponent,
     ScenarioEventListComponent,
     MselViewComponent,
     AssessorViewComponent,
     InvitationListComponent,
     MselPlaybookComponent,
     MselScoringModelTabComponent,
+    MselCasterTabComponent,
     AsyncPipe,
   ],
 })
@@ -120,6 +126,8 @@ export class MselComponent implements OnDestroy {
   private mselDataService = inject(MselDataService);
   private mselUnitDataService = inject(MselUnitDataService);
   private mselQuery = inject(MselQuery);
+  private mselTechniqueDataService = inject(MselTechniqueDataService);
+  private mselCountermeasureDataService = inject(MselCountermeasureDataService);
   private mselUnitQuery = inject(MselUnitQuery);
   private organizationDataService = inject(OrganizationDataService);
   private scenarioEventDataService = inject(ScenarioEventDataService);
@@ -144,15 +152,18 @@ export class MselComponent implements OnDestroy {
   readonly tabs = viewChildren<MatTab>('MatTab');
   readonly mselInfoComponent = viewChild(MselInfoComponent);
   readonly scoringModelTab = viewChild(MselScoringModelTabComponent);
+  readonly casterTab = viewChild(MselCasterTabComponent);
   tabList: string[] = [
     'Info',
     'Contributors',
     'Competencies',
+    'Techniques',
     'Data Fields',
     'Teams',
     'Organizations',
     'Moves',
     'Player Apps',
+    'Caster',
     'Gallery Cards',
     'Scoring Model',
     'Actions',
@@ -171,11 +182,13 @@ export class MselComponent implements OnDestroy {
     ['Organizations', 'mdi-office-building-outline'],
     ['Moves', 'mdi-gamepad'],
     ['Player Apps', 'mdi-apps'],
+    ['Caster', 'mdi-terraform'],
     ['Gallery Cards', 'mdi-view-grid-outline'],
     ['Scoring Model', 'mdi-clipboard-list-outline'],
     ['Actions', 'mdi-clipboard-check-outline'],
     ['Duties', 'mdi-clipboard-account-outline'],
     ['Competencies', 'mdi-certificate-outline'],
+    ['Techniques', 'mdi-shield-bug-outline'],
     ['Scenario Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
     ['Assessor View', 'mdi-clipboard-check-multiple-outline'],
@@ -373,6 +386,12 @@ export class MselComponent implements OnDestroy {
     ) {
       return 'You have unsaved changes on the Scoring Model page. Are you sure that you want to discard them?';
     }
+    if (
+      this.selectedTab === 'Caster' &&
+      this.casterTab()?.hasPendingChanges()
+    ) {
+      return 'You have unsaved changes on the Caster page. Are you sure that you want to discard them?';
+    }
     return '';
   }
 
@@ -390,6 +409,11 @@ export class MselComponent implements OnDestroy {
       switch (tab) {
         case 'Player Apps':
           if (this.msel?.usePlayer) {
+            tabList.push(tab);
+          }
+          break;
+        case 'Caster':
+          if (this.msel?.useCaster) {
             tabList.push(tab);
           }
           break;
@@ -445,5 +469,8 @@ export class MselComponent implements OnDestroy {
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
+    // the technique pool and countermeasures are read again the next time a MSEL is opened
+    this.mselTechniqueDataService.unload();
+    this.mselCountermeasureDataService.unload();
   }
 }

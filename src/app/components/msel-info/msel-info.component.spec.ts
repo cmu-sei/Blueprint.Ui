@@ -47,6 +47,8 @@ import {
   CompetencyFramework,
   CompetencyFrameworkService,
   Msel,
+  MselCasterExport,
+  MselCasterExportService,
   MselCompetency,
   MselCompetencyService,
   MselEdit,
@@ -141,6 +143,16 @@ const EXTENDED: CasterDirectory = {
   projectId: 'proj-2',
   projectName: 'Range',
 };
+// a copy of a Caster directory from another Caster: its project, and the chain from the root down to it
+const COPY: MselCasterExport = {
+  mselId: 'msel-1',
+  projectName: 'Topology',
+  directories: [
+    { level: 0, name: 'Root', files: [] },
+    { level: 1, name: 'Range', files: [] },
+  ],
+  entries: [],
+};
 const VM_APP_WARNING =
   'No Player application opens the VM UI, so participants will not be able to reach the Caster VMs. Add one using {vmUrl}, for example {vmUrl}/views/{playerViewId}.';
 
@@ -182,6 +194,7 @@ async function renderInfo(
     names?: MselIntegrationNames;
     casterUrl?: string;
     authored?: MselScoringModel | null;
+    casterCopy?: MselCasterExport | null;
     citeModels?: ScoringModel[];
     confirms?: boolean;
     moves?: { moveNumber: number; deltaSeconds: number }[];
@@ -198,6 +211,7 @@ async function renderInfo(
     names = {},
     casterUrl = 'http://caster.example/',
     authored = null,
+    casterCopy = null,
     citeModels = [],
     confirms = true,
     moves = [],
@@ -235,6 +249,9 @@ async function renderInfo(
   const casterApi = {
     getCasterDirectories: vi.fn(() => directories()),
   } satisfies ApiStub<CasterService>;
+  const casterCopyApi = {
+    getMselCasterExport: vi.fn(() => of(structuredClone(casterCopy))),
+  } satisfies ApiStub<MselCasterExportService>;
   const mselApi = {
     getMselIntegrationNames: vi.fn(() => of(structuredClone(names))),
     updateMsel: vi.fn(updateMsel),
@@ -318,6 +335,7 @@ async function renderInfo(
       { provide: UserService, useValue: userApi },
       { provide: PlayerApplicationService, useValue: appApi },
       { provide: CasterService, useValue: casterApi },
+      { provide: MselCasterExportService, useValue: casterCopyApi },
       { provide: MselService, useValue: mselApi },
       { provide: MselImageService, useValue: imageApi },
       { provide: MselScoringModelService, useValue: scoringModelApi },
@@ -369,6 +387,7 @@ async function renderInfo(
     confirm,
     appApi,
     casterApi,
+    casterCopyApi,
     mselApi,
     userApi,
     imageApi,
@@ -609,6 +628,34 @@ describe('MselInfoComponent', () => {
   );
 
   /**
+   * Verifies: a page shown on its tab carries the MSEL's marking above and below it, as the page's own view does, and
+   * a MSEL with no marking shows none.
+   * Interacts with: pageBanner, markingBanner, MarkingBannerComponent.
+   * Data: page Read Ahead of a MSEL marked TLP:AMBER, then of one with no marking.
+   */
+  it.each([
+    {
+      label: 'TLP:AMBER',
+      mselExtra: { articleMarking: 'Tlp', articleMarkingText: 'AMBER' },
+      banners: 2,
+    },
+    { label: 'no marking', mselExtra: {}, banners: 0 },
+  ])('shows a page with $label', async ({ mselExtra, banners }) => {
+    await renderInfo({ mselExtra });
+
+    await openPage();
+
+    // by selector: naming a role reads computed styles, which jsdom cannot compute for the editor's stylesheet
+    const marks = document.querySelectorAll(
+      '[role="note"][aria-label="Marking"]',
+    );
+    expect(marks).toHaveLength(banners);
+    if (banners) {
+      expect(marks[0]).toHaveTextContent('TLP:AMBER');
+    }
+  });
+
+  /**
    * Verifies: a page's Delete button is offered and works without any MSEL permission or role (current behavior).
    * Interacts with: CrucibleDialogService.confirm (stub, confirms), MselPageService.deleteMselPage (stub).
    * Data: no system permission; MSEL role Viewer; page Read Ahead.
@@ -689,88 +736,23 @@ describe('MselInfoComponent', () => {
   );
 
   describe('Caster', () => {
-    // The directory select is the only mat-select of the integration section while CITE is off.
+    // The directory is chosen on the Caster tab, so the integration section has no mat-select while CITE is off.
     const directorySelects = (fixture: ComponentFixture<unknown>) =>
       TestbedHarnessEnvironment.loader(fixture).getAllHarnesses(
         MatSelectHarness.with({ ancestor: '.integration-div' }),
       );
-    const optionTexts = async (select: MatSelectHarness) => {
-      await select.open();
-      const texts = await Promise.all(
-        (await select.getOptions()).map((option) => option.getText()),
-      );
-      await select.close();
-      return texts;
-    };
+    const openTabs = (fixture: ComponentFixture<MselInfoComponent>) =>
+      recordEmissions(outputToObservable(fixture.componentInstance.openTab));
     const casterBox = () => screen.getByLabelText('Caster');
     const pushButton = () => screen.getByTitle('Push Integrations');
 
     /**
-     * Verifies: with EditMsels, or as an MSEL Editor, Approver or owner, Caster can be ticked and a directory chosen from those Caster lists, and choosing one clears the directory warning and marks the MSEL changed.
-     * Interacts with: real PermissionDataService (stubbed grants), MselPlus.hasRole, CasterService.getCasterDirectories (stub), MatSelectHarness.
-     * Data: EditMsels; or the Editor, Approver or Owner role with no permission. A pending MSEL using Player and Caster with no directory; directories Range / Base and Range / Extended.
+     * Verifies: the Config tab summarizes the linked directory by project and name, with no select: the directory is chosen on the Caster tab.
+     * Interacts with: casterSummary, selectedCasterDirectory, CasterService.getCasterDirectories (stub), MatSelectHarness.
+     * Data: EditMsels; a pending MSEL using Player and Caster with directory dir-1 (Range / Base).
      */
-    it.each([
-      {
-        label: 'with EditMsels',
-        permissions: [SystemPermission.EditMsels],
-        myRoles: [],
-      },
-      {
-        label: 'as an MSEL Editor',
-        permissions: [],
-        myRoles: [MselRole.Editor],
-      },
-      {
-        label: 'as an MSEL Approver',
-        permissions: [],
-        myRoles: [MselRole.Approver],
-      },
-      {
-        label: 'as the MSEL owner',
-        permissions: [],
-        myRoles: [MselRole.Owner],
-      },
-    ])(
-      'lets the Caster directory be chosen $label',
-      async ({ permissions, myRoles }) => {
-        const { fixture, casterApi } = await renderInfo({
-          permissions,
-          myRoles,
-          mselExtra: { useCaster: true },
-        });
-
-        expect(casterBox()).toBeEnabled();
-        expect(casterApi.getCasterDirectories).toHaveBeenCalledTimes(1);
-        const [select] = await directorySelects(fixture);
-        expect(await optionTexts(select)).toEqual([
-          '',
-          'Range / Base',
-          'Range / Extended',
-        ]);
-        expect(
-          screen.getByText('Select the Caster directory to deploy.'),
-        ).toBeInTheDocument();
-
-        await select.clickOptions({ text: 'Range / Extended' });
-
-        expect(await select.getValueText()).toBe('Range / Extended');
-        expect(
-          screen.queryByText('Select the Caster directory to deploy.'),
-        ).not.toBeInTheDocument();
-        expect(
-          screen.getByText('Changes have not been saved!'),
-        ).toBeInTheDocument();
-      },
-    );
-
-    /**
-     * Verifies: with EditMsels, a MSEL that already has a directory shows the select with that directory chosen, and not the read-only id.
-     * Interacts with: real PermissionDataService (stubbed grants), MselInfoComponent.canEditMsel, MatSelectHarness.
-     * Data: EditMsels with no role; a pending MSEL using Player and Caster with directory dir-1 (Range / Base).
-     */
-    it('offers the chosen Caster directory in the select with EditMsels', async () => {
-      const { fixture } = await renderInfo({
+    it('summarizes the linked Caster directory', async () => {
+      const { fixture, casterApi } = await renderInfo({
         permissions: [SystemPermission.EditMsels],
         mselExtra: {
           usePlayer: true,
@@ -779,13 +761,84 @@ describe('MselInfoComponent', () => {
         },
       });
 
-      const [select] = await directorySelects(fixture);
-      expect(await select.getValueText()).toBe('Range / Base');
-      expect(screen.queryByTitle('dir-1')).not.toBeInTheDocument();
+      expect(casterBox()).toBeEnabled();
+      expect(casterApi.getCasterDirectories).toHaveBeenCalledTimes(1);
+      expect(await directorySelects(fixture)).toEqual([]);
+      expect(screen.getByText('Range / Base')).toBeInTheDocument();
+      expect(screen.getByTitle('Open directory in Caster')).toHaveAttribute(
+        'href',
+        'http://caster.example/projects/proj-1?directory=dir-1',
+      );
     });
 
     /**
-     * Verifies: without EditMsels or an editing role the Caster box is disabled and the chosen directory is shown read-only, by id and label, with no select.
+     * Verifies: a MSEL with no directory but a copy of one says the push imports the copy, and Push Integrations is enabled.
+     * Interacts with: casterSummary, casterWarningMessage, MselCasterExportService.getMselCasterExport (stub), the Push Integrations button.
+     * Data: ManageMsels; a pending MSEL using Player and Caster with no directory, carrying a copy of Topology / Root / Range.
+     */
+    it('enables Push Integrations for a MSEL that carries only a copy of a directory', async () => {
+      await renderInfo({
+        permissions: [SystemPermission.ManageMsels],
+        mselExtra: { usePlayer: true, useCaster: true },
+        casterCopy: COPY,
+      });
+
+      expect(
+        screen.getByText(
+          'a copy of Topology / Root / Range, which the push imports as a new Caster project',
+        ),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText(/Select the Caster directory/),
+      ).not.toBeInTheDocument();
+      expect(pushButton()).toBeEnabled();
+    });
+
+    /**
+     * Verifies: a template with only a copy of a directory says it must be imported before it can be launched, since a launch never imports a copy.
+     * Interacts with: casterSummary, casterWarningMessage, MselCasterExportService.getMselCasterExport (stub).
+     * Data: MSEL role Owner; a template using Player and Caster with no directory, carrying a copy of Topology / Root / Range.
+     */
+    it('warns that a template with only a copy needs importing before launch', async () => {
+      await renderInfo({
+        myRoles: [MselRole.Owner],
+        mselExtra: { isTemplate: true, usePlayer: true, useCaster: true },
+        casterCopy: COPY,
+      });
+
+      expect(
+        screen.getByText(
+          'a copy of Topology / Root / Range, which must be imported into Caster before the template can be launched',
+        ),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Import the copy into Caster on the Caster tab before this template can be launched.',
+        ),
+      ).toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: Open the Caster tab asks the MSEL page to open that rail tab.
+     * Interacts with: openTab.
+     * Data: MSEL role Owner; a pending MSEL using Caster.
+     */
+    it('opens the Caster tab', async () => {
+      const { fixture } = await renderInfo({
+        myRoles: [MselRole.Owner],
+        mselExtra: { useCaster: true },
+      });
+      const opened = openTabs(fixture);
+
+      await userEvent
+        .setup()
+        .click(screen.getByRole('button', { name: 'Open the Caster tab' }));
+
+      expect(opened).toEqual(['Caster']);
+    });
+
+    /**
+     * Verifies: without EditMsels or an editing role the Caster box is disabled and the chosen directory is still summarized.
      * Interacts with: real PermissionDataService (stubbed grants), MselInfoComponent.canEditMsel, selectedCasterDirectory.
      * Data: every permission but EditMsels (near miss: ManageMsels); MSEL roles Viewer, Evaluator and MoveEditor. A pending MSEL using Caster with directory dir-1 (Range / Base).
      */
@@ -798,7 +851,6 @@ describe('MselInfoComponent', () => {
 
       expect(casterBox()).toBeDisabled();
       expect(await directorySelects(fixture)).toEqual([]);
-      expect(screen.getByTitle('dir-1')).toHaveTextContent('dir-1');
       expect(screen.getByText('Range / Base')).toBeInTheDocument();
     });
 
@@ -852,7 +904,7 @@ describe('MselInfoComponent', () => {
         expect(screen.getByLabelText('Player')).toBeDisabled();
         expect(screen.getByLabelText('Gallery')).toBeDisabled();
         expect(await directorySelects(fixture)).toEqual([]);
-        expect(screen.getByTitle('dir-1')).toHaveTextContent('dir-1');
+        expect(screen.getByText('Range / Base')).toBeInTheDocument();
       },
     );
 
@@ -883,7 +935,7 @@ describe('MselInfoComponent', () => {
         expect(mselApi.getMselIntegrationNames).toHaveBeenCalledWith('msel-1');
         expect(casterBox()).toBeDisabled();
         expect(await directorySelects(fixture)).toEqual([]);
-        expect(screen.getByTitle('dir-1')).toHaveTextContent('dir-1');
+        expect(screen.getByText('Range / Base')).toBeInTheDocument();
         expect(screen.getByTitle('ws-1')).toHaveTextContent('ws-1');
         expect(screen.getByText('blueprint-msel-1')).toBeInTheDocument();
         expect(screen.getByTitle('Open workspace in Caster')).toHaveAttribute(
@@ -919,7 +971,6 @@ describe('MselInfoComponent', () => {
         },
       });
 
-      expect(screen.getByTitle('dir-1')).toHaveTextContent('dir-1');
       expect(screen.getByText('Range / Base')).toBeInTheDocument();
       expect(screen.getByText('blueprint-msel-1')).toBeInTheDocument();
       expect(
@@ -931,25 +982,28 @@ describe('MselInfoComponent', () => {
     });
 
     /**
-     * Verifies: the Caster directories are loaded only once Caster is ticked, and only once however often it is ticked again.
-     * Interacts with: the Caster checkbox change handler, loadCasterDirectories, CasterService.getCasterDirectories (stub).
+     * Verifies: the Caster directories, and the MSEL's copy of one, are loaded only once Caster is ticked, and only once however often it is ticked again.
+     * Interacts with: the Caster checkbox change handler, loadCasterDirectories, loadCasterCopy, CasterService.getCasterDirectories and MselCasterExportService.getMselCasterExport (stubs).
      * Data: EditMsels; a pending MSEL that does not use Caster.
      */
     it('loads the Caster directories once, when Caster is ticked', async () => {
-      const { fixture, casterApi } = await renderInfo({
+      const { casterApi, casterCopyApi } = await renderInfo({
         permissions: [SystemPermission.EditMsels],
       });
       const user = userEvent.setup();
 
       expect(casterApi.getCasterDirectories).not.toHaveBeenCalled();
+      expect(casterCopyApi.getMselCasterExport).not.toHaveBeenCalled();
       await user.click(casterBox());
       expect(casterApi.getCasterDirectories).toHaveBeenCalledTimes(1);
-      expect(await directorySelects(fixture)).toHaveLength(1);
+      expect(casterCopyApi.getMselCasterExport).toHaveBeenCalledWith('msel-1');
+      expect(screen.getByText('not set')).toBeInTheDocument();
 
       await user.click(casterBox());
       await user.click(casterBox());
 
       expect(casterApi.getCasterDirectories).toHaveBeenCalledTimes(1);
+      expect(casterCopyApi.getMselCasterExport).toHaveBeenCalledTimes(1);
     });
 
     /**
@@ -961,7 +1015,7 @@ describe('MselInfoComponent', () => {
       const logged = vi.spyOn(console, 'error').mockImplementation(() => {});
       const failure = { status: 403 };
       const answers = [throwError(() => failure), of([BASE])];
-      const { fixture, casterApi } = await renderInfo({
+      const { casterApi } = await renderInfo({
         permissions: [SystemPermission.EditMsels],
         directories: () => answers.shift(),
       });
@@ -972,7 +1026,6 @@ describe('MselInfoComponent', () => {
       await user.click(casterBox());
 
       expect(screen.getByText(error)).toBeInTheDocument();
-      expect(await directorySelects(fixture)).toEqual([]);
       expect(logged.mock.calls).toEqual([
         ['Failed to load Caster directories:', failure],
       ]);
@@ -983,8 +1036,6 @@ describe('MselInfoComponent', () => {
 
       expect(casterApi.getCasterDirectories).toHaveBeenCalledTimes(2);
       expect(screen.queryByText(error)).not.toBeInTheDocument();
-      const [select] = await directorySelects(fixture);
-      expect(await optionTexts(select)).toEqual(['', 'Range / Base']);
     });
 
     /**
@@ -1006,7 +1057,7 @@ describe('MselInfoComponent', () => {
       {
         label: 'a directory',
         mselExtra: { usePlayer: true, useCaster: true },
-        warning: 'Select the Caster directory to deploy.',
+        warning: 'Select the Caster directory to deploy on the Caster tab.',
       },
     ])(
       'blocks Push Integrations until Caster has $label',
@@ -1643,6 +1694,150 @@ describe('MselInfoComponent', () => {
       ).toBeInTheDocument();
     });
   });
+
+  describe('Marking', () => {
+    const markingSelect = (fixture: ComponentFixture<unknown>) =>
+      TestbedHarnessEnvironment.loader(fixture).getHarnessOrNull(
+        MatSelectHarness.with({ selector: '[aria-label="Marking"]' }),
+      );
+    const levelSelect = (fixture: ComponentFixture<unknown>) =>
+      TestbedHarnessEnvironment.loader(fixture).getHarnessOrNull(
+        MatSelectHarness.with({ selector: '[aria-label="TLP level"]' }),
+      );
+    const save = async () => {
+      await userEvent.setup().click(screen.getAllByTitle('Save Changes')[0]);
+    };
+
+    /**
+     * Verifies: a MSEL whose marking was never set shows None, offers the four markings, and asks for neither a TLP level nor a classification.
+     * Interacts with: markings, MatSelectHarness.
+     * Data: EditMsels; a MSEL with no marking, not using Gallery.
+     */
+    it('shows None for a MSEL with no marking set', async () => {
+      const { fixture } = await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+      });
+
+      const select = await markingSelect(fixture);
+      expect(await select.getValueText()).toBe('None');
+      await select.open();
+      expect(
+        await Promise.all(
+          (await select.getOptions()).map((option) => option.getText()),
+        ),
+      ).toEqual(['None', 'Exercise banner', 'TLP', 'Classification banner']);
+      await select.close();
+      expect(await levelSelect(fixture)).toBeNull();
+      expect(
+        screen.queryByLabelText('Classification banner'),
+      ).not.toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: choosing TLP offers its levels, starting at CLEAR, and Save sends the marking and the level chosen.
+     * Interacts with: setMarking, saveChanges, MselService.updateMsel (stub).
+     * Data: EditMsels; a MSEL with no marking; the editor picks TLP, then TLP:AMBER, then saves.
+     */
+    it('saves a TLP marking with its level', async () => {
+      const { fixture, mselApi } = await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+      });
+
+      await (await markingSelect(fixture)).clickOptions({ text: 'TLP' });
+      const level = await levelSelect(fixture);
+      expect(await level.getValueText()).toBe('TLP:CLEAR');
+      await level.clickOptions({ text: 'TLP:AMBER' });
+      expect(
+        screen.getByText('Changes have not been saved!'),
+      ).toBeInTheDocument();
+      await save();
+
+      expect(mselApi.updateMsel).toHaveBeenCalledTimes(1);
+      const [id, edit] = mselApi.updateMsel.mock.calls[0];
+      expect(id).toBe('msel-1');
+      expect(edit).toEqual(
+        expect.objectContaining({
+          articleMarking: 'Tlp',
+          articleMarkingText: 'AMBER',
+        }),
+      );
+    });
+
+    /**
+     * Verifies: a classification banner is the planner's words, kept to the API's 120 characters, and Save sends them.
+     * Interacts with: the Classification banner input, saveChanges, MselService.updateMsel (stub).
+     * Data: EditMsels; a MSEL marked TLP:RED; the editor picks Classification banner and types its words.
+     */
+    it("saves a classification banner in the planner's words", async () => {
+      const { fixture, mselApi } = await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+        mselExtra: { articleMarking: 'Tlp', articleMarkingText: 'RED' },
+      });
+      const user = userEvent.setup();
+
+      await (
+        await markingSelect(fixture)
+      ).clickOptions({ text: 'Classification banner' });
+      const words = screen.getByLabelText('Classification banner');
+      expect(words).toHaveValue('');
+      expect(words).toHaveAttribute('maxlength', '120');
+      await user.type(words, 'UNCLASSIFIED // FOR EXERCISE USE ONLY');
+      await save();
+
+      const [, edit] = mselApi.updateMsel.mock.calls[0];
+      expect(edit).toEqual(
+        expect.objectContaining({
+          articleMarking: 'Classification',
+          articleMarkingText: 'UNCLASSIFIED // FOR EXERCISE USE ONLY',
+        }),
+      );
+    });
+
+    /**
+     * Verifies: choosing None drops the level a TLP marking had, so Save sends no text.
+     * Interacts with: setMarking, saveChanges, MselService.updateMsel (stub).
+     * Data: EditMsels; a MSEL marked TLP:GREEN; the editor picks None and saves.
+     */
+    it('saves None without the old TLP level', async () => {
+      const { fixture, mselApi } = await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+        mselExtra: { articleMarking: 'Tlp', articleMarkingText: 'GREEN' },
+      });
+
+      expect(await (await levelSelect(fixture)).getValueText()).toBe(
+        'TLP:GREEN',
+      );
+      await (await markingSelect(fixture)).clickOptions({ text: 'None' });
+      expect(await levelSelect(fixture)).toBeNull();
+      await save();
+
+      const [, edit] = mselApi.updateMsel.mock.calls[0];
+      expect(edit).toEqual(
+        expect.objectContaining({
+          articleMarking: 'None',
+          articleMarkingText: null,
+        }),
+      );
+    });
+
+    /**
+     * Verifies: without EditMsels or an editing role the marking is shown but cannot be changed.
+     * Interacts with: canEditMsel, real PermissionDataService (stubbed grants).
+     * Data: every permission but EditMsels; the Viewer role; a MSEL with an exercise banner.
+     */
+    it('shows the marking read-only without EditMsels or an editing role', async () => {
+      const { fixture } = await renderInfo({
+        permissions: allBut(SystemPermission.EditMsels),
+        myRoles: [MselRole.Viewer],
+        mselExtra: { articleMarking: 'Exercise' },
+      });
+
+      const select = await markingSelect(fixture);
+      expect(await select.isDisabled()).toBe(true);
+      expect(await select.getValueText()).toBe('Exercise banner');
+    });
+  });
+
   describe('the CITE scoring model', () => {
     const cite = { useCite: true, usePlayer: false };
     const openTabs = (fixture: ComponentFixture<MselInfoComponent>) =>

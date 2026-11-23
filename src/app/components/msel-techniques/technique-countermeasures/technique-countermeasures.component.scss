@@ -1,0 +1,87 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.countered-by {
+  padding: 0 0 4px 48px;
+}
+
+.toggle {
+  font-size: 13px;
+  padding: 0 8px;
+  min-height: 28px;
+  height: 28px;
+}
+
+.inherited-chip {
+  margin-left: 6px;
+  padding: 0 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  background: var(--mat-sys-surface-variant);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 32px;
+  padding: 0 16px 8px 16px;
+}
+
+.tactic {
+  min-width: 260px;
+}
+
+.tactic-name {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mat-sys-on-surface-variant);
+  margin: 6px 0 2px;
+}
+
+.countermeasure {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  font-size: 13px;
+}
+
+.add-check {
+  margin-right: 4px;
+}
+
+.pooled-icon {
+  margin: 0 12px 0 8px;
+  color: var(--mat-sys-primary);
+}
+
+.cm-id {
+  flex: 0 0 72px;
+}
+
+.cm-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.show-all {
+  font-size: 12px;
+  min-height: 24px;
+  height: 24px;
+  padding: 0 8px;
+}
+
+.empty-text {
+  padding: 4px 0 8px;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 13px;
+}

@@ -1,0 +1,38 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information.
+-->
+<crucible-dialog [dialogTitle]="title" [hideDefaultActions]="true">
+  <div crucibleDialogContent class="detail">
+    @if (data.groupNames) {
+      <div class="detail-row">
+        <span class="detail-label">{{ data.groupsLabel }}</span>
+        <span>{{ data.groupNames }}</span>
+      </div>
+    }
+    @if (data.technique.platforms?.length) {
+      <div class="detail-row">
+        <span class="detail-label">Platforms</span>
+        <span>{{ data.technique.platforms?.join(', ') }}</span>
+      </div>
+    }
+    <div class="detail-row">
+      <span class="detail-label">Description</span>
+      @if (data.technique.description) {
+        <span class="description">{{ data.technique.description }}</span>
+      } @else {
+        <span class="empty">No description.</span>
+      }
+    </div>
+    @if (data.technique.url) {
+      <a [href]="data.technique.url" target="_blank" rel="noopener"
+        >Open {{ data.technique.externalId }} on {{ linkHost }}</a
+      >
+    }
+  </div>
+
+  <ng-container crucibleDialogActions>
+    <button matButton="filled" type="button" (click)="close()">Close</button>
+  </ng-container>
+</crucible-dialog>

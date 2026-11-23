@@ -194,6 +194,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       @if (selectedTab === 'Player Apps') {
         <app-player-application-list [loggedInUserId]="loggedInUserId()" />
       }
+      @if (selectedTab === 'Caster') {
+        <app-msel-caster-tab [loggedInUserId]="loggedInUserId()" />
+      }
       @if (selectedTab === 'Gallery Cards') {
         <app-card-list
           [loggedInUserId]="loggedInUserId()"
@@ -218,6 +221,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
       @if (selectedTab === 'Competencies') {
         <app-msel-competencies [loggedInUserId]="loggedInUserId()" />
+      }
+      @if (selectedTab === 'Techniques') {
+        <app-msel-techniques [loggedInUserId]="loggedInUserId()" />
       }
       @if (selectedTab === 'Scenario Events') {
         <app-scenario-event-list

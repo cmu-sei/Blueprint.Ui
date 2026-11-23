@@ -209,6 +209,61 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   >
                 }
               </div>
+              <!-- Marking for the participant material -->
+              <div class="single-detail center-self msel-marking">
+                <mat-form-field class="marking-select">
+                  <mat-label>Marking</mat-label>
+                  <mat-select
+                    [ngModel]="msel.articleMarking || 'None'"
+                    aria-label="Marking"
+                    [disabled]="!canEditMsel()"
+                    (ngModelChange)="setMarking($event)"
+                  >
+                    @for (marking of markings; track marking.value) {
+                      <mat-option [value]="marking.value">{{
+                        marking.label
+                      }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                @if (msel.articleMarking === 'Tlp') {
+                  <mat-form-field class="marking-select">
+                    <mat-label>TLP level</mat-label>
+                    <mat-select
+                      [ngModel]="msel.articleMarkingText || 'CLEAR'"
+                      aria-label="TLP level"
+                      [disabled]="!canEditMsel()"
+                      (ngModelChange)="
+                        msel.articleMarkingText = $event; isChanged = true
+                      "
+                    >
+                      @for (level of tlpLevels; track level) {
+                        <mat-option [value]="level">TLP:{{ level }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                }
+                @if (msel.articleMarking === 'Classification') {
+                  <mat-form-field class="marking-text">
+                    <mat-label>Classification banner</mat-label>
+                    <input
+                      matInput
+                      [(ngModel)]="msel.articleMarkingText"
+                      aria-label="Classification banner"
+                      [maxlength]="classificationMaxLength"
+                      [disabled]="!canEditMsel()"
+                      placeholder="UNCLASSIFIED // FOR EXERCISE USE ONLY"
+                      (input)="isChanged = true"
+                    />
+                  </mat-form-field>
+                }
+              </div>
+              <div class="single-detail center-self">
+                <span class="msel-image-hint"
+                  >Shown on the MSEL's pages, and on its Gallery articles when
+                  they are pushed.</span
+                >
+              </div>
               <!-- Is a Template -->
               <div class="single-detail center-self">
                 <div class="sub-detail center-self">
@@ -666,7 +721,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                       (cut)="isChanged = true"
                       (change)="
                         isChanged = true;
-                        $event.checked && loadCasterDirectories()
+                        $event.checked && loadCasterDirectories();
+                        $event.checked && loadCasterCopy()
                       "
                       (paste)="isChanged = true"
                       (keypress)="isChanged = true"
@@ -677,52 +733,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     <div class="integration-details">
                       <div class="integration-field">
                         <span class="integration-label">Directory:</span>
-                        @if (
-                          casterDirectoryList.length > 0 &&
-                          !integrationsLocked() &&
-                          canEditMsel()
-                        ) {
-                          <mat-form-field class="integration-select">
-                            <mat-select
-                              [(ngModel)]="msel.casterDirectoryId"
-                              (selectionChange)="isChanged = true"
-                            >
-                              <mat-option [value]="null" />
-                              @for (
-                                directory of casterDirectoryList;
-                                track directory.id
-                              ) {
-                                <mat-option [value]="directory.id">
-                                  {{ casterDirectoryLabel(directory) }}
-                                </mat-option>
-                              }
-                            </mat-select>
-                          </mat-form-field>
-                        }
-                        @if (
-                          casterDirectoryList.length === 0 ||
-                          integrationsLocked() ||
-                          !canEditMsel()
-                        ) {
-                          @if (msel.casterDirectoryId) {
-                            <span
-                              class="integration-guid"
-                              [title]="msel.casterDirectoryId"
-                              >{{ msel.casterDirectoryId }}</span
-                            >
-                            @if (
-                              selectedCasterDirectory || casterDirectoryName
-                            ) {
-                              <span class="integration-name">{{
-                                selectedCasterDirectory
-                                  ? casterDirectoryLabel(
-                                      selectedCasterDirectory
-                                    )
-                                  : casterDirectoryName
-                              }}</span>
-                            }
-                          }
-                        }
+                        <span class="integration-summary">{{
+                          casterSummary()
+                        }}</span>
                         @if (getCasterDirectoryUrl()) {
                           <a
                             [href]="getCasterDirectoryUrl()"
@@ -736,6 +749,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
                             />
                           </a>
                         }
+                        <button
+                          mat-stroked-button
+                          class="integration-tab-link"
+                          (click)="openTab.emit('Caster')"
+                        >
+                          Open the Caster tab
+                        </button>
                       </div>
                       @if (!msel.isTemplate && msel.casterWorkspaceId) {
                         <div class="integration-field">
@@ -1278,11 +1298,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     [config]="editorConfig"
                   />
                 } @else {
+                  <!-- the MSEL's marking above and below the page, as the page's own view shows it -->
+                  <app-marking-banner [banner]="pageBanner" />
                   <angular-editor
                     [placeholder]="'Content'"
                     [ngModel]="page.content"
                     [config]="viewConfig"
                   />
+                  <app-marking-banner [banner]="pageBanner" />
                 }
               </div>
             </div>

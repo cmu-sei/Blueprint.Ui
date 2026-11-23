@@ -1,0 +1,19 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+-->
+
+@if (banner(); as marking) {
+  <div
+    class="marking"
+    role="note"
+    aria-label="Marking"
+    [style.background-color]="marking.background"
+    [style.text-align]="marking.align"
+  >
+    <b [style.color]="marking.color">{{ marking.text }}</b>
+    @if (marking.subtext) {
+      <br /><span class="marking-subtext">{{ marking.subtext }}</span>
+    }
+  </div>
+}

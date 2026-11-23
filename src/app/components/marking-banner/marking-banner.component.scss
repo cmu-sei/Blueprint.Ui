@@ -1,0 +1,30 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+
+:host {
+  display: block;
+}
+
+// as the article banner draws it: Arial, bold, on the marking's colour
+.marking {
+  padding: 6px;
+  margin: 12px 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+:host(:first-child) .marking {
+  margin-top: 0;
+}
+
+:host(:last-child) .marking {
+  margin-bottom: 0;
+}
+
+.marking-subtext {
+  color: #000000;
+  font-size: 10px;
+}

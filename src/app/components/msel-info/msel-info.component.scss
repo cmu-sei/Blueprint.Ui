@@ -516,6 +516,20 @@ a {
   color: var(--mat-sys-on-surface-variant);
 }
 
+.msel-marking {
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.marking-select {
+  width: 220px;
+}
+
+.marking-text {
+  flex: 1;
+  min-width: 280px;
+}
+
 .integration-summary {
   font-family: 'Open Sans', sans-serif;
   font-size: 0.875rem;

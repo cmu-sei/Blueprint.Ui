@@ -30,7 +30,11 @@ import { PermissionDataService } from 'src/app/data/permission/permission-data.s
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
-import { CasterService, CiteService } from 'src/app/generated/blueprint.api';
+import {
+  CasterService,
+  CiteService,
+  MselCasterExportService,
+} from 'src/app/generated/blueprint.api';
 import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { TeamAddDialogComponent } from '../team-add-dialog/team-add-dialog.component';
@@ -132,6 +136,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   private mselQuery = inject(MselQuery);
   private citeService = inject(CiteService);
   private casterService = inject(CasterService);
+  private mselCasterExportService = inject(MselCasterExportService);
   private unitDataService = inject(UnitDataService);
   private unitQuery = inject(UnitQuery);
   private dialog = inject(MatDialog);
@@ -307,13 +312,22 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
     this.requiredCasterTeamVariables = [];
     this.casterTeamVariablesError = '';
     this.updateCasterWarnings();
-    if (!this.msel.useCaster || !this.msel.casterDirectoryId) {
+    if (!this.msel.useCaster) {
       this.setDisplayedColumns();
       return;
     }
+    // with no directory linked, the template is the copy of one the MSEL carries, which the push imports; a MSEL
+    // with neither answers no variables, and has no topology teams to show
     const directoryId = this.msel.casterDirectoryId;
-    this.casterService.getCasterTeamVariables(directoryId).subscribe(
+    const variables$ = directoryId
+      ? this.casterService.getCasterTeamVariables(directoryId)
+      : this.mselCasterExportService.getMselCasterTeamVariables(this.msel.id);
+    variables$.subscribe(
       (variables) => {
+        if (!directoryId && !variables?.length) {
+          this.setDisplayedColumns();
+          return;
+        }
         if (
           this.msel.useCaster &&
           this.msel.casterDirectoryId === directoryId
@@ -348,12 +362,20 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
       this.getDuplicateTeamVariableWarnings();
   }
 
+  // a linked directory, or the copy of one the MSEL carries once its variables are read
+  private hasTopology(): boolean {
+    return (
+      !!this.msel.useCaster &&
+      (!!this.msel.casterDirectoryId || this.casterTeamVariables !== null)
+    );
+  }
+
   setDisplayedColumns() {
     // Team Type is the CITE team type, so it only matters when CITE is in use
     const columns = this.msel.useCite
       ? ['action', 'shortName', 'name', 'email', 'teamType', 'invitation']
       : ['action', 'shortName', 'name', 'email', 'invitation'];
-    if (this.msel.useCaster && this.msel.casterDirectoryId) {
+    if (this.hasTopology()) {
       columns.splice(columns.indexOf('invitation'), 0, 'topologyTeam');
     }
     this.displayedColumns = columns;
@@ -431,8 +453,10 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   }
 
   // variables more than one team would write, counting Player's own Admin team; the API refuses those
+  // The API refuses them for every Caster MSEL it pushes, whatever its template declares, so they are shown
+  // whether the topology is a linked directory or a copy, even one with no team variables
   getDuplicateTeamVariableWarnings(): string[] {
-    if (!this.msel.useCaster || !this.msel.casterDirectoryId) {
+    if (!this.msel.useCaster) {
       return [];
     }
     const writers = this.mselTeams.map((t) => this.toTeamVariableWriter(t));
