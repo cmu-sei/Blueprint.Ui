@@ -17,6 +17,11 @@ import {
 import { MatSelect, MatOption } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import {
+  MatExpansionPanel,
+  MatExpansionPanelHeader,
+  MatExpansionPanelTitle,
+} from '@angular/material/expansion';
+import {
   TechniqueFileFormat,
   TechniqueFrameworkSettings,
 } from 'src/app/generated/blueprint.api';
@@ -66,6 +71,9 @@ export function toForm(
     MatHint,
     MatSelect,
     MatOption,
+    MatExpansionPanel,
+    MatExpansionPanelHeader,
+    MatExpansionPanelTitle,
     FormsModule,
   ],
 })
@@ -85,6 +93,9 @@ export class AdminTechniqueFrameworkDialogComponent {
     { value: TechniqueFileFormat.StixBundle, label: 'STIX bundle' },
     { value: TechniqueFileFormat.JsonLdOntology, label: 'JSON-LD ontology' },
   ];
+
+  /** Whether the Advanced section is open; it also opens, and stays open, while the settings are in error. */
+  advancedOpen = false;
 
   get form(): TechniqueFrameworkForm {
     return this.data.form;

@@ -73,7 +73,19 @@ project root for license information.
         </mat-select>
       </mat-form-field>
     </div>
-    <div class="add-margin">
+    <mat-expansion-panel
+      class="advanced"
+      [expanded]="advancedOpen || !!settingsError"
+      (opened)="advancedOpen = true"
+      (closed)="advancedOpen = false"
+    >
+      <mat-expansion-panel-header>
+        <mat-panel-title>Advanced (JSON)</mat-panel-title>
+      </mat-expansion-panel-header>
+      <p class="advanced-note">
+        A framework definition file you import fills these in. Edit them only to
+        adjust an imported framework.
+      </p>
       <mat-form-field subscriptSizing="dynamic" class="full-width">
         <mat-label>Settings (JSON)</mat-label>
         <textarea
@@ -93,6 +105,6 @@ project root for license information.
       @if (settingsError) {
         <div class="settings-error" role="alert">{{ settingsError }}</div>
       }
-    </div>
+    </mat-expansion-panel>
   </div>
 </crucible-dialog>
