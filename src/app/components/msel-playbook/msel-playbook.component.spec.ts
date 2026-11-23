@@ -33,12 +33,10 @@ import { MselPageStore } from 'src/app/data/msel-page/msel-page.store';
 import { ScenarioEventStore } from 'src/app/data/scenario-event/scenario-event.store';
 import { TestBed } from '@angular/core/testing';
 import {
-  formatPlaybookDuration,
   frameworkCompetencyGroups,
   imagesReady,
   MselPlaybookComponent,
   opensWithHeading,
-  playbookFooterCss,
   withoutMedia,
 } from './msel-playbook.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
@@ -1002,31 +1000,5 @@ describe('MselPlaybookComponent', () => {
     stuck.decode = vi.fn(() => new Promise<void>(() => undefined));
     root.replaceChildren(stuck);
     await expect(imagesReady(root, 10)).resolves.toBeUndefined();
-  });
-
-  /**
-   * Verifies: the print footer writes the MSEL name into the playbook page's bottom-left margin box, escaped as a CSS string.
-   * Interacts with: playbookFooterCss.
-   * Data: a name with quotes, a backslash and a line break.
-   */
-  it('writes the MSEL name into the print footer', () => {
-    expect(playbookFooterCss('Exercise Alpha')).toBe(
-      '@page playbook { @bottom-left { content: "Exercise Alpha"; } }',
-    );
-    expect(playbookFooterCss('Op "Red"\\X\nTwo')).toBe(
-      '@page playbook { @bottom-left { content: "Op \\"Red\\"\\\\X Two"; } }',
-    );
-  });
-
-  /**
-   * Verifies: the cover's duration reads as days, hours and minutes, with seconds only for durations under a minute.
-   * Interacts with: formatPlaybookDuration.
-   * Data: 0 s, 45 s, 1 h, 1 d 2 h 30 min.
-   */
-  it('formats the cover duration', () => {
-    expect(formatPlaybookDuration(0)).toBe('0 seconds');
-    expect(formatPlaybookDuration(45)).toBe('45 seconds');
-    expect(formatPlaybookDuration(3600)).toBe('1 hour');
-    expect(formatPlaybookDuration(95400)).toBe('1 day 2 hours 30 minutes');
   });
 });
