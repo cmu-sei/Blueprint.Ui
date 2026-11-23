@@ -86,21 +86,23 @@ function tlpColor(level: string): string {
   }
 }
 
-// the colours used on US classification banners, by the level the text names
+// the colours used on US classification banners, by the level the text names, in words or abbreviated
+// before the first // (TS//SCI, S//NF, C//REL TO USA), as the API colours the article banner
 function classificationColors(upper: string): {
   background: string;
   color: string;
 } {
-  if (upper.includes('TOP SECRET')) {
+  const abbreviated = upper.split('//')[0].trim();
+  if (upper.includes('TOP SECRET') || abbreviated === 'TS') {
     return {
       background: upper.includes('SCI') ? '#FCE83A' : '#FF8C00',
       color: '#000000',
     };
   }
-  if (/\bSECRET\b/.test(upper)) {
+  if (/\bSECRET\b/.test(upper) || abbreviated === 'S') {
     return { background: '#C8102E', color: '#FFFFFF' };
   }
-  if (upper.includes('CONFIDENTIAL')) {
+  if (upper.includes('CONFIDENTIAL') || abbreviated === 'C') {
     return { background: '#0033A0', color: '#FFFFFF' };
   }
   if (/\bCUI\b|CONTROLLED UNCLASSIFIED/.test(upper)) {

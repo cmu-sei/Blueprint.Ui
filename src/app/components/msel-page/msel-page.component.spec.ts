@@ -105,7 +105,8 @@ describe('MselPageComponent', () => {
   /**
    * Verifies: the MSEL's marking is drawn above and below the page's content, in the words and colours of the Gallery article banner.
    * Interacts with: MselPageService.getMselPage (stub, carrying the marking), markingBanner, MarkingBannerComponent.
-   * Data: the MSEL Deep Bite of page-1, marked with an exercise banner, TLP:AMBER, TLP with a level it does not know, and a SECRET classification.
+   * Data: the MSEL Deep Bite of page-1, marked with an exercise banner, TLP:AMBER, TLP with a level it does not know, and SECRET, CUI,
+   * abbreviated (TS//SCI, TS//NOFORN, S//NF, C//REL TO USA) and unclassified classifications.
    */
   it.each([
     {
@@ -145,6 +146,56 @@ describe('MselPageComponent', () => {
       marking: { articleMarking: 'Classification', articleMarkingText: 'CUI' },
       text: 'CUI',
       background: '#502B85',
+      color: '#FFFFFF',
+    },
+    {
+      label: 'a TS//SCI classification',
+      marking: {
+        articleMarking: 'Classification',
+        articleMarkingText: 'ts//sci',
+      },
+      text: 'TS//SCI',
+      background: '#FCE83A',
+      color: '#000000',
+    },
+    {
+      label: 'a TS//NOFORN classification',
+      marking: {
+        articleMarking: 'Classification',
+        articleMarkingText: 'TS//NOFORN',
+      },
+      text: 'TS//NOFORN',
+      background: '#FF8C00',
+      color: '#000000',
+    },
+    {
+      label: 'an S//NF classification',
+      marking: {
+        articleMarking: 'Classification',
+        articleMarkingText: 'S//NF',
+      },
+      text: 'S//NF',
+      background: '#C8102E',
+      color: '#FFFFFF',
+    },
+    {
+      label: 'a C//REL TO USA classification',
+      marking: {
+        articleMarking: 'Classification',
+        articleMarkingText: 'C//REL TO USA',
+      },
+      text: 'C//REL TO USA',
+      background: '#0033A0',
+      color: '#FFFFFF',
+    },
+    {
+      label: 'an unclassified banner whose first word starts with S',
+      marking: {
+        articleMarking: 'Classification',
+        articleMarkingText: 'SAMPLE//EXERCISE',
+      },
+      text: 'SAMPLE//EXERCISE',
+      background: '#007A33',
       color: '#FFFFFF',
     },
   ])(
