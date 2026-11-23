@@ -1022,9 +1022,6 @@
     "@typescript-eslint/no-explicit-any": {
       "count": 3
     },
-    "@typescript-eslint/no-unnecessary-type-assertion": {
-      "count": 1
-    },
     "@typescript-eslint/no-unsafe-argument": {
       "count": 3
     },
@@ -1111,9 +1108,6 @@
     }
   },
   "src/app/components/data-value/data-value.component.spec.ts": {
-    "@typescript-eslint/no-unnecessary-type-assertion": {
-      "count": 1
-    },
     "@typescript-eslint/no-unsafe-argument": {
       "count": 1
     }
@@ -1122,12 +1116,6 @@
     "@angular-eslint/prefer-signals": {
       "count": 2
     },
-    "@typescript-eslint/consistent-indexed-object-style": {
-      "count": 2
-    },
-    "@typescript-eslint/no-array-constructor": {
-      "count": 1
-    },
     "@typescript-eslint/no-explicit-any": {
       "count": 10
     },
@@ -1135,7 +1123,7 @@
       "count": 1
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 4
+      "count": 3
     },
     "@typescript-eslint/no-unsafe-call": {
       "count": 3
@@ -2089,12 +2077,6 @@
     }
   },
   "src/app/components/scenario-event-edit-dialog/scenario-event-edit-dialog.component.ts": {
-    "@typescript-eslint/array-type": {
-      "count": 1
-    },
-    "@typescript-eslint/no-array-constructor": {
-      "count": 1
-    },
     "@typescript-eslint/no-explicit-any": {
       "count": 1
     },
@@ -2102,7 +2084,7 @@
       "count": 3
     },
     "@typescript-eslint/no-unsafe-assignment": {
-      "count": 9
+      "count": 8
     },
     "@typescript-eslint/no-unsafe-call": {
       "count": 11
@@ -2112,9 +2094,6 @@
     },
     "@typescript-eslint/no-unsafe-return": {
       "count": 7
-    },
-    "@typescript-eslint/prefer-optional-chain": {
-      "count": 1
     },
     "no-useless-assignment": {
       "count": 1
