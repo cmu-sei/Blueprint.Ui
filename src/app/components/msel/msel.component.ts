@@ -69,6 +69,7 @@ import { AssessorViewComponent } from '../assessor-view/assessor-view.component'
 import { InvitationListComponent } from '../invitation-list/invitation-list.component';
 import { MselPlaybookComponent } from '../msel-playbook/msel-playbook.component';
 import { MselScoringModelTabComponent } from '../msel-scoring-model-tab/msel-scoring-model-tab.component';
+import { MselCasterTabComponent } from '../msel-caster-tab/msel-caster-tab.component';
 import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
@@ -102,6 +103,7 @@ import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
     InvitationListComponent,
     MselPlaybookComponent,
     MselScoringModelTabComponent,
+    MselCasterTabComponent,
     AsyncPipe,
   ],
 })
@@ -146,6 +148,7 @@ export class MselComponent implements OnDestroy {
   readonly tabs = viewChildren<MatTab>('MatTab');
   readonly mselInfoComponent = viewChild(MselInfoComponent);
   readonly scoringModelTab = viewChild(MselScoringModelTabComponent);
+  readonly casterTab = viewChild(MselCasterTabComponent);
   tabList: string[] = [
     'Info',
     'Contributors',
@@ -156,6 +159,7 @@ export class MselComponent implements OnDestroy {
     'Organizations',
     'Moves',
     'Player Apps',
+    'Caster',
     'Gallery Cards',
     'Scoring Model',
     'Actions',
@@ -174,6 +178,7 @@ export class MselComponent implements OnDestroy {
     ['Organizations', 'mdi-office-building-outline'],
     ['Moves', 'mdi-gamepad'],
     ['Player Apps', 'mdi-apps'],
+    ['Caster', 'mdi-terraform'],
     ['Gallery Cards', 'mdi-view-grid-outline'],
     ['Scoring Model', 'mdi-clipboard-list-outline'],
     ['Actions', 'mdi-clipboard-check-outline'],
@@ -377,6 +382,12 @@ export class MselComponent implements OnDestroy {
     ) {
       return 'You have unsaved changes on the Scoring Model page. Are you sure that you want to discard them?';
     }
+    if (
+      this.selectedTab === 'Caster' &&
+      this.casterTab()?.hasPendingChanges()
+    ) {
+      return 'You have unsaved changes on the Caster page. Are you sure that you want to discard them?';
+    }
     return '';
   }
 
@@ -394,6 +405,11 @@ export class MselComponent implements OnDestroy {
       switch (tab) {
         case 'Player Apps':
           if (this.msel?.usePlayer) {
+            tabList.push(tab);
+          }
+          break;
+        case 'Caster':
+          if (this.msel?.useCaster) {
             tabList.push(tab);
           }
           break;
