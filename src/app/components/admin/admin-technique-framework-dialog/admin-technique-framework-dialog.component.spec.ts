@@ -66,6 +66,11 @@ describe('AdminTechniqueFrameworkDialogComponent', () => {
     await renderDialog(null);
 
     expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('');
+    // the JSON sits in a collapsed Advanced section until it is opened
+    expect(
+      screen.queryByRole('textbox', { name: 'Settings (JSON)' }),
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Advanced (JSON)' }));
     expect(
       JSON.parse(
         (
@@ -115,7 +120,9 @@ describe('AdminTechniqueFrameworkDialogComponent', () => {
    * Data: unparseable JSON, then a JSON array.
    */
   it('refuses settings that are not a JSON object', async () => {
+    const user = userEvent.setup();
     const { results } = await renderDialog(DEFINITION);
+    await user.click(screen.getByRole('button', { name: 'Advanced (JSON)' }));
     const settings = screen.getByRole('textbox', { name: 'Settings (JSON)' });
 
     fireEvent.input(settings, { target: { value: '{ "match": ' } });
