@@ -27,8 +27,8 @@ import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
-import { Observable, Subject, from } from 'rxjs';
-import { concatMap, takeUntil } from 'rxjs/operators';
+import { Observable, Subject, from, of } from 'rxjs';
+import { catchError, concatMap, map, takeUntil, toArray } from 'rxjs/operators';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import {
   TechniqueFileFormat,
@@ -57,6 +57,21 @@ export function definitionsIn(json: string): TechniqueFrameworkDefinition[] {
     throw new Error('The file holds no technique framework definitions.');
   }
   return list.map((d) => toDefinition(d as TechniqueFramework));
+}
+
+/** Why the API refused a request, as its problem details put it. */
+function refusal(error: unknown): string {
+  const e = error as {
+    error?: { title?: string; detail?: string } | string;
+    message?: string;
+  };
+  if (typeof e?.error === 'string' && e.error) return e.error;
+  const problem = typeof e?.error === 'object' ? e.error : undefined;
+  return (
+    [problem?.title, problem?.detail].filter((v) => v).join(' ') ||
+    e?.message ||
+    'Unknown error'
+  );
 }
 
 /**
@@ -158,6 +173,8 @@ export class AdminTechniqueFrameworksComponent implements OnInit, OnDestroy {
         save(result.definition).subscribe({
           next: () => dialogRef.close(),
           error: (error: unknown) => {
+            // the refusal may be about the settings, so they are shown
+            dialog.advancedOpen = true;
             dialog.saving.set(false);
             throw error;
           },
@@ -207,9 +224,33 @@ export class AdminTechniqueFrameworksComponent implements OnInit, OnDestroy {
         );
         return;
       }
+      // a definition the API refuses does not stop the rest; the administrator is told which were not created
       from(definitions)
-        .pipe(concatMap((d) => this.techniqueFrameworkDataService.create(d)))
-        .subscribe();
+        .pipe(
+          concatMap((d) =>
+            this.techniqueFrameworkDataService.create(d).pipe(
+              // empty for a definition created, else what was refused and why
+              map(() => ''),
+              catchError((error: unknown) =>
+                of(
+                  `${d.name || d.domain || 'A definition'}: ${refusal(error)}`,
+                ),
+              ),
+            ),
+          ),
+          toArray(),
+        )
+        .subscribe((results) => {
+          const failures = results.filter((r) => r);
+          if (failures.length > 0) {
+            const created = results.length - failures.length;
+            this.messageService.displayMessage(
+              created > 0 ? 'Import Incomplete' : 'Import Failed',
+              `${created} of ${results.length} definitions were created. These were not:\n\n` +
+                failures.join('\n'),
+            );
+          }
+        });
     });
   }
 

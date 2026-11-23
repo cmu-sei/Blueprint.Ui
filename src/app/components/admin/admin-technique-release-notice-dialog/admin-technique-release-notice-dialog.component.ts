@@ -72,12 +72,17 @@ export class AdminTechniqueReleaseNoticeDialogComponent {
     return this.data.release;
   }
 
-  /** The frameworks the release may belong to: those of its domain and family. */
+  /**
+   * The frameworks the release may belong to: those of its domain and family, and the one it is linked to even
+   * if that one no longer matches, so the select does not show the link as blank.
+   */
   get frameworks(): TechniqueFramework[] {
+    const linkedId = this.release.techniqueFrameworkId;
     return (this.data.frameworks || []).filter(
       (f) =>
-        f.domain === this.release.domain &&
-        !!f.isDefensive === !!this.release.isDefensive,
+        f.id === linkedId ||
+        (f.domain === this.release.domain &&
+          !!f.isDefensive === !!this.release.isDefensive),
     );
   }
 

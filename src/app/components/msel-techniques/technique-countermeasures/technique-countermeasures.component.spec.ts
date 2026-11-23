@@ -4,7 +4,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { fireEvent, screen, within } from '@testing-library/angular';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import {
   TechniqueRelease,
   TechniqueCountermeasure,
@@ -17,6 +17,11 @@ import { TechniqueReleaseStore } from 'src/app/data/technique-release/technique-
 import { MselTechniqueStore } from 'src/app/data/msel-technique/msel-technique.store';
 import { TechniqueCountermeasuresComponent } from './technique-countermeasures.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
+import { LoadedCountermeasures } from 'src/app/data/msel-technique/msel-countermeasure-data.service';
+import {
+  captureUnhandledRxErrors,
+  flush,
+} from 'src/app/test-utils/unhandled-rx-errors';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
 // what the release's framework definition says (test data): the relation its mappings read with, and its tactic order
@@ -104,7 +109,7 @@ const D3_CH_IN_POOL: MselTechnique = {
 
 interface Options {
   group?: MselTechniqueCountermeasures;
-  countermeasures?: MselCountermeasures;
+  countermeasures?: LoadedCountermeasures;
   canEdit?: boolean;
   hasDefensiveRelease?: boolean;
   pool?: MselTechnique[];
@@ -282,6 +287,34 @@ describe('TechniqueCountermeasuresComponent', () => {
   });
 
   /**
+   * Verifies: the checkbox shows the pool, not the click: a refused add leaves it unticked, and a later add ticks
+   * it once the technique is pooled. The refusal reaches the app's error handler.
+   * Interacts with: add, appModelCheckbox, MselTechniqueService.createMselTechnique (stub refusing once).
+   * Data: D3-MFA, not in the pool; its first add refused.
+   */
+  it('leaves a countermeasure unticked when its add is refused', async () => {
+    const errors = captureUnhandledRxErrors();
+    const { poolApi, fixture } = await renderCounteredBy();
+    const failure = new Error('403');
+    poolApi.createMselTechnique.mockReturnValueOnce(throwError(() => failure));
+    await open();
+    const mfa = screen.getByRole('checkbox', { name: 'Add D3-MFA' });
+
+    fireEvent.click(mfa);
+    await flush();
+    fixture.detectChanges();
+
+    expect(errors).toEqual([failure]);
+    expect(mfa).not.toBeChecked();
+
+    fireEvent.click(mfa);
+    fixture.detectChanges();
+
+    expect(poolApi.createMselTechnique).toHaveBeenCalledTimes(2);
+    expect(mfa).toBeChecked();
+  });
+
+  /**
    * Verifies: without the right to edit the MSEL there are no checkboxes, and a pooled countermeasure is marked
    * with a tick instead.
    * Interacts with: canEdit, isPooled.
@@ -298,8 +331,9 @@ describe('TechniqueCountermeasuresComponent', () => {
   });
 
   /**
-   * Verifies: each way of having nothing to list is explained: still loading, no D3FEND release imported, no
-   * mappings imported on any, the pinned release without mappings, and a technique nothing is mapped to.
+   * Verifies: each way of having nothing to list is explained: still loading, a read that failed, no D3FEND
+   * release imported, no mappings imported on any, the pinned release without mappings, and a technique nothing
+   * is mapped to.
    * Interacts with: emptyMessage, hasDefensiveRelease, TechniqueReleaseQuery.getEntity.
    * Data: the answers the API gives in each case.
    */
@@ -311,6 +345,21 @@ describe('TechniqueCountermeasuresComponent', () => {
         group: undefined as MselTechniqueCountermeasures,
       },
       message: 'Loading countermeasures...',
+    },
+    {
+      name: 'the read failed',
+      options: {
+        countermeasures: {
+          mselId: 'msel-1',
+          techniqueReleaseId: null,
+          hasMappings: false,
+          techniques: [],
+          loadFailed: true,
+        },
+        group: undefined,
+      },
+      message:
+        'The countermeasures could not be loaded. Reload the page to try again.',
     },
     {
       name: 'no defensive release imported',

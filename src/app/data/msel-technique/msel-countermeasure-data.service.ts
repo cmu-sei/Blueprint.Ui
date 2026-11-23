@@ -10,6 +10,11 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { MselTechniqueQuery } from './msel-technique.query';
 
+/** The countermeasures as loaded; loadFailed marks an answer that never came, so it is not read as "none imported". */
+export type LoadedCountermeasures = MselCountermeasures & {
+  loadFailed?: boolean;
+};
+
 /**
  * The countermeasures of a MSEL's attack techniques, for the whole pool, from the defensive release it is
  * pinned to, else the newest with mappings. Reloaded whenever the pool changes.
@@ -22,9 +27,9 @@ export class MselCountermeasureDataService {
   private mselTechniqueQuery = inject(MselTechniqueQuery);
 
   private readonly subject = new BehaviorSubject<
-    MselCountermeasures | undefined
+    LoadedCountermeasures | undefined
   >(undefined);
-  readonly countermeasures$: Observable<MselCountermeasures | undefined> =
+  readonly countermeasures$: Observable<LoadedCountermeasures | undefined> =
     this.subject.asObservable();
   private loadedMselId = '';
   // the latest load; a response to an earlier one, or one made before unload, is dropped
@@ -77,6 +82,7 @@ export class MselCountermeasureDataService {
             techniqueReleaseId: null,
             hasMappings: false,
             techniques: [],
+            loadFailed: true,
           });
         },
       });
@@ -100,6 +106,8 @@ export class MselCountermeasureDataService {
     this.loadedMselId = '';
     this.request++;
     this.loadedPoolKey = '';
+    // a load in flight is dropped, so it never ends its loading
+    this.loading = false;
     this.subject.next(undefined);
   }
 

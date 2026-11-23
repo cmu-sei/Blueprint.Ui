@@ -45,6 +45,7 @@ import {
 import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatCheckbox } from '@angular/material/checkbox';
+import { ModelCheckboxDirective } from 'src/app/components/shared/model-checkbox/model-checkbox.directive';
 import { MatDialog } from '@angular/material/dialog';
 import { Observable, Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
@@ -62,7 +63,6 @@ import {
   DataFieldType,
   DataValue,
   MselTechnique,
-  MselCountermeasures,
   MselTechniqueCountermeasures,
   SystemPermission,
 } from 'src/app/generated/blueprint.api';
@@ -74,7 +74,10 @@ import {
   compareAttackIds,
   MselTechniqueQuery,
 } from 'src/app/data/msel-technique/msel-technique.query';
-import { MselCountermeasureDataService } from 'src/app/data/msel-technique/msel-countermeasure-data.service';
+import {
+  LoadedCountermeasures,
+  MselCountermeasureDataService,
+} from 'src/app/data/msel-technique/msel-countermeasure-data.service';
 import { TechniqueReleaseDataService } from 'src/app/data/technique-release/technique-release-data.service';
 import { TechniqueReleaseQuery } from 'src/app/data/technique-release/technique-release.query';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
@@ -132,6 +135,7 @@ export interface PinnedDomain {
     MatHeaderCellDef,
     MatHeaderCell,
     MatCheckbox,
+    ModelCheckboxDirective,
     MatCellDef,
     MatCell,
     MatHeaderRowDef,
@@ -213,7 +217,7 @@ export class TechniquePoolComponent
   /** Each release's group names by short name, for the browser and for every release in the pool. */
   private tacticNamesByRelease = new Map<string, Map<string, string>>();
   // the mapping rows of the attack family
-  countermeasures: MselCountermeasures;
+  countermeasures: LoadedCountermeasures;
   private countermeasuresByTechniqueId = new Map<
     string,
     MselTechniqueCountermeasures
@@ -481,7 +485,11 @@ export class TechniquePoolComponent
           this.isLoadingRelease = false;
           this.applyBrowserFilter();
         },
-        error: () => (this.isLoadingRelease = false),
+        error: () => {
+          // an answer to a release no longer browsed must not end the current one's loading
+          if (releaseId !== this.selectedReleaseId) return;
+          this.isLoadingRelease = false;
+        },
       });
   }
 
@@ -562,7 +570,9 @@ export class TechniquePoolComponent
     return this.poolByTechniqueId.has(technique.id);
   }
 
+  /** Adds or removes a browsed technique; its checkbox follows the pool, not the click. */
   togglePoolItem(technique: Technique) {
+    if (this.needsUpgrade) return;
     const existing = this.poolByTechniqueId.get(technique.id);
     if (existing) {
       this.removeFromPool(existing);

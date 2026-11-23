@@ -41,17 +41,15 @@ export class TechniqueReleaseDataService {
     this.techniqueReleaseStore.setLoading(true);
     this.techniqueReleaseService
       .getTechniqueReleases()
-      .pipe(
-        tap(() => {
-          this.techniqueReleaseStore.setLoading(false);
-        }),
-        take(1),
-      )
+      .pipe(take(1))
       .subscribe({
         next: (releases) => {
+          this.techniqueReleaseStore.setLoading(false);
           this.techniqueReleaseStore.set(releases);
         },
         error: () => {
+          // a failed load must not leave the import buttons disabled
+          this.techniqueReleaseStore.setLoading(false);
           this.techniqueReleaseStore.set([]);
         },
       });

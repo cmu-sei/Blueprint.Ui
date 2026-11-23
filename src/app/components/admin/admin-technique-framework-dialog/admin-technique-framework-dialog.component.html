@@ -76,6 +76,7 @@ project root for license information.
     <mat-expansion-panel
       class="advanced"
       [expanded]="advancedOpen || !!settingsError"
+      [disabled]="!!settingsError"
       (opened)="advancedOpen = true"
       (closed)="advancedOpen = false"
     >
@@ -83,8 +84,8 @@ project root for license information.
         <mat-panel-title>Advanced (JSON)</mat-panel-title>
       </mat-expansion-panel-header>
       <p class="advanced-note">
-        A framework definition file you import fills these in. Edit them only to
-        adjust an imported framework.
+        Importing a framework definition file fills these in. To add a framework
+        by hand, enter its match conditions and format options here.
       </p>
       <mat-form-field subscriptSizing="dynamic" class="full-width">
         <mat-label>Settings (JSON)</mat-label>

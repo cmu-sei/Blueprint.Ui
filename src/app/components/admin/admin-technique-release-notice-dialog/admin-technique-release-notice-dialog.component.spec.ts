@@ -9,6 +9,7 @@ import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
 import {
+  TechniqueFramework,
   TechniqueRelease,
   TechniqueReleaseNotice,
 } from 'src/app/generated/blueprint.api';
@@ -34,6 +35,14 @@ async function renderDialog(
   },
 ) {
   const data = { release: RELEASE, notice };
+  return renderWith(data);
+}
+
+async function renderWith(data: {
+  release: TechniqueRelease;
+  notice: TechniqueReleaseNotice;
+  frameworks?: TechniqueFramework[];
+}) {
   const rendered = await renderComponent(
     AdminTechniqueReleaseNoticeDialogComponent,
     {
@@ -104,6 +113,35 @@ describe('AdminTechniqueReleaseNoticeDialogComponent', () => {
       { saveChanges: false, notice: null },
     ]);
     expect(data.notice.source).toBe('Acme Corp');
+  });
+
+  /**
+   * Verifies: the Framework select offers the frameworks of the release's domain and family, and keeps the one the
+   * release is linked to even after that framework's domain changed, so the link does not show blank.
+   * Interacts with: frameworks, mat-select.
+   * Data: a release linked to a framework since moved to another domain; a matching framework; an unrelated one.
+   */
+  it('keeps the linked framework in the select when it no longer matches', async () => {
+    const frameworks: TechniqueFramework[] = [
+      { id: 'fw-linked', name: 'Renamed', domain: 'acme', isDefensive: false },
+      { id: 'fw-match', name: 'Acme', domain: 'acme-ttp', isDefensive: false },
+      { id: 'fw-other', name: 'Other', domain: 'other', isDefensive: false },
+    ];
+    const { fixture } = await renderWith({
+      release: { ...RELEASE, techniqueFrameworkId: 'fw-linked' },
+      notice: { techniqueFrameworkId: 'fw-linked' },
+      frameworks,
+    });
+
+    expect(fixture.componentInstance.frameworks.map((f) => f.id)).toEqual([
+      'fw-linked',
+      'fw-match',
+    ]);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(
+      screen.getByRole('combobox', { name: 'Framework' }),
+    ).toHaveTextContent('Renamed');
   });
 
   /**

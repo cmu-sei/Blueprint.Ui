@@ -123,10 +123,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-cell *matCellDef="let t" class="col-check">
             @if (canEditMsel()) {
               <mat-checkbox
+                appModelCheckbox
                 [checked]="isInPool(t)"
                 [disabled]="needsUpgrade"
-                (change)="togglePoolItem(t)"
-                [attr.aria-label]="'Add ' + t.externalId"
+                (click)="togglePoolItem(t)"
+                [aria-label]="'Add ' + t.externalId"
               />
             }
           </mat-cell>

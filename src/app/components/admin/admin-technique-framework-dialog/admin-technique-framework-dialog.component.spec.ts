@@ -67,10 +67,10 @@ describe('AdminTechniqueFrameworkDialogComponent', () => {
 
     expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('');
     // the JSON sits in a collapsed Advanced section until it is opened
-    expect(
-      screen.queryByRole('textbox', { name: 'Settings (JSON)' }),
-    ).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Advanced (JSON)' }));
+    const advanced = screen.getByRole('button', { name: 'Advanced (JSON)' });
+    expect(advanced).toHaveAttribute('aria-expanded', 'false');
+    await user.click(advanced);
+    expect(advanced).toHaveAttribute('aria-expanded', 'true');
     expect(
       JSON.parse(
         screen.getByRole<HTMLTextAreaElement>('textbox', {
@@ -134,5 +134,34 @@ describe('AdminTechniqueFrameworkDialogComponent', () => {
       await screen.findByText('The settings must be a JSON object.'),
     ).toBeInTheDocument();
     expect(results).toEqual([]);
+  });
+
+  /**
+   * Verifies: the Advanced section cannot be closed while the settings are in error, so the error and the field
+   * stay in view; once the JSON is fixed it can be closed again.
+   * Interacts with: advancedOpen, settingsError, mat-expansion-panel disabled.
+   * Data: an existing definition; unparseable JSON, then valid JSON.
+   */
+  it('keeps the Advanced section open while the settings are in error', async () => {
+    const user = userEvent.setup();
+    const { fixture } = await renderDialog(DEFINITION);
+    const advanced = screen.getByRole('button', { name: 'Advanced (JSON)' });
+    await user.click(advanced);
+    const settings = screen.getByRole('textbox', { name: 'Settings (JSON)' });
+    fireEvent.input(settings, { target: { value: '{ "match": ' } });
+    await screen.findByText(/The settings are not valid JSON/);
+
+    await user.click(advanced);
+    fixture.detectChanges();
+
+    expect(advanced).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'The settings are not valid JSON',
+    );
+
+    fireEvent.input(settings, { target: { value: '{ "match": {} }' } });
+    fixture.detectChanges();
+    await user.click(advanced);
+    expect(advanced).toHaveAttribute('aria-expanded', 'false');
   });
 });

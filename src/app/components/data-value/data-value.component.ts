@@ -226,24 +226,11 @@ export class DataValueComponent implements OnChanges, OnDestroy {
   private wholePool: Technique[] = [];
   private mselCountermeasures: MselCountermeasures;
   private unsubscribe$ = new Subject();
-
-  constructor() {
-    this.mselTechniqueQuery
-      .selectTechniques()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((techniques) => {
-        this.wholePool = techniques;
-        this.offerTechniques();
-      });
-    this.mselCountermeasureDataService.countermeasures$
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((countermeasures) => {
-        this.mselCountermeasures = countermeasures;
-      });
-  }
+  private watchesTechniques = false;
 
   ngOnChanges() {
     if (this.isTechniqueField) {
+      this.watchTechniques();
       this.mselTechniqueDataService.ensureLoaded(this.dataField.mselId);
       this.offerTechniques();
       if (this.suggestsCountermeasures) {
@@ -329,6 +316,24 @@ export class DataValueComponent implements OnChanges, OnDestroy {
   /**
    * A cell stores only a technique's id, so an id the pool holds in two domains is offered once.
    */
+  /** Follows the pool and its countermeasures, once this is known to be a technique field: most fields are not. */
+  private watchTechniques() {
+    if (this.watchesTechniques) return;
+    this.watchesTechniques = true;
+    this.mselTechniqueQuery
+      .selectTechniques()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((techniques) => {
+        this.wholePool = techniques;
+        this.offerTechniques();
+      });
+    this.mselCountermeasureDataService.countermeasures$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((countermeasures) => {
+        this.mselCountermeasures = countermeasures;
+      });
+  }
+
   private offerTechniques() {
     const techniques = this.wholePool.filter(
       (t) => techniqueFamily(t) === this.techniqueFamily,

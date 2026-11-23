@@ -2,6 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
+import { TestBed } from '@angular/core/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { fireEvent, screen, within } from '@testing-library/angular';
@@ -269,6 +270,7 @@ async function renderTechniques(
   countermeasures: MselCountermeasures = NO_MAPPINGS,
   grants: PermissionGrants = {},
   tactics: Record<string, TechniqueTactic[]> = {},
+  dialog?: Pick<CrucibleDialogService, 'confirm'>,
 ) {
   const poolApi = {
     getMselTechniques: vi.fn(() => of(structuredClone(pool))),
@@ -295,7 +297,9 @@ async function renderTechniques(
       PermissionDataService,
       { provide: MselTechniqueService, useValue: poolApi },
       { provide: TechniqueReleaseService, useValue: releaseApi },
-      unstubbed(CrucibleDialogService),
+      dialog
+        ? { provide: CrucibleDialogService, useValue: dialog }
+        : unstubbed(CrucibleDialogService),
       {
         provide: MselStore,
         useFactory: () => {
@@ -790,6 +794,51 @@ describe('MselTechniquesComponent', () => {
     await renderTechniques([T1059], [ENTERPRISE_RELEASE]);
 
     expect(attackSection().querySelector('.domain-tag')).toBeNull();
+  });
+
+  /**
+   * Verifies: the MSEL's creator can edit its techniques without the ManageMsels permission, and unticking a pooled
+   * technique then cancelling the removal leaves it ticked, as it is still in the pool.
+   * Interacts with: TechniquePoolComponent.canEditMsel (loggedInUserId), togglePoolItem, appModelCheckbox,
+   * CrucibleDialogService.confirm (cancelled).
+   * Data: T1059 in the pool; Enterprise ATT&CK 17.1 browsed; the MSEL created by the signed-in user; no grants.
+   */
+  it("lets the MSEL's creator edit, and keeps a technique ticked when its removal is cancelled", async () => {
+    const confirm = vi.fn(
+      () =>
+        ({ afterClosed: () => of(false) }) as ReturnType<
+          CrucibleDialogService['confirm']
+        >,
+    );
+    const { fixture, poolApi } = await renderTechniques(
+      [T1059],
+      [ENTERPRISE_RELEASE],
+      { 'rel-1': [T1059.technique] },
+      NO_MAPPINGS,
+      {},
+      {},
+      { confirm },
+    );
+    TestBed.inject(MselStore).update('msel-1', { createdBy: ME });
+    fixture.detectChanges();
+    fireEvent.click(
+      within(attackSection()).getByRole('button', { name: /Add Techniques/ }),
+    );
+    fixture.detectChanges();
+
+    const box = await within(attackSection()).findByRole('checkbox', {
+      name: 'Add T1059',
+    });
+    expect(box).toBeChecked();
+
+    fireEvent.click(box);
+    fixture.detectChanges();
+
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Remove Technique' }),
+    );
+    expect(box).toBeChecked();
+    expect(poolApi).not.toHaveProperty('deleteMselTechnique');
   });
 
   /**

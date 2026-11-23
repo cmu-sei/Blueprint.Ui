@@ -42,10 +42,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <div class="countermeasure">
                 @if (canEdit()) {
                   <mat-checkbox
+                    appModelCheckbox
                     class="add-check"
                     [checked]="isPooled(c)"
                     [disabled]="isPooled(c)"
-                    (change)="add(c)"
+                    (click)="add(c)"
                     [aria-label]="'Add ' + c.defensiveTechnique?.externalId"
                     [title]="
                       isPooled(c)

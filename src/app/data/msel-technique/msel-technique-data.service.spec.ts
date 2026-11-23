@@ -15,6 +15,8 @@ import { MselTechniqueDataService } from './msel-technique-data.service';
 import { MselCountermeasureDataService } from './msel-countermeasure-data.service';
 import { MselTechniqueQuery } from './msel-technique.query';
 import { TechniqueReleaseDataService } from 'src/app/data/technique-release/technique-release-data.service';
+import { TechniqueReleaseQuery } from 'src/app/data/technique-release/technique-release.query';
+import { LoadedCountermeasures } from './msel-countermeasure-data.service';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 
 function pooled(mselId: string, techniqueId: string): MselTechnique {
@@ -46,10 +48,12 @@ function setup() {
       return response;
     }),
   } satisfies ApiStub<MselTechniqueService>;
+  const releaseList = new Subject<never[]>();
   const releaseApi = {
     importTechniqueCountermeasures: vi.fn(() =>
       of<TechniqueCountermeasureImport>({ pairsStored: 3 }),
     ),
+    getTechniqueReleases: vi.fn(() => releaseList),
   } satisfies ApiStub<TechniqueReleaseService>;
   TestBed.configureTestingModule({
     providers: [
@@ -62,6 +66,8 @@ function setup() {
     query: TestBed.inject(MselTechniqueQuery),
     countermeasures: TestBed.inject(MselCountermeasureDataService),
     releases: TestBed.inject(TechniqueReleaseDataService),
+    releaseQuery: TestBed.inject(TechniqueReleaseQuery),
+    releaseList,
     mselApi,
     pools,
     answers,
@@ -69,7 +75,7 @@ function setup() {
 }
 
 function latest(service: MselCountermeasureDataService) {
-  let value: MselCountermeasures | undefined;
+  let value: LoadedCountermeasures | undefined;
   service.countermeasures$.subscribe((v) => (value = v)).unsubscribe();
   return value;
 }
@@ -152,6 +158,40 @@ describe('MselCountermeasureDataService', () => {
   });
 
   /**
+   * Verifies: a failed countermeasures read is marked as failed, so it is not shown as "nothing imported".
+   * Interacts with: MselTechniqueService.getMselCountermeasures (stub failing).
+   * Data: MSEL A, whose countermeasures read fails.
+   */
+  it('marks countermeasures that could not be read', () => {
+    const { countermeasures, answers } = setup();
+
+    countermeasures.load('msel-a');
+    answers[0].error(new Error('500'));
+
+    expect(latest(countermeasures)).toMatchObject({
+      techniqueReleaseId: null,
+      loadFailed: true,
+    });
+    expect(countermeasures.loading).toBe(false);
+  });
+
+  /**
+   * Verifies: unloading while a read is under way ends loading, and the late answer is dropped.
+   * Interacts with: unload, MselTechniqueService.getMselCountermeasures (stub).
+   * Data: MSEL A's read, unloaded before it answers.
+   */
+  it('ends loading when unloaded during a read', () => {
+    const { countermeasures, answers } = setup();
+
+    countermeasures.load('msel-a');
+    countermeasures.unload();
+    answers[0].next(answer('msel-a'));
+
+    expect(countermeasures.loading).toBe(false);
+    expect(latest(countermeasures)).toBeUndefined();
+  });
+
+  /**
    * Verifies: with no MSEL loaded, importing mappings asks for no countermeasures.
    * Interacts with: TechniqueReleaseDataService.importCountermeasures.
    * Data: no MSEL loaded.
@@ -162,5 +202,27 @@ describe('MselCountermeasureDataService', () => {
     releases.importCountermeasures('d3fend-1', new Blob(['{}'])).subscribe();
 
     expect(mselApi.getMselCountermeasures).not.toHaveBeenCalled();
+  });
+});
+
+describe('TechniqueReleaseDataService', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+  });
+
+  /**
+   * Verifies: a failed release list read ends loading, so the import buttons it disables come back.
+   * Interacts with: TechniqueReleaseService.getTechniqueReleases (stub failing), real TechniqueReleaseStore and Query.
+   * Data: a release list read that fails.
+   */
+  it('ends loading when the releases cannot be read', () => {
+    const { releases, releaseQuery, releaseList } = setup();
+
+    releases.load();
+    expect(releaseQuery.getValue().loading).toBe(true);
+    releaseList.error(new Error('500'));
+
+    expect(releaseQuery.getValue().loading).toBe(false);
+    expect(releaseQuery.getAll()).toEqual([]);
   });
 });

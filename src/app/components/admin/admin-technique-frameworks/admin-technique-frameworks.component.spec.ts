@@ -187,6 +187,47 @@ describe('AdminTechniqueFrameworksComponent', () => {
   });
 
   /**
+   * Verifies: a definition the API refuses does not stop the ones after it, and the administrator is told how many
+   * were created and which were not, and why.
+   * Interacts with: selectFile, TechniqueFrameworkService.createTechniqueFramework (stub refusing the second), SystemMessageService.
+   * Data: a file of three definitions, the second's domain already taken.
+   */
+  it('creates the rest of an imported file when one definition is refused', async () => {
+    const { frameworkApi, messages } = await renderFrameworks([]);
+    frameworkApi.createTechniqueFramework.mockImplementation(
+      (f: TechniqueFramework) =>
+        f.domain === 'attacks'
+          ? throwError(() => ({
+              error: { title: 'The domain attacks is already in use.' },
+              message: 'Http failure response: 409 Conflict',
+            }))
+          : of({ ...f, id: `fw-new-${f.domain}`, releaseCount: 0 }),
+    );
+    const third = { ...ONTOLOGY, name: 'More defences', domain: 'more' };
+
+    fireEvent.change(screen.getByTestId('definition-file'), {
+      target: {
+        files: [
+          new File(
+            [JSON.stringify([ONTOLOGY, BUNDLE, third])],
+            'frameworks.json',
+          ),
+        ],
+      },
+    });
+
+    await waitFor(() =>
+      expect(messages.displayMessage).toHaveBeenCalledWith(
+        'Import Incomplete',
+        '2 of 3 definitions were created. These were not:\n\nAttacks: The domain attacks is already in use.',
+      ),
+    );
+    expect(
+      frameworkApi.createTechniqueFramework.mock.calls.map((c) => c[0].domain),
+    ).toEqual(['defences', 'attacks', 'more']);
+  });
+
+  /**
    * Verifies: a definition downloads as the JSON an import reads, named for its domain.
    * Interacts with: export, URL.createObjectURL.
    * Data: the ontology framework.
@@ -218,8 +259,9 @@ describe('AdminTechniqueFrameworksComponent', () => {
   });
 
   /**
-   * Verifies: a definition the API refuses stays in the open dialog, so it is not entered again; once a save
-   * succeeds the dialog closes. The refusal reaches the app's error handler, as other saves' do.
+   * Verifies: a definition the API refuses stays in the open dialog, so it is not entered again, with its
+   * Advanced section open; once a save succeeds the dialog closes. The refusal reaches the app's error handler,
+   * as other saves' do.
    * Interacts with: TechniqueFrameworkService.updateTechniqueFramework (stub failing once), AdminTechniqueFrameworkDialogComponent.
    * Data: the Attacks definition, renamed; its first save refused.
    */
@@ -243,6 +285,10 @@ describe('AdminTechniqueFrameworksComponent', () => {
     expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue(
       'Attacks, renamed',
     );
+    // the refusal may be about the settings, so the Advanced section opens to show them
+    expect(
+      screen.getByRole('button', { name: 'Advanced (JSON)' }),
+    ).toHaveAttribute('aria-expanded', 'true');
 
     await user.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() =>

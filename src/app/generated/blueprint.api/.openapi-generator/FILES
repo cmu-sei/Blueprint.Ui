@@ -44,6 +44,7 @@ api/systemRoles.service.ts
 api/team.service.ts
 api/teamCompetency.service.ts
 api/teamUser.service.ts
+api/techniqueFramework.service.ts
 api/techniqueRelease.service.ts
 api/unit.service.ts
 api/unitUser.service.ts
@@ -132,7 +133,9 @@ model/invitation.ts
 model/invitationCreate.ts
 model/invitationEdit.ts
 model/itemStatus.ts
+model/jsonLdFormatOptions.ts
 model/layoutKind.ts
+model/mappingTargetMatch.ts
 model/memberInfo.ts
 model/memberTypes.ts
 model/methodAttributes.ts
@@ -216,6 +219,8 @@ model/steamfitterTask.ts
 model/steamfitterTaskAction.ts
 model/steamfitterTaskFields.ts
 model/steamfitterTaskTrigger.ts
+model/stixFormatOptions.ts
+model/stixGrouping.ts
 model/structLayoutAttribute.ts
 model/systemPermission.ts
 model/systemRole.ts
@@ -230,7 +235,16 @@ model/teamUser.ts
 model/technique.ts
 model/techniqueCountermeasure.ts
 model/techniqueCountermeasureImport.ts
+model/techniqueFileFormat.ts
+model/techniqueFramework.ts
+model/techniqueFrameworkMatch.ts
+model/techniqueFrameworkSettings.ts
+model/techniqueLink.ts
+model/techniqueLinkSource.ts
+model/techniqueMappingDefinition.ts
+model/techniqueMappingFormat.ts
 model/techniqueRelease.ts
+model/techniqueReleaseNotice.ts
 model/techniqueTactic.ts
 model/type.ts
 model/typeAttributes.ts

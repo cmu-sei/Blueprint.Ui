@@ -4,6 +4,7 @@
 import { Component, OnDestroy, inject, input } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { MatCheckbox } from '@angular/material/checkbox';
+import { ModelCheckboxDirective } from 'src/app/components/shared/model-checkbox/model-checkbox.directive';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { Subject } from 'rxjs';
@@ -11,10 +12,10 @@ import { takeUntil } from 'rxjs/operators';
 import {
   TechniqueCountermeasure,
   TechniqueRelease,
-  MselCountermeasures,
   MselTechniqueCountermeasures,
 } from 'src/app/generated/blueprint.api';
 import { TechniqueReleaseQuery } from 'src/app/data/technique-release/technique-release.query';
+import { LoadedCountermeasures } from 'src/app/data/msel-technique/msel-countermeasure-data.service';
 import { MselTechniqueDataService } from 'src/app/data/msel-technique/msel-technique-data.service';
 import { MselTechniqueQuery } from 'src/app/data/msel-technique/msel-technique.query';
 import {
@@ -35,7 +36,13 @@ export const TOP_COUNTERMEASURES = 3;
   selector: 'app-technique-countermeasures',
   templateUrl: './technique-countermeasures.component.html',
   styleUrls: ['./technique-countermeasures.component.scss'],
-  imports: [MatButton, MatCheckbox, MatIcon, MatTooltip],
+  imports: [
+    MatButton,
+    MatCheckbox,
+    ModelCheckboxDirective,
+    MatIcon,
+    MatTooltip,
+  ],
 })
 export class TechniqueCountermeasuresComponent implements OnDestroy {
   private mselTechniqueDataService = inject(MselTechniqueDataService);
@@ -48,7 +55,7 @@ export class TechniqueCountermeasuresComponent implements OnDestroy {
   /** The technique's countermeasures; undefined while they load or when the MSEL has none. */
   readonly group = input<MselTechniqueCountermeasures>(undefined);
   /** The whole answer, for the release it came from and whether it has mappings. */
-  readonly countermeasures = input<MselCountermeasures>(undefined);
+  readonly countermeasures = input<LoadedCountermeasures>(undefined);
   readonly canEdit = input<boolean>(false);
   /** Whether any defensive release is imported. */
   readonly hasDefensiveRelease = input<boolean>(false);
@@ -100,6 +107,9 @@ export class TechniqueCountermeasuresComponent implements OnDestroy {
     if (!all) {
       return 'Loading countermeasures...';
     }
+    if (all.loadFailed) {
+      return 'The countermeasures could not be loaded. Reload the page to try again.';
+    }
     if (!all.techniqueReleaseId) {
       return this.hasDefensiveRelease()
         ? 'No mappings have been imported. An administrator imports them on the Technique Frameworks page.'
@@ -135,6 +145,7 @@ export class TechniqueCountermeasuresComponent implements OnDestroy {
     return this.defensivePoolIds.has(c.defensiveTechniqueId);
   }
 
+  /** Adds the countermeasure to the pool; its checkbox ticks once the add lands. */
   add(c: TechniqueCountermeasure) {
     if (!this.isPooled(c)) {
       this.mselTechniqueDataService.add(this.mselId(), c.defensiveTechniqueId);

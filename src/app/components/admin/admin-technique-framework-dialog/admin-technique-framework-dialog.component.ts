@@ -94,7 +94,11 @@ export class AdminTechniqueFrameworkDialogComponent {
     { value: TechniqueFileFormat.JsonLdOntology, label: 'JSON-LD ontology' },
   ];
 
-  /** Whether the Advanced section is open; it also opens, and stays open, while the settings are in error. */
+  /**
+   * Whether the Advanced section is open. It also opens while the settings are in error, and its header is
+   * disabled then, so it cannot be closed over the error. The page opens it when a save is refused, as the
+   * settings may be why.
+   */
   advancedOpen = false;
 
   get form(): TechniqueFrameworkForm {
