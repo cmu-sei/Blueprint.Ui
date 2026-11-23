@@ -490,6 +490,37 @@ describe('MselPlaybookComponent', () => {
   });
 
   /**
+   * Verifies: each printed MSEL page carries the MSEL's marking above and below it, as the page's own view does; a MSEL
+   * with no marking prints none.
+   * Interacts with: real MselPageQuery (seeded), markingBanner, MarkingBannerComponent.
+   * Data: the two playbook pages of a MSEL marked SECRET//NOFORN, then of one with no marking.
+   */
+  it.each([
+    {
+      label: 'a SECRET classification',
+      msel: {
+        articleMarking: 'Classification',
+        articleMarkingText: 'SECRET//NOFORN',
+      },
+      banners: 2,
+    },
+    { label: 'no marking', msel: {}, banners: 0 },
+  ])('prints each page with $label', async ({ msel, banners }) => {
+    await renderPlaybook(true, { pages: PAGES, msel });
+
+    const roe = within(screen.getByLabelText('Rules of Engagement'));
+    // by selector: the print-only sections are hidden from role queries
+    const marks = roe
+      .getByText('No production systems.')
+      .closest('section')
+      .querySelectorAll('[aria-label="Marking"]');
+    expect(marks).toHaveLength(banners);
+    if (banners) {
+      expect(marks[0]).toHaveTextContent('SECRET//NOFORN');
+    }
+  });
+
+  /**
    * Verifies: a page whose content opens with a heading of its own name, as a drafted profiles page does, prints that
    * heading once, not the page name above it as well; a page without one still gets the name.
    * Interacts with: real MselPageQuery (seeded), opensWithHeading.
