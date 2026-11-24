@@ -41,8 +41,7 @@ import { Router, RouterLink } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import { ComnSettingsService } from '@cmusei/crucible-common';
-import { UserDataService } from 'src/app/data/user/user-data.service';
-import { UserQuery, CurrentUserQuery } from 'src/app/data/user/user.query';
+import { CurrentUserQuery } from 'src/app/data/user/user.query';
 import { SignalRService } from 'src/app/services/signalr.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -50,7 +49,7 @@ import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MatDialog } from '@angular/material/dialog';
 import { MselImportDialogComponent } from 'src/app/components/msel-import-dialog/msel-import-dialog.component';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
-import { User, SystemPermission } from 'src/app/generated/blueprint.api';
+import { SystemPermission } from 'src/app/generated/blueprint.api';
 import { MselItemStatus } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MatIconButton } from '@angular/material/button';
@@ -107,8 +106,6 @@ import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 export class MselListComponent implements OnDestroy, OnInit {
   dialogService = inject(CrucibleDialogService);
   private router = inject(Router);
-  private userDataService = inject(UserDataService);
-  private userQuery = inject(UserQuery);
   private currentUserQuery = inject(CurrentUserQuery);
   private settingsService = inject(ComnSettingsService);
   private mselDataService = inject(MselDataService);
@@ -152,7 +149,6 @@ export class MselListComponent implements OnDestroy, OnInit {
     'dateModified',
   ];
   imageFilePath = '';
-  userList: User[] = [];
   currentUserName = '';
   selectedMselType = 'all';
   selectedMselStatus = 'all';
@@ -179,7 +175,6 @@ export class MselListComponent implements OnDestroy, OnInit {
       } else {
         this.mselDataService.loadMine();
       }
-      this.userDataService.load().pipe(take(1)).subscribe();
     });
   }
 
@@ -199,15 +194,6 @@ export class MselListComponent implements OnDestroy, OnInit {
         }
         this.changeDetectorRef.markForCheck();
       });
-    // subscribe to users
-    this.userQuery
-      .selectAll()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((users) => {
-        this.userList = users;
-      });
-    // load the users
-    this.userDataService.load().pipe(take(1)).subscribe();
     // Subscribe to current user
     this.currentUserQuery
       .select()
@@ -489,11 +475,6 @@ export class MselListComponent implements OnDestroy, OnInit {
     this.router.navigate([url], {
       queryParamsHandling: 'merge',
     });
-  }
-
-  getUserName(userId: string) {
-    const user = this.userList.find((u) => u.id === userId);
-    return user ? user.name : 'System';
   }
 
   adminLoadAllMsels() {

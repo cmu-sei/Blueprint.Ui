@@ -10,8 +10,7 @@ import {
   CrucibleLandingBackgroundDirective,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
-import { UserQuery } from 'src/app/data/user/user.query';
-import { Msel, User } from 'src/app/generated/blueprint.api';
+import { Msel } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
@@ -42,7 +41,6 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 })
 export class JoinComponent implements OnDestroy, OnInit {
   private userDataService = inject(UserDataService);
-  private userQuery = inject(UserQuery);
   private settingsService = inject(ComnSettingsService);
   private mselDataService = inject(MselDataService);
   private mselImageDataService = inject(MselImageDataService);
@@ -56,7 +54,6 @@ export class JoinComponent implements OnDestroy, OnInit {
   joinMselList: Msel[] = [];
   joiningMselId = '';
   imageFilePath = '';
-  userList: User[] = [];
   topbarText = 'Join Event';
   hideTopbar = false;
   topbarColor = '#ef3a47';
@@ -102,15 +99,6 @@ export class JoinComponent implements OnDestroy, OnInit {
     // Set current user for topbar
     this.userDataService.setCurrentUser();
 
-    // subscribe to users
-    this.userQuery
-      .selectAll()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((users) => {
-        this.userList = users;
-      });
-    // load the users
-    this.userDataService.load().pipe(take(1)).subscribe();
     // load the join MSELs
     this.mselDataService
       .getMyJoinMsels()

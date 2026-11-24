@@ -23,7 +23,6 @@ import {
   MselService,
   SystemPermission,
   SystemPermissionsService,
-  User,
   UserService,
 } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
@@ -73,9 +72,8 @@ async function renderDashboard(
       overrides.buildMsels ?? (() => of(structuredClone(build))),
     ),
   } satisfies ApiStub<MselService>;
-  const userApi = {
-    getUsers: vi.fn(() => of<User[]>([])),
-  } satisfies ApiStub<UserService>;
+  // empty, so a call to GET users (which needs ViewUsers or ViewMsels) fails the test
+  const userApi = {} satisfies ApiStub<UserService>;
   // DashboardComponent loads the permissions itself in ngOnInit, so the real
   // service is provided over the stubbed endpoint, without priming it.
   const permissionApis = permissionApiStubs({ system: permissions });

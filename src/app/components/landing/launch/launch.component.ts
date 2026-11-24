@@ -6,9 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import { ComnSettingsService, ComnAuthService } from '@cmusei/crucible-common';
-import { UserDataService } from 'src/app/data/user/user-data.service';
-import { UserQuery } from 'src/app/data/user/user.query';
-import { Msel, User } from 'src/app/generated/blueprint.api';
+import { Msel } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { PlayerApplicationDataService } from 'src/app/data/player-application/player-application-data.service';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
@@ -49,8 +47,6 @@ import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
   ],
 })
 export class LaunchComponent implements OnDestroy, OnInit {
-  private userDataService = inject(UserDataService);
-  private userQuery = inject(UserQuery);
   private authService = inject(ComnAuthService);
   private settingsService = inject(ComnSettingsService);
   private mselDataService = inject(MselDataService);
@@ -64,7 +60,6 @@ export class LaunchComponent implements OnDestroy, OnInit {
 
   launchMselList: Msel[] = [];
   imageFilePath = '';
-  userList: User[] = [];
   topbarText = 'Start Event';
   hideTopbar = false;
   topbarColor = '#ef3a47';
@@ -87,19 +82,9 @@ export class LaunchComponent implements OnDestroy, OnInit {
     );
     this.titleService.setTitle(this.appTitle);
     // Set the display settings from config file
-    // subscribe to users
-    this.userQuery
-      .selectAll()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((users) => {
-        this.userList = users;
-      });
-    // load the users
-    this.userDataService.load().pipe(take(1)).subscribe();
     // a new hub connection missed what was broadcast while the old one was down, which can include
     // the launched MSEL's integration status
     reloadOnReconnect(() => {
-      this.userDataService.load().pipe(take(1)).subscribe();
       if (this.launchedMsel?.id) {
         this.mselDataService.loadById(this.launchedMsel.id);
       }
