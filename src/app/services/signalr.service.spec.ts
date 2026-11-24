@@ -813,6 +813,27 @@ describe('SignalRService', () => {
     });
 
     /**
+     * Verifies: restarting the connection for a renewed token doesn't empty the list, which would flash
+     * the bar empty on every token renewal.
+     * Interacts with: ComnAuthService.user$ (stub subject), FakeHubConnection.closeCallbacks, SignalRService.actors$.
+     * Data: Alice present; the user emits again (a renewal) and the old connection reports closed.
+     */
+    it('keeps presence when the connection is restarted for a renewed token', async () => {
+      const { service, hub, user$ } = await connect();
+      service.selectMsel('msel-1');
+      await flush();
+      hub.trigger('PresenceChanged', state('msel-1', 1, ada));
+
+      user$.next({ profile: { sub: 'user-9' } });
+      hub.closeCallbacks.forEach((cb) => cb());
+      await flush();
+
+      expect(
+        (await firstValueFrom(service.actors$)).map((a) => a.name),
+      ).toEqual(['Alice']);
+    });
+
+    /**
      * Verifies: clearPresence tells the hub the user left the MSEL and empties presence.
      * Interacts with: FakeHubConnection.invoke, SignalRService.clearPresence / selectMsel, actors$.
      * Data: msel-1 selected in the home area with Bob present, then cleared.

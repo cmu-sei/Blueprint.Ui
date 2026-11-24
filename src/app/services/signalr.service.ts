@@ -104,6 +104,7 @@ export class SignalRService implements OnDestroy {
   private token = '';
   private unsubscribe$ = new Subject();
   private presenceStore = inject(PresenceStore);
+  private restartingConnection = false;
   private myUserId = '';
   readonly actors$ = this.presenceStore.actors$;
 
@@ -135,7 +136,7 @@ export class SignalRService implements OnDestroy {
     // A connection that has been replaced says nothing about the current one.
     const connection = this.hubConnection;
     const connectionLost = () => {
-      if (connection === this.hubConnection) {
+      if (connection === this.hubConnection && !this.restartingConnection) {
         this.presenceStore.clear();
       }
     };
@@ -229,7 +230,11 @@ export class SignalRService implements OnDestroy {
 
   private reconnect() {
     if (this.hubConnection != null) {
+      // A restart on purpose, such as for a renewed token, loses nothing: the list stays on screen and the
+      // new connection's answer replaces it.
+      this.restartingConnection = true;
       this.hubConnection.stop().then(() => {
+        this.restartingConnection = false;
         this.hubConnection.baseUrl = this.getHubUrlWithAuth();
         this.connectionPromise = this.hubConnection.start();
         this.connectionPromise.then(() => {
