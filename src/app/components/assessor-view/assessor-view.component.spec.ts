@@ -1630,6 +1630,41 @@ describe('AssessorViewComponent', () => {
     });
 
     /**
+     * Verifies: an assertion in the shape the API writes now, with the learner as the actor, the assessor as the
+     * instructor and the rating in the Crucible assessment extension, names its assessor and still reads as a
+     * rating; the learner is not named as an assessor.
+     * Interacts with: buildAssessmentReport (assessors, ratings).
+     * Data: STATEMENTS rewritten to that shape.
+     */
+    it('reads the assessor from the instructor and the rating from the extension', async () => {
+      const current = STATEMENTS.map((s) => {
+        const { result, ...rest } = s;
+        return {
+          ...rest,
+          actor: { name: 'A. Learner' },
+          context: {
+            ...s.context,
+            instructor: { name: 'J. Doe' },
+            extensions: {
+              ...s.context.extensions,
+              'https://crucible.sei.cmu.edu/xapi/ext/assessment': {
+                raw: result.score.raw,
+                ...(result.response ? { comment: result.response } : {}),
+              },
+            },
+          },
+        };
+      });
+
+      await printReport(current);
+
+      const facts = section('Cover').querySelector('.cover-facts');
+      expect(texts(facts, 'dd')).toContain('J. Doe');
+      expect(texts(facts, 'dd')).not.toContain('A. Learner');
+      expect(document.body.textContent).toContain('Isolated both hosts');
+    });
+
+    /**
      * Verifies: the report titles injects from their values even when the Title field is not one the assessors see.
      * Interacts with: injectTitle.
      * Data: the Title field not assessor-visible.

@@ -156,6 +156,8 @@ export interface XApiStatement {
   timestamp?: string;
   context?: {
     team?: { name?: string; account?: { name?: string } };
+    /** The assessor, on an assertion whose actor is the learner assessed. */
+    instructor?: XApiAgent;
     platform?: string;
     extensions?: Record<string, any>;
     contextActivities?: {
@@ -1935,13 +1937,21 @@ export class AssessorViewComponent
     });
     if (!mc?.competency) return null;
 
+    const rating = stmt.context?.extensions?.[
+      'https://crucible.sei.cmu.edu/xapi/ext/assessment'
+    ] as { raw?: number; comment?: string } | undefined;
+
     return {
       contextKey,
       competency: mc.competency,
       teamId: stmt.context?.team?.account?.name || '',
-      scoreRaw: stmt.result?.score?.raw ?? null,
-      comment: stmt.result?.response || '',
-      assessor: agentName(stmt.actor),
+      // The rating is in a Crucible extension (the TLA "asserted" template excludes result); an assertion
+      // made before that kept it in result.
+      scoreRaw: rating?.raw ?? stmt.result?.score?.raw ?? null,
+      comment: rating?.comment ?? stmt.result?.response ?? '',
+      // The actor is the learner assessed and the assessor is the instructor; an assertion made before
+      // that named the assessor as the actor.
+      assessor: agentName(stmt.context?.instructor) || agentName(stmt.actor),
       timestamp: stmt.timestamp || '',
     };
   }
