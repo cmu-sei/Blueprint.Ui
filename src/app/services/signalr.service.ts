@@ -112,6 +112,7 @@ export class SignalRService implements OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((user) => {
         this.myUserId = user?.profile?.sub ?? '';
+        this.presenceStore.setMyUserId(this.myUserId);
         this.reconnect();
       });
   }
@@ -129,13 +130,20 @@ export class SignalRService implements OnDestroy {
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
-    // A new connection: the server replays nothing sent while the old one was down, so once it has
-    // rejoined its groups the pages reload what they show.
     // Presence is only as good as the connection; selecting the MSEL again refills it. Anyone who leaves
     // while this client is away would otherwise stay listed, and a restarted API numbers from the start.
-    this.hubConnection.onreconnecting(() => this.presenceStore.clear());
-    this.hubConnection.onclose(() => this.presenceStore.clear());
+    // A connection that has been replaced says nothing about the current one.
+    const connection = this.hubConnection;
+    const connectionLost = () => {
+      if (connection === this.hubConnection) {
+        this.presenceStore.clear();
+      }
+    };
+    connection.onreconnecting(connectionLost);
+    connection.onclose(connectionLost);
 
+    // A new connection: the server replays nothing sent while the old one was down, so once it has
+    // rejoined its groups the pages reload what they show.
     this.hubConnection.onreconnected(() => {
       this.join().then(() => this.hubReconnectService.announceReconnected());
     });
@@ -188,16 +196,19 @@ export class SignalRService implements OnDestroy {
       setTimeout(() => this.selectMsel(mselId), 500);
     } else if (this.isJoined) {
       if (this.applicationArea !== ApplicationArea.admin) {
-        this.presenceStore.clear();
+        // Selecting the MSEL that is already open keeps the list, and its colours, as they are.
+        if (mselId !== this.mselId) {
+          this.presenceStore.clear();
+        }
         this.mselId = mselId;
-        this.hubConnection
-          .invoke('selectMsel', [mselId])
-          .then((state: PresenceState) => {
+        this.hubConnection.invoke('selectMsel', [mselId]).then(
+          (state: PresenceState) => {
             this.presenceStore.apply(state, this.mselId, this.myUserId);
-          })
-          .catch(() => {
+          },
+          () => {
             // Ignore errors during rapid navigation
-          });
+          },
+        );
       }
     }
   }

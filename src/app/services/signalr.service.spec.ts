@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { ProviderToken } from '@angular/core';
-import { Subject, of } from 'rxjs';
+import { Subject, firstValueFrom, of } from 'rxjs';
 import * as signalR from '@microsoft/signalr';
 import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
 import { MselUnit, MselUnitService } from 'src/app/generated/blueprint.api';
@@ -765,6 +765,51 @@ describe('SignalRService', () => {
 
       hub.closeCallbacks.forEach((cb) => cb(new Error('closed')));
       expect(actors.at(-1)).toEqual([]);
+    });
+
+    /**
+     * Verifies: selecting the MSEL that is already open keeps the list, and the colours the users have.
+     * Interacts with: FakeHubConnection.invoke ('selectMsel' answers the same state), SignalRService.selectMsel.
+     * Data: Alice and Bob present on msel-1; msel-1 is selected again.
+     */
+    it('selecting the open MSEL again keeps colours', async () => {
+      const { service, hub } = await connect();
+      hub.invoke.mockImplementation((method) =>
+        Promise.resolve(
+          method === 'selectMsel' ? state('msel-1', 1, ada, bob) : undefined,
+        ),
+      );
+      const actors = recordEmissions(service.actors$);
+      service.selectMsel('msel-1');
+      await flush();
+      hub.trigger('PresenceChanged', state('msel-1', 2, bob));
+      const before = actors.at(-1);
+
+      service.selectMsel('msel-1');
+      await flush();
+
+      expect(before.map((a) => `${a.name}:${a.color}`)).toEqual(['Bob:accent']);
+      expect(actors.at(-1)).toEqual(before);
+    });
+
+    /**
+     * Verifies: a connection that has been replaced can't clear the presence of the current one when it
+     * finally closes.
+     * Interacts with: FakeHubConnection.closeCallbacks, SignalRService.startConnection.
+     * Data: a home connection with Alice present, replaced by an admin one; the home one closes.
+     */
+    it("ignores a replaced connection's close", async () => {
+      const { service, hub } = await connect();
+      service.selectMsel('msel-1');
+      await flush();
+      hub.trigger('PresenceChanged', state('msel-1', 1, ada));
+
+      await service.startConnection(ApplicationArea.admin);
+      hub.closeCallbacks.forEach((cb) => cb(new Error('closed')));
+
+      expect(
+        (await firstValueFrom(service.actors$)).map((a) => a.name),
+      ).toEqual(['Alice']);
     });
 
     /**

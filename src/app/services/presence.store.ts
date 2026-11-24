@@ -43,6 +43,8 @@ export class PresenceStore {
 
   private version = -1;
   private colors = new Map<string, string>();
+  private users: PresentUser[] = [];
+  private me = '';
 
   /** Shows `state`, unless it is for another MSEL than `openMselId` or no newer than what is shown. */
   apply(state: PresenceState, openMselId: string, myUserId: string) {
@@ -56,10 +58,33 @@ export class PresenceStore {
     }
 
     this.version = state.version;
-    const others = (state.users ?? []).filter(
+    this.users = state.users ?? [];
+    this.me = myUserId;
+    this.publish();
+  }
+
+  /** Changes who the signed-in user is, which can become known after the first state arrives. */
+  setMyUserId(myUserId: string) {
+    if (myUserId !== this.me) {
+      this.me = myUserId;
+      this.publish();
+    }
+  }
+
+  clear() {
+    this.version = -1;
+    this.users = [];
+    this.colors.clear();
+
+    if (this.actorsSubject.getValue().length > 0) {
+      this.actorsSubject.next([]);
+    }
+  }
+
+  private publish() {
+    const others = this.users.filter(
       (user, index, all) =>
-        user.id !== myUserId &&
-        all.findIndex((x) => x.id === user.id) === index,
+        user.id !== this.me && all.findIndex((x) => x.id === user.id) === index,
     );
     const present = new Set(others.map((x) => x.id));
 
@@ -67,6 +92,10 @@ export class PresenceStore {
       if (!present.has(id)) {
         this.colors.delete(id);
       }
+    }
+
+    if (others.length === 0 && this.actorsSubject.getValue().length === 0) {
+      return;
     }
 
     this.actorsSubject.next(
@@ -77,15 +106,6 @@ export class PresenceStore {
         color: this.colorFor(user.id),
       })),
     );
-  }
-
-  clear() {
-    this.version = -1;
-    this.colors.clear();
-
-    if (this.actorsSubject.getValue().length > 0) {
-      this.actorsSubject.next([]);
-    }
   }
 
   private colorFor(id: string): string {

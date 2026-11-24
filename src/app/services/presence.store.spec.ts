@@ -110,4 +110,18 @@ describe('PresenceStore', () => {
       'primary',
     ]);
   });
+
+  /**
+   * Verifies: when the signed-in user only becomes known after a state arrived, they are taken out of the
+   * list then, not at the next update.
+   * Data: Me and Ada listed with no user id known; the id becomes u1.
+   */
+  it('hides the signed-in user once they are known', async () => {
+    store.apply(state(1, me, ada), 'm1', '');
+    expect(await names()).toEqual(['Me:primary', 'Ada:accent']);
+
+    store.setMyUserId('u1');
+
+    expect(await names()).toEqual(['Ada:accent']);
+  });
 });
