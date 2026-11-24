@@ -834,6 +834,47 @@ describe('SignalRService', () => {
     });
 
     /**
+     * Verifies: after an intentional restart the next state is taken whatever its version, so a restarted API
+     * that numbers from the start isn't ignored, while the list stays on screen until then.
+     * Interacts with: ComnAuthService.user$ (stub subject), FakeHubConnection.trigger, SignalRService.actors$.
+     * Data: Alice present at version 7; a renewal; the answer then is version 1 with Bob.
+     */
+    it('takes a lower version after an intentional restart', async () => {
+      const { service, hub, user$ } = await connect();
+      service.selectMsel('msel-1');
+      await flush();
+      hub.trigger('PresenceChanged', state('msel-1', 7, ada));
+
+      user$.next({ profile: { sub: 'user-9' } });
+      await flush();
+      hub.trigger('PresenceChanged', state('msel-1', 1, bob));
+
+      expect(
+        (await firstValueFrom(service.actors$)).map((a) => a.name),
+      ).toEqual(['Bob']);
+    });
+
+    /**
+     * Verifies: a restart whose start fails drops the list, since a failed start never reports a close.
+     * Interacts with: ComnAuthService.user$ (stub subject), FakeHubConnection.start (rejects), captureUnhandledRejections.
+     * Data: Alice present; a renewal; the hub refuses to start.
+     */
+    it('drops presence when an intentional restart fails to start', async () => {
+      const unhandled = captureUnhandledRejections();
+      const { service, hub, user$ } = await connect();
+      service.selectMsel('msel-1');
+      await flush();
+      hub.trigger('PresenceChanged', state('msel-1', 1, ada));
+      hub.start.mockRejectedValueOnce(new Error('start failed'));
+
+      user$.next({ profile: { sub: 'user-9' } });
+      await flush();
+
+      expect(await firstValueFrom(service.actors$)).toEqual([]);
+      expect(unhandled).toHaveLength(1);
+    });
+
+    /**
      * Verifies: clearPresence tells the hub the user left the MSEL and empties presence.
      * Interacts with: FakeHubConnection.invoke, SignalRService.clearPresence / selectMsel, actors$.
      * Data: msel-1 selected in the home area with Bob present, then cleared.

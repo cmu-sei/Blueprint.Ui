@@ -71,6 +71,14 @@ export class PresenceStore {
     }
   }
 
+  /**
+   * Accepts the next state whatever its version, keeping what is shown until it arrives: for a connection
+   * restarted on purpose, whose new server may number from the start.
+   */
+  forgetVersion() {
+    this.version = -1;
+  }
+
   clear() {
     this.version = -1;
     this.users = [];

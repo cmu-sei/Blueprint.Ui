@@ -231,24 +231,34 @@ export class SignalRService implements OnDestroy {
   private reconnect() {
     if (this.hubConnection != null) {
       // A restart on purpose, such as for a renewed token, loses nothing: the list stays on screen and the
-      // new connection's answer replaces it.
+      // new connection's answer, whatever its version, replaces it.
       this.restartingConnection = true;
       this.hubConnection.stop().then(() => {
         this.restartingConnection = false;
+        this.presenceStore.forgetVersion();
         this.hubConnection.baseUrl = this.getHubUrlWithAuth();
         this.connectionPromise = this.hubConnection.start();
-        this.connectionPromise.then(() => {
-          if (
-            this.hubConnection.state !== signalR.HubConnectionState.Connected
-          ) {
-            setTimeout(() => this.reconnect(), 500);
-          } else {
-            // Restarting replaced the connection too, so anything sent in between was missed.
-            this.join().then(() =>
-              this.hubReconnectService.announceReconnected(),
-            );
-          }
-        });
+        this.connectionPromise.then(
+          () => {
+            if (
+              this.hubConnection.state !== signalR.HubConnectionState.Connected
+            ) {
+              // Not back: what is shown can't be trusted any longer.
+              this.presenceStore.clear();
+              setTimeout(() => this.reconnect(), 500);
+            } else {
+              // Restarting replaced the connection too, so anything sent in between was missed.
+              this.join().then(() =>
+                this.hubReconnectService.announceReconnected(),
+              );
+            }
+          },
+          (error: unknown) => {
+            // A failed start doesn't report a close, so what is shown has to be dropped here.
+            this.presenceStore.clear();
+            throw error;
+          },
+        );
       });
     }
   }
