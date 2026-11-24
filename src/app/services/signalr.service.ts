@@ -105,6 +105,7 @@ export class SignalRService implements OnDestroy {
   private unsubscribe$ = new Subject();
   private presenceStore = inject(PresenceStore);
   private restartingConnection = false;
+  private restartCount = 0;
   private myUserId = '';
   readonly actors$ = this.presenceStore.actors$;
 
@@ -233,6 +234,7 @@ export class SignalRService implements OnDestroy {
       // A restart on purpose, such as for a renewed token, loses nothing: the list stays on screen and the
       // new connection's answer, whatever its version, replaces it.
       this.restartingConnection = true;
+      const restart = ++this.restartCount;
       this.hubConnection.stop().then(() => {
         this.restartingConnection = false;
         this.presenceStore.forgetVersion();
@@ -254,8 +256,11 @@ export class SignalRService implements OnDestroy {
             }
           },
           (error: unknown) => {
-            // A failed start doesn't report a close, so what is shown has to be dropped here.
-            this.presenceStore.clear();
+            // A failed start doesn't report a close, so what is shown has to be dropped here, unless a
+            // later restart has taken over.
+            if (restart === this.restartCount) {
+              this.presenceStore.clear();
+            }
             throw error;
           },
         );

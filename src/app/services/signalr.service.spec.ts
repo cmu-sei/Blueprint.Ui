@@ -875,6 +875,40 @@ describe('SignalRService', () => {
     });
 
     /**
+     * Verifies: a restart that failed after a later one began can't drop the presence the later one is
+     * keeping.
+     * Interacts with: ComnAuthService.user$ (stub subject), FakeHubConnection.start (first rejects late), SignalRService.actors$.
+     * Data: two renewals in a row; the first one's start rejects after the second began.
+     */
+    it("a superseded restart's failure leaves presence alone", async () => {
+      captureUnhandledRejections();
+      const { service, hub, user$ } = await connect();
+      service.selectMsel('msel-1');
+      await flush();
+      hub.trigger('PresenceChanged', state('msel-1', 1, ada));
+      let failFirst!: (error: Error) => void;
+      hub.start
+        .mockImplementationOnce(
+          () => new Promise<void>((_, reject) => (failFirst = reject)),
+        )
+        .mockImplementationOnce(() => {
+          hub.state = signalR.HubConnectionState.Connected;
+          return Promise.resolve();
+        });
+
+      user$.next({ profile: { sub: 'user-9' } });
+      await flush();
+      user$.next({ profile: { sub: 'user-9' } });
+      await flush();
+      failFirst(new Error('first start failed'));
+      await flush();
+
+      expect(
+        (await firstValueFrom(service.actors$)).map((a) => a.name),
+      ).toEqual(['Alice']);
+    });
+
+    /**
      * Verifies: clearPresence tells the hub the user left the MSEL and empties presence.
      * Interacts with: FakeHubConnection.invoke, SignalRService.clearPresence / selectMsel, actors$.
      * Data: msel-1 selected in the home area with Bob present, then cleared.
