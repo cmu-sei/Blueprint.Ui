@@ -9,11 +9,7 @@ import { Subject, of } from 'rxjs';
 import * as signalR from '@microsoft/signalr';
 import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
 import { MselUnit, MselUnitService } from 'src/app/generated/blueprint.api';
-import {
-  ApplicationArea,
-  PresenceActor,
-  SignalRService,
-} from './signalr.service';
+import { ApplicationArea, SignalRService } from './signalr.service';
 import { HubReconnectService } from './hub-reconnect.service';
 import { CardQuery } from '../data/card/card.query';
 import { CatalogQuery } from '../data/catalog/catalog.query';
@@ -53,6 +49,15 @@ import {
 // Set in beforeEach: every HubConnectionBuilder.build() returns a FakeHubConnection.
 let hubs: ReturnType<typeof mockHubConnectionBuilder>;
 const builtUrls = () => hubs.withUrl.mock.calls.map(([url]) => url);
+
+/** A presence state as the hub sends it. */
+function state(
+  mselId: string,
+  version: number,
+  ...users: { id: string; name: string }[]
+) {
+  return { mselId, version, users };
+}
 
 function setup() {
   const user$ = new Subject<unknown>();
@@ -251,7 +256,10 @@ describe('SignalRService', () => {
     it('leave exits the area and clears presence', async () => {
       const { service, hub } = await connect();
       const actors = recordEmissions(service.actors$);
-      hub.trigger('PresenceGreeted', { id: 'user-2', name: 'Bob' });
+      hub.trigger(
+        'PresenceChanged',
+        state('msel-1', 1, { id: 'user-2', name: 'Bob' }),
+      );
 
       service.leave();
 
@@ -350,8 +358,8 @@ describe('SignalRService', () => {
 
     /**
      * Verifies: a hub call the service fires without a .catch leaves an unhandled rejection when the hub rejects it (current behavior).
-     * Interacts with: FakeHubConnection with rejectInvokes (only the named method rejects), SignalRService.join / leave and the PresenceArrived handler, captureUnhandledRejections.
-     * Data: the hub rejects Join, Leave or Greet with "hub call failed"; every other invoke resolves.
+     * Interacts with: FakeHubConnection with rejectInvokes (only the named method rejects), SignalRService.join / leave, captureUnhandledRejections.
+     * Data: the hub rejects Join or Leave with "hub call failed"; every other invoke resolves.
      */
     it.each([
       {
@@ -373,18 +381,6 @@ describe('SignalRService', () => {
           const { service, hub } = await connect();
           const calls = rejectInvokes(hub, failure, ['Leave']);
           service.leave();
-          return calls;
-        },
-      },
-      {
-        method: 'the PresenceArrived handler',
-        hubMethod: 'Greet',
-        act: async () => {
-          const { service, hub } = await connect();
-          service.selectMsel('msel-1');
-          await flush();
-          const calls = rejectInvokes(hub, failure, ['Greet']);
-          hub.trigger('PresenceArrived', { id: 'user-3', name: 'Carol' });
           return calls;
         },
       },
@@ -642,22 +638,21 @@ describe('SignalRService', () => {
   });
 
   describe('presence', () => {
-    const colorsOf = (list: PresenceActor[]) =>
-      list.map((a) => `${a.name}:${a.color}`);
+    const ada = { id: 'user-1', name: 'Alice' };
+    const bob = { id: 'user-2', name: 'Bob' };
 
     /**
-     * Verifies: selecting an MSEL tells the hub, then seeds presence from GetPresence with colors assigned in arrival order.
-     * Interacts with: FakeHubConnection.invoke ('selectMsel', 'GetPresence'), SignalRService.actors$.
-     * Data: GetPresence returns Alice and Bob for msel-1.
+     * Verifies: selecting an MSEL tells the hub, and the answer, everyone present, becomes the list with
+     * colours assigned in order.
+     * Interacts with: FakeHubConnection.invoke ('selectMsel'), SignalRService.actors$.
+     * Data: selectMsel answers Alice and Bob for msel-1.
      */
     it('selectMsel announces the MSEL and loads current presence', async () => {
       const { service, hub } = await connect();
-      const presence = [
-        { id: 'user-1', name: 'Alice' },
-        { id: 'user-2', name: 'Bob' },
-      ];
       hub.invoke.mockImplementation((method) =>
-        Promise.resolve(method === 'GetPresence' ? presence : undefined),
+        Promise.resolve(
+          method === 'selectMsel' ? state('msel-1', 1, ada, bob) : undefined,
+        ),
       );
       const actors = recordEmissions(service.actors$);
 
@@ -665,57 +660,111 @@ describe('SignalRService', () => {
       await flush();
 
       expect(hub.invoke).toHaveBeenCalledWith('selectMsel', ['msel-1']);
-      expect(hub.invoke).toHaveBeenCalledWith('GetPresence', 'msel-1');
-      expect(colorsOf(actors.at(-1))).toEqual(['Alice:primary', 'Bob:accent']);
+      expect(actors.at(-1).map((a) => `${a.name}:${a.color}`)).toEqual([
+        'Alice:primary',
+        'Bob:accent',
+      ]);
       expect(actors.at(-1).every((a) => a.online)).toBe(true);
     });
 
     /**
-     * Verifies: a newcomer is added and greeted back, a greeting updates an existing actor in place, and a departure removes the actor.
-     * Interacts with: FakeHubConnection.trigger (PresenceArrived/Greeted/Departed) and invoke ('Greet'), SignalRService.actors$.
-     * Data: msel-1 selected; Carol arrives, Carol greets under a new display name, Dave greets, Carol departs.
+     * Verifies: PresenceChanged replaces the list with the state it carries, and the hub is not asked
+     * for anything else; there is no greeting back.
+     * Interacts with: FakeHubConnection.trigger, SignalRService.actors$.
+     * Data: msel-1 selected; states at versions 2 and 3.
      */
-    it('tracks arrivals, greetings and departures', async () => {
+    it('PresenceChanged replaces the list', async () => {
       const { service, hub } = await connect();
       service.selectMsel('msel-1');
       await flush();
       const actors = recordEmissions(service.actors$);
 
-      hub.trigger('PresenceArrived', { id: 'user-3', name: 'Carol' });
-      expect(hub.invoke).toHaveBeenCalledWith('Greet', 'msel-1');
+      hub.trigger('PresenceChanged', state('msel-1', 2, ada, bob));
+      expect(actors.at(-1).map((a) => a.name)).toEqual(['Alice', 'Bob']);
 
-      hub.trigger('PresenceGreeted', { id: 'user-3', name: 'Carol D.' });
-      hub.trigger('PresenceGreeted', { id: 'user-4', name: 'Dave' });
-      expect(colorsOf(actors.at(-1))).toEqual([
-        'Carol D.:primary',
-        'Dave:accent',
-      ]);
-
-      hub.trigger('PresenceDeparted', { id: 'user-3', name: 'Carol D.' });
-      expect(colorsOf(actors.at(-1))).toEqual(['Dave:accent']);
+      hub.trigger('PresenceChanged', state('msel-1', 3, bob));
+      expect(actors.at(-1).map((a) => a.name)).toEqual(['Bob']);
+      expect(hub.invoke.mock.calls.map(([m]) => m)).not.toContain('Greet');
     });
 
     /**
-     * Verifies: the sixth actor wraps around the five-color palette.
-     * Interacts with: FakeHubConnection.trigger (PresenceGreeted), SignalRService.actors$.
-     * Data: six actors greeting in turn.
+     * Verifies: a state that arrives after a newer one, such as selectMsel's answer, doesn't replace it.
+     * Interacts with: FakeHubConnection.invoke (answer held back), FakeHubConnection.trigger.
+     * Data: the update at version 3 arrives before the answer at version 2.
      */
-    it('cycles presence colors', async () => {
+    it("ignores selectMsel's answer when a newer update arrived first", async () => {
       const { service, hub } = await connect();
+      let answer!: (value: unknown) => void;
+      hub.invoke.mockImplementation((method) =>
+        method === 'selectMsel'
+          ? new Promise((resolve) => (answer = resolve))
+          : Promise.resolve(undefined),
+      );
       const actors = recordEmissions(service.actors$);
 
-      for (let i = 1; i <= 6; i++) {
-        hub.trigger('PresenceGreeted', { id: `user-${i}`, name: `U${i}` });
-      }
+      service.selectMsel('msel-1');
+      hub.trigger('PresenceChanged', state('msel-1', 3, bob));
+      answer(state('msel-1', 2, ada));
+      await flush();
 
-      expect(actors.at(-1).map((a) => a.color)).toEqual([
-        'primary',
-        'accent',
-        'green',
-        'orange',
-        'purple',
-        'primary',
-      ]);
+      expect(actors.at(-1).map((a) => a.name)).toEqual(['Bob']);
+    });
+
+    /**
+     * Verifies: a state for another MSEL than the open one is ignored.
+     * Interacts with: FakeHubConnection.trigger.
+     * Data: msel-2 is open; msel-1 sends Alice.
+     */
+    it("ignores a state for a MSEL that isn't open", async () => {
+      const { service, hub } = await connect();
+      service.selectMsel('msel-2');
+      await flush();
+      const actors = recordEmissions(service.actors$);
+
+      hub.trigger('PresenceChanged', state('msel-1', 9, ada));
+
+      expect(actors.at(-1) ?? []).toEqual([]);
+    });
+
+    /**
+     * Verifies: the signed-in user is not listed, though the hub's state includes them.
+     * Interacts with: ComnAuthService.user$ (stub subject), FakeHubConnection.trigger.
+     * Data: the user is user-1; the state lists user-1 and Bob.
+     */
+    it('never lists the signed-in user', async () => {
+      const { service, hub, user$ } = await connect();
+      user$.next({ profile: { sub: 'user-1' } });
+      await flush();
+      service.selectMsel('msel-1');
+      await flush();
+      const actors = recordEmissions(service.actors$);
+
+      hub.trigger('PresenceChanged', state('msel-1', 1, ada, bob));
+
+      expect(actors.at(-1).map((a) => a.name)).toEqual(['Bob']);
+    });
+
+    /**
+     * Verifies: presence empties when the connection starts reconnecting or closes, so someone who leaves
+     * meanwhile isn't shown, and a restarted API's lower versions apply afterwards.
+     * Interacts with: FakeHubConnection.reconnectingCallbacks / closeCallbacks, SignalRService.actors$.
+     * Data: Alice present at version 5; the connection drops; a state at version 1 arrives.
+     */
+    it('empties presence when the connection drops and takes a lower version after', async () => {
+      const { service, hub } = await connect();
+      service.selectMsel('msel-1');
+      await flush();
+      hub.trigger('PresenceChanged', state('msel-1', 5, ada));
+      const actors = recordEmissions(service.actors$);
+
+      hub.reconnectingCallbacks.forEach((cb) => cb());
+      expect(actors.at(-1)).toEqual([]);
+
+      hub.trigger('PresenceChanged', state('msel-1', 1, bob));
+      expect(actors.at(-1).map((a) => a.name)).toEqual(['Bob']);
+
+      hub.closeCallbacks.forEach((cb) => cb(new Error('closed')));
+      expect(actors.at(-1)).toEqual([]);
     });
 
     /**
@@ -727,7 +776,7 @@ describe('SignalRService', () => {
       const { service, hub } = await connect();
       service.selectMsel('msel-1');
       await flush();
-      hub.trigger('PresenceGreeted', { id: 'user-2', name: 'Bob' });
+      hub.trigger('PresenceChanged', state('msel-1', 1, bob));
       const actors = recordEmissions(service.actors$);
 
       service.clearPresence();
@@ -749,7 +798,6 @@ describe('SignalRService', () => {
 
       expect(hub.invoke).toHaveBeenCalledWith('JoinAdmin');
       expect(hub.invoke).not.toHaveBeenCalledWith('selectMsel', ['msel-2']);
-      expect(hub.invoke).not.toHaveBeenCalledWith('GetPresence', 'msel-2');
     });
   });
 

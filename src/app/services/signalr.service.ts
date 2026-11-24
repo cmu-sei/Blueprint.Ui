@@ -54,15 +54,11 @@ import { TeamUserDataService } from '../data/team-user/team-user-data.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { UserMselRoleDataService } from '../data/user-msel-role/user-msel-role-data.service';
 import { HubReconnectService } from './hub-reconnect.service';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
+import { PresenceState, PresenceStore } from './presence.store';
 import { takeUntil } from 'rxjs/operators';
 
-export interface PresenceActor {
-  id: string;
-  name: string;
-  online: boolean;
-  color: string;
-}
+export type { PresenceActor } from './presence.store';
 
 export enum ApplicationArea {
   home = '',
@@ -107,14 +103,17 @@ export class SignalRService implements OnDestroy {
   private mselId = '';
   private token = '';
   private unsubscribe$ = new Subject();
-  private presenceActors: PresenceActor[] = [];
-  private presenceColorMap = ['primary', 'accent', 'green', 'orange', 'purple'];
-  actors$ = new BehaviorSubject<PresenceActor[]>([]);
+  private presenceStore = inject(PresenceStore);
+  private myUserId = '';
+  readonly actors$ = this.presenceStore.actors$;
 
   constructor() {
-    this.authService.user$.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
-      this.reconnect();
-    });
+    this.authService.user$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((user) => {
+        this.myUserId = user?.profile?.sub ?? '';
+        this.reconnect();
+      });
   }
 
   public startConnection(applicationArea: ApplicationArea): Promise<void> {
@@ -132,6 +131,11 @@ export class SignalRService implements OnDestroy {
 
     // A new connection: the server replays nothing sent while the old one was down, so once it has
     // rejoined its groups the pages reload what they show.
+    // Presence is only as good as the connection; selecting the MSEL again refills it. Anyone who leaves
+    // while this client is away would otherwise stay listed, and a restarted API numbers from the start.
+    this.hubConnection.onreconnecting(() => this.presenceStore.clear());
+    this.hubConnection.onclose(() => this.presenceStore.clear());
+
     this.hubConnection.onreconnected(() => {
       this.join().then(() => this.hubReconnectService.announceReconnected());
     });
@@ -176,8 +180,7 @@ export class SignalRService implements OnDestroy {
     }
     this.isJoined = false;
     this.mselId = '';
-    this.presenceActors = [];
-    this.actors$.next([]);
+    this.presenceStore.clear();
   }
 
   public selectMsel(mselId: string) {
@@ -185,21 +188,12 @@ export class SignalRService implements OnDestroy {
       setTimeout(() => this.selectMsel(mselId), 500);
     } else if (this.isJoined) {
       if (this.applicationArea !== ApplicationArea.admin) {
-        this.presenceActors = [];
-        this.actors$.next([]);
-        this.hubConnection.invoke('selectMsel', [mselId]).catch(() => {
-          // Ignore errors during rapid navigation
-        });
+        this.presenceStore.clear();
         this.mselId = mselId;
-        // fetch current presence so we don't rely solely on greet-back
         this.hubConnection
-          .invoke('GetPresence', mselId)
-          .then((actors: { id: string; name: string }[]) => {
-            if (actors) {
-              for (const actor of actors) {
-                this.updatePresence(actor, true);
-              }
-            }
+          .invoke('selectMsel', [mselId])
+          .then((state: PresenceState) => {
+            this.presenceStore.apply(state, this.mselId, this.myUserId);
           })
           .catch(() => {
             // Ignore errors during rapid navigation
@@ -219,8 +213,7 @@ export class SignalRService implements OnDestroy {
       });
     }
     this.mselId = '';
-    this.presenceActors = [];
-    this.actors$.next([]);
+    this.presenceStore.clear();
   }
 
   private reconnect() {
@@ -652,52 +645,9 @@ export class SignalRService implements OnDestroy {
   }
 
   private addPresenceHandlers() {
-    this.hubConnection.on(
-      'PresenceArrived',
-      (actor: { id: string; name: string }) => {
-        this.updatePresence(actor, true);
-        // greet back so the newcomer sees us
-        if (this.mselId) {
-          this.hubConnection.invoke('Greet', this.mselId);
-        }
-      },
-    );
-
-    this.hubConnection.on(
-      'PresenceGreeted',
-      (actor: { id: string; name: string }) => {
-        this.updatePresence(actor, true);
-      },
-    );
-
-    this.hubConnection.on(
-      'PresenceDeparted',
-      (actor: { id: string; name: string }) => {
-        this.presenceActors = this.presenceActors.filter(
-          (a) => a.id !== actor.id,
-        );
-        this.actors$.next([...this.presenceActors]);
-      },
-    );
-  }
-
-  private updatePresence(actor: { id: string; name: string }, online: boolean) {
-    const existing = this.presenceActors.find((a) => a.id === actor.id);
-    if (existing) {
-      existing.online = online;
-      existing.name = actor.name;
-    } else {
-      this.presenceActors.push({
-        id: actor.id,
-        name: actor.name,
-        online,
-        color:
-          this.presenceColorMap[
-            this.presenceActors.length % this.presenceColorMap.length
-          ],
-      });
-    }
-    this.actors$.next([...this.presenceActors]);
+    this.hubConnection.on('PresenceChanged', (state: PresenceState) => {
+      this.presenceStore.apply(state, this.mselId, this.myUserId);
+    });
   }
 
   ngOnDestroy() {
