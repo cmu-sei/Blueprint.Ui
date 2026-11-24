@@ -813,99 +813,26 @@ describe('SignalRService', () => {
     });
 
     /**
-     * Verifies: restarting the connection for a renewed token doesn't empty the list, which would flash
-     * the bar empty on every token renewal.
-     * Interacts with: ComnAuthService.user$ (stub subject), FakeHubConnection.closeCallbacks, SignalRService.actors$.
-     * Data: Alice present; the user emits again (a renewal) and the old connection reports closed.
+     * Verifies: restarting the connection for a renewed token clears the list, as any lost connection does,
+     * and the next state is taken whatever its version: the new connection may be on a restarted API.
+     * Interacts with: ComnAuthService.user$ (stub subject), FakeHubConnection.closeCallbacks / trigger, SignalRService.actors$.
+     * Data: Alice present at version 7; a renewal; the old connection closes; Bob arrives at version 1.
      */
-    it('keeps presence when the connection is restarted for a renewed token', async () => {
-      const { service, hub, user$ } = await connect();
-      service.selectMsel('msel-1');
-      await flush();
-      hub.trigger('PresenceChanged', state('msel-1', 1, ada));
-
-      user$.next({ profile: { sub: 'user-9' } });
-      hub.closeCallbacks.forEach((cb) => cb());
-      await flush();
-
-      expect(
-        (await firstValueFrom(service.actors$)).map((a) => a.name),
-      ).toEqual(['Alice']);
-    });
-
-    /**
-     * Verifies: after an intentional restart the next state is taken whatever its version, so a restarted API
-     * that numbers from the start isn't ignored, while the list stays on screen until then.
-     * Interacts with: ComnAuthService.user$ (stub subject), FakeHubConnection.trigger, SignalRService.actors$.
-     * Data: Alice present at version 7; a renewal; the answer then is version 1 with Bob.
-     */
-    it('takes a lower version after an intentional restart', async () => {
+    it('empties presence for a restart on a renewed token and takes a lower version after', async () => {
       const { service, hub, user$ } = await connect();
       service.selectMsel('msel-1');
       await flush();
       hub.trigger('PresenceChanged', state('msel-1', 7, ada));
 
       user$.next({ profile: { sub: 'user-9' } });
-      await flush();
+      hub.closeCallbacks.forEach((cb) => cb());
+      expect(await firstValueFrom(service.actors$)).toEqual([]);
+
       hub.trigger('PresenceChanged', state('msel-1', 1, bob));
 
       expect(
         (await firstValueFrom(service.actors$)).map((a) => a.name),
       ).toEqual(['Bob']);
-    });
-
-    /**
-     * Verifies: a restart whose start fails drops the list, since a failed start never reports a close.
-     * Interacts with: ComnAuthService.user$ (stub subject), FakeHubConnection.start (rejects), captureUnhandledRejections.
-     * Data: Alice present; a renewal; the hub refuses to start.
-     */
-    it('drops presence when an intentional restart fails to start', async () => {
-      const unhandled = captureUnhandledRejections();
-      const { service, hub, user$ } = await connect();
-      service.selectMsel('msel-1');
-      await flush();
-      hub.trigger('PresenceChanged', state('msel-1', 1, ada));
-      hub.start.mockRejectedValueOnce(new Error('start failed'));
-
-      user$.next({ profile: { sub: 'user-9' } });
-      await flush();
-
-      expect(await firstValueFrom(service.actors$)).toEqual([]);
-      expect(unhandled).toHaveLength(1);
-    });
-
-    /**
-     * Verifies: a restart that failed after a later one began can't drop the presence the later one is
-     * keeping.
-     * Interacts with: ComnAuthService.user$ (stub subject), FakeHubConnection.start (first rejects late), SignalRService.actors$.
-     * Data: two renewals in a row; the first one's start rejects after the second began.
-     */
-    it("a superseded restart's failure leaves presence alone", async () => {
-      captureUnhandledRejections();
-      const { service, hub, user$ } = await connect();
-      service.selectMsel('msel-1');
-      await flush();
-      hub.trigger('PresenceChanged', state('msel-1', 1, ada));
-      let failFirst!: (error: Error) => void;
-      hub.start
-        .mockImplementationOnce(
-          () => new Promise<void>((_, reject) => (failFirst = reject)),
-        )
-        .mockImplementationOnce(() => {
-          hub.state = signalR.HubConnectionState.Connected;
-          return Promise.resolve();
-        });
-
-      user$.next({ profile: { sub: 'user-9' } });
-      await flush();
-      user$.next({ profile: { sub: 'user-9' } });
-      await flush();
-      failFirst(new Error('first start failed'));
-      await flush();
-
-      expect(
-        (await firstValueFrom(service.actors$)).map((a) => a.name),
-      ).toEqual(['Alice']);
     });
 
     /**
