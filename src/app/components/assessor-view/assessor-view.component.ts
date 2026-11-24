@@ -1940,25 +1940,29 @@ export class AssessorViewComponent
     // An assertion carries its rating in a Crucible extension (the TLA "asserted" template excludes result),
     // names the learner as the actor and the assessor as the instructor. One made before that has no
     // extension, kept the rating in result and named the assessor as the actor. The extension says which.
-    const rating = stmt.context?.extensions?.[
-      'https://crucible.sei.cmu.edu/xapi/ext/assessment'
-    ] as { raw?: unknown; comment?: unknown } | undefined;
+    const extensions = stmt.context?.extensions;
+    const assessmentKey = 'https://crucible.sei.cmu.edu/xapi/ext/assessment';
+    const current = !!extensions && assessmentKey in extensions;
+    const rating =
+      current && extensions[assessmentKey] !== null
+        ? (extensions[assessmentKey] as { raw?: unknown; comment?: unknown })
+        : undefined;
 
     return {
       contextKey,
       competency: mc.competency,
       teamId: stmt.context?.team?.account?.name || '',
-      scoreRaw: rating
-        ? typeof rating.raw === 'number'
+      scoreRaw: current
+        ? typeof rating?.raw === 'number' && Number.isFinite(rating.raw)
           ? rating.raw
           : null
         : (stmt.result?.score?.raw ?? null),
-      comment: rating
-        ? typeof rating.comment === 'string'
+      comment: current
+        ? typeof rating?.comment === 'string'
           ? rating.comment
           : ''
         : stmt.result?.response || '',
-      assessor: rating
+      assessor: current
         ? agentName(stmt.context?.instructor)
         : agentName(stmt.actor),
       timestamp: stmt.timestamp || '',

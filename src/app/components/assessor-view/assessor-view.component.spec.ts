@@ -1740,6 +1740,47 @@ describe('AssessorViewComponent', () => {
       expect(
         texts(section('Cover').querySelector('.cover-facts'), 'dd'),
       ).toContain('J. Doe');
+      expect(
+        texts(section('Cover').querySelector('.cover-facts'), 'dd'),
+      ).not.toContain('Course Instructor');
+    });
+
+    /**
+     * Verifies: an assessment extension whose rating is not a number, or whose comment is not text, reads as no rating
+     * and no comment rather than a wrong one.
+     * Interacts with: buildAssessmentReport (ratings).
+     * Data: STATEMENTS in the current shape with raw '2' and a numeric comment.
+     */
+    it('reads a rating that is not a number, and a comment that is not text, as none', async () => {
+      const bad = STATEMENTS.map((s) => {
+        const { result, ...rest } = s;
+        return {
+          ...rest,
+          context: {
+            ...s.context,
+            instructor: { name: 'J. Doe' },
+            extensions: {
+              'https://crucible.sei.cmu.edu/xapi/ext/assessment': {
+                raw: String(result.score.raw),
+                comment: 7,
+              },
+            },
+          },
+        };
+      });
+
+      await printReport(bad);
+
+      expect(document.body.textContent).not.toContain('Isolated both hosts');
+      // no statement counts as Novice, Proficient or Expert
+      const rows = tableRows(
+        within(section('Results')).getByLabelText('Results by competency'),
+      );
+      expect(rows).not.toEqual([
+        ['K-2 Containment knowledge', '2', '1', '1', '1', '0'],
+        ['T-1 Incident triage', '2', '1', '0', '0', '1'],
+      ]);
+      expect(rows.map((r) => r.slice(3).join(''))).not.toContain('011');
     });
 
     /**
