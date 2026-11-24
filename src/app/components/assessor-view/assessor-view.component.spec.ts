@@ -56,6 +56,7 @@ import { TeamStore } from 'src/app/data/team/team.store';
 import {
   AssessorViewComponent,
   TEAM_RESPONSES_STALE_MS,
+  XApiStatement,
 } from './assessor-view.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
@@ -1746,41 +1747,44 @@ describe('AssessorViewComponent', () => {
     });
 
     /**
-     * Verifies: an assessment extension whose rating is not a number, or whose comment is not text, reads as no rating
-     * and no comment rather than a wrong one.
+     * Verifies: an assessment extension whose comment is not text reads as no comment, a rating that is not a number
+     * as no rating, and an extensions value that is not an object as the old shape.
      * Interacts with: buildAssessmentReport (ratings).
-     * Data: STATEMENTS in the current shape with raw '2' and a numeric comment.
+     * Data: one statement per case, on the same inject and team.
      */
-    it('reads a rating that is not a number, and a comment that is not text, as none', async () => {
-      const bad = STATEMENTS.map((s) => {
-        const { result, ...rest } = s;
-        return {
-          ...rest,
-          context: {
-            ...s.context,
-            instructor: { name: 'J. Doe' },
-            extensions: {
-              'https://crucible.sei.cmu.edu/xapi/ext/assessment': {
-                raw: String(result.score.raw),
-                comment: 7,
-              },
-            },
+    it('reads an assessment extension with bad values as no rating or no comment', async () => {
+      const { fixture } = await renderForPrint();
+      const base = STATEMENTS[0];
+      const { result, ...current } = base;
+      const withExtension = (assessment: unknown) => ({
+        ...current,
+        context: {
+          ...base.context,
+          instructor: { name: 'J. Doe' },
+          extensions: {
+            'https://crucible.sei.cmu.edu/xapi/ext/assessment': assessment,
           },
-        };
+        },
       });
+      const ratings = (statement: unknown) =>
+        fixture.componentInstance
+          .buildAssessmentReport([statement as XApiStatement])
+          .teams.flatMap((t) => t.rows.flatMap((r) => r.ratings));
 
-      await printReport(bad);
-
-      expect(document.body.textContent).not.toContain('Isolated both hosts');
-      // no statement counts as Novice, Proficient or Expert
-      const rows = tableRows(
-        within(section('Results')).getByLabelText('Results by competency'),
-      );
-      expect(rows).not.toEqual([
-        ['K-2 Containment knowledge', '2', '1', '1', '1', '0'],
-        ['T-1 Incident triage', '2', '1', '0', '0', '1'],
+      const badComment = ratings(withExtension({ raw: 2, comment: 7 }));
+      expect(badComment.map((r) => [r.level, r.comment])).toEqual([
+        ['Proficient', ''],
       ]);
-      expect(rows.map((r) => r.slice(3).join(''))).not.toContain('011');
+      const levels = (assessment: unknown) =>
+        ratings(withExtension(assessment)).map((r) => r.level);
+      expect(levels({ raw: '2', comment: 'ok' })).toEqual(['No rating']);
+      expect(levels(null)).toEqual(['No rating']);
+      expect(
+        ratings({
+          ...base,
+          context: { ...base.context, extensions: 'not an object' },
+        }).map((r) => r.comment),
+      ).toEqual(['Slow to isolate']);
     });
 
     /**

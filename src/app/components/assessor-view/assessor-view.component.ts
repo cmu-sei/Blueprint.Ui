@@ -1942,7 +1942,10 @@ export class AssessorViewComponent
     // extension, kept the rating in result and named the assessor as the actor. The extension says which.
     const extensions = stmt.context?.extensions;
     const assessmentKey = 'https://crucible.sei.cmu.edu/xapi/ext/assessment';
-    const current = !!extensions && assessmentKey in extensions;
+    const current =
+      typeof extensions === 'object' &&
+      extensions !== null &&
+      assessmentKey in extensions;
     const rating =
       current && extensions[assessmentKey] !== null
         ? (extensions[assessmentKey] as { raw?: unknown; comment?: unknown })
