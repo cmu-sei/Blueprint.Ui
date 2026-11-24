@@ -1704,6 +1704,45 @@ describe('AssessorViewComponent', () => {
     });
 
     /**
+     * Verifies: an assertion in the current shape that has no instructor at all does not name its actor, the learner,
+     * as the assessor; and one in the old shape names its actor even when it carries an unrelated instructor.
+     * Interacts with: buildAssessmentReport (assessors).
+     * Data: STATEMENTS in the current shape with no instructor, then in the old shape with an instructor.
+     */
+    it('takes the shape from the assessment extension, not from whether there is an instructor', async () => {
+      const noInstructor = STATEMENTS.map((s) => {
+        const { result, ...rest } = s;
+        return {
+          ...rest,
+          actor: { name: 'A. Learner' },
+          context: {
+            ...s.context,
+            extensions: {
+              'https://crucible.sei.cmu.edu/xapi/ext/assessment': {
+                raw: result.score.raw,
+              },
+            },
+          },
+        };
+      });
+      await printReport(noInstructor);
+      expect(
+        texts(section('Cover').querySelector('.cover-facts'), 'dd'),
+      ).not.toContain('A. Learner');
+    });
+
+    it('names the actor of an old-shape assertion even when it carries an instructor', async () => {
+      const old = STATEMENTS.map((s) => ({
+        ...s,
+        context: { ...s.context, instructor: { name: 'Course Instructor' } },
+      }));
+      await printReport(old);
+      expect(
+        texts(section('Cover').querySelector('.cover-facts'), 'dd'),
+      ).toContain('J. Doe');
+    });
+
+    /**
      * Verifies: the report titles injects from their values even when the Title field is not one the assessors see.
      * Interacts with: injectTitle.
      * Data: the Title field not assessor-visible.

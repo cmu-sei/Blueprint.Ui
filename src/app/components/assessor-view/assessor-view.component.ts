@@ -1937,22 +1937,29 @@ export class AssessorViewComponent
     });
     if (!mc?.competency) return null;
 
+    // An assertion carries its rating in a Crucible extension (the TLA "asserted" template excludes result),
+    // names the learner as the actor and the assessor as the instructor. One made before that has no
+    // extension, kept the rating in result and named the assessor as the actor. The extension says which.
     const rating = stmt.context?.extensions?.[
       'https://crucible.sei.cmu.edu/xapi/ext/assessment'
-    ] as { raw?: number; comment?: string } | undefined;
+    ] as { raw?: unknown; comment?: unknown } | undefined;
 
     return {
       contextKey,
       competency: mc.competency,
       teamId: stmt.context?.team?.account?.name || '',
-      // The rating is in a Crucible extension (the TLA "asserted" template excludes result); an assertion
-      // made before that kept it in result.
-      scoreRaw: rating?.raw ?? stmt.result?.score?.raw ?? null,
-      comment: rating?.comment ?? stmt.result?.response ?? '',
-      // The actor is the learner assessed and the assessor is the instructor; an assertion made before
-      // that named the assessor as the actor.
-      assessor: stmt.context?.instructor
-        ? agentName(stmt.context.instructor)
+      scoreRaw: rating
+        ? typeof rating.raw === 'number'
+          ? rating.raw
+          : null
+        : (stmt.result?.score?.raw ?? null),
+      comment: rating
+        ? typeof rating.comment === 'string'
+          ? rating.comment
+          : ''
+        : stmt.result?.response || '',
+      assessor: rating
+        ? agentName(stmt.context?.instructor)
         : agentName(stmt.actor),
       timestamp: stmt.timestamp || '',
     };
