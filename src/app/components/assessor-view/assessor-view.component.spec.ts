@@ -1662,6 +1662,45 @@ describe('AssessorViewComponent', () => {
       expect(texts(facts, 'dd')).toContain('J. Doe');
       expect(texts(facts, 'dd')).not.toContain('A. Learner');
       expect(document.body.textContent).toContain('Isolated both hosts');
+      // the same levels as the statements that keep the rating in result
+      expect(
+        tableRows(
+          within(section('Results')).getByLabelText('Results by competency'),
+        ),
+      ).toEqual([
+        ['K-2 Containment knowledge', '2', '1', '1', '1', '0'],
+        ['T-1 Incident triage', '2', '1', '0', '0', '1'],
+      ]);
+    });
+
+    /**
+     * Verifies: an assertion in the current shape whose instructor carries no name does not fall back to the actor,
+     * who is the learner, so the learner is never listed as the assessor.
+     * Interacts with: buildAssessmentReport (assessors).
+     * Data: STATEMENTS in the current shape with an instructor that has no identity.
+     */
+    it('does not name the learner as the assessor when the instructor has no name', async () => {
+      const current = STATEMENTS.map((s) => {
+        const { result, ...rest } = s;
+        return {
+          ...rest,
+          actor: { name: 'A. Learner' },
+          context: {
+            ...s.context,
+            instructor: {},
+            extensions: {
+              'https://crucible.sei.cmu.edu/xapi/ext/assessment': {
+                raw: result.score.raw,
+              },
+            },
+          },
+        };
+      });
+
+      await printReport(current);
+
+      const facts = section('Cover').querySelector('.cover-facts');
+      expect(texts(facts, 'dd')).not.toContain('A. Learner');
     });
 
     /**

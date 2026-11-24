@@ -1951,7 +1951,9 @@ export class AssessorViewComponent
       comment: rating?.comment ?? stmt.result?.response ?? '',
       // The actor is the learner assessed and the assessor is the instructor; an assertion made before
       // that named the assessor as the actor.
-      assessor: agentName(stmt.context?.instructor) || agentName(stmt.actor),
+      assessor: stmt.context?.instructor
+        ? agentName(stmt.context.instructor)
+        : agentName(stmt.actor),
       timestamp: stmt.timestamp || '',
     };
   }
