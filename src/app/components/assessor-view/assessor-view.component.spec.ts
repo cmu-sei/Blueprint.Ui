@@ -1755,6 +1755,7 @@ describe('AssessorViewComponent', () => {
     it('reads an assessment extension with bad values as no rating or no comment', async () => {
       const { fixture } = await renderForPrint();
       const base = STATEMENTS[0];
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- dropped to build a statement without a result
       const { result, ...current } = base;
       const withExtension = (assessment: unknown) => ({
         ...current,
