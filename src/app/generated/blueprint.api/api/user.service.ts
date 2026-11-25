@@ -412,7 +412,7 @@ export class UserService extends BaseService {
 
     /**
      * Gets all Users in the system
-     * Returns a list of all of the Users in the system. &lt;para /&gt; Only accessible to a SuperUser
+     * Returns a list of all of the Users in the system. &lt;para /&gt; Accessible to a User with the ViewUsers or ViewMsels permission
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
