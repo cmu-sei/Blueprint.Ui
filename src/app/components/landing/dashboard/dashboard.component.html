@@ -222,30 +222,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </div>
             </div>
           </div>
-        } @else if (
-          joinMselList.length === 0 &&
-          launchMselList.length === 0 &&
-          buildMselList.length === 0 &&
-          !canCreateMsels &&
-          !hasAssessorRole
-        ) {
-          <div class="mission-card empty-state">
-            <div class="card-header">
-              <div class="card-icon empty-icon">
-                <mat-icon fontIcon="mdi-cancel" />
-              </div>
-              <div class="card-title-section">
-                <h2 class="card-title">NO ACCESS</h2>
-                <p class="card-subtitle">Authorization Required</p>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="card-description">
-                No accessible resources found. Contact your system administrator
-                if you believe this is an error.
-              </div>
-            </div>
-          </div>
         }
       </div>
     </div>

@@ -217,7 +217,7 @@ describe('DashboardComponent', () => {
 
   /**
    * Verifies: without CreateMsels and no MSELs the BUILD card still shows, greyed out with the reason, and opens nothing;
-   * the NO ACCESS card shows too, since the user can do nothing.
+   * a user who can do nothing sees the three greyed cards and no extra NO ACCESS card.
    * Interacts with: real PermissionDataService (stubbed grants), DashboardComponent template.
    * Data: no MSELs; every permission but CreateMsels (near miss).
    */
@@ -241,7 +241,12 @@ describe('DashboardComponent', () => {
     ).toBeDisabled();
     await user.click(build);
     expect(navigate).not.toHaveBeenCalled();
-    expect(screen.getByText('NO ACCESS')).toBeInTheDocument();
+    expect(card('JOIN')).toHaveClass('disabled-card');
+    expect(card('ASSESS')).toHaveClass('disabled-card');
+    expect(screen.queryByText('NO ACCESS')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/No accessible resources found/),
+    ).not.toBeInTheDocument();
   });
 
   /**
