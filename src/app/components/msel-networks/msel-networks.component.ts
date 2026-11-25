@@ -41,7 +41,7 @@ import {
   MatTableDataSource,
 } from '@angular/material/table';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { Observable, Subject, takeUntil } from 'rxjs';
+import { Observable, Subject, Subscription, forkJoin, takeUntil } from 'rxjs';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { OrganizationQuery } from 'src/app/data/organization/organization.query';
@@ -133,8 +133,19 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly mselId = signal('');
   readonly networks = signal<Network[]>([]);
   readonly hosts = signal<Host[]>([]);
-  readonly teams = signal<Team[]>([]);
-  readonly organizations = signal<Organization[]>([]);
+  private readonly allTeams = signal<Team[]>([]);
+  private readonly allOrganizations = signal<Organization[]>([]);
+  // the MSEL's own, by name, so they follow the active MSEL whichever of the two changes first
+  readonly teams = computed(() =>
+    this.allTeams()
+      .filter((t) => t.mselId === this.mselId())
+      .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
+  );
+  readonly organizations = computed(() =>
+    this.allOrganizations()
+      .filter((o) => o.mselId === this.mselId())
+      .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
+  );
   readonly loading = signal(true);
   /** The networks whose hosts are listed under them */
   readonly expanded = signal<ReadonlySet<string>>(new Set());
@@ -205,15 +216,41 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
   });
 
   private readonly networkRows = computed(() => {
-    const rows = this.arrange(
-      this.networks(),
-      this.networkFilter(),
-      this.networkSort(),
-      (n) => this.networkValues(n),
+    const term = this.networkFilter().trim().toLowerCase();
+    const sort = this.networkSort();
+    const dir = sort.direction === 'desc' ? -1 : 1;
+    const rows = this.networks()
+      .filter(
+        (n) =>
+          !term ||
+          Object.values(this.networkValues(n)).some((v) =>
+            String(v).toLowerCase().includes(term),
+          ),
+      )
+      .sort((a, b) => {
+        const x = this.networkValues(a)[sort.active] ?? '';
+        const y = this.networkValues(b)[sort.active] ?? '';
+        const order =
+          typeof x === 'number' && typeof y === 'number'
+            ? x - y
+            : String(x).localeCompare(String(y), undefined, {
+                sensitivity: 'base',
+              });
+
+        return order * dir;
+      });
+    // the hosts on no network are listed last, and only when the search finds one of them or there is none
+    const unattached = this.hostsOnNoNetwork().filter(
+      (h) =>
+        !term ||
+        [h.name, h.role, h.operatingSystem].some((v) =>
+          (v ?? '').toLowerCase().includes(term),
+        ),
     );
 
-    return this.hostsOnNoNetwork().length ? [...rows, NO_NETWORK] : rows;
+    return unattached.length ? [...rows, NO_NETWORK] : rows;
   });
+  private loadSubscription: Subscription | undefined;
   constructor() {
     effect(() => (this.networkDataSource.data = this.networkRows()));
   }
@@ -227,6 +264,10 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((msel) => {
         if (msel?.id && msel.id !== this.mselId()) {
+          // nothing of the previous MSEL stays on screen while the new one loads
+          this.networks.set([]);
+          this.hosts.set([]);
+          this.expanded.set(new Set());
           this.mselId.set(msel.id);
           this.load();
         }
@@ -234,26 +275,15 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
     this.teamQuery
       .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((teams) =>
-        this.teams.set(
-          teams
-            .filter((t) => t.mselId === this.mselId())
-            .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
-        ),
-      );
+      .subscribe((teams) => this.allTeams.set(teams));
     this.organizationQuery
       .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((organizations) =>
-        this.organizations.set(
-          organizations
-            .filter((o) => o.mselId === this.mselId())
-            .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
-        ),
-      );
+      .subscribe((organizations) => this.allOrganizations.set(organizations));
   }
 
   ngOnDestroy(): void {
+    this.loadSubscription?.unsubscribe();
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }
@@ -261,19 +291,21 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
   load(): void {
     const mselId = this.mselId();
     this.loading.set(true);
-    this.networkService.getNetworksByMsel(mselId).subscribe({
-      next: (networks) => {
+    // an answer for a MSEL or a load that has been replaced is dropped, and the networks and hosts arrive together
+    this.loadSubscription?.unsubscribe();
+    this.loadSubscription = forkJoin({
+      networks: this.networkService.getNetworksByMsel(mselId),
+      hosts: this.hostService.getHostsByMsel(mselId),
+    }).subscribe({
+      next: ({ networks, hosts }) => {
         this.networks.set(networks);
+        this.hosts.set(hosts);
         this.loading.set(false);
       },
       error: (err) => {
         this.loading.set(false);
         this.errorService.handleError(err);
       },
-    });
-    this.hostService.getHostsByMsel(mselId).subscribe({
-      next: (hosts) => this.hosts.set(hosts),
-      error: (err) => this.errorService.handleError(err),
     });
   }
 
@@ -321,6 +353,14 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
 
       return next;
     });
+  }
+
+  /** Expands or collapses the row from the keyboard; a key pressed on a button in the row is that button's */
+  toggleFromKey(event: Event, network: Network): void {
+    if (event.target === event.currentTarget) {
+      event.preventDefault();
+      this.toggle(network);
+    }
   }
 
   /** The hosts with an interface on the network; a host on several networks is listed under each */
@@ -383,45 +423,13 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  /** The rows that match the search, in the sort's order */
-  private arrange<T>(
-    items: T[],
-    search: string,
-    sort: Sort,
-    values: (item: T) => Record<string, string | number>,
-  ): T[] {
-    const term = search.trim().toLowerCase();
-    const dir = sort.direction === 'desc' ? -1 : 1;
-
-    return items
-      .filter(
-        (item) =>
-          !term ||
-          Object.values(values(item)).some((v) =>
-            String(v).toLowerCase().includes(term),
-          ),
-      )
-      .sort((a, b) => {
-        const x = values(a)[sort.active] ?? '';
-        const y = values(b)[sort.active] ?? '';
-        const order =
-          typeof x === 'number' && typeof y === 'number'
-            ? x - y
-            : String(x).localeCompare(String(y), undefined, {
-                sensitivity: 'base',
-              });
-
-        return order * dir;
-      });
-  }
-
   private networkValues(n: Network): Record<string, string | number> {
     return {
       name: n.name ?? '',
       range: n.range ?? '',
       purpose: n.purpose ?? '',
       hostCount: this.hostCount(n),
-      teams: this.teamNames(n.teamIds),
+      teams: this.teamNames(n.teamIds) || 'Shared',
       organizations: this.organizationNames(n.organizationIds),
       domains: this.domains(n),
     };
@@ -435,13 +443,20 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   editNetwork(network: Network | null): void {
-    const data: NetworkEditDialogData = {
-      network: network ?? {
+    this.openNetworkDialog(
+      network ?? {
         mselId: this.mselId(),
         name: '',
         teamIds: [],
         organizationIds: [],
       },
+    );
+  }
+
+  /** Opens the dialog on the network; when the save fails the dialog opens again with what was entered */
+  private openNetworkDialog(network: Network): void {
+    const data: NetworkEditDialogData = {
+      network,
       networks: this.networks(),
       teams: this.teams(),
       organizations: this.organizations(),
@@ -462,7 +477,10 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
           : this.networkService.createNetwork(result);
         save.subscribe({
           next: () => this.load(),
-          error: (err) => this.errorService.handleError(err),
+          error: (err) => {
+            this.errorService.handleError(err);
+            this.openNetworkDialog(result);
+          },
         });
       });
   }
@@ -495,14 +513,21 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** Adds a host, or edits one; a new host from a network's row starts with an interface on that network */
   editHost(host: Host | null, network: Network | null = null): void {
-    const data: HostEditDialogData = {
-      host: host ?? {
+    this.openHostDialog(
+      host ?? {
         mselId: this.mselId(),
         name: '',
         interfaces: network ? [{ networkId: network.id, address: null }] : [],
         teamIds: [],
         organizationIds: [],
       },
+    );
+  }
+
+  /** Opens the dialog on the host; when the save fails the dialog opens again with what was entered */
+  private openHostDialog(host: Host): void {
+    const data: HostEditDialogData = {
+      host,
       hosts: this.hosts(),
       networks: this.networks(),
       teams: this.teams(),
@@ -520,7 +545,10 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
           : this.hostService.createHost(result);
         save.subscribe({
           next: () => this.load(),
-          error: (err) => this.errorService.handleError(err),
+          error: (err) => {
+            this.errorService.handleError(err);
+            this.openHostDialog(result);
+          },
         });
       });
   }

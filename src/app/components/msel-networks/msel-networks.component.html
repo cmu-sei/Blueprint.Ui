@@ -227,6 +227,10 @@ project root for license information.
                       mat-table
                       [dataSource]="sortedHostsOn(element)"
                       matSort
+                      [matSortActive]="hostSorts()[element.id]?.active ?? ''"
+                      [matSortDirection]="
+                        hostSorts()[element.id]?.direction ?? ''
+                      "
                       (matSortChange)="hostSortChanged(element, $event)"
                       [attr.aria-label]="'Hosts on ' + element.name"
                     >
@@ -369,7 +373,11 @@ project root for license information.
               ? 'element-row element-row-expanded'
               : 'element-row element-row-not-expanded'
           "
+          tabindex="0"
+          [attr.aria-expanded]="isExpanded(row)"
           (click)="toggle(row)"
+          (keydown.enter)="toggleFromKey($event, row)"
+          (keydown.space)="toggleFromKey($event, row)"
         ></tr>
         <tr
           mat-row

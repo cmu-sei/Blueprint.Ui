@@ -6,11 +6,17 @@ import { Network, NetworkService } from 'src/app/generated/blueprint.api';
 
 /**
  * The networks a team or an organization has access to, read-only, for its edit dialog. Access is set on the
- * network, so changing it is done on the Networks tab. Nothing shows when there are none.
+ * network, so changing it is done on the Networks tab. Nothing shows when there are none, and a failure to load
+ * them is said, so it is not mistaken for there being none.
  */
 @Component({
   selector: 'app-access-networks',
   template: `
+    @if (failed()) {
+      <p class="access-hint" role="alert">
+        The networks with access could not be loaded.
+      </p>
+    }
     @if (networks().length) {
       <div class="access-networks">
         <p class="access-label">Networks with access</p>
@@ -64,6 +70,7 @@ export class AccessNetworksComponent implements OnInit {
   private networkService = inject(NetworkService);
 
   readonly networks = signal<Network[]>([]);
+  readonly failed = signal(false);
 
   ngOnInit(): void {
     const mselId = this.mselId();
@@ -83,8 +90,11 @@ export class AccessNetworksComponent implements OnInit {
             )
             .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
         ),
-      // a list that is only there to inform shows nothing when it can't load
-      error: () => this.networks.set([]),
+      // a list that only informs does not stop the dialog, but it says it could not load
+      error: () => {
+        this.networks.set([]);
+        this.failed.set(true);
+      },
     });
   }
 }

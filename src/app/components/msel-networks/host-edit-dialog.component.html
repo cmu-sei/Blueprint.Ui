@@ -19,17 +19,16 @@ project root for license information.
           matInput
           type="text"
           [(ngModel)]="host.name"
+          [errorStateMatcher]="nameMatcher"
           placeholder="ws"
           required
         />
         <mat-hint
           >With Caster, the name of the machine in the template</mat-hint
         >
+        <mat-error>{{ nameProblem() }}</mat-error>
       </mat-form-field>
     </div>
-    @if (nameProblem(); as problem) {
-      <p class="range-problem">{{ problem }}</p>
-    }
     @if (onSeveralNetworks()) {
       <p class="range-hint">
         This host is on {{ data.host.interfaces?.length }} networks. Changes to
@@ -66,7 +65,10 @@ project root for license information.
       <div class="range-row">
         <mat-form-field class="range-grow">
           <mat-label>Network</mat-label>
-          <mat-select [(ngModel)]="hostInterface.networkId">
+          <mat-select
+            [(ngModel)]="hostInterface.networkId"
+            [errorStateMatcher]="matchers(hostInterface).network"
+          >
             @for (network of data.networks; track network.id) {
               <mat-option [value]="network.id">
                 {{ network.name
@@ -74,6 +76,7 @@ project root for license information.
               </mat-option>
             }
           </mat-select>
+          <mat-error>{{ networkFieldProblem(hostInterface) }}</mat-error>
         </mat-form-field>
         <mat-form-field class="range-grow">
           <mat-label>Address</mat-label>
@@ -81,8 +84,10 @@ project root for license information.
             matInput
             type="text"
             [(ngModel)]="hostInterface.address"
+            [errorStateMatcher]="matchers(hostInterface).address"
             placeholder="10.20.0.10"
           />
+          <mat-error>{{ addressFieldProblem(hostInterface) }}</mat-error>
         </mat-form-field>
         <button
           mat-icon-button
@@ -97,16 +102,18 @@ project root for license information.
           <mat-icon class="mdi-24px" fontIcon="mdi-delete" />
         </button>
       </div>
-      @if (interfaceProblem(hostInterface); as problem) {
-        <p class="range-problem">{{ problem }}</p>
-      }
     }
     @if (data.networks.length) {
       <button
         mat-button
         type="button"
         (click)="addInterface()"
-        title="Put the host on a network"
+        [disabled]="!canAddInterface()"
+        [title]="
+          canAddInterface()
+            ? 'Put the host on a network'
+            : 'The host is on every network already'
+        "
       >
         <mat-icon fontIcon="mdi-plus-circle" />
         Add Interface

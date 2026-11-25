@@ -16,7 +16,12 @@ import {
   NetworkEditDialogComponent,
   NetworkEditDialogData,
 } from './network-edit-dialog.component';
-import { addressProblem, nameProblem, rangeProblem } from './range-rules';
+import {
+  addressInRangeProblem,
+  addressProblem,
+  nameProblem,
+  rangeProblem,
+} from './range-rules';
 
 const actions = () =>
   within(document.querySelector<HTMLElement>('mat-dialog-actions'));
@@ -62,15 +67,78 @@ describe('range rules', () => {
     },
   );
 
-  it.each(['', '10.20.0.0/24', '2001:db8::/64'])(
-    'accepts the range %o',
-    (range) => {
-      expect(rangeProblem(range)).toBeNull();
-    },
-  );
+  it.each([
+    '999.999.999.999/24',
+    '10.20.0.0/33',
+    '2001:db8::/129',
+    'deadbeef/24',
+    '::::/8',
+    '1/1',
+    '10.20.0.0/',
+    '10.20.0.0/999',
+  ])('refuses the invalid range %o', (range) => {
+    expect(rangeProblem(range)).toContain('CIDR');
+  });
+
+  it.each([
+    '',
+    '10.20.0.0/24',
+    '0.0.0.0/0',
+    '2001:db8::/64',
+    '::/0',
+    '::ffff:10.0.0.1/128',
+  ])('accepts the range %o', (range) => {
+    expect(rangeProblem(range)).toBeNull();
+  });
 
   it.each(['10.20.0.0/24', 'mail01'])('refuses the address %o', (address) => {
     expect(addressProblem(address)).toContain('single IP address');
+  });
+
+  it.each([
+    '999.999.999.999',
+    '10.20.0',
+    '10.20.0.256',
+    '::::',
+    '12345::1',
+    '1::2::3',
+    '1:2:3:4:5:6:7:8:9',
+    'abc',
+  ])('refuses the malformed address %o', (address) => {
+    expect(addressProblem(address)).toContain('single IP address');
+  });
+
+  it.each([
+    '',
+    '10.20.0.10',
+    '255.255.255.255',
+    '2001:db8::1',
+    '::',
+    '::1',
+    '1:2:3:4:5:6:7:8',
+    '::ffff:10.0.0.1',
+  ])('accepts the address %o', (address) => {
+    expect(addressProblem(address)).toBeNull();
+  });
+
+  it.each([
+    ['10.20.0.10', '10.20.0.0/24'],
+    ['10.20.0.255', '10.20.0.0/24'],
+    ['2001:db8::5', '2001:db8::/64'],
+    ['', '10.20.0.0/24'],
+    ['10.20.0.10', ''],
+    ['10.20.0.10', 'not a range'],
+  ])('finds the address %o fine for the range %o', (address, range) => {
+    expect(addressInRangeProblem(address, range)).toBeNull();
+  });
+
+  it.each([
+    ['10.20.1.5', '10.20.0.0/24'],
+    ['10.19.255.255', '10.20.0.0/24'],
+    ['2001:db9::5', '2001:db8::/64'],
+    ['10.20.0.10', '2001:db8::/64'],
+  ])('refuses the address %o outside the range %o', (address, range) => {
+    expect(addressInRangeProblem(address, range)).toContain('not inside');
   });
 });
 
@@ -175,6 +243,41 @@ describe('HostEditDialogComponent', () => {
 
     expect(actions().getByRole('button', { name: 'Save' })).toBeDisabled();
     expect(screen.getByText(/single IP address/)).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: an address outside its network's range keeps Save disabled and the error is shown with the field.
+   */
+  it('disables Save for an address outside the network range', async () => {
+    await renderDialog(HostEditDialogComponent, data());
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText(/^Name/), 'ws');
+    await user.click(screen.getByRole('button', { name: /Add Interface/ }));
+    await user.type(screen.getByLabelText('Address'), '10.99.0.5');
+
+    expect(actions().getByRole('button', { name: 'Save' })).toBeDisabled();
+    expect(
+      screen.getByText(
+        "The address is not inside the network's range, 10.20.0.0/24",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: Add Interface is disabled once the host is on every network, instead of adding a blank interface.
+   */
+  it('disables Add Interface when the host is on every network', async () => {
+    await renderDialog(HostEditDialogComponent, data());
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: /Add Interface/ }));
+    await user.click(screen.getByRole('button', { name: /Add Interface/ }));
+
+    expect(
+      screen.getByRole('button', { name: /Add Interface/ }),
+    ).toBeDisabled();
+    expect(screen.getAllByLabelText('Address')).toHaveLength(2);
   });
 
   /**

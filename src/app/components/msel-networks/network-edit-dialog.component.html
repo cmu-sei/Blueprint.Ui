@@ -18,27 +18,25 @@ project root for license information.
         matInput
         type="text"
         [(ngModel)]="network.name"
+        [errorStateMatcher]="nameMatcher"
         placeholder="bank-lan"
         required
       />
       <mat-hint>With Caster, the name of the network in the template</mat-hint>
+      <mat-error>{{ nameProblem() }}</mat-error>
     </mat-form-field>
-    @if (nameProblem(); as problem) {
-      <p class="range-problem">{{ problem }}</p>
-    }
     <mat-form-field class="full-width">
       <mat-label>Range</mat-label>
       <input
         matInput
         type="text"
         [(ngModel)]="network.range"
+        [errorStateMatcher]="rangeMatcher"
         placeholder="10.20.0.0/24"
       />
       <mat-hint>The network's address range in CIDR notation</mat-hint>
+      <mat-error>{{ rangeProblem() }}</mat-error>
     </mat-form-field>
-    @if (rangeProblem(); as problem) {
-      <p class="range-problem">{{ problem }}</p>
-    }
     <mat-form-field class="full-width">
       <mat-label>Purpose</mat-label>
       <input

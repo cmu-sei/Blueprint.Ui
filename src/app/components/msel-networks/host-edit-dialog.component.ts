@@ -3,10 +3,12 @@
 
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ErrorStateMatcher } from '@angular/material/core';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
 import {
+  MatError,
   MatFormField,
   MatHint,
   MatInput,
@@ -24,7 +26,12 @@ import {
   Organization,
   Team,
 } from 'src/app/generated/blueprint.api';
-import { addressProblem, nameProblem, textOrNull } from './range-rules';
+import {
+  addressInRangeProblem,
+  addressProblem,
+  nameProblem,
+  textOrNull,
+} from './range-rules';
 
 export interface HostEditDialogData {
   host: Host;
@@ -47,6 +54,7 @@ export interface HostEditDialogData {
     MatLabel,
     MatInput,
     MatHint,
+    MatError,
     MatSelect,
     MatOption,
     MatButton,
@@ -74,14 +82,59 @@ export class HostEditDialogComponent {
     return this.host.interfaces ?? [];
   }
 
-  addInterface(): void {
-    const unused = this.data.networks.find(
+  /** The first network the host has no interface on, which an added interface starts on */
+  private unusedNetwork(): Network | undefined {
+    return this.data.networks.find(
       (n) => !this.interfaces().some((i) => i.networkId === n.id),
     );
-    this.host.interfaces = [
-      ...this.interfaces(),
-      { networkId: unused?.id ?? '', address: null },
-    ];
+  }
+
+  /** Whether the host can be put on another network: a host has one interface on each */
+  canAddInterface(): boolean {
+    return !!this.unusedNetwork();
+  }
+
+  addInterface(): void {
+    const unused = this.unusedNetwork();
+    if (unused) {
+      this.host.interfaces = [
+        ...this.interfaces(),
+        { networkId: unused.id, address: null },
+      ];
+    }
+  }
+
+  /** Marks a field as invalid, so its mat-error shows, while its rule is broken */
+  private invalidWhen(problem: () => string | null): ErrorStateMatcher {
+    return { isErrorState: () => !!problem() };
+  }
+
+  readonly nameMatcher = this.invalidWhen(() => this.nameProblem());
+  // one matcher per interface, so the bound object does not change on every check
+  private readonly interfaceMatchers = new WeakMap<
+    HostInterface,
+    { network: ErrorStateMatcher; address: ErrorStateMatcher }
+  >();
+
+  /** The matchers of one interface's network and address fields */
+  matchers(hostInterface: HostInterface): {
+    network: ErrorStateMatcher;
+    address: ErrorStateMatcher;
+  } {
+    let matchers = this.interfaceMatchers.get(hostInterface);
+    if (!matchers) {
+      matchers = {
+        network: this.invalidWhen(() =>
+          this.networkFieldProblem(hostInterface),
+        ),
+        address: this.invalidWhen(() =>
+          this.addressFieldProblem(hostInterface),
+        ),
+      };
+      this.interfaceMatchers.set(hostInterface, matchers);
+    }
+
+    return matchers;
   }
 
   removeInterface(index: number): void {
@@ -96,7 +149,8 @@ export class HostEditDialogComponent {
     return nameProblem(this.host.name, this.host.id, this.data.hosts, 'host');
   }
 
-  interfaceProblem(hostInterface: HostInterface): string | null {
+  /** What is wrong with the interface's network choice, or null */
+  networkFieldProblem(hostInterface: HostInterface): string | null {
     if (!hostInterface.networkId) {
       return 'Choose a network';
     }
@@ -107,7 +161,26 @@ export class HostEditDialogComponent {
       return 'The host already has an interface on this network';
     }
 
-    return addressProblem(hostInterface.address);
+    return null;
+  }
+
+  /** What is wrong with the interface's address, or null */
+  addressFieldProblem(hostInterface: HostInterface): string | null {
+    const range = this.data.networks.find(
+      (n) => n.id === hostInterface.networkId,
+    )?.range;
+
+    return (
+      addressProblem(hostInterface.address) ??
+      addressInRangeProblem(hostInterface.address, range)
+    );
+  }
+
+  interfaceProblem(hostInterface: HostInterface): string | null {
+    return (
+      this.networkFieldProblem(hostInterface) ??
+      this.addressFieldProblem(hostInterface)
+    );
   }
 
   canSave(): boolean {

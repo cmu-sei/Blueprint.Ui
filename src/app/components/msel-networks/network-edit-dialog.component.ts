@@ -3,8 +3,10 @@
 
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ErrorStateMatcher } from '@angular/material/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
+  MatError,
   MatFormField,
   MatHint,
   MatInput,
@@ -38,6 +40,7 @@ export interface NetworkEditDialogData {
     MatLabel,
     MatInput,
     MatHint,
+    MatError,
     MatSelect,
     MatOption,
   ],
@@ -50,6 +53,14 @@ export class NetworkEditDialogComponent {
     ...this.data.network,
     teamIds: [...(this.data.network.teamIds ?? [])],
     organizationIds: [...(this.data.network.organizationIds ?? [])],
+  };
+
+  // a field is invalid, so its mat-error shows, while its rule is broken
+  readonly nameMatcher: ErrorStateMatcher = {
+    isErrorState: () => !!this.nameProblem(),
+  };
+  readonly rangeMatcher: ErrorStateMatcher = {
+    isErrorState: () => !!this.rangeProblem(),
   };
 
   nameProblem(): string | null {

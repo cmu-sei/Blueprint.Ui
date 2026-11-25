@@ -2,10 +2,11 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
+import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { of } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { OrganizationStore } from 'src/app/data/organization/organization.store';
@@ -64,18 +65,36 @@ const HOSTS: Host[] = [
 ];
 
 async function renderNetworks(
-  options: { canEdit?: boolean; dialogResult?: unknown; hosts?: Host[] } = {},
+  options: {
+    canEdit?: boolean;
+    dialogResult?: unknown;
+    hosts?: Host[];
+    // the save calls to fail, to see what the tab does with the edits
+    failSaves?: boolean;
+  } = {},
 ) {
   const networkApi = {
     getNetworksByMsel: vi.fn(() => of(structuredClone(NETWORKS))),
-    createNetwork: vi.fn((n: Network) => of({ ...n, id: 'n-new' })),
-    updateNetwork: vi.fn((_id: string, n: Network) => of(n)),
+    createNetwork: vi.fn((n: Network) =>
+      options.failSaves
+        ? throwError(() => new Error('refused'))
+        : of({ ...n, id: 'n-new' }),
+    ),
+    updateNetwork: vi.fn((_id: string, n: Network) =>
+      options.failSaves ? throwError(() => new Error('refused')) : of(n),
+    ),
     deleteNetwork: vi.fn(() => of<unknown>(null)),
   };
   const hostApi = {
     getHostsByMsel: vi.fn(() => of(structuredClone(options.hosts ?? HOSTS))),
-    createHost: vi.fn((h: Host) => of({ ...h, id: 'h-new' })),
-    updateHost: vi.fn((_id: string, h: Host) => of(h)),
+    createHost: vi.fn((h: Host) =>
+      options.failSaves
+        ? throwError(() => new Error('refused'))
+        : of({ ...h, id: 'h-new' }),
+    ),
+    updateHost: vi.fn((_id: string, h: Host) =>
+      options.failSaves ? throwError(() => new Error('refused')) : of(h),
+    ),
     deleteHost: vi.fn(() => of<unknown>(null)),
   };
   const open = vi.fn(
@@ -570,5 +589,191 @@ describe('MselNetworksComponent', () => {
     expect(
       first(screen.getByRole('table', { name: 'Hosts on bank-dmz' })),
     ).toBe('fw01');
+  });
+
+  /**
+   * Verifies: a refused network save opens the dialog again with what the planner entered, instead of losing it.
+   * Data: the dialog returns a new network "wan"; the API refuses the save.
+   */
+  it('opens the network dialog again with the edits when the save fails', async () => {
+    const edits = { mselId: 'msel-1', name: 'wan', purpose: 'Edge' };
+    const { open, networkApi } = await renderNetworks({
+      dialogResult: edits,
+      failSaves: true,
+    });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Add a network' }));
+
+    expect(networkApi.createNetwork).toHaveBeenCalled();
+    const calls = open.mock.calls as unknown[][];
+    expect(calls.length).toBeGreaterThan(1);
+    const reopened = (calls[1][1] as { data: { network: Network } }).data;
+    expect(reopened.network).toEqual(edits);
+  });
+
+  /**
+   * Verifies: a refused host save opens the dialog again with what the planner entered.
+   * Data: the dialog returns fw01 renamed fw02; the API refuses the save.
+   */
+  it('opens the host dialog again with the edits when the save fails', async () => {
+    const edits = { ...HOSTS[1], name: 'fw02' };
+    const { open, hostApi } = await renderNetworks({
+      dialogResult: edits,
+      failSaves: true,
+    });
+    const user = userEvent.setup();
+
+    await user.click(rowOf('bank-dmz'));
+    await user.click(
+      screen.getByRole('button', { name: 'Edit host fw01 on bank-dmz' }),
+    );
+
+    expect(hostApi.updateHost).toHaveBeenCalled();
+    const calls = open.mock.calls as unknown[][];
+    expect(calls.length).toBeGreaterThan(1);
+    const reopened = (calls[1][1] as { data: { host: Host } }).data;
+    expect(reopened.host.name).toBe('fw02');
+  });
+
+  /**
+   * Verifies: a row opens from the keyboard (Enter), and a key pressed on a button inside the row is the button's, not the row's.
+   */
+  it('expands a row from the keyboard', async () => {
+    await renderNetworks();
+    const user = userEvent.setup();
+    const row = rowOf('bank-lan');
+    expect(row).toHaveAttribute('tabindex', '0');
+    expect(row).toHaveAttribute('aria-expanded', 'false');
+
+    row.focus();
+    await user.keyboard('{Enter}');
+    expect(row).toHaveAttribute('aria-expanded', 'true');
+
+    await user.keyboard('{Enter}');
+    expect(row).toHaveAttribute('aria-expanded', 'false');
+
+    // Enter on the row's own edit button does not expand it
+    screen.getByRole('button', { name: 'Edit network bank-lan' }).focus();
+    await user.keyboard('{Enter}');
+    expect(row).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  /**
+   * Verifies: a network open to no team is "Shared" for the search as it is on screen, so the word finds it.
+   * Data: bank-dmz has no team.
+   */
+  it('finds a shared network by searching Shared', async () => {
+    await renderNetworks();
+    const user = userEvent.setup();
+
+    await user.type(
+      screen.getByRole('textbox', { name: 'Search networks' }),
+      'shared',
+    );
+
+    expect(rowOf('bank-dmz')).toBeTruthy();
+    expect(
+      screen.queryByText('bank-lan', { selector: 'td.column-name' }),
+    ).toBeNull();
+  });
+
+  /**
+   * Verifies: the row of hosts on no network is shown only while the search is empty or finds one of those hosts.
+   * Data: spare is on no network.
+   */
+  it('hides the hosts on no network row when the search finds none of them', async () => {
+    const spare: Host = {
+      id: 'h-spare',
+      mselId: 'msel-1',
+      name: 'spare',
+      role: 'Server',
+      interfaces: [],
+      teamIds: [],
+      organizationIds: [],
+    };
+    await renderNetworks({ hosts: [...HOSTS, spare] });
+    const user = userEvent.setup();
+    const search = screen.getByRole('textbox', { name: 'Search networks' });
+
+    await user.type(search, 'office');
+    expect(
+      screen.queryByText('Hosts on no network', { selector: 'td.column-name' }),
+    ).toBeNull();
+
+    await user.clear(search);
+    await user.type(search, 'spare');
+    expect(rowOf('Hosts on no network')).toBeTruthy();
+  });
+
+  /**
+   * Verifies: a header keeps showing the sort it applied when the network is collapsed and opened again.
+   * Data: bank-lan's hosts sorted by Address descending.
+   */
+  it('keeps the sort shown when a network is opened again', async () => {
+    await renderNetworks();
+    const user = userEvent.setup();
+    await user.click(rowOf('bank-lan'));
+    const header = () =>
+      within(
+        screen.getByRole('table', { name: 'Hosts on bank-lan' }),
+      ).getByRole('columnheader', { name: 'Address' });
+    await user.click(header());
+    await user.click(header());
+    expect(header()).toHaveAttribute('aria-sort', 'descending');
+
+    await user.click(rowOf('bank-lan'));
+    await user.click(rowOf('bank-lan'));
+
+    expect(header()).toHaveAttribute('aria-sort', 'descending');
+  });
+
+  /**
+   * Verifies: the teams and organizations offered follow the active MSEL when it changes, and the previous MSEL's networks are gone while the next load runs.
+   * Data: msel-1 is active, then msel-2 (whose team is "Other MSEL Team"); the second load has not answered.
+   */
+  it('follows the active MSEL and does not keep the last one on screen', async () => {
+    const { open, networkApi, fixture } = await renderNetworks();
+    const pending = new Subject<Network[]>();
+    networkApi.getNetworksByMsel.mockReturnValue(pending);
+    const msels = TestBed.inject(MselStore);
+    msels.add({ id: 'msel-2', name: 'Next' });
+
+    msels.setActive('msel-2');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(networkApi.getNetworksByMsel).toHaveBeenLastCalledWith('msel-2');
+    expect(
+      screen.queryByText('bank-lan', { selector: 'td.column-name' }),
+    ).toBeNull();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Add a network' }));
+    const data = (open.mock.calls[0] as unknown[])[1] as {
+      data: { teams: { id: string }[] };
+    };
+    expect(data.data.teams.map((t) => t.id)).toEqual(['t-other']);
+  });
+
+  /**
+   * Verifies: an answer to a load that a newer load has replaced is dropped.
+   * Data: the first answer arrives after the second load started.
+   */
+  it('ignores the answer to a load that has been replaced', async () => {
+    const { fixture, networkApi } = await renderNetworks();
+    const first = new Subject<Network[]>();
+    const second = new Subject<Network[]>();
+    networkApi.getNetworksByMsel.mockReturnValueOnce(first);
+    networkApi.getNetworksByMsel.mockReturnValueOnce(second);
+    const component = fixture.componentInstance;
+
+    component.load();
+    component.load();
+    second.next([{ id: 'n-b', mselId: 'msel-1', name: 'newer' }]);
+    second.complete();
+    first.next([{ id: 'n-a', mselId: 'msel-1', name: 'older' }]);
+    first.complete();
+
+    expect(component.networks().map((n) => n.name)).toEqual(['newer']);
   });
 });
