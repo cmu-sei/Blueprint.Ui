@@ -211,7 +211,10 @@ project root for license information.
             *matCellDef="let element"
             [attr.colspan]="networkColumns.length"
           >
-            <div style="overflow: hidden">
+            <div
+              [@detailExpand]="isExpanded(element) ? 'expanded' : 'collapsed'"
+              style="overflow: hidden"
+            >
               @if (isExpanded(element)) {
                 <div
                   class="expanded-detail-div"
