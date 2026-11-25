@@ -3,9 +3,9 @@
 // project root for license information.
 import {
   Component,
+  AfterViewInit,
   ElementRef,
   OnDestroy,
-  AfterViewInit,
   OnInit,
   inject,
   input,
@@ -126,8 +126,14 @@ export class AdminTechniqueFrameworksComponent
   ];
   private unsubscribe$ = new Subject();
 
-  ngAfterViewInit() {
-    this.dataSource.sort = this.sort();
+  constructor() {
+    // sort text the way the list is ordered, without regard to case
+    this.dataSource.sortingDataAccessor = (framework, column) => {
+      const value = (framework as unknown as Record<string, unknown>)[column];
+      return typeof value === 'string'
+        ? value.toLowerCase()
+        : (value as number);
+    };
   }
 
   ngOnInit() {
@@ -283,6 +289,10 @@ export class AdminTechniqueFrameworksComponent
           this.techniqueFrameworkDataService.delete(framework.id);
         }
       });
+  }
+
+  ngAfterViewInit() {
+    this.dataSource.sort = this.sort();
   }
 
   ngOnDestroy() {

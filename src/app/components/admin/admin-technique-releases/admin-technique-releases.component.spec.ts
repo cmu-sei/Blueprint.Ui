@@ -157,8 +157,8 @@ async function renderReleases(
       of(structuredClone(IMPORT_RESULT)),
     ),
     importTechniqueRelease: vi.fn(() => of(structuredClone(CUSTOM))),
-    // the API answers the release as saved: the four notice fields changed, nothing else
     deleteTechniqueRelease: vi.fn(() => of(undefined)),
+    // the API answers the release as saved: the four notice fields changed, nothing else
     updateTechniqueRelease: vi.fn(
       (id: string, notice: TechniqueReleaseNotice) =>
         of({
@@ -485,21 +485,25 @@ describe('AdminTechniqueReleasesComponent', () => {
   });
 
   /**
-   * Verifies: someone who cannot manage competency frameworks gets no Edit notice action.
-   * Interacts with: the canEdit input.
-   * Data: a custom release.
-   */
-  /**
    * Verifies: the Releases table pages like the other admin tables, and a search nothing matches says so.
    * Interacts with: the Search box, the paginator, filterControl.
-   * Data: one custom release; a search for text no release holds.
+   * Data: 25 custom releases, paged by 20; a search for text no release holds.
    */
   it('pages the releases and says when a search finds none', async () => {
     const user = userEvent.setup();
-    await renderReleases([CUSTOM]);
+    const releases = Array.from({ length: 25 }, (_, i) => ({
+      ...CUSTOM,
+      id: `rel-${i}`,
+      name: `Release ${String(i).padStart(2, '0')}`,
+    }));
+    await renderReleases(releases);
 
     expect(screen.getByText('Items per page:')).toBeInTheDocument();
+    expect(screen.getAllByText(/^Release \d\d$/)).toHaveLength(20);
     expect(screen.queryByText('No releases found')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
+    expect(screen.getAllByText(/^Release \d\d$/)).toHaveLength(5);
 
     await user.type(screen.getByPlaceholderText('Search'), 'zzzz-no-match');
 
@@ -529,6 +533,11 @@ describe('AdminTechniqueReleasesComponent', () => {
     expect(releaseApi.deleteTechniqueRelease).not.toHaveBeenCalled();
   });
 
+  /**
+   * Verifies: someone who cannot manage competency frameworks gets no Edit notice action.
+   * Interacts with: the canEdit input.
+   * Data: a custom release.
+   */
   it('offers no edit action without edit permission', async () => {
     await renderReleases([CUSTOM], false);
 

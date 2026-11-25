@@ -166,6 +166,27 @@ describe('AdminTechniqueFrameworksComponent', () => {
   });
 
   /**
+   * Verifies: sorting by name ignores case, as the list's own order does.
+   * Interacts with: MatSort, the sorting data accessor.
+   * Data: a lower-case "alpha" and a capitalised "Zeta" definition.
+   */
+  it('sorts names without regard to case', async () => {
+    const user = userEvent.setup();
+    await renderFrameworks([
+      { ...BUNDLE, id: 'fw-z', name: 'Zeta' },
+      { ...BUNDLE, id: 'fw-a', name: 'alpha' },
+    ]);
+
+    await user.click(screen.getByRole('button', { name: 'Name' }));
+
+    const names = screen
+      .getAllByRole('row')
+      .slice(1)
+      .map((r) => r.querySelectorAll('[role=cell]')[1].textContent.trim());
+    expect(names).toEqual(['alpha', 'Zeta']);
+  });
+
+  /**
    * Verifies: deleting a definition asks first with Delete and Cancel buttons, and a cancelled delete deletes nothing.
    * Interacts with: CrucibleDialogService.confirm (stub), TechniqueFrameworkService.
    * Data: one bundle framework.
