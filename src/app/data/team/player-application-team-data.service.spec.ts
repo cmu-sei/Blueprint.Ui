@@ -9,6 +9,7 @@ import {
   PlayerApplicationTeamService,
 } from 'src/app/generated/blueprint.api';
 import { PlayerApplicationTeamDataService } from './player-application-team-data.service';
+import { ErrorService } from 'src/app/services/error/error.service';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { getDefaultProviders } from 'src/app/test-utils/default-test-providers';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
@@ -26,6 +27,7 @@ function appTeam(
 }
 
 function setup() {
+  const handleError = vi.fn();
   const patApi = {
     getMselPlayerApplicationTeams: vi.fn(() => of<PlayerApplicationTeam[]>([])),
     createPlayerApplicationTeam: vi.fn(() => of<PlayerApplicationTeam>({})),
@@ -37,12 +39,17 @@ function setup() {
     // default placeholders satisfy DI.
     providers: getDefaultProviders([
       { provide: PlayerApplicationTeamService, useValue: patApi },
+      {
+        provide: ErrorService,
+        useValue: { handleError } satisfies Pick<ErrorService, 'handleError'>,
+      },
     ]),
   });
   const service = TestBed.inject(PlayerApplicationTeamDataService);
   return {
     service,
     patApi,
+    handleError,
     emissions: recordEmissions(service.playerApplicationTeams),
   };
 }
@@ -151,6 +158,28 @@ describe('PlayerApplicationTeamDataService', () => {
       ['pat-1'],
     ]);
     expect(emissions.at(-1)[0].displayOrder).toBe(0);
+  });
+
+  /**
+   * Verifies: a refused link shows the API's message, since the API answers 409 and names the view the team already has.
+   * Interacts with: PlayerApplicationTeamService.createPlayerApplicationTeam (stub failing), ErrorService.handleError (stub).
+   * Data: one failing add for team-blue; the unchanged list is still republished.
+   */
+  it('shows the error when adding a team to an application is refused', () => {
+    const { service, patApi, handleError, emissions } = setup();
+    service.updateStore(appTeam());
+    const refused = new Error(
+      'BLUE already has CITE, which shows the same view',
+    );
+    patApi.createPlayerApplicationTeam.mockImplementation(() =>
+      throwError(() => refused),
+    );
+    const before = emissions.length;
+
+    service.addTeamToPlayerApplication('app-1', { id: 'team-blue' }, 1);
+
+    expect(handleError).toHaveBeenCalledExactlyOnceWith(refused);
+    expect(emissions.slice(before).map(ids)).toEqual([['pat-1']]);
   });
 
   /**
