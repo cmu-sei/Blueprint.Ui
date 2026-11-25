@@ -7,7 +7,7 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { fireEvent, screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { of } from 'rxjs';
+import { Observable, Subject, of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import {
   TechniqueRelease,
@@ -20,8 +20,11 @@ import {
   MselCountermeasures,
   SystemPermission,
   SystemPermissionsService,
+  DataFieldType,
 } from 'src/app/generated/blueprint.api';
 import { MselStore } from 'src/app/data/msel/msel.store';
+import { DataFieldStore } from 'src/app/data/data-field/data-field.store';
+import { DataValueStore } from 'src/app/data/data-value/data-value.store';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MselTechniquesComponent } from './msel-techniques.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
@@ -31,6 +34,7 @@ import {
   PermissionGrants,
 } from 'src/app/test-utils/mock-permission-data.service';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 
 const ME = 'user-me';
 const MSEL: Msel = {
@@ -50,6 +54,19 @@ const T1059: MselTechnique = {
     externalId: 'T1059',
     name: 'Command and Scripting Interpreter',
     url: 'https://attack.mitre.org/techniques/T1059',
+  },
+};
+const T1003: MselTechnique = {
+  id: 'mat-2',
+  mselId: 'msel-1',
+  techniqueId: 'at-2',
+  technique: {
+    id: 'at-2',
+    techniqueReleaseId: 'rel-1',
+    domain: 'enterprise-attack',
+    externalId: 'T1003',
+    name: 'OS Credential Dumping',
+    url: 'https://attack.mitre.org/techniques/T1003',
   },
 };
 const TERMS_OF_USE =
@@ -271,15 +288,19 @@ async function renderTechniques(
   grants: PermissionGrants = {},
   tactics: Record<string, TechniqueTactic[]> = {},
   dialog?: Pick<CrucibleDialogService, 'confirm'>,
+  tacticsFor?: (releaseId: string) => Observable<TechniqueTactic[]>,
 ) {
   const poolApi = {
     getMselTechniques: vi.fn(() => of(structuredClone(pool))),
+    deleteMselTechnique: vi.fn(() => of({})),
     getMselCountermeasures: vi.fn(() => of(structuredClone(countermeasures))),
   } satisfies ApiStub<MselTechniqueService>;
   const releaseApi = {
     getTechniqueReleases: vi.fn(() => of(structuredClone(releases))),
-    getTechniqueTactics: vi.fn((id: string) =>
-      of<TechniqueTactic[]>(structuredClone(tactics[id] ?? [])),
+    getTechniqueTactics: vi.fn(
+      (id: string) =>
+        tacticsFor?.(id) ??
+        of<TechniqueTactic[]>(structuredClone(tactics[id] ?? [])),
     ),
     getTechniques: vi.fn((id: string) =>
       of(structuredClone(techniques[id] ?? [])),
@@ -313,6 +334,35 @@ async function renderTechniques(
     inputs: { loggedInUserId: ME },
   });
   return { ...rendered, poolApi, releaseApi };
+}
+
+// Ticks both techniques of the pool and clicks Remove 2, with the confirmation answered as given.
+async function removeBothTicked(answer: boolean) {
+  const confirm = vi.fn(
+    () => dialogRefStub<unknown, boolean>(answer).dialogRef,
+  );
+  const rendered = await renderTechniques(
+    [T1059, T1003],
+    [ENTERPRISE_RELEASE],
+    {},
+    NO_MAPPINGS,
+    { system: [SystemPermission.ManageMsels] },
+    {},
+    { confirm },
+  );
+  const user = userEvent.setup();
+  for (const id of ['T1059', 'T1003']) {
+    await user.click(
+      await within(attackSection()).findByRole('checkbox', {
+        name: `Select ${id}`,
+      }),
+    );
+  }
+  await user.click(
+    within(attackSection()).getByRole('button', { name: /Remove 2/ }),
+  );
+  expect(confirm).toHaveBeenCalledTimes(1);
+  return rendered;
 }
 
 describe('MselTechniquesComponent', () => {
@@ -838,7 +888,7 @@ describe('MselTechniquesComponent', () => {
       expect.objectContaining({ title: 'Remove Technique' }),
     );
     expect(box).toBeChecked();
-    expect(poolApi).not.toHaveProperty('deleteMselTechnique');
+    expect(poolApi.deleteMselTechnique).not.toHaveBeenCalled();
   });
 
   /**
@@ -923,5 +973,706 @@ describe('MselTechniquesComponent', () => {
         name: 'Open T1059 on attack.mitre.org',
       }),
     ).toHaveAttribute('href', 'https://attack.mitre.org/techniques/T1059');
+  });
+  /**
+   * Verifies: the pool has its own search that narrows its rows by id, name or group, and clearing it brings them back,
+   * as on the Competencies tab.
+   * Interacts with: TechniquePoolComponent.applyPoolFilter, poolSearchControl.
+   * Data: T1059 and T1003 in the pool; Enterprise ATT&CK 17.1 imported.
+   */
+  it('searches the pool by id or name', async () => {
+    await renderTechniques([T1059, T1003], [ENTERPRISE_RELEASE]);
+    const user = userEvent.setup();
+    const search =
+      within(attackSection()).getAllByPlaceholderText('Search techniques')[1];
+
+    await user.type(search, 'dumping');
+
+    expect(
+      within(attackSection()).queryByRole('cell', { name: 'T1059' }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(attackSection()).getByRole('cell', { name: 'T1003' }),
+    ).toBeInTheDocument();
+
+    await user.clear(search);
+
+    expect(
+      within(attackSection()).getByRole('cell', { name: 'T1059' }),
+    ).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: the pool's ID, Name and Events headers sort its rows, ids in number order, Events by count, and a second
+   * click reverses.
+   * Interacts with: TechniquePoolComponent.sortValue, MatSort.
+   * Data: T1059 and T1003 in the pool; the default order is by id.
+   */
+  it('sorts the pool by a column header', async () => {
+    const { fixture } = await renderTechniques(
+      [T1059, T1003],
+      [ENTERPRISE_RELEASE],
+    );
+    const user = userEvent.setup();
+    const ids = () =>
+      within(attackSection())
+        .getAllByRole('cell', { name: /^T\d{4}$/ })
+        .map((c) => c.textContent?.trim());
+
+    expect(ids()).toEqual(['T1003', 'T1059']);
+
+    await user.click(
+      within(attackSection()).getAllByRole('columnheader', { name: 'Name' })[0],
+    );
+    fixture.detectChanges();
+
+    // Command and Scripting Interpreter comes before OS Credential Dumping
+    expect(ids()).toEqual(['T1059', 'T1003']);
+
+    await user.click(
+      within(attackSection()).getAllByRole('columnheader', { name: 'Name' })[0],
+    );
+
+    expect(ids()).toEqual(['T1003', 'T1059']);
+  });
+
+  /**
+   * Verifies: the pool is paged, with a paginator that counts its rows and not the browser's.
+   * Interacts with: TechniquePoolComponent.poolPaginator.
+   * Data: T1059 and T1003 in the pool; no release techniques to browse.
+   */
+  it('pages the pool', async () => {
+    await renderTechniques([T1059, T1003], [ENTERPRISE_RELEASE]);
+
+    expect(
+      await within(attackSection()).findByText('1 – 2 of 2'),
+    ).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: with ManageMsels, ticking pool rows offers Remove n, which asks first and then deletes each ticked
+   * technique; without it there are no checkboxes.
+   * Interacts with: TechniquePoolComponent.removeSelected, MselTechniqueService.deleteMselTechnique (stub),
+   * CrucibleDialogService.confirm (stub).
+   * Data: T1059 and T1003 in the pool; ManageMsels granted.
+   */
+  it('removes the ticked techniques from the pool', async () => {
+    const confirm = vi.fn(
+      () => dialogRefStub<unknown, boolean>(true).dialogRef,
+    );
+    const { poolApi } = await renderTechniques(
+      [T1059, T1003],
+      [ENTERPRISE_RELEASE],
+      {},
+      NO_MAPPINGS,
+      { system: [SystemPermission.ManageMsels] },
+      {},
+      { confirm },
+    );
+    const user = userEvent.setup();
+
+    await user.click(
+      await within(attackSection()).findByRole('checkbox', {
+        name: 'Select T1059',
+      }),
+    );
+    await user.click(
+      within(attackSection()).getByRole('button', { name: /Remove 1/ }),
+    );
+
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(poolApi.deleteMselTechnique).toHaveBeenCalledTimes(1);
+    expect(poolApi.deleteMselTechnique).toHaveBeenCalledWith('mat-1');
+  });
+
+  /**
+   * Verifies: a user who cannot edit the MSEL gets no tick boxes in the pool.
+   * Interacts with: TechniquePoolComponent.canEditMsel.
+   * Data: T1059 in the pool; no grants.
+   */
+  it('offers no tick boxes without edit rights', async () => {
+    await renderTechniques([T1059], [ENTERPRISE_RELEASE]);
+
+    expect(
+      within(attackSection()).queryByRole('checkbox', {
+        name: 'Select T1059',
+      }),
+    ).not.toBeInTheDocument();
+  });
+  /**
+   * Verifies: the pool's Domain filter lists the domains the pool holds and narrows the rows to the chosen one.
+   * Interacts with: TechniquePoolComponent.onPoolDomainChange, applyPoolFilter.
+   * Data: T1059 (enterprise-attack) and CAPEC-66 (capec) in the pool; both releases imported.
+   */
+  it('filters the pool by domain', async () => {
+    await renderTechniques(
+      [T1059, CAPEC_66_IN_POOL],
+      [ENTERPRISE_RELEASE, CAPEC_RELEASE],
+    );
+    const user = userEvent.setup();
+
+    await user.click(
+      await within(attackSection()).findByRole('combobox', { name: 'Domain' }),
+    );
+    await user.click(await screen.findByRole('option', { name: 'capec' }));
+
+    expect(
+      within(attackSection()).getByRole('cell', { name: /CAPEC-66/ }),
+    ).toBeInTheDocument();
+    expect(
+      within(attackSection()).queryByRole('cell', { name: 'T1059' }),
+    ).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: the pool's group filter lists the groups by the names their release gives and narrows the rows to one.
+   * Interacts with: TechniquePoolComponent.onPoolGroupChange, groupKey.
+   * Data: T1059 in Execution and T1003 in Credential Access; the release's group names.
+   */
+  it('filters the pool by group', async () => {
+    const execution = {
+      ...T1059,
+      technique: { ...T1059.technique, tactics: ['execution'] },
+    };
+    const credentials = {
+      ...T1003,
+      technique: { ...T1003.technique, tactics: ['credential-access'] },
+    };
+    await renderTechniques(
+      [execution, credentials],
+      [ENTERPRISE_RELEASE],
+      {},
+      NO_MAPPINGS,
+      {},
+      {
+        'rel-1': [
+          { id: 'ta-1', shortName: 'execution', name: 'Execution' },
+          {
+            id: 'ta-2',
+            shortName: 'credential-access',
+            name: 'Credential Access',
+          },
+        ],
+      },
+    );
+    const user = userEvent.setup();
+
+    await user.click(
+      await within(attackSection()).findByRole('combobox', { name: 'Tactic' }),
+    );
+    await user.click(await screen.findByRole('option', { name: 'Execution' }));
+
+    expect(
+      within(attackSection()).getByRole('cell', { name: 'T1059' }),
+    ).toBeInTheDocument();
+    expect(
+      within(attackSection()).queryByRole('cell', { name: 'T1003' }),
+    ).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a Domain filter whose domain leaves the pool is dropped, so the table does not stay empty behind a filter
+   * control that is no longer shown.
+   * Interacts with: TechniquePoolComponent.refreshPoolFacets, MselTechniqueService.deleteMselTechnique (stub).
+   * Data: T1059 and CAPEC-66 in the pool; filtered to capec, then CAPEC-66 removed; ManageMsels granted.
+   */
+  it('drops a domain filter when its last technique is removed', async () => {
+    await renderTechniques(
+      [T1059, CAPEC_66_IN_POOL],
+      [ENTERPRISE_RELEASE, CAPEC_RELEASE],
+      {},
+      NO_MAPPINGS,
+      { system: [SystemPermission.ManageMsels] },
+      {},
+      { confirm: () => dialogRefStub<unknown, boolean>(true).dialogRef },
+    );
+    const user = userEvent.setup();
+    await user.click(
+      await within(attackSection()).findByRole('combobox', { name: 'Domain' }),
+    );
+    await user.click(await screen.findByRole('option', { name: 'capec' }));
+
+    await user.click(
+      within(attackSection()).getByRole('button', { name: 'Remove CAPEC-66' }),
+    );
+
+    expect(
+      await within(attackSection()).findByRole('cell', { name: 'T1059' }),
+    ).toBeInTheDocument();
+    // the Domain control is gone with one domain left, and the row it would have hidden is listed
+    expect(
+      within(attackSection()).queryByRole('combobox', { name: 'Domain' }),
+    ).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: removing a technique does not send the pool back to its first page, only a new search or filter does.
+   * Interacts with: TechniquePoolComponent.applyPoolFilter, MatPaginator.
+   * Data: 24 techniques in the pool, so the second page holds four; the last one is removed; ManageMsels granted.
+   */
+  it('stays on its page when a technique is removed', async () => {
+    const many: MselTechnique[] = Array.from({ length: 24 }, (_, i) => ({
+      id: `mat-${i}`,
+      mselId: 'msel-1',
+      techniqueId: `at-${i}`,
+      technique: {
+        id: `at-${i}`,
+        techniqueReleaseId: 'rel-1',
+        domain: 'enterprise-attack',
+        externalId: `T${2000 + i}`,
+        name: `Technique ${i}`,
+      },
+    }));
+    await renderTechniques(
+      many,
+      [ENTERPRISE_RELEASE],
+      {},
+      NO_MAPPINGS,
+      { system: [SystemPermission.ManageMsels] },
+      {},
+      { confirm: () => dialogRefStub<unknown, boolean>(true).dialogRef },
+    );
+    const user = userEvent.setup();
+    const attack = within(attackSection());
+    const range = await attack.findByText('1 – 20 of 24');
+
+    await user.click(
+      within(range.closest<HTMLElement>('mat-paginator')).getByRole('button', {
+        name: 'Next page',
+      }),
+    );
+    expect(await attack.findByText('21 – 24 of 24')).toBeInTheDocument();
+    await user.click(attack.getByRole('button', { name: 'Remove T2023' }));
+
+    expect(await attack.findByText('21 – 23 of 23')).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: the Events column sorts by how many events name each technique, and sorts again when those counts change.
+   * Interacts with: TechniquePoolComponent.refreshEventCounts, DataFieldStore, DataValueStore.
+   * Data: one Attack Technique column; T1059 named by one event, T1003 by none; then T1003 by two and T1059 by none.
+   */
+  it('sorts the pool by events, and again when the counts change', async () => {
+    const { fixture } = await renderTechniques(
+      [T1059, T1003],
+      [ENTERPRISE_RELEASE],
+    );
+    const user = userEvent.setup();
+    TestBed.inject(DataFieldStore).set([
+      {
+        id: 'df-1',
+        mselId: 'msel-1',
+        name: 'Techniques',
+        dataType: DataFieldType.AttackTechnique,
+      },
+    ] as never);
+    const valuesOf = (rows: [string, string][]) =>
+      rows.map(([scenarioEventId, value], i) => ({
+        id: `dv-${i}`,
+        dataFieldId: 'df-1',
+        scenarioEventId,
+        value,
+      }));
+    TestBed.inject(DataValueStore).set(valuesOf([['e1', 'T1059']]));
+    fixture.detectChanges();
+    const ids = () =>
+      within(attackSection())
+        .getAllByRole('cell', { name: /^T\d{4}$/ })
+        .map((c) => c.textContent?.trim());
+
+    await user.click(
+      within(attackSection()).getAllByRole('columnheader', {
+        name: 'Events',
+      })[0],
+    );
+    fixture.detectChanges();
+    expect(ids()).toEqual(['T1003', 'T1059']);
+
+    TestBed.inject(DataValueStore).set(
+      valuesOf([
+        ['e1', 'T1003'],
+        ['e2', 'T1003'],
+      ]),
+    );
+    fixture.detectChanges();
+
+    expect(ids()).toEqual(['T1059', 'T1003']);
+  });
+
+  /**
+   * Verifies: the Add techniques browser's ID and Name headers sort its rows, and a second click reverses.
+   * Interacts with: TechniquePoolComponent.sortValue, MatSort on the browser table.
+   * Data: an empty pool, so the browser is open; two techniques of the release.
+   */
+  it('sorts the browser by a column header', async () => {
+    const brute = {
+      id: 'at-b',
+      techniqueReleaseId: 'rel-1',
+      domain: 'enterprise-attack',
+      externalId: 'T1110',
+      name: 'Brute Force',
+    };
+    const command = {
+      id: 'at-a',
+      techniqueReleaseId: 'rel-1',
+      domain: 'enterprise-attack',
+      externalId: 'T1059',
+      name: 'Command and Scripting Interpreter',
+    };
+    const { fixture } = await renderTechniques([], [ENTERPRISE_RELEASE], {
+      'rel-1': [brute, command],
+    });
+    const user = userEvent.setup();
+    const ids = () =>
+      within(attackSection())
+        .getAllByRole('cell', { name: /^T\d{4}$/ })
+        .map((c) => c.textContent?.trim());
+    await within(attackSection()).findByRole('cell', { name: 'T1110' });
+
+    await user.click(
+      within(attackSection()).getAllByRole('columnheader', { name: 'ID' })[0],
+    );
+    fixture.detectChanges();
+    expect(ids()).toEqual(['T1059', 'T1110']);
+
+    await user.click(
+      within(attackSection()).getAllByRole('columnheader', { name: 'ID' })[0],
+    );
+    fixture.detectChanges();
+    expect(ids()).toEqual(['T1110', 'T1059']);
+  });
+
+  /**
+   * Verifies: with several rows ticked Remove n deletes each of them after the confirmation is answered Yes.
+   * Interacts with: TechniquePoolComponent.removeSelected, CrucibleDialogService.confirm (stub).
+   * Data: T1059 and T1003 in the pool; ManageMsels granted.
+   */
+  it('removes several ticked techniques', async () => {
+    const { poolApi } = await removeBothTicked(true);
+
+    expect(poolApi.deleteMselTechnique).toHaveBeenCalledTimes(2);
+  });
+
+  /**
+   * Verifies: answering the confirmation of Remove n with No deletes nothing.
+   * Interacts with: TechniquePoolComponent.removeSelected, CrucibleDialogService.confirm (stub).
+   * Data: T1059 and T1003 in the pool; ManageMsels granted.
+   */
+  it('removes nothing when the confirmation is declined', async () => {
+    const { poolApi } = await removeBothTicked(false);
+
+    expect(poolApi.deleteMselTechnique).not.toHaveBeenCalled();
+  });
+
+  /**
+   * Verifies: two domains that use one group short name for different groups show as two options, each narrowing the pool to
+   * its own domain's techniques.
+   * Interacts with: TechniquePoolComponent.groupKey, refreshPoolFacets.
+   * Data: T1059 (enterprise, group "impact" named Impact) and CAPEC-66 (capec, group "impact" named Business Impact); the filter
+   * is labelled Group because the pool mixes tactics and categories.
+   */
+  it('keeps two groups that share a short name apart', async () => {
+    const enterprise = {
+      ...T1059,
+      technique: { ...T1059.technique, tactics: ['impact'] },
+    };
+    const capec = {
+      ...CAPEC_66_IN_POOL,
+      technique: { ...CAPEC_66, tactics: ['impact'] },
+    };
+    await renderTechniques(
+      [enterprise, capec],
+      [ENTERPRISE_RELEASE, CAPEC_RELEASE],
+      {},
+      NO_MAPPINGS,
+      {},
+      {
+        'rel-1': [{ id: 'ta-1', shortName: 'impact', name: 'Impact' }],
+        'rel-c': [{ id: 'ta-9', shortName: 'impact', name: 'Business Impact' }],
+      },
+    );
+    const user = userEvent.setup();
+
+    await user.click(
+      await within(attackSection()).findByRole('combobox', { name: 'Group' }),
+    );
+    expect(
+      await screen.findByRole('option', { name: 'Business Impact' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Impact' })).toBeInTheDocument();
+    await user.click(screen.getByRole('option', { name: 'Business Impact' }));
+
+    expect(
+      within(attackSection()).getByRole('cell', { name: /CAPEC-66/ }),
+    ).toBeInTheDocument();
+    expect(
+      within(attackSection()).queryByRole('cell', { name: /T1059/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a group name that two domains both use is listed once for each, with its domain, so the options can be told
+   * apart.
+   * Interacts with: TechniquePoolComponent.refreshPoolFacets.
+   * Data: T1059 (enterprise) and CAPEC-66 (capec) both in a group "impact" named Impact.
+   */
+  it('tells a group name that two domains share apart by its domain', async () => {
+    const enterprise = {
+      ...T1059,
+      technique: { ...T1059.technique, tactics: ['impact'] },
+    };
+    const capec = {
+      ...CAPEC_66_IN_POOL,
+      technique: { ...CAPEC_66, tactics: ['impact'] },
+    };
+    await renderTechniques(
+      [enterprise, capec],
+      [ENTERPRISE_RELEASE, CAPEC_RELEASE],
+      {},
+      NO_MAPPINGS,
+      {},
+      {
+        'rel-1': [{ id: 'ta-1', shortName: 'impact', name: 'Impact' }],
+        'rel-c': [{ id: 'ta-9', shortName: 'impact', name: 'Impact' }],
+      },
+    );
+    const user = userEvent.setup();
+
+    await user.click(
+      await within(attackSection()).findByRole('combobox', { name: 'Group' }),
+    );
+
+    expect(
+      await screen.findByRole('option', { name: 'Impact (capec)' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('option', { name: 'Impact (enterprise-attack)' }),
+    ).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a group filter whose group leaves the pool is dropped, so every row shows again and the table does not stay
+   * empty behind a control that is no longer shown.
+   * Interacts with: TechniquePoolComponent.refreshPoolFacets, MselTechniqueService.deleteMselTechnique (stub).
+   * Data: T1059 in "execution" and T1003 in "credential-access"; filtered to Execution, then T1059 removed; ManageMsels granted.
+   */
+  it('drops a group filter when its last technique is removed', async () => {
+    const execution = {
+      ...T1059,
+      technique: { ...T1059.technique, tactics: ['execution'] },
+    };
+    const credentials = {
+      ...T1003,
+      technique: { ...T1003.technique, tactics: ['credential-access'] },
+    };
+    await renderTechniques(
+      [execution, credentials],
+      [ENTERPRISE_RELEASE],
+      {},
+      NO_MAPPINGS,
+      { system: [SystemPermission.ManageMsels] },
+      {
+        'rel-1': [
+          { id: 'ta-1', shortName: 'execution', name: 'Execution' },
+          {
+            id: 'ta-2',
+            shortName: 'credential-access',
+            name: 'Credential Access',
+          },
+        ],
+      },
+      { confirm: () => dialogRefStub<unknown, boolean>(true).dialogRef },
+    );
+    const user = userEvent.setup();
+    await user.click(
+      await within(attackSection()).findByRole('combobox', { name: 'Tactic' }),
+    );
+    await user.click(await screen.findByRole('option', { name: 'Execution' }));
+
+    await user.click(
+      within(attackSection()).getByRole('button', { name: 'Remove T1059' }),
+    );
+
+    expect(
+      await within(attackSection()).findByRole('cell', { name: 'T1003' }),
+    ).toBeInTheDocument();
+    expect(
+      within(attackSection()).queryByRole('combobox', { name: 'Tactic' }),
+    ).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a group filter chosen before its release's group names arrive still applies once they do, because the group's
+   * key does not depend on those names.
+   * Interacts with: TechniquePoolComponent.loadTacticNames, groupKey.
+   * Data: T1059 and T1003 in two groups; the names are held back, then released.
+   */
+  it('keeps a group filter when the group names arrive', async () => {
+    const execution = {
+      ...T1059,
+      technique: { ...T1059.technique, tactics: ['execution'] },
+    };
+    const credentials = {
+      ...T1003,
+      technique: { ...T1003.technique, tactics: ['credential-access'] },
+    };
+    const names = new Subject<TechniqueTactic[]>();
+    await renderTechniques(
+      [execution, credentials],
+      [ENTERPRISE_RELEASE],
+      {},
+      NO_MAPPINGS,
+      {},
+      {},
+      undefined,
+      () => names,
+    );
+    const user = userEvent.setup();
+    await user.click(
+      await within(attackSection()).findByRole('combobox', { name: 'Tactic' }),
+    );
+    await user.click(
+      await screen.findByRole('option', { name: 'credential-access' }),
+    );
+    expect(
+      within(attackSection()).queryByRole('cell', { name: 'T1059' }),
+    ).not.toBeInTheDocument();
+
+    names.next([
+      { id: 'ta-1', shortName: 'execution', name: 'Execution' },
+      { id: 'ta-2', shortName: 'credential-access', name: 'Credential Access' },
+    ]);
+    names.complete();
+
+    expect(
+      await within(attackSection()).findByRole('cell', { name: 'T1003' }),
+    ).toBeInTheDocument();
+    expect(
+      within(attackSection()).queryByRole('cell', { name: 'T1059' }),
+    ).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: the pool's group column sorts by the group names.
+   * Interacts with: TechniquePoolComponent.sortValue.
+   * Data: T1059 in "execution" (Execution) and T1003 in "credential-access" (Credential Access).
+   */
+  it('sorts the pool by its group column', async () => {
+    const execution = {
+      ...T1059,
+      technique: { ...T1059.technique, tactics: ['execution'] },
+    };
+    const credentials = {
+      ...T1003,
+      technique: { ...T1003.technique, tactics: ['credential-access'] },
+    };
+    const { fixture } = await renderTechniques(
+      [execution, credentials],
+      [ENTERPRISE_RELEASE],
+      {},
+      NO_MAPPINGS,
+      {},
+      {
+        'rel-1': [
+          { id: 'ta-1', shortName: 'execution', name: 'Execution' },
+          {
+            id: 'ta-2',
+            shortName: 'credential-access',
+            name: 'Credential Access',
+          },
+        ],
+      },
+    );
+    const user = userEvent.setup();
+    const ids = () =>
+      within(attackSection())
+        .getAllByRole('cell', { name: /^T\d{4}$/ })
+        .map((c) => c.textContent?.trim());
+    await within(attackSection()).findByRole('cell', { name: 'T1059' });
+
+    await user.click(
+      within(attackSection()).getAllByRole('columnheader', {
+        name: 'Tactics',
+      })[0],
+    );
+    fixture.detectChanges();
+    // Credential Access comes before Execution
+    expect(ids()).toEqual(['T1003', 'T1059']);
+
+    await user.click(
+      within(attackSection()).getAllByRole('columnheader', {
+        name: 'Tactics',
+      })[0],
+    );
+    fixture.detectChanges();
+    expect(ids()).toEqual(['T1059', 'T1003']);
+  });
+
+  /**
+   * Verifies: the browser sorts by Name, and sorts its group column again when the group names arrive after the techniques.
+   * Interacts with: TechniquePoolComponent.loadRelease, sortValue.
+   * Data: T1110 in group "a" and T1059 in group "b" that are named Zulu and Alpha once the names arrive.
+   */
+  it('sorts the browser by Name and by its group names', async () => {
+    const brute = {
+      id: 'at-b',
+      techniqueReleaseId: 'rel-1',
+      domain: 'enterprise-attack',
+      externalId: 'T1110',
+      name: 'Brute Force',
+      tactics: ['a'],
+    };
+    const command = {
+      id: 'at-a',
+      techniqueReleaseId: 'rel-1',
+      domain: 'enterprise-attack',
+      externalId: 'T1059',
+      name: 'Command and Scripting Interpreter',
+      tactics: ['b'],
+    };
+    const names = new Subject<TechniqueTactic[]>();
+    const { fixture } = await renderTechniques(
+      [],
+      [ENTERPRISE_RELEASE],
+      { 'rel-1': [brute, command] },
+      NO_MAPPINGS,
+      {},
+      {},
+      undefined,
+      () => names,
+    );
+    const user = userEvent.setup();
+    const ids = () =>
+      within(attackSection())
+        .getAllByRole('cell', { name: /^T\d{4}$/ })
+        .map((c) => c.textContent?.trim());
+    await within(attackSection()).findByRole('cell', { name: 'T1110' });
+
+    await user.click(
+      within(attackSection()).getAllByRole('columnheader', { name: 'Name' })[0],
+    );
+    fixture.detectChanges();
+    expect(ids()).toEqual(['T1110', 'T1059']);
+
+    // sorted by group, with the names still short names: a before b
+    await user.click(
+      within(attackSection()).getAllByRole('columnheader', {
+        name: 'Tactics',
+      })[0],
+    );
+    fixture.detectChanges();
+    expect(ids()).toEqual(['T1110', 'T1059']);
+
+    names.next([
+      { id: 'ta-a', shortName: 'a', name: 'Zulu' },
+      { id: 'ta-b', shortName: 'b', name: 'Alpha' },
+    ]);
+    names.complete();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    // Alpha (b) now comes before Zulu (a)
+    expect(ids()).toEqual(['T1059', 'T1110']);
   });
 });

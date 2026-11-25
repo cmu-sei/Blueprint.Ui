@@ -12,7 +12,9 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { SelectionModel } from '@angular/cdk/collections';
 import { MatPaginator } from '@angular/material/paginator';
+import { MatSort, MatSortHeader } from '@angular/material/sort';
 import {
   MatTableDataSource,
   MatTable,
@@ -129,6 +131,8 @@ export interface PinnedDomain {
     MatIconButton,
     MatSuffix,
     MatPaginator,
+    MatSort,
+    MatSortHeader,
     MatProgressSpinner,
     MatTable,
     MatColumnDef,
@@ -167,6 +171,9 @@ export class TechniquePoolComponent
   readonly loggedInUserId = input<string>(undefined);
   /** The releases whose content the section shows, for their notices. */
   readonly browserPaginator = viewChild<MatPaginator>('browserPaginator');
+  readonly browserSort = viewChild<MatSort>('browserSort');
+  readonly poolPaginator = viewChild<MatPaginator>('poolPaginator');
+  readonly poolSort = viewChild<MatSort>('poolSort');
   msel = new MselPlus();
   releases: TechniqueRelease[] = [];
   private allReleases: TechniqueRelease[] = [];
@@ -211,7 +218,24 @@ export class TechniquePoolComponent
   pool: MselTechnique[] = [];
   private poolByTechniqueId = new Map<string, MselTechnique>();
   poolDataSource = new MatTableDataSource<MselTechnique>([]);
-  poolColumns: string[] = ['action', 'externalId', 'name', 'tactics', 'events'];
+  poolColumns: string[] = [
+    'select',
+    'action',
+    'externalId',
+    'name',
+    'tactics',
+    'events',
+  ];
+  poolSearchControl = new FormControl<string>('');
+  poolSearchString = '';
+  poolDomainFilter = '';
+  poolGroupFilter = '';
+  /** The Domain and group filters' options, worked out when the pool or its group names change, not on every check. */
+  poolDomains: string[] = [];
+  poolGroups: { key: string; name: string }[] = [];
+  /** How many scenario events name each technique id, worked out when the fields or values change. */
+  private eventCountsByExternalId = new Map<string, number>();
+  selection = new SelectionModel<MselTechnique>(true, []);
   private allDataFields: DataField[] = [];
   private allDataValues: DataValue[] = [];
   /** Each release's group names by short name, for the browser and for every release in the pool. */
@@ -235,6 +259,23 @@ export class TechniquePoolComponent
       });
     this.browserDataSource.filterPredicate = (t: Technique) =>
       this.matchesBrowserFilter(t);
+    this.poolSearchControl.valueChanges
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((term) => {
+        this.poolSearchString = term || '';
+        this.applyPoolFilter(true);
+      });
+    this.browserDataSource.sortingDataAccessor = (
+      t: Technique,
+      property: string,
+    ) => this.sortValue(t, property);
+    this.poolDataSource.sortingDataAccessor = (
+      item: MselTechnique,
+      property: string,
+    ) =>
+      property === 'events'
+        ? this.getEventCount(item)
+        : this.sortValue(item.technique, property);
   }
 
   // subscribed in ngOnInit, when the family input is known
@@ -247,6 +288,7 @@ export class TechniquePoolComponent
           const isNewMsel = this.msel.id !== msel.id;
           Object.assign(this.msel, msel);
           if (isNewMsel) {
+            this.refreshEventCounts();
             this.userChoseRelease = false;
             this.panelInitialized = false;
           }
@@ -276,7 +318,7 @@ export class TechniquePoolComponent
           compareAttackIds(a.technique?.externalId, b.technique?.externalId),
         );
         this.poolByTechniqueId = new Map(pool.map((m) => [m.techniqueId, m]));
-        this.poolDataSource.data = this.pool;
+        this.applyPoolFilter();
         new Set(pool.map((m) => m.technique?.techniqueReleaseId)).forEach(
           (id) => this.loadTacticNames(id),
         );
@@ -317,12 +359,14 @@ export class TechniquePoolComponent
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((fields) => {
         this.allDataFields = fields;
+        this.refreshEventCounts();
       });
     this.dataValueQuery
       .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((values) => {
         this.allDataValues = values;
+        this.refreshEventCounts();
       });
     this.permissionDataService
       .load()
@@ -333,6 +377,7 @@ export class TechniquePoolComponent
 
   ngAfterViewInit() {
     this.browserDataSource.paginator = this.browserPaginator();
+    this.browserDataSource.sort = this.browserSort();
   }
 
   get isDefensive(): boolean {
@@ -471,6 +516,10 @@ export class TechniquePoolComponent
           releaseId,
           new Map(tactics.map((t) => [t.shortName, t.name])),
         );
+        // the group column sorts by these names, so sort again if the techniques came first
+        if (this.techniques.length > 0) {
+          this.browserDataSource.data = this.techniques;
+        }
       });
     this.techniqueReleaseService
       .getTechniques(releaseId)
@@ -603,6 +652,188 @@ export class TechniquePoolComponent
       });
   }
 
+  // The pool's search and filters, like the Competencies tab's: the filtered rows are the data source's data.
+
+  /**
+   * A group's key: its domain and short name. Two domains may use one short name for different groups, so the domain keeps them
+   * apart, and the key does not depend on a release's group names, which arrive after its techniques; a group filter set before
+   * they arrive, or kept across an upgrade of a domain's release, still points at the same group.
+   */
+  private groupKey(technique: Technique, shortName: string): string {
+    return `${technique?.domain ?? ''}\u0000${shortName}`;
+  }
+
+  /** Works out the Domain and group filters' options from the pool, and drops a filter whose option is gone. */
+  private refreshPoolFacets(): boolean {
+    this.poolDomains = [
+      ...new Set(this.pool.map((m) => m.technique?.domain).filter((d) => !!d)),
+    ].sort((a, b) => a.localeCompare(b));
+    const groups = new Map<string, string>();
+    for (const m of this.pool) {
+      const names = this.tacticNamesByRelease.get(
+        m.technique?.techniqueReleaseId,
+      );
+      for (const t of m.technique?.tactics || []) {
+        const key = this.groupKey(m.technique, t);
+        if (!groups.has(key)) groups.set(key, names?.get(t) || t);
+      }
+    }
+    // ATT&CK's domains share most group names, so a name several domains use is told apart by its domain
+    const uses = new Map<string, number>();
+    for (const name of groups.values()) {
+      uses.set(name, (uses.get(name) || 0) + 1);
+    }
+    this.poolGroups = [...groups.entries()]
+      .map(([key, name]) => ({
+        key,
+        name: uses.get(name) > 1 ? `${name} (${key.split('\u0000')[0]})` : name,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    // a filter's control shows only while there are several options, so a filter left on a gone option could not be cleared
+    let changed = false;
+    if (
+      this.poolDomainFilter &&
+      !(
+        this.poolDomains.length > 1 &&
+        this.poolDomains.includes(this.poolDomainFilter)
+      )
+    ) {
+      this.poolDomainFilter = '';
+      changed = true;
+    }
+    if (
+      this.poolGroupFilter &&
+      !(
+        this.poolGroups.length > 1 &&
+        this.poolGroups.some((g) => g.key === this.poolGroupFilter)
+      )
+    ) {
+      this.poolGroupFilter = '';
+      changed = true;
+    }
+    return changed;
+  }
+
+  /** One group's name in the pool, for the group filter's label. */
+  get poolGroupLabel(): string {
+    const label = this.poolGroupsLabel;
+    return label === 'Groups' ? 'Group' : singular(label);
+  }
+
+  onPoolDomainChange(domain: string) {
+    this.poolDomainFilter = domain;
+    this.applyPoolFilter(true);
+  }
+
+  onPoolGroupChange(group: string) {
+    this.poolGroupFilter = group;
+    this.applyPoolFilter(true);
+  }
+
+  /** Lists the pool's rows by the search and filters; the page goes back to the first only when the search or a filter changed. */
+  applyPoolFilter(resetPage = false) {
+    if (this.refreshPoolFacets()) {
+      resetPage = true;
+    }
+    let filtered = [...this.pool];
+    if (this.poolDomainFilter) {
+      filtered = filtered.filter(
+        (m) => m.technique?.domain === this.poolDomainFilter,
+      );
+    }
+    if (this.poolGroupFilter) {
+      filtered = filtered.filter((m) =>
+        (m.technique?.tactics || []).some(
+          (t) => this.groupKey(m.technique, t) === this.poolGroupFilter,
+        ),
+      );
+    }
+    const term = this.poolSearchString.trim().toLowerCase();
+    if (term) {
+      filtered = filtered.filter(
+        (m) =>
+          m.technique?.externalId?.toLowerCase().includes(term) ||
+          m.technique?.name?.toLowerCase().includes(term) ||
+          m.technique?.description?.toLowerCase().includes(term) ||
+          this.getTacticNames(m.technique).toLowerCase().includes(term),
+      );
+    }
+    this.poolDataSource.data = filtered;
+    // keep the selection to rows still listed; the store hands out new objects when a row changes
+    const selectedIds = new Set(this.selection.selected.map((m) => m.id));
+    this.selection.clear();
+    filtered
+      .filter((m) => selectedIds.has(m.id))
+      .forEach((m) => this.selection.select(m));
+    // the paginator and sort are in the table's panel, which exists only once the pool has rows
+    setTimeout(() => {
+      const poolPaginator = this.poolPaginator();
+      if (poolPaginator) {
+        this.poolDataSource.paginator = poolPaginator;
+        if (resetPage) {
+          poolPaginator.firstPage();
+        }
+      }
+      const poolSort = this.poolSort();
+      if (poolSort) {
+        this.poolDataSource.sort = poolSort;
+      }
+    });
+  }
+
+  /** What a technique sorts by in a column: ids in number order (T1059 before T1059.001 before T1100), the rest as text. */
+  private sortValue(technique: Technique, property: string): string {
+    switch (property) {
+      case 'externalId':
+        return (technique?.externalId || '')
+          .toLowerCase()
+          .replace(/\d+/g, (n) => n.padStart(8, '0'));
+      case 'name':
+        return technique?.name?.toLowerCase() || '';
+      case 'tactics':
+        return this.getTacticNames(technique).toLowerCase();
+      default:
+        return '';
+    }
+  }
+
+  isAllSelected(): boolean {
+    return (
+      this.poolDataSource.data.length > 0 &&
+      this.selection.selected.length === this.poolDataSource.data.length
+    );
+  }
+
+  toggleAllRows() {
+    if (this.isAllSelected()) {
+      this.selection.clear();
+    } else {
+      this.poolDataSource.data.forEach((row) => this.selection.select(row));
+    }
+  }
+
+  removeSelected() {
+    const selected = this.selection.selected;
+    if (selected.length === 0) return;
+    const events = selected.reduce((sum, m) => sum + this.getEventCount(m), 0);
+    const message =
+      `Remove ${selected.length} technique${selected.length === 1 ? '' : 's'} from this MSEL?` +
+      (events > 0
+        ? ` ${events} scenario event reference${events === 1 ? '' : 's'} keep the id, but it will no longer be offered.`
+        : '');
+    this.dialogService
+      .confirm({ title: 'Remove Selected', message })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) {
+          for (const item of selected) {
+            this.mselTechniqueDataService.delete(item.id);
+          }
+          this.selection.clear();
+        }
+      });
+  }
+
   /** Whether any defensive release is imported, for the mappings row's empty states. */
   get hasDefensiveRelease(): boolean {
     return this.allReleases.some((r) => techniqueFamily(r) === 'defensive');
@@ -691,11 +922,14 @@ export class TechniquePoolComponent
       .getTechniqueTactics(releaseId)
       .pipe(take(1))
       .subscribe({
-        next: (tactics) =>
+        next: (tactics) => {
           this.tacticNamesByRelease.set(
             releaseId,
             new Map(tactics.map((t) => [t.shortName, t.name])),
-          ),
+          );
+          // the pool's search and group names read these
+          this.applyPoolFilter();
+        },
         error: () => this.tacticNamesByRelease.delete(releaseId),
       });
   }
@@ -722,8 +956,14 @@ export class TechniquePoolComponent
 
   /** How many of this MSEL's scenario events name the technique. */
   getEventCount(item: MselTechnique): number {
-    const externalId = item.technique?.externalId;
-    if (!externalId) return 0;
+    return this.eventCountsByExternalId.get(item.technique?.externalId) ?? 0;
+  }
+
+  /**
+   * Counts the events that name each technique id once, so the table's Events column and sort read a map. The Events sort
+   * re-sorts when the counts change.
+   */
+  private refreshEventCounts() {
     const fieldType = this.isDefensive
       ? DataFieldType.DefensiveTechnique
       : DataFieldType.AttackTechnique;
@@ -732,22 +972,24 @@ export class TechniquePoolComponent
         .filter((df) => df.mselId === this.msel.id && df.dataType === fieldType)
         .map((df) => df.id),
     );
-    if (fieldIds.size === 0) return 0;
-    const events = new Set<string>();
-    for (const dv of this.allDataValues) {
-      if (
-        fieldIds.has(dv.dataFieldId) &&
-        dv.value &&
-        dv.scenarioEventId &&
-        dv.value
-          .split(',')
-          .map((s) => s.trim())
-          .includes(externalId)
-      ) {
-        events.add(dv.scenarioEventId);
+    const eventsById = new Map<string, Set<string>>();
+    if (fieldIds.size > 0) {
+      for (const dv of this.allDataValues) {
+        if (!fieldIds.has(dv.dataFieldId) || !dv.value || !dv.scenarioEventId) {
+          continue;
+        }
+        for (const id of dv.value.split(',').map((v) => v.trim())) {
+          if (!id) continue;
+          if (!eventsById.has(id)) eventsById.set(id, new Set());
+          eventsById.get(id).add(dv.scenarioEventId);
+        }
       }
     }
-    return events.size;
+    this.eventCountsByExternalId = new Map(
+      [...eventsById].map(([id, events]) => [id, events.size]),
+    );
+    // the data source sorts when its data is set, so a new array re-sorts by the new counts
+    this.poolDataSource.data = [...this.poolDataSource.data];
   }
 
   ngOnDestroy() {

@@ -101,6 +101,14 @@
   overflow: auto;
 }
 
+// the pool's own scroll area, so its header stays in view as on the Competencies tab
+.pool-table-scroll {
+  max-height: calc(100vh - 400px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+
 .hidden {
   display: none;
 }

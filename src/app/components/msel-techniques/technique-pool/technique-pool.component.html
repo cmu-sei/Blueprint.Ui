@@ -117,7 +117,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
     }
     <div class="browser-table-scroll" [class.hidden]="isLoadingRelease">
-      <mat-table [dataSource]="browserDataSource">
+      <mat-table
+        [dataSource]="browserDataSource"
+        matSort
+        #browserSort="matSort"
+      >
         <ng-container matColumnDef="check">
           <mat-header-cell *matHeaderCellDef class="col-check" />
           <mat-cell *matCellDef="let t" class="col-check">
@@ -133,7 +137,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="externalId">
-          <mat-header-cell *matHeaderCellDef class="col-id">ID</mat-header-cell>
+          <mat-header-cell mat-sort-header *matHeaderCellDef class="col-id"
+            >ID</mat-header-cell
+          >
           <mat-cell
             *matCellDef="let t"
             class="col-id"
@@ -143,7 +149,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="name">
-          <mat-header-cell *matHeaderCellDef class="col-name"
+          <mat-header-cell mat-sort-header *matHeaderCellDef class="col-name"
             >Name</mat-header-cell
           >
           <mat-cell *matCellDef="let t" class="col-name">
@@ -158,9 +164,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="tactics">
-          <mat-header-cell *matHeaderCellDef class="col-tactics">{{
-            browserGroupsLabel
-          }}</mat-header-cell>
+          <mat-header-cell
+            mat-sort-header
+            *matHeaderCellDef
+            class="col-tactics"
+            >{{ browserGroupsLabel }}</mat-header-cell
+          >
           <mat-cell *matCellDef="let t" class="col-tactics">{{
             getTacticNames(t)
           }}</mat-cell>
@@ -298,94 +307,204 @@ project root for license information or contact permission@sei.cmu.edu for full 
         {{ fieldTypeName }} data field so scenario events can name them.
       </div>
     } @else {
-      <mat-table [dataSource]="poolDataSource" multiTemplateDataRows>
-        <ng-container matColumnDef="action">
-          <mat-header-cell *matHeaderCellDef class="col-check" />
-          <mat-cell *matCellDef="let item" class="col-check">
-            @if (canEditMsel()) {
-              <button
-                mat-icon-button
-                class="msel-action"
-                (click)="removeFromPool(item)"
-                title="Remove {{ item.technique?.externalId }}"
-              >
-                <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
-              </button>
-            }
-          </mat-cell>
-        </ng-container>
-        <ng-container matColumnDef="externalId">
-          <mat-header-cell
-            *matHeaderCellDef
-            class="col-id"
-            [class.with-domain]="showsDomainLabels"
-            >ID</mat-header-cell
+      <div class="toolbar-row">
+        @if (canEditMsel() && selection.hasValue()) {
+          <button
+            mat-stroked-button
+            (click)="removeSelected(); $event.stopPropagation()"
+            title="Remove selected"
+            style="margin-right: 10px"
           >
-          <mat-cell
-            *matCellDef="let item"
-            class="col-id"
-            [class.with-domain]="showsDomainLabels"
-          >
-            {{ item.technique?.externalId }}
-            @if (showsDomainLabels) {
-              <span class="domain-tag">{{ item.technique?.domain }}</span>
-            }
-          </mat-cell>
-        </ng-container>
-        <ng-container matColumnDef="name">
-          <mat-header-cell *matHeaderCellDef class="col-name"
-            >Name</mat-header-cell
-          >
-          <mat-cell *matCellDef="let item" class="col-name">
+            <mat-icon fontIcon="mdi-delete-sweep-outline" />
+            Remove {{ selection.selected.length }}
+          </button>
+        }
+        <mat-form-field style="width: 300px">
+          <input
+            matInput
+            [formControl]="poolSearchControl"
+            placeholder="Search techniques"
+          />
+          @if (poolSearchString) {
             <button
-              type="button"
-              class="name-link"
-              title="Show the description"
-              (click)="showDetail(item.technique)"
+              mat-icon-button
+              matSuffix
+              (click)="poolSearchControl.setValue('')"
+              title="Clear Search"
             >
-              {{ item.technique?.name }}
+              <mat-icon
+                style="transform: scale(0.85)"
+                fontIcon="mdi-close-circle-outline"
+              />
             </button>
-          </mat-cell>
-        </ng-container>
-        <ng-container matColumnDef="tactics">
-          <mat-header-cell *matHeaderCellDef class="col-tactics">{{
-            poolGroupsLabel
-          }}</mat-header-cell>
-          <mat-cell *matCellDef="let item" class="col-tactics">{{
-            getTacticNames(item.technique)
-          }}</mat-cell>
-        </ng-container>
-        <ng-container matColumnDef="events">
-          <mat-header-cell *matHeaderCellDef class="col-events"
-            >Events</mat-header-cell
-          >
-          <mat-cell *matCellDef="let item" class="col-events">{{
-            getEventCount(item)
-          }}</mat-cell>
-        </ng-container>
-        <ng-container matColumnDef="countermeasures">
-          <mat-cell *matCellDef="let item" class="col-countermeasures">
-            <app-technique-countermeasures
-              [mselId]="msel.id"
-              [externalId]="item.technique?.externalId"
-              [group]="countermeasuresFor(item)"
-              [countermeasures]="countermeasures"
-              [canEdit]="canEditMsel()"
-              [hasDefensiveRelease]="hasDefensiveRelease"
-            />
-          </mat-cell>
-        </ng-container>
-        <mat-header-row *matHeaderRowDef="poolColumns" />
-        <mat-row *matRowDef="let row; columns: poolColumns" class="pool-row" />
-        <mat-row
-          *matRowDef="
-            let row;
-            columns: ['countermeasures'];
-            when: showsCountermeasures
-          "
-          class="countermeasures-row"
-        />
-      </mat-table>
+          }
+        </mat-form-field>
+        @if (poolDomains.length > 1) {
+          <mat-form-field style="width: 180px; margin-left: 10px">
+            <mat-label>Domain</mat-label>
+            <mat-select
+              [value]="poolDomainFilter"
+              (selectionChange)="onPoolDomainChange($event.value)"
+            >
+              <mat-option value="">All</mat-option>
+              @for (d of poolDomains; track d) {
+                <mat-option [value]="d">{{ d }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+        @if (poolGroups.length > 1) {
+          <mat-form-field style="width: 240px; margin-left: 10px">
+            <mat-label>{{ poolGroupLabel }}</mat-label>
+            <mat-select
+              [value]="poolGroupFilter"
+              (selectionChange)="onPoolGroupChange($event.value)"
+            >
+              <mat-option value="">All</mat-option>
+              @for (g of poolGroups; track g.key) {
+                <mat-option [value]="g.key">{{ g.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+        <div class="button-end">
+          <mat-paginator
+            #poolPaginator
+            [pageSize]="20"
+            [pageSizeOptions]="[10, 20, 50, 100, 200]"
+          />
+        </div>
+      </div>
+      <div class="pool-table-scroll">
+        <mat-table
+          [dataSource]="poolDataSource"
+          matSort
+          #poolSort="matSort"
+          multiTemplateDataRows
+        >
+          <ng-container matColumnDef="select">
+            <mat-header-cell *matHeaderCellDef class="col-check">
+              @if (canEditMsel()) {
+                <mat-checkbox
+                  (change)="toggleAllRows()"
+                  [checked]="isAllSelected()"
+                  [indeterminate]="selection.hasValue() && !isAllSelected()"
+                  aria-label="Select all techniques"
+                />
+              }
+            </mat-header-cell>
+            <mat-cell *matCellDef="let item" class="col-check">
+              @if (canEditMsel()) {
+                <mat-checkbox
+                  (click)="$event.stopPropagation()"
+                  (change)="selection.toggle(item)"
+                  [checked]="selection.isSelected(item)"
+                  [aria-label]="'Select ' + item.technique?.externalId"
+                />
+              }
+            </mat-cell>
+          </ng-container>
+          <ng-container matColumnDef="action">
+            <mat-header-cell *matHeaderCellDef class="col-check" />
+            <mat-cell *matCellDef="let item" class="col-check">
+              @if (canEditMsel()) {
+                <button
+                  mat-icon-button
+                  class="msel-action"
+                  (click)="removeFromPool(item)"
+                  title="Remove {{ item.technique?.externalId }}"
+                >
+                  <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
+                </button>
+              }
+            </mat-cell>
+          </ng-container>
+          <ng-container matColumnDef="externalId">
+            <mat-header-cell
+              mat-sort-header
+              *matHeaderCellDef
+              class="col-id"
+              [class.with-domain]="showsDomainLabels"
+              >ID</mat-header-cell
+            >
+            <mat-cell
+              *matCellDef="let item"
+              class="col-id"
+              [class.with-domain]="showsDomainLabels"
+            >
+              {{ item.technique?.externalId }}
+              @if (showsDomainLabels) {
+                <span class="domain-tag">{{ item.technique?.domain }}</span>
+              }
+            </mat-cell>
+          </ng-container>
+          <ng-container matColumnDef="name">
+            <mat-header-cell mat-sort-header *matHeaderCellDef class="col-name"
+              >Name</mat-header-cell
+            >
+            <mat-cell *matCellDef="let item" class="col-name">
+              <button
+                type="button"
+                class="name-link"
+                title="Show the description"
+                (click)="showDetail(item.technique)"
+              >
+                {{ item.technique?.name }}
+              </button>
+            </mat-cell>
+          </ng-container>
+          <ng-container matColumnDef="tactics">
+            <mat-header-cell
+              mat-sort-header
+              *matHeaderCellDef
+              class="col-tactics"
+              >{{ poolGroupsLabel }}</mat-header-cell
+            >
+            <mat-cell *matCellDef="let item" class="col-tactics">{{
+              getTacticNames(item.technique)
+            }}</mat-cell>
+          </ng-container>
+          <ng-container matColumnDef="events">
+            <mat-header-cell
+              mat-sort-header
+              *matHeaderCellDef
+              class="col-events"
+              >Events</mat-header-cell
+            >
+            <mat-cell *matCellDef="let item" class="col-events">{{
+              getEventCount(item)
+            }}</mat-cell>
+          </ng-container>
+          <ng-container matColumnDef="countermeasures">
+            <mat-cell *matCellDef="let item" class="col-countermeasures">
+              <app-technique-countermeasures
+                [mselId]="msel.id"
+                [externalId]="item.technique?.externalId"
+                [group]="countermeasuresFor(item)"
+                [countermeasures]="countermeasures"
+                [canEdit]="canEditMsel()"
+                [hasDefensiveRelease]="hasDefensiveRelease"
+              />
+            </mat-cell>
+          </ng-container>
+          <mat-header-row *matHeaderRowDef="poolColumns; sticky: true" />
+          <mat-row
+            *matRowDef="let row; columns: poolColumns"
+            class="pool-row"
+          />
+          <mat-row
+            *matRowDef="
+              let row;
+              columns: ['countermeasures'];
+              when: showsCountermeasures
+            "
+            class="countermeasures-row"
+          />
+        </mat-table>
+      </div>
+      @if (poolDataSource.data.length === 0) {
+        <div class="empty-text">No matching techniques</div>
+      }
     }
   </mat-expansion-panel>
 </div>
