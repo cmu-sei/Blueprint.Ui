@@ -185,7 +185,7 @@ describe('UserDataService', () => {
   });
 
   /**
-   * Verifies: when load, loadById or loadByMsel fails, the error reaches the caller but the store stays loading.
+   * Verifies: when load, loadById or loadByMsel fails, the error reaches the caller and the store stops loading, since these routes refuse by permission.
    * Interacts with: UserService.getUsers / getUser / getMselUsers (stubs failing), real UserQuery.
    * Data: loading cleared first; each endpoint errors with "unavailable".
    */
@@ -206,7 +206,7 @@ describe('UserDataService', () => {
       call: (s: UserDataService): Observable<unknown> => s.loadByMsel('msel-1'),
     },
   ] as const)(
-    '$method leaves loading on after a failed request',
+    '$method clears loading after a failed request',
     async ({ endpoint, call }) => {
       const { service, query, userApi } = setup();
       TestBed.inject(UserStore).setLoading(false);
@@ -218,7 +218,7 @@ describe('UserDataService', () => {
         'unavailable',
       );
 
-      expect(query.getValue().loading).toBe(true);
+      expect(query.getValue().loading).toBe(false);
     },
   );
 
