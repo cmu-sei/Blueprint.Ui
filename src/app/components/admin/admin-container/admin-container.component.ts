@@ -196,7 +196,9 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     // a new hub connection missed what was broadcast while the old one was down; the sections reload
     // their own lists
     reloadOnReconnect(() => {
-      this.userDataService.load().pipe(take(1)).subscribe();
+      if (this.permissionDataService.canListUsers()) {
+        this.userDataService.load().pipe(take(1)).subscribe();
+      }
       if (this.canAccessAdminSection) {
         this.unitDataService.load();
       }
@@ -232,10 +234,8 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
       .observe('(max-width: 599px)')
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((state) => this.setCollapsed(state.matches));
-    // Set up user list observable
+    // Set up user list observable; the users are loaded once the permissions say they may be
     this.userList$ = this.userQuery.selectAll();
-    // Load users
-    this.userDataService.load().pipe(take(1)).subscribe();
     // Set up current user
     this.userDataService.setCurrentUser();
     // Subscribe to current user
@@ -350,6 +350,9 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
         // Load additional data if user has permissions
         if (this.canAccessAdminSection) {
           this.unitDataService.load();
+        }
+        if (this.permissionDataService.canListUsers()) {
+          this.userDataService.load().pipe(take(1)).subscribe();
         }
       });
     // load injectTypes

@@ -114,9 +114,14 @@ export class AdminGroupsComponent implements OnInit, AfterViewInit {
   );
 
   ngOnInit() {
+    // the users are for adding members, and only a caller who may list them is sent them; loading them
+    // otherwise would be refused and, inside the forkJoin, cancel the groups load with it. The admin
+    // container has loaded the permissions by now, as it has for canEdit.
     forkJoin([
       this.groupDataService.load(),
-      this.userDataService.load(),
+      ...(this.permissionDataService.canListUsers()
+        ? [this.userDataService.load()]
+        : []),
     ]).subscribe();
   }
 

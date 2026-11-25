@@ -550,11 +550,11 @@ describe('AdminContainerComponent', () => {
    * Verifies: when the hub connection is replaced, the users, units and inject types the sections share load again.
    * Interacts with: HubReconnectService.announceReconnected, UserService.getUsers, UnitService.getUnits and
    * InjectTypeService.getInjectTypes (stubs).
-   * Data: ViewUnits.
+   * Data: ViewUnits and ViewUsers.
    */
   it('reloads the shared admin data when the hub connection is replaced', async () => {
     const { users, units, injectTypes } = await renderAdmin({
-      permissions: [SystemPermission.ViewUnits],
+      permissions: [SystemPermission.ViewUnits, SystemPermission.ViewUsers],
     });
 
     TestBed.inject(HubReconnectService).announceReconnected();
@@ -562,6 +562,22 @@ describe('AdminContainerComponent', () => {
     expect(users.getUsers).toHaveBeenCalledTimes(2);
     expect(units.getUnits).toHaveBeenCalledTimes(2);
     expect(injectTypes.getInjectTypes).toHaveBeenCalledTimes(2);
+  });
+
+  /**
+   * Verifies: an admin who may not list users never asks for them, on load or after a reconnect, since GET
+   * users would refuse them and the error would reach the user.
+   * Interacts with: real PermissionDataService (grants: ViewUnits), HubReconnectService, UserService.getUsers (stub).
+   * Data: ViewUnits only.
+   */
+  it('does not load the users for an admin who may not list them', async () => {
+    const { users } = await renderAdmin({
+      permissions: [SystemPermission.ViewUnits],
+    });
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    expect(users.getUsers).not.toHaveBeenCalled();
   });
 
   /**
