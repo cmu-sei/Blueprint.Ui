@@ -3,6 +3,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import { HttpErrorResponse } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 import {
   PlayerApplicationTeam,
@@ -168,9 +169,11 @@ describe('PlayerApplicationTeamDataService', () => {
   it('shows the error when adding a team to an application is refused', () => {
     const { service, patApi, handleError, emissions } = setup();
     service.updateStore(appTeam());
-    const refused = new Error(
-      'BLUE already has CITE, which shows the same view',
-    );
+    const refused = new HttpErrorResponse({
+      status: 409,
+      statusText: 'Conflict',
+      error: 'BLUE already has CITE, which shows the same view',
+    });
     patApi.createPlayerApplicationTeam.mockImplementation(() =>
       throwError(() => refused),
     );
