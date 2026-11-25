@@ -361,8 +361,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
               (selectionChange)="onPoolGroupChange($event.value)"
             >
               <mat-option value="">All</mat-option>
-              @for (g of poolGroups; track g.shortName) {
-                <mat-option [value]="g.shortName">{{ g.name }}</mat-option>
+              @for (g of poolGroups; track g.key) {
+                <mat-option [value]="g.key">{{ g.name }}</mat-option>
               }
             </mat-select>
           </mat-form-field>
