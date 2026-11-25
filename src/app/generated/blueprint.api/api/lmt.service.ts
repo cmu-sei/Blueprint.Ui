@@ -43,7 +43,7 @@ export class LmtService extends BaseService {
 
     /**
      * Gets IEEE 2881 (LMT) metadata for an MSEL as JSON-LD
-     * Returns LMT (Learning Metadata) as JSON-LD conforming to IEEE 2881 schema. This endpoint is publicly accessible to enable catalog discovery by LMS systems, PCTE registries, and other TLA components. The JSON-LD includes: - Exercise name, description, objectives - Competencies assessed (lrmi:assesses from MselCompetency associations) - Educational metadata (difficulty, purpose, mode, keywords) - Prerequisites (if configured)              Any LMS that supports LTI 1.3 Deep Linking or Content-Item can consume this metadata to auto-link competencies, tags, and prerequisites when importing the exercise.
+     * Returns LMT (Learning Metadata) as JSON-LD conforming to IEEE 2881 schema. Accessible to any signed-in caller, to enable catalog discovery by LMS systems, PCTE registries, and other TLA components, and only for a published MSEL: a template with the Approved status. Any other MSEL is a 404. The JSON-LD includes: - Exercise name, description, objectives - Competencies assessed (lrmi:assesses from MselCompetency associations) - Educational metadata (difficulty, purpose, mode, keywords) - Prerequisites (if configured)              Any LMS that supports LTI 1.3 Deep Linking or Content-Item can consume this metadata to auto-link competencies, tags, and prerequisites when importing the exercise.
      * @param mselId 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
