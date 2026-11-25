@@ -805,4 +805,51 @@ describe('MselNetworksComponent', () => {
 
     expect(open.mock.calls).toHaveLength(opened);
   });
+
+  /**
+   * Verifies: a save already sent is not cancelled when the tab is left, so it finishes on the server.
+   * Data: the host save is still waiting when the tab is destroyed, then answers.
+   */
+  it('lets a sent save finish when the tab is left', async () => {
+    const late = new Subject<Host>();
+    const { hostApi, fixture } = await renderNetworks({
+      dialogResult: { ...HOSTS[1], name: 'fw02' },
+    });
+    hostApi.updateHost.mockReturnValue(late);
+    const user = userEvent.setup();
+
+    await user.click(rowOf('bank-dmz'));
+    await user.click(
+      screen.getByRole('button', { name: 'Edit host fw01 on bank-dmz' }),
+    );
+    fixture.destroy();
+
+    expect(late.observed).toBe(true);
+  });
+
+  /**
+   * Verifies: a save that fails after another MSEL became active does not open a dialog for the old MSEL.
+   * Data: the host save answers late, after msel-2 became the active MSEL.
+   */
+  it('does not reopen a dialog for a save that fails after the MSEL changed', async () => {
+    const late = new Subject<Host>();
+    const { open, hostApi, fixture } = await renderNetworks({
+      dialogResult: { ...HOSTS[1], name: 'fw02' },
+    });
+    hostApi.updateHost.mockReturnValue(late);
+    const user = userEvent.setup();
+    await user.click(rowOf('bank-dmz'));
+    await user.click(
+      screen.getByRole('button', { name: 'Edit host fw01 on bank-dmz' }),
+    );
+    const opened = open.mock.calls.length;
+    const msels = TestBed.inject(MselStore);
+    msels.add({ id: 'msel-2', name: 'Next' });
+    msels.setActive('msel-2');
+    await fixture.whenStable();
+
+    late.error(new Error('refused'));
+
+    expect(open.mock.calls).toHaveLength(opened);
+  });
 });

@@ -268,6 +268,39 @@ describe('HostEditDialogComponent', () => {
   });
 
   /**
+   * Verifies: an address that was already there shows its error when its network is changed to one it is outside of, before the field is touched.
+   * Data: 10.20.0.5 on bank-lan (10.20.0.0/24), the network changed to bank-wan (10.30.0.0/24).
+   */
+  it('shows the address error when the network changes under it', async () => {
+    await renderDialog(HostEditDialogComponent, {
+      host: {
+        mselId: 'msel-1',
+        name: 'ws',
+        interfaces: [{ networkId: 'n-lan', address: '10.20.0.5' }],
+        teamIds: [],
+        organizationIds: [],
+      },
+      hosts: [],
+      networks: [
+        { id: 'n-lan', name: 'bank-lan', range: '10.20.0.0/24' },
+        { id: 'n-wan', name: 'bank-wan', range: '10.30.0.0/24' },
+      ],
+      teams: [],
+      organizations: [],
+    });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('combobox', { name: 'Network' }));
+    await user.click(await screen.findByRole('option', { name: /bank-wan/ }));
+
+    expect(
+      await screen.findByText(
+        "The address is not inside the network's range, 10.30.0.0/24",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  /**
    * Verifies: Add Interface is disabled once the host is on every network, instead of adding a blank interface.
    */
   it('disables Add Interface when the host is on every network', async () => {

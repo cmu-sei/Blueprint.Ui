@@ -251,6 +251,8 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
     return unattached.length ? [...rows, NO_NETWORK] : rows;
   });
   private loadSubscription: Subscription | undefined;
+  // a save that was sent finishes when the tab is left, but its failure does not reopen a dialog on a tab that is gone
+  private destroyed = false;
   constructor() {
     effect(() => (this.networkDataSource.data = this.networkRows()));
   }
@@ -283,12 +285,17 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
     this.loadSubscription?.unsubscribe();
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }
 
   load(): void {
+    // a delete or save answered after the tab was left starts nothing
+    if (this.destroyed) {
+      return;
+    }
     const mselId = this.mselId();
     this.loading.set(true);
     // an answer for a MSEL or a load that has been replaced is dropped, and the networks and hosts arrive together
@@ -477,12 +484,12 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
         const save = result.id
           ? this.networkService.updateNetwork(result.id, result)
           : this.networkService.createNetwork(result);
-        save.pipe(takeUntil(this.unsubscribe$)).subscribe({
+        save.subscribe({
           next: () => this.load(),
           error: (err) => {
             this.errorService.handleError(err);
             // the dialog opens again only while the tab still shows the MSEL it was for
-            if (mselId === this.mselId()) {
+            if (!this.destroyed && mselId === this.mselId()) {
               this.openNetworkDialog(result);
             }
           },
@@ -550,11 +557,11 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
         const save = result.id
           ? this.hostService.updateHost(result.id, result)
           : this.hostService.createHost(result);
-        save.pipe(takeUntil(this.unsubscribe$)).subscribe({
+        save.subscribe({
           next: () => this.load(),
           error: (err) => {
             this.errorService.handleError(err);
-            if (mselId === this.mselId()) {
+            if (!this.destroyed && mselId === this.mselId()) {
               this.openHostDialog(result);
             }
           },

@@ -105,10 +105,15 @@ export class HostEditDialogComponent {
   }
 
   /** Marks a field as invalid, so its mat-error shows, while its rule is broken */
-  private invalidWhen(problem: () => string | null): ErrorStateMatcher {
+  private invalidWhen(
+    problem: () => string | null,
+    // an address that is there already is checked at once: changing the network can leave it outside the range
+    showWithoutTouch: () => boolean = () => false,
+  ): ErrorStateMatcher {
     return {
       isErrorState: (control) =>
-        !!problem() && !!(control?.touched || control?.dirty),
+        !!problem() &&
+        !!(control?.touched || control?.dirty || showWithoutTouch()),
     };
   }
 
@@ -130,8 +135,9 @@ export class HostEditDialogComponent {
         network: this.invalidWhen(() =>
           this.networkFieldProblem(hostInterface),
         ),
-        address: this.invalidWhen(() =>
-          this.addressFieldProblem(hostInterface),
+        address: this.invalidWhen(
+          () => this.addressFieldProblem(hostInterface),
+          () => !!hostInterface.address?.trim(),
         ),
       };
       this.interfaceMatchers.set(hostInterface, matchers);
