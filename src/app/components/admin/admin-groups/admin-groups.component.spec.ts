@@ -101,7 +101,9 @@ describe('AdminGroupsComponent', () => {
    * Data: one group, Analysts.
    */
   it('loads the groups without the users for a caller who may not list users', async () => {
-    const { groupApi, userApi } = await renderGroups([SystemPermission.ViewGroups]);
+    const { groupApi, userApi } = await renderGroups([
+      SystemPermission.ViewGroups,
+    ]);
 
     expect(groupApi.getGroups).toHaveBeenCalledTimes(1);
     expect(userApi.getUsers).not.toHaveBeenCalled();
