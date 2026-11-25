@@ -12,7 +12,9 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { SelectionModel } from '@angular/cdk/collections';
 import { MatPaginator } from '@angular/material/paginator';
+import { MatSort, MatSortHeader } from '@angular/material/sort';
 import {
   MatTableDataSource,
   MatTable,
@@ -129,6 +131,8 @@ export interface PinnedDomain {
     MatIconButton,
     MatSuffix,
     MatPaginator,
+    MatSort,
+    MatSortHeader,
     MatProgressSpinner,
     MatTable,
     MatColumnDef,
@@ -167,6 +171,9 @@ export class TechniquePoolComponent
   readonly loggedInUserId = input<string>(undefined);
   /** The releases whose content the section shows, for their notices. */
   readonly browserPaginator = viewChild<MatPaginator>('browserPaginator');
+  readonly browserSort = viewChild<MatSort>('browserSort');
+  readonly poolPaginator = viewChild<MatPaginator>('poolPaginator');
+  readonly poolSort = viewChild<MatSort>('poolSort');
   msel = new MselPlus();
   releases: TechniqueRelease[] = [];
   private allReleases: TechniqueRelease[] = [];
@@ -211,7 +218,19 @@ export class TechniquePoolComponent
   pool: MselTechnique[] = [];
   private poolByTechniqueId = new Map<string, MselTechnique>();
   poolDataSource = new MatTableDataSource<MselTechnique>([]);
-  poolColumns: string[] = ['action', 'externalId', 'name', 'tactics', 'events'];
+  poolColumns: string[] = [
+    'select',
+    'action',
+    'externalId',
+    'name',
+    'tactics',
+    'events',
+  ];
+  poolSearchControl = new FormControl<string>('');
+  poolSearchString = '';
+  poolDomainFilter = '';
+  poolGroupFilter = '';
+  selection = new SelectionModel<MselTechnique>(true, []);
   private allDataFields: DataField[] = [];
   private allDataValues: DataValue[] = [];
   /** Each release's group names by short name, for the browser and for every release in the pool. */
@@ -235,6 +254,23 @@ export class TechniquePoolComponent
       });
     this.browserDataSource.filterPredicate = (t: Technique) =>
       this.matchesBrowserFilter(t);
+    this.poolSearchControl.valueChanges
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((term) => {
+        this.poolSearchString = term || '';
+        this.applyPoolFilter();
+      });
+    this.browserDataSource.sortingDataAccessor = (
+      t: Technique,
+      property: string,
+    ) => this.sortValue(t, property);
+    this.poolDataSource.sortingDataAccessor = (
+      item: MselTechnique,
+      property: string,
+    ) =>
+      property === 'events'
+        ? this.getEventCount(item)
+        : this.sortValue(item.technique, property);
   }
 
   // subscribed in ngOnInit, when the family input is known
@@ -276,7 +312,7 @@ export class TechniquePoolComponent
           compareAttackIds(a.technique?.externalId, b.technique?.externalId),
         );
         this.poolByTechniqueId = new Map(pool.map((m) => [m.techniqueId, m]));
-        this.poolDataSource.data = this.pool;
+        this.applyPoolFilter();
         new Set(pool.map((m) => m.technique?.techniqueReleaseId)).forEach(
           (id) => this.loadTacticNames(id),
         );
@@ -333,6 +369,7 @@ export class TechniquePoolComponent
 
   ngAfterViewInit() {
     this.browserDataSource.paginator = this.browserPaginator();
+    this.browserDataSource.sort = this.browserSort();
   }
 
   get isDefensive(): boolean {
@@ -603,6 +640,143 @@ export class TechniquePoolComponent
       });
   }
 
+  // The pool's search and filters, like the Competencies tab's: the filtered rows are the data source's data.
+
+  /** The domains the pool holds, for the Domain filter; offered only when there are several. */
+  get poolDomains(): string[] {
+    return [
+      ...new Set(this.pool.map((m) => m.technique?.domain).filter((d) => !!d)),
+    ].sort((a, b) => a.localeCompare(b));
+  }
+
+  /** The groups (tactics or categories) the pool's techniques are in, for the group filter; offered only when there are several. */
+  get poolGroups(): { shortName: string; name: string }[] {
+    const groups = new Map<string, string>();
+    for (const m of this.pool) {
+      const names = this.tacticNamesByRelease.get(
+        m.technique?.techniqueReleaseId,
+      );
+      for (const t of m.technique?.tactics || []) {
+        if (!groups.has(t)) groups.set(t, names?.get(t) || t);
+      }
+    }
+    return [...groups.entries()]
+      .map(([shortName, name]) => ({ shortName, name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /** One group's name in the pool, for the group filter's label. */
+  get poolGroupLabel(): string {
+    const label = this.poolGroupsLabel;
+    return label === 'Groups' ? 'Group' : singular(label);
+  }
+
+  onPoolDomainChange(domain: string) {
+    this.poolDomainFilter = domain;
+    this.applyPoolFilter();
+  }
+
+  onPoolGroupChange(group: string) {
+    this.poolGroupFilter = group;
+    this.applyPoolFilter();
+  }
+
+  applyPoolFilter() {
+    let filtered = [...this.pool];
+    if (this.poolDomainFilter) {
+      filtered = filtered.filter(
+        (m) => m.technique?.domain === this.poolDomainFilter,
+      );
+    }
+    if (this.poolGroupFilter) {
+      filtered = filtered.filter((m) =>
+        (m.technique?.tactics || []).includes(this.poolGroupFilter),
+      );
+    }
+    const term = this.poolSearchString.trim().toLowerCase();
+    if (term) {
+      filtered = filtered.filter(
+        (m) =>
+          m.technique?.externalId?.toLowerCase().includes(term) ||
+          m.technique?.name?.toLowerCase().includes(term) ||
+          m.technique?.description?.toLowerCase().includes(term) ||
+          this.getTacticNames(m.technique).toLowerCase().includes(term),
+      );
+    }
+    this.poolDataSource.data = filtered;
+    // keep the selection to rows still listed; the store hands out new objects when a row changes
+    const selectedIds = new Set(this.selection.selected.map((m) => m.id));
+    this.selection.clear();
+    filtered
+      .filter((m) => selectedIds.has(m.id))
+      .forEach((m) => this.selection.select(m));
+    // the paginator and sort are in the table's panel, which exists only once the pool has rows
+    setTimeout(() => {
+      const poolPaginator = this.poolPaginator();
+      if (poolPaginator) {
+        this.poolDataSource.paginator = poolPaginator;
+        poolPaginator.firstPage();
+      }
+      const poolSort = this.poolSort();
+      if (poolSort) {
+        this.poolDataSource.sort = poolSort;
+      }
+    });
+  }
+
+  /** What a technique sorts by in a column: ids in number order (T1059 before T1059.001 before T1100), the rest as text. */
+  private sortValue(technique: Technique, property: string): string {
+    switch (property) {
+      case 'externalId':
+        return (technique?.externalId || '')
+          .toLowerCase()
+          .replace(/\d+/g, (n) => n.padStart(8, '0'));
+      case 'name':
+        return technique?.name?.toLowerCase() || '';
+      case 'tactics':
+        return this.getTacticNames(technique).toLowerCase();
+      default:
+        return '';
+    }
+  }
+
+  isAllSelected(): boolean {
+    return (
+      this.poolDataSource.data.length > 0 &&
+      this.selection.selected.length === this.poolDataSource.data.length
+    );
+  }
+
+  toggleAllRows() {
+    if (this.isAllSelected()) {
+      this.selection.clear();
+    } else {
+      this.poolDataSource.data.forEach((row) => this.selection.select(row));
+    }
+  }
+
+  removeSelected() {
+    const selected = this.selection.selected;
+    if (selected.length === 0) return;
+    const events = selected.reduce((sum, m) => sum + this.getEventCount(m), 0);
+    const message =
+      `Remove ${selected.length} technique${selected.length === 1 ? '' : 's'} from this MSEL?` +
+      (events > 0
+        ? ` ${events} scenario event reference${events === 1 ? '' : 's'} keep the id, but it will no longer be offered.`
+        : '');
+    this.dialogService
+      .confirm({ title: 'Remove Selected', message })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) {
+          for (const item of selected) {
+            this.mselTechniqueDataService.delete(item.id);
+          }
+          this.selection.clear();
+        }
+      });
+  }
+
   /** Whether any defensive release is imported, for the mappings row's empty states. */
   get hasDefensiveRelease(): boolean {
     return this.allReleases.some((r) => techniqueFamily(r) === 'defensive');
@@ -691,11 +865,14 @@ export class TechniquePoolComponent
       .getTechniqueTactics(releaseId)
       .pipe(take(1))
       .subscribe({
-        next: (tactics) =>
+        next: (tactics) => {
           this.tacticNamesByRelease.set(
             releaseId,
             new Map(tactics.map((t) => [t.shortName, t.name])),
-          ),
+          );
+          // the pool's search and group names read these
+          this.applyPoolFilter();
+        },
         error: () => this.tacticNamesByRelease.delete(releaseId),
       });
   }

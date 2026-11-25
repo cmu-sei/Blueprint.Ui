@@ -31,6 +31,7 @@ import {
   PermissionGrants,
 } from 'src/app/test-utils/mock-permission-data.service';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 
 const ME = 'user-me';
 const MSEL: Msel = {
@@ -50,6 +51,19 @@ const T1059: MselTechnique = {
     externalId: 'T1059',
     name: 'Command and Scripting Interpreter',
     url: 'https://attack.mitre.org/techniques/T1059',
+  },
+};
+const T1003: MselTechnique = {
+  id: 'mat-2',
+  mselId: 'msel-1',
+  techniqueId: 'at-2',
+  technique: {
+    id: 'at-2',
+    techniqueReleaseId: 'rel-1',
+    domain: 'enterprise-attack',
+    externalId: 'T1003',
+    name: 'OS Credential Dumping',
+    url: 'https://attack.mitre.org/techniques/T1003',
   },
 };
 const TERMS_OF_USE =
@@ -274,6 +288,7 @@ async function renderTechniques(
 ) {
   const poolApi = {
     getMselTechniques: vi.fn(() => of(structuredClone(pool))),
+    deleteMselTechnique: vi.fn(() => of({})),
     getMselCountermeasures: vi.fn(() => of(structuredClone(countermeasures))),
   } satisfies ApiStub<MselTechniqueService>;
   const releaseApi = {
@@ -838,7 +853,7 @@ describe('MselTechniquesComponent', () => {
       expect.objectContaining({ title: 'Remove Technique' }),
     );
     expect(box).toBeChecked();
-    expect(poolApi).not.toHaveProperty('deleteMselTechnique');
+    expect(poolApi.deleteMselTechnique).not.toHaveBeenCalled();
   });
 
   /**
@@ -923,5 +938,130 @@ describe('MselTechniquesComponent', () => {
         name: 'Open T1059 on attack.mitre.org',
       }),
     ).toHaveAttribute('href', 'https://attack.mitre.org/techniques/T1059');
+  });
+  /**
+   * Verifies: the pool has its own search that narrows its rows by id, name or group, and clearing it brings them back,
+   * as on the Competencies tab.
+   * Interacts with: TechniquePoolComponent.applyPoolFilter, poolSearchControl.
+   * Data: T1059 and T1003 in the pool; Enterprise ATT&CK 17.1 imported.
+   */
+  it('searches the pool by id or name', async () => {
+    await renderTechniques([T1059, T1003], [ENTERPRISE_RELEASE]);
+    const user = userEvent.setup();
+    const search =
+      within(attackSection()).getAllByPlaceholderText('Search techniques')[1];
+
+    await user.type(search, 'dumping');
+
+    expect(
+      within(attackSection()).queryByRole('cell', { name: 'T1059' }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(attackSection()).getByRole('cell', { name: 'T1003' }),
+    ).toBeInTheDocument();
+
+    await user.clear(search);
+
+    expect(
+      within(attackSection()).getByRole('cell', { name: 'T1059' }),
+    ).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: the pool's ID, Name and Events headers sort its rows, ids in number order, Events by count, and a second
+   * click reverses.
+   * Interacts with: TechniquePoolComponent.sortValue, MatSort.
+   * Data: T1059 and T1003 in the pool; the default order is by id.
+   */
+  it('sorts the pool by a column header', async () => {
+    const { fixture } = await renderTechniques(
+      [T1059, T1003],
+      [ENTERPRISE_RELEASE],
+    );
+    const user = userEvent.setup();
+    const ids = () =>
+      within(attackSection())
+        .getAllByRole('cell', { name: /^T\d{4}$/ })
+        .map((c) => c.textContent?.trim());
+
+    expect(ids()).toEqual(['T1003', 'T1059']);
+
+    await user.click(
+      within(attackSection()).getAllByRole('columnheader', { name: 'Name' })[0],
+    );
+    fixture.detectChanges();
+
+    // Command and Scripting Interpreter comes before OS Credential Dumping
+    expect(ids()).toEqual(['T1059', 'T1003']);
+
+    await user.click(
+      within(attackSection()).getAllByRole('columnheader', { name: 'Name' })[0],
+    );
+
+    expect(ids()).toEqual(['T1003', 'T1059']);
+  });
+
+  /**
+   * Verifies: the pool is paged, with a paginator that counts its rows and not the browser's.
+   * Interacts with: TechniquePoolComponent.poolPaginator.
+   * Data: T1059 and T1003 in the pool; no release techniques to browse.
+   */
+  it('pages the pool', async () => {
+    await renderTechniques([T1059, T1003], [ENTERPRISE_RELEASE]);
+
+    expect(
+      await within(attackSection()).findByText('1 – 2 of 2'),
+    ).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: with ManageMsels, ticking pool rows offers Remove n, which asks first and then deletes each ticked
+   * technique; without it there are no checkboxes.
+   * Interacts with: TechniquePoolComponent.removeSelected, MselTechniqueService.deleteMselTechnique (stub),
+   * CrucibleDialogService.confirm (stub).
+   * Data: T1059 and T1003 in the pool; ManageMsels granted.
+   */
+  it('removes the ticked techniques from the pool', async () => {
+    const confirm = vi.fn(
+      () => dialogRefStub<unknown, boolean>(true).dialogRef,
+    );
+    const { poolApi } = await renderTechniques(
+      [T1059, T1003],
+      [ENTERPRISE_RELEASE],
+      {},
+      NO_MAPPINGS,
+      { system: [SystemPermission.ManageMsels] },
+      {},
+      { confirm },
+    );
+    const user = userEvent.setup();
+
+    await user.click(
+      await within(attackSection()).findByRole('checkbox', {
+        name: 'Select T1059',
+      }),
+    );
+    await user.click(
+      within(attackSection()).getByRole('button', { name: /Remove 1/ }),
+    );
+
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(poolApi.deleteMselTechnique).toHaveBeenCalledTimes(1);
+    expect(poolApi.deleteMselTechnique).toHaveBeenCalledWith('mat-1');
+  });
+
+  /**
+   * Verifies: a user who cannot edit the MSEL gets no tick boxes in the pool.
+   * Interacts with: TechniquePoolComponent.canEditMsel.
+   * Data: T1059 in the pool; no grants.
+   */
+  it('offers no tick boxes without edit rights', async () => {
+    await renderTechniques([T1059], [ENTERPRISE_RELEASE]);
+
+    expect(
+      within(attackSection()).queryByRole('checkbox', {
+        name: 'Select T1059',
+      }),
+    ).not.toBeInTheDocument();
   });
 });
