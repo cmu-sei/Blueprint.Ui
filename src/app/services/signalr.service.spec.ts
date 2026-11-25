@@ -511,11 +511,11 @@ describe('SignalRService', () => {
     });
 
     /**
-     * Verifies: UserCreated adds a user and UserDeleted removes it, while UserUpdated for a stored user changes nothing.
+     * Verifies: UserCreated adds a user, UserUpdated replaces a stored user, and UserDeleted removes it.
      * Interacts with: FakeHubConnection.trigger, UserDataService, UserQuery.
      * Data: user-1 "Alice" created, updated to "Alice Admin", deleted.
      */
-    it('User events add and remove users but ignore updates', async () => {
+    it('User events add, update and remove users', async () => {
       const { hub } = await connect();
       const users = TestBed.inject(UserQuery);
 
@@ -523,9 +523,7 @@ describe('SignalRService', () => {
       hub.trigger('UserUpdated', { id: 'user-1', name: 'Alice Admin' }, [
         'name',
       ]);
-      // Current behaviour: updateStore uses add(), so the update is dropped (see
-      // user-data.service.spec.ts, 'update does not replace a user that is already stored').
-      expect(users.getEntity('user-1').name).toBe('Alice');
+      expect(users.getEntity('user-1').name).toBe('Alice Admin');
 
       hub.trigger('UserDeleted', 'user-1');
       expect(users.getAll()).toEqual([]);
