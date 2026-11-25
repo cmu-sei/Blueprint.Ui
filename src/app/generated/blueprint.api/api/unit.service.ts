@@ -348,7 +348,7 @@ export class UnitService extends BaseService {
 
     /**
      * Gets all Unit in the system
-     * Returns a list of all of the Units in the system. &lt;para /&gt; Only accessible to a SuperUser
+     * Returns a list of all of the Units in the system. &lt;para /&gt; Accessible to a User with the ViewUnits, CreateMsels or ViewMsels permission, or who works on a MSEL
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */

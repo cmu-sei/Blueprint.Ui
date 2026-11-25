@@ -148,6 +148,29 @@ describe('PermissionDataService', () => {
   );
 
   /**
+   * Verifies: canListUsers is true for exactly the permissions Blueprint.Api's GET users accepts
+   * (UserController.Get), each on its own, and false for every other permission.
+   * Interacts with: PermissionDataService.canListUsers.
+   * Data: each SystemPermission granted on its own.
+   */
+  it.each(ALL_PERMISSIONS)(
+    'canListUsers matches the API for %s alone',
+    async (granted) => {
+      const { service } = setup([granted]);
+      await firstValueFrom(service.load());
+
+      const opens: SystemPermission[] = [
+        SystemPermission.ViewUsers,
+        SystemPermission.ManageUsers,
+        SystemPermission.ViewMsels,
+        SystemPermission.ManageGroups,
+        SystemPermission.ManageUnits,
+      ];
+      expect(service.canListUsers()).toBe(opens.includes(granted));
+    },
+  );
+
+  /**
    * Verifies: any single View* permission that opens an admin section opens the administration area.
    * Interacts with: PermissionDataService.canViewAdministration.
    * Data: each View* permission except ViewMsels on its own.

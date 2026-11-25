@@ -32,7 +32,6 @@ import {
   MselService,
   SystemPermission,
   SystemPermissionsService,
-  User,
   UserService,
 } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
@@ -93,9 +92,8 @@ async function renderMselList(
     ),
     deleteMsel: vi.fn(() => of<unknown>(null)),
   } satisfies ApiStub<MselService>;
-  const userApi = {
-    getUsers: vi.fn(() => of<User[]>([])),
-  } satisfies ApiStub<UserService>;
+  // empty, so a call to GET users (which needs ViewUsers or ViewMsels) fails the test
+  const userApi = {} satisfies ApiStub<UserService>;
   // The user confirms every dialog.
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
   const dialog = { confirm } satisfies Pick<CrucibleDialogService, 'confirm'>;

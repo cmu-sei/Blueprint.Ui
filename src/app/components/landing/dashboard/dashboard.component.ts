@@ -10,9 +10,8 @@ import {
   CrucibleLandingBackgroundDirective,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
-import { UserQuery } from 'src/app/data/user/user.query';
 import { CurrentUserQuery } from 'src/app/data/user/user.query';
-import { Msel, SystemPermission, User } from 'src/app/generated/blueprint.api';
+import { Msel, SystemPermission } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
@@ -121,7 +120,6 @@ export const CAPABILITY_CARDS: CapabilityCard[] = [
 export class DashboardComponent implements OnDestroy, OnInit {
   private userDataService = inject(UserDataService);
   private errorService = inject(ErrorService);
-  private userQuery = inject(UserQuery);
   private currentUserQuery = inject(CurrentUserQuery);
   private settingsService = inject(ComnSettingsService);
   private mselDataService = inject(MselDataService);
@@ -136,7 +134,6 @@ export class DashboardComponent implements OnDestroy, OnInit {
   buildMselList: Msel[] = [];
   assessMselList: Msel[] = [];
   imageFilePath = '';
-  userList: User[] = [];
   topbarText = 'Event Dashboard';
   hideTopbar = false;
   topbarColor = '#ef3a47';
@@ -203,15 +200,6 @@ export class DashboardComponent implements OnDestroy, OnInit {
 
   startup() {
     this.isStartupBegun = true;
-    // subscribe to users
-    this.userQuery
-      .selectAll()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((users) => {
-        this.userList = users;
-      });
-    // load the users
-    this.userDataService.load().pipe(take(1)).subscribe();
     // load the launch MSELs
     this.mselDataService
       .getMyLaunchMsels()

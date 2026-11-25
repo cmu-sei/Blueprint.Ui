@@ -176,7 +176,7 @@ export class InjectService extends BaseService {
 
     /**
      * Gets a specific Inject by id
-     * Returns the Inject with the id specified &lt;para /&gt; Accessible to a User that is a member of a Team within the specified Inject
+     * Returns the Inject with the id specified &lt;para /&gt; Accessible to a User with the ViewCatalogs permission, or who can view a Catalog the Inject is in
      * @param id The id of the Inject
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -296,7 +296,7 @@ export class InjectService extends BaseService {
 
     /**
      * Gets Injects for an InjectType
-     * Returns a list of Injects for the InjectType.
+     * Returns a list of Injects for the InjectType: every one of them to a User with the ViewCatalogs permission, and to anybody else those in a Catalog they can view.
      * @param injectTypeId The ID of the InjectType
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.

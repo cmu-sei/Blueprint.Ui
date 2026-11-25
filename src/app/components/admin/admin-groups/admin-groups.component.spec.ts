@@ -95,6 +95,22 @@ const renameButton = () =>
 
 describe('AdminGroupsComponent', () => {
   /**
+   * Verifies: a caller who may view groups but not list users gets the groups, and is never sent GET users,
+   * whose 403 inside the forkJoin would cancel the groups load.
+   * Interacts with: real PermissionDataService (grants: ViewGroups), GroupService.getGroups and UserService.getUsers (stubs).
+   * Data: one group, Analysts.
+   */
+  it('loads the groups without the users for a caller who may not list users', async () => {
+    const { groupApi, userApi } = await renderGroups([
+      SystemPermission.ViewGroups,
+    ]);
+
+    expect(groupApi.getGroups).toHaveBeenCalledTimes(1);
+    expect(userApi.getUsers).not.toHaveBeenCalled();
+    expect(within(table()).getByText('Analysts')).toBeInTheDocument();
+  });
+
+  /**
    * Verifies: with ManageGroups the Add, Delete and Rename buttons are enabled, and the groups and users are loaded.
    * Interacts with: real PermissionDataService (grants: ManageGroups), GroupService.getGroups and UserService.getUsers (stubs).
    * Data: one group, Analysts.

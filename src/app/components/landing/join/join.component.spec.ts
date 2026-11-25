@@ -20,7 +20,6 @@ import {
   Msel,
   MselImageService,
   MselService,
-  User,
   UserService,
 } from 'src/app/generated/blueprint.api';
 import { ErrorService } from 'src/app/services/error/error.service';
@@ -68,9 +67,8 @@ async function renderJoin(
     // although the generated client types it as an Msel; the stub is typed to what the API sends.
     joinMselByInvitation: vi.fn(join),
   };
-  const userApi = {
-    getUsers: vi.fn(() => of<User[]>([])),
-  } satisfies ApiStub<UserService>;
+  // empty, so a call to GET users (which needs ViewUsers or ViewMsels) fails the test
+  const userApi = {} satisfies ApiStub<UserService>;
   const imageApi = {
     getMselImage: vi.fn(() => of(new Blob(['image'], { type: 'image/png' }))),
   } satisfies ApiStub<MselImageService>;

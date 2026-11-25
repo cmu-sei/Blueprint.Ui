@@ -14,7 +14,6 @@ import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
 import {
   Msel,
   MselService,
-  User,
   UserService,
 } from 'src/app/generated/blueprint.api';
 import {
@@ -62,9 +61,8 @@ async function renderLaunch(
       }),
     ),
   } satisfies ApiStub<MselService>;
-  const userApi = {
-    getUsers: vi.fn(() => of<User[]>([])),
-  } satisfies ApiStub<UserService>;
+  // empty, so a call to GET users (which needs ViewUsers or ViewMsels) fails the test
+  const userApi = {} satisfies ApiStub<UserService>;
   const signalR = {
     startConnection: vi.fn(() => Promise.resolve()),
     join: vi.fn(),

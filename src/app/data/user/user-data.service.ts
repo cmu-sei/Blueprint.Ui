@@ -4,7 +4,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ComnAuthService, Theme } from '@cmusei/crucible-common';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { finalize, tap } from 'rxjs/operators';
 import { User, UserService } from 'src/app/generated/blueprint.api';
 import { UserQuery } from './user.query';
 import { CurrentUserStore, UserStore } from './user.store';
@@ -25,7 +25,8 @@ export class UserDataService {
       tap((users: User[]) => {
         this.userStore.set(users);
       }),
-      tap(() => {
+      // cleared on an error too: these routes are permission-gated, so a refusal is an ordinary answer
+      finalize(() => {
         this.userStore.setLoading(false);
       }),
     );
@@ -37,7 +38,8 @@ export class UserDataService {
       tap((_user: User) => {
         this.userStore.upsert(_user.id, { ..._user });
       }),
-      tap(() => {
+      // cleared on an error too: these routes are permission-gated, so a refusal is an ordinary answer
+      finalize(() => {
         this.userStore.setLoading(false);
       }),
     );
@@ -49,7 +51,8 @@ export class UserDataService {
       tap((users: User[]) => {
         this.userStore.set(users);
       }),
-      tap(() => {
+      // cleared on an error too: these routes are permission-gated, so a refusal is an ordinary answer
+      finalize(() => {
         this.userStore.setLoading(false);
       }),
     );
