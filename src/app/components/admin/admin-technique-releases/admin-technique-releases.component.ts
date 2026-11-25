@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSort, MatSortHeader } from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
 import {
   MatTableDataSource,
   MatTable,
@@ -82,6 +83,7 @@ import {
     MatTable,
     MatSort,
     MatSortHeader,
+    MatPaginator,
     MatColumnDef,
     MatHeaderCellDef,
     MatHeaderCell,
@@ -113,6 +115,7 @@ export class AdminTechniqueReleasesComponent
   readonly loggedInUserId = input<string>(undefined);
   readonly canEdit = input<boolean>(undefined);
   readonly sort = viewChild(MatSort);
+  readonly paginator = viewChild(MatPaginator);
   readonly stixInput = viewChild<ElementRef<HTMLInputElement>>('stixInput');
   readonly mappingsInput =
     viewChild<ElementRef<HTMLInputElement>>('mappingsInput');
@@ -180,6 +183,7 @@ export class AdminTechniqueReleasesComponent
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort();
+    this.dataSource.paginator = this.paginator();
   }
 
   /** The frameworks whose download hints the empty state lists. */
@@ -296,6 +300,8 @@ export class AdminTechniqueReleasesComponent
           release.version +
           '? ' +
           'A release that any MSEL still uses cannot be deleted.',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
       })
       .afterClosed()
       .subscribe((result) => {

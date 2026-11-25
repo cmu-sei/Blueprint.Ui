@@ -55,6 +55,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
   @if (isLoading$ | async) {
     <mat-spinner diameter="28" style="margin-left: 16px" title="Importing" />
   }
+  <div class="button-end">
+    <mat-paginator
+      #paginator
+      [pageIndex]="0"
+      [pageSize]="20"
+      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"
+    />
+  </div>
 </div>
 
 <section class="scrolling-region">
@@ -74,6 +82,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <button
             mat-icon-button
             title="Import a release file"
+            aria-label="Import a release file"
             style="outline: none"
             [disabled]="isLoading$ | async"
             (click)="stixInput.click()"
@@ -99,6 +108,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             class="msel-action"
             (click)="deleteRelease(release)"
             title="Delete {{ release.name }} {{ release.version }}"
+            [attr.aria-label]="'Delete ' + release.name + ' ' + release.version"
           >
             <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
           </button>
@@ -223,6 +233,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       [class.collapsed]="row.id !== expandedId"
     />
   </mat-table>
+  @if (dataSource.data.length > 0 && dataSource.filteredData.length === 0) {
+    <div class="empty-text">No releases found</div>
+  }
   @if (dataSource.data.length === 0) {
     <div class="empty-text">
       @if (frameworks.length === 0) {

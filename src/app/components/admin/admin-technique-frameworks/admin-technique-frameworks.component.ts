@@ -5,11 +5,13 @@ import {
   Component,
   ElementRef,
   OnDestroy,
+  AfterViewInit,
   OnInit,
   inject,
   input,
   viewChild,
 } from '@angular/core';
+import { MatSort, MatSortHeader } from '@angular/material/sort';
 import {
   MatTableDataSource,
   MatTable,
@@ -87,6 +89,8 @@ function refusal(error: unknown): string {
     MatIconButton,
     MatTooltip,
     MatTable,
+    MatSort,
+    MatSortHeader,
     MatColumnDef,
     MatHeaderCellDef,
     MatHeaderCell,
@@ -98,7 +102,9 @@ function refusal(error: unknown): string {
     MatRow,
   ],
 })
-export class AdminTechniqueFrameworksComponent implements OnInit, OnDestroy {
+export class AdminTechniqueFrameworksComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
   private techniqueFrameworkDataService = inject(TechniqueFrameworkDataService);
   private techniqueFrameworkQuery = inject(TechniqueFrameworkQuery);
   private messageService = inject(SystemMessageService);
@@ -108,6 +114,7 @@ export class AdminTechniqueFrameworksComponent implements OnInit, OnDestroy {
   readonly canEdit = input<boolean>(false);
   readonly definitionInput =
     viewChild<ElementRef<HTMLInputElement>>('definitionInput');
+  readonly sort = viewChild(MatSort);
   dataSource = new MatTableDataSource<TechniqueFramework>([]);
   displayedColumns: string[] = [
     'action',
@@ -118,6 +125,10 @@ export class AdminTechniqueFrameworksComponent implements OnInit, OnDestroy {
     'releaseCount',
   ];
   private unsubscribe$ = new Subject();
+
+  ngAfterViewInit() {
+    this.dataSource.sort = this.sort();
+  }
 
   ngOnInit() {
     this.techniqueFrameworkQuery
@@ -263,6 +274,8 @@ export class AdminTechniqueFrameworksComponent implements OnInit, OnDestroy {
           framework.name +
           '? ' +
           'Its releases keep their techniques but no longer show what the framework defines, and new files are no longer recognised as its releases.',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
       })
       .afterClosed()
       .subscribe((result) => {
