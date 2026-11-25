@@ -24,6 +24,7 @@ export interface TeamCreate {
     canTeamLeaderInvite?: boolean;
     canTeamMemberInvite?: boolean;
     casterTeamVariable?: string | null;
+    domain?: string | null;
     id?: string;
     mselId?: string | null;
 }

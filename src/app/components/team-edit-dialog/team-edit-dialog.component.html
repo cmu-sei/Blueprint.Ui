@@ -153,6 +153,39 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
         </div>
       }
+      <div class="add-margin left">
+        <div>
+          <mat-form-field class="full-width">
+            <mat-label>Domain</mat-label>
+            <input
+              type="text"
+              matInput
+              [formControl]="domainFormControl"
+              placeholder="example-bank.com"
+              (blur)="saveTeam('domain')"
+              title="This team's domain on the range"
+            />
+            <mat-hint>This team's domain on the range</mat-hint>
+          </mat-form-field>
+          @if (!domainFormControl.value && emailDomain()) {
+            <button
+              type="button"
+              mat-button
+              (click)="useEmailDomain()"
+              title="Use the domain from the email address"
+            >
+              Use {{ emailDomain() }}
+            </button>
+          }
+        </div>
+      </div>
+      <div class="add-margin left">
+        <app-access-networks
+          kind="team"
+          [ownerId]="data.team.id"
+          [mselId]="data.team.mselId"
+        />
+      </div>
       <div class="add-margin">
         <div>
           <mat-checkbox

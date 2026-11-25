@@ -21,5 +21,6 @@ export interface OrganizationEdit {
     description?: string | null;
     summary?: string | null;
     email?: string | null;
+    domain?: string | null;
 }
 

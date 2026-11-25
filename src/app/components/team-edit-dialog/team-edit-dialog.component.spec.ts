@@ -1,10 +1,12 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { of } from 'rxjs';
+import { NetworkService } from 'src/app/generated/blueprint.api';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -49,6 +51,22 @@ function teamData(
   };
 }
 
+// the networks the dialog lists for the team or organization it edits
+const networkApi = {
+  getNetworksByMsel: vi.fn(() =>
+    of([
+      {
+        id: 'n-lan',
+        name: 'bank-lan',
+        range: '10.20.0.0/24',
+        teamIds: ['team-1'],
+        organizationIds: ['org-1'],
+      },
+      { id: 'n-dmz', name: 'bank-dmz', teamIds: [], organizationIds: [] },
+    ]),
+  ),
+};
+
 async function renderTeamEdit(data = teamData()) {
   const rendered = await renderComponent(TeamEditDialogComponent, {
     imports: [
@@ -63,6 +81,7 @@ async function renderTeamEdit(data = teamData()) {
     // angular-editor injects HttpClient for its image upload.
     providers: [
       { provide: MAT_DIALOG_DATA, useValue: data },
+      { provide: NetworkService, useValue: networkApi },
       provideHttpClient(),
       provideHttpClientTesting(),
     ],
@@ -100,6 +119,56 @@ describe('TeamEditDialogComponent', () => {
 
     expect(results).toHaveLength(1);
     expect(results[0].team.canTeamMemberInvite).toBe(true);
+  });
+
+  /**
+   * Verifies: the dialog lists the networks the team has access to, with their ranges, and says to change them on the Networks tab; a team with none lists nothing.
+   * Data: bank-lan open to team-1, bank-dmz open to nobody.
+   */
+  it('lists the networks the team has access to', async () => {
+    await renderTeamEdit(
+      teamData({
+        team: {
+          id: 'team-1',
+          mselId: 'msel-1',
+          name: 'Blue Team',
+          shortName: 'BLUE',
+          email: '',
+          canTeamMemberInvite: false,
+        },
+      }),
+    );
+
+    expect(screen.getByText('Networks with access')).toBeInTheDocument();
+    expect(screen.getByText('bank-lan')).toBeInTheDocument();
+    expect(screen.getByText('10.20.0.0/24')).toBeInTheDocument();
+    expect(screen.queryByText('bank-dmz')).toBeNull();
+    expect(screen.getByText(/use the Networks tab/)).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a team with no network access hides the list.
+   * Data: the default team, which has no MSEL.
+   */
+  it('hides the network list when the team has no networks', async () => {
+    await renderTeamEdit();
+
+    expect(screen.queryByText('Networks with access')).toBeNull();
+  });
+
+  /**
+   * Verifies: the domain is saved with the team, trimmed and lower-cased.
+   * Interacts with: the Domain input, saveTeam, crucible-dialog submit.
+   * Data: Blue Team with no domain; " Example-Bank.com " entered, then saved.
+   */
+  it('saves the domain', async () => {
+    const { results } = await renderTeamEdit();
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText('Domain'), ' Example-Bank.com ');
+    await user.click(actions().getByRole('button', { name: 'Save' }));
+
+    expect(results[0].team.domain).toBe('example-bank.com');
   });
 
   /**

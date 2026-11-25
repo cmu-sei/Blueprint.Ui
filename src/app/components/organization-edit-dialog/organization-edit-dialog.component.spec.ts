@@ -1,8 +1,10 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { of } from 'rxjs';
+import { NetworkService } from 'src/app/generated/blueprint.api';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -14,7 +16,16 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { OrganizationEditDialogComponent } from './organization-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const ORGANIZATION = {
+const ORGANIZATION: {
+  id: string;
+  mselId: string;
+  name: string;
+  shortName: string;
+  summary: string;
+  email: string;
+  description: string;
+  domain?: string;
+} = {
   id: 'org-1',
   mselId: 'msel-1',
   name: 'City Police',
@@ -31,6 +42,22 @@ function dialogData(overrides: Partial<typeof ORGANIZATION> = {}) {
   };
 }
 
+// the networks the dialog lists for the team or organization it edits
+const networkApi = {
+  getNetworksByMsel: vi.fn(() =>
+    of([
+      {
+        id: 'n-lan',
+        name: 'bank-lan',
+        range: '10.20.0.0/24',
+        teamIds: ['team-1'],
+        organizationIds: ['org-1'],
+      },
+      { id: 'n-dmz', name: 'bank-dmz', teamIds: [], organizationIds: [] },
+    ]),
+  ),
+};
+
 async function renderOrganizationEditDialog(data = dialogData()) {
   const rendered = await renderComponent(OrganizationEditDialogComponent, {
     imports: [
@@ -43,6 +70,7 @@ async function renderOrganizationEditDialog(data = dialogData()) {
     // angular-editor injects HttpClient for its image upload.
     providers: [
       { provide: MAT_DIALOG_DATA, useValue: data },
+      { provide: NetworkService, useValue: networkApi },
       provideHttpClient(),
       provideHttpClientTesting(),
     ],
@@ -95,6 +123,54 @@ describe('OrganizationEditDialogComponent', () => {
       { saveChanges: true, organization: data.organization },
       { saveChanges: false, organization: null },
     ]);
+  });
+
+  /**
+   * Verifies: the dialog lists the networks the organization has access to, with their ranges, and says to change them on the Networks tab.
+   * Data: bank-lan open to org-1, bank-dmz open to nobody.
+   */
+  it('lists the networks the organization has access to', async () => {
+    await renderOrganizationEditDialog();
+
+    expect(screen.getByText('Networks with access')).toBeInTheDocument();
+    expect(screen.getByText('bank-lan')).toBeInTheDocument();
+    expect(screen.getByText('10.20.0.0/24')).toBeInTheDocument();
+    expect(screen.queryByText('bank-dmz')).toBeNull();
+    expect(screen.getByText(/use the Networks tab/)).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: the domain is saved trimmed and lower-cased.
+   * Interacts with: the Domain input, saveOrganization, crucible-dialog submit.
+   * Data: City Police with no domain; " Example-Police.org " entered, then saved.
+   */
+  it('saves the domain', async () => {
+    const { data, results } = await renderOrganizationEditDialog();
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText('Domain'), ' Example-Police.org ');
+    await user.click(actions().getByRole('button', { name: 'Save' }));
+
+    expect(results).toHaveLength(1);
+    expect(data.organization.domain).toBe('example-police.org');
+  });
+
+  /**
+   * Verifies: the email's domain is offered, not applied, and the button fills the Domain when chosen.
+   * Interacts with: emailDomain, useEmailDomain, the Domain input.
+   * Data: City Police with email police@example.com and no domain.
+   */
+  it('offers the email domain and applies it only when chosen', async () => {
+    const { data } = await renderOrganizationEditDialog();
+    const user = userEvent.setup();
+
+    expect(screen.getByLabelText('Domain')).toHaveValue('');
+    expect(data.organization.domain).toBeUndefined();
+
+    await user.click(screen.getByRole('button', { name: 'Use example.com' }));
+
+    expect(screen.getByLabelText('Domain')).toHaveValue('example.com');
+    expect(data.organization.domain).toBe('example.com');
   });
 
   /**

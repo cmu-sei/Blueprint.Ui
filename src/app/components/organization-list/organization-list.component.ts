@@ -196,6 +196,7 @@ export class OrganizationListComponent
         name: organization.name,
         shortName: organization.shortName,
         email: organization.email,
+        domain: organization.domain,
         summary: organization.summary,
         description: organization.description,
         mselId: makeTemplate ? null : this.msel.id,

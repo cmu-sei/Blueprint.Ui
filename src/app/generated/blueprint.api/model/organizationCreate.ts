@@ -21,6 +21,7 @@ export interface OrganizationCreate {
     description?: string | null;
     summary?: string | null;
     email?: string | null;
+    domain?: string | null;
     id?: string;
     mselId?: string | null;
     isTemplate?: boolean;

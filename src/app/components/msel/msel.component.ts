@@ -58,6 +58,7 @@ import { MselContributorsComponent } from '../msel-contributors/msel-contributor
 import { MselTeamsComponent } from '../msel-teams/msel-teams.component';
 import { DataFieldListComponent } from '../data-field-list/data-field-list.component';
 import { OrganizationListComponent } from '../organization-list/organization-list.component';
+import { MselNetworksComponent } from '../msel-networks/msel-networks.component';
 import { MoveListComponent } from '../move-list/move-list.component';
 import { PlayerApplicationListComponent } from '../player-application-list/player-application-list.component';
 import { CardListComponent } from '../card-list/card-list.component';
@@ -92,6 +93,7 @@ import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
     MselTeamsComponent,
     DataFieldListComponent,
     OrganizationListComponent,
+    MselNetworksComponent,
     MoveListComponent,
     PlayerApplicationListComponent,
     CardListComponent,
@@ -161,6 +163,7 @@ export class MselComponent implements OnDestroy {
     'Data Fields',
     'Teams',
     'Organizations',
+    'Networks',
     'Moves',
     'Player Apps',
     'Caster',
@@ -180,6 +183,7 @@ export class MselComponent implements OnDestroy {
     ['Teams', 'mdi-account-multiple'],
     ['Data Fields', 'mdi-view-column-outline'],
     ['Organizations', 'mdi-office-building-outline'],
+    ['Networks', 'mdi-lan'],
     ['Moves', 'mdi-gamepad'],
     ['Player Apps', 'mdi-apps'],
     ['Caster', 'mdi-terraform'],

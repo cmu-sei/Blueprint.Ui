@@ -19,6 +19,7 @@ api/dataOption.service.ts
 api/dataValue.service.ts
 api/group.service.ts
 api/healthCheck.service.ts
+api/host.service.ts
 api/inject.service.ts
 api/injectType.service.ts
 api/invitation.service.ts
@@ -32,6 +33,7 @@ api/mselPage.service.ts
 api/mselScoringModel.service.ts
 api/mselTechnique.service.ts
 api/mselUnit.service.ts
+api/network.service.ts
 api/organization.service.ts
 api/player.service.ts
 api/playerApplication.service.ts
@@ -122,6 +124,8 @@ model/groupMembership.ts
 model/healthReport.ts
 model/healthReportEntry.ts
 model/healthStatus.ts
+model/host.ts
+model/hostInterface.ts
 model/injectType.ts
 model/injectTypeCreate.ts
 model/injectTypeDataField.ts
@@ -178,6 +182,7 @@ model/mselTechniqueCountermeasures.ts
 model/mselTechniqueUpgrade.ts
 model/mselUnit.ts
 model/mselUnitCreate.ts
+model/network.ts
 model/organization.ts
 model/organizationCreate.ts
 model/organizationEdit.ts

@@ -35,6 +35,7 @@ export interface Team {
     canTeamLeaderInvite?: boolean;
     canTeamMemberInvite?: boolean;
     casterTeamVariable?: string | null;
+    domain?: string | null;
     users?: Array<User> | null;
     cardTeams?: Array<CardTeam> | null;
     playerApplicationTeams?: Array<PlayerApplicationTeam> | null;

@@ -4,12 +4,14 @@
 
 import { Component, inject, output } from '@angular/core';
 import {
+  FormControl,
   UntypedFormControl,
   Validators,
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Organization } from 'src/app/generated/blueprint.api';
 import { EDITOR_CONFIG } from 'src/app/utilities/editor-config';
 import {
   CrucibleDialogComponent,
@@ -20,14 +22,18 @@ import {
   MatLabel,
   MatInput,
   MatError,
+  MatHint,
 } from '@angular/material/input';
+import { MatButton } from '@angular/material/button';
 import { AngularEditorModule } from '@kolkov/angular-editor';
+import { AccessNetworksComponent } from '../msel-networks/access-networks.component';
 
 @Component({
   selector: 'app-organization-edit-dialog',
   templateUrl: './organization-edit-dialog.component.html',
   styleUrls: ['./organization-edit-dialog.component.scss'],
   imports: [
+    AccessNetworksComponent,
     CrucibleDialogComponent,
     CrucibleDialogContentDirective,
     MatFormField,
@@ -36,6 +42,8 @@ import { AngularEditorModule } from '@kolkov/angular-editor';
     FormsModule,
     ReactiveFormsModule,
     MatError,
+    MatHint,
+    MatButton,
     AngularEditorModule,
   ],
 })
@@ -63,6 +71,14 @@ export class OrganizationEditDialogComponent {
   public summaryFormControl = new UntypedFormControl(
     this.data.organization.summary,
     [Validators.required],
+  );
+  // the organization the dialog edits, typed, for its domain
+  private readonly editedOrganization = (
+    this.data as { organization: Organization }
+  ).organization;
+  public domainFormControl = new FormControl<string>(
+    this.editedOrganization.domain ?? '',
+    { nonNullable: true },
   );
   editorConfig = EDITOR_CONFIG;
 
@@ -141,8 +157,34 @@ export class OrganizationEditDialogComponent {
           ? this.organizationEmailFormControl.value.toString()
           : '';
         break;
+      case 'domain':
+        this.editedOrganization.domain =
+          this.domainFormControl.value.trim().toLowerCase() || null;
+        break;
       default:
         break;
     }
+  }
+
+  /**
+   * The part of the email after the @, offered as the domain; never applied
+   * unless the planner chooses it
+   */
+  emailDomain(): string {
+    const value: unknown = this.organizationEmailFormControl.value;
+    const email = typeof value === 'string' ? value : '';
+    const at = email.lastIndexOf('@');
+
+    return at > 0
+      ? email
+          .substring(at + 1)
+          .trim()
+          .toLowerCase()
+      : '';
+  }
+
+  useEmailDomain(): void {
+    this.domainFormControl.setValue(this.emailDomain());
+    this.saveOrganization('domain');
   }
 }

@@ -26,6 +26,7 @@ export interface Organization {
     description?: string | null;
     summary?: string | null;
     email?: string | null;
+    domain?: string | null;
     isTemplate?: boolean;
     mselId?: string | null;
 }

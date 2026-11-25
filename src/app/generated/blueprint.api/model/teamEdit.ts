@@ -24,5 +24,6 @@ export interface TeamEdit {
     canTeamLeaderInvite?: boolean;
     canTeamMemberInvite?: boolean;
     casterTeamVariable?: string | null;
+    domain?: string | null;
 }
 

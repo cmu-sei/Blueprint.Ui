@@ -1712,6 +1712,11 @@
       "count": 2
     }
   },
+  "src/app/components/msel-networks/msel-networks.component.ts": {
+    "@typescript-eslint/no-deprecated": {
+      "count": 8
+    }
+  },
   "src/app/components/msel-page/msel-page.component.ts": {
     "@typescript-eslint/no-unnecessary-type-assertion": {
       "count": 1

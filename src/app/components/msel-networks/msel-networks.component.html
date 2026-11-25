@@ -1,0 +1,396 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the
+project root for license information.
+-->
+
+<!-- networks, each opening to the hosts on it; hosts on no network are the last row -->
+<section class="section">
+  <div class="cssLayoutRowStartCenter">
+    <div class="sp-icon">
+      <mat-icon
+        class="mdi-24px"
+        fontIcon="mdi-lan"
+        [style.color]="'var(--mat-sys-primary)'"
+      />
+    </div>
+    <h2 class="section-title">Networks</h2>
+    <mat-form-field style="width: 300px; margin-left: 10px">
+      <input
+        matInput
+        [ngModel]="networkFilter()"
+        (ngModelChange)="networkFilter.set($event)"
+        placeholder="Search"
+        aria-label="Search networks"
+      />
+      @if (networkFilter()) {
+        <button
+          mat-icon-button
+          matSuffix
+          (click)="networkFilter.set('')"
+          title="Clear Search"
+        >
+          <mat-icon
+            style="transform: scale(0.85)"
+            fontIcon="mdi-close-circle-outline"
+          />
+        </button>
+      }
+    </mat-form-field>
+    <div class="button-end">
+      <mat-paginator
+        #networkPaginator
+        [pageIndex]="0"
+        [pageSize]="20"
+        [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"
+      />
+    </div>
+  </div>
+  <div class="frame">
+    <div class="table-container">
+      <table
+        mat-table
+        [dataSource]="networkDataSource"
+        matSort
+        (matSortChange)="networkSortChanged($event)"
+        multiTemplateDataRows
+        aria-label="Networks"
+      >
+        <!-- action column -->
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef class="column-action">
+            @if (canEdit()) {
+              <button
+                mat-icon-button
+                (click)="editNetwork(null)"
+                title="Add a network"
+                aria-label="Add a network"
+                style="outline: none"
+              >
+                <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle" />
+              </button>
+            }
+          </th>
+          <td mat-cell *matCellDef="let element" class="column-action">
+            @if (canEdit() && !isNoNetwork(element)) {
+              <button
+                mat-icon-button
+                (click)="editHost(null, element); $event.stopPropagation()"
+                [attr.aria-label]="'Add a host to network ' + element.name"
+                title="Add a host on {{ element.name }}"
+              >
+                <mat-icon class="mdi-18px" fontIcon="mdi-server-plus" />
+              </button>
+              <button
+                mat-icon-button
+                (click)="editNetwork(element); $event.stopPropagation()"
+                [attr.aria-label]="'Edit network ' + element.name"
+                title="Edit {{ element.name }}"
+              >
+                <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" />
+              </button>
+              <button
+                mat-icon-button
+                (click)="deleteNetwork(element); $event.stopPropagation()"
+                [attr.aria-label]="'Delete network ' + element.name"
+                title="Delete {{ element.name }}"
+              >
+                <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
+              </button>
+            }
+          </td>
+        </ng-container>
+        <!-- name column -->
+        <ng-container matColumnDef="name">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            class="column-name"
+          >
+            Name
+          </th>
+          <td mat-cell *matCellDef="let element" class="column-name">
+            {{ element.name }}
+          </td>
+        </ng-container>
+        <!-- range column -->
+        <ng-container matColumnDef="range">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            class="column-range"
+          >
+            Range
+          </th>
+          <td mat-cell *matCellDef="let element" class="column-range mono">
+            {{ element.range }}
+          </td>
+        </ng-container>
+        <!-- purpose column -->
+        <ng-container matColumnDef="purpose">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            class="column-purpose"
+          >
+            Purpose
+          </th>
+          <td mat-cell *matCellDef="let element" class="column-purpose">
+            {{ element.purpose }}
+          </td>
+        </ng-container>
+        <!-- hostCount column -->
+        <ng-container matColumnDef="hostCount">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            class="column-count"
+            title="The hosts on the network"
+          >
+            Hosts
+          </th>
+          <td mat-cell *matCellDef="let element" class="column-count">
+            {{ hostCount(element) }}
+          </td>
+        </ng-container>
+        <!-- teams column -->
+        <ng-container matColumnDef="teams">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            class="column-teams"
+            title="The teams with access to this network. Shared means no team is named."
+          >
+            Teams with access
+          </th>
+          <td mat-cell *matCellDef="let element" class="column-teams">
+            {{
+              isNoNetwork(element) ? '' : teamNames(element.teamIds) || 'Shared'
+            }}
+          </td>
+        </ng-container>
+        <!-- organizations column -->
+        <ng-container matColumnDef="organizations">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            class="column-organizations"
+            title="The organizations with access to this network"
+          >
+            Organizations with access
+          </th>
+          <td mat-cell *matCellDef="let element" class="column-organizations">
+            {{ organizationNames(element.organizationIds) }}
+          </td>
+        </ng-container>
+        <!-- domains column -->
+        <ng-container matColumnDef="domains">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            class="column-domains"
+            title="The domains of the teams and organizations with access to this network"
+          >
+            Domains
+          </th>
+          <td mat-cell *matCellDef="let element" class="column-domains mono">
+            {{ domains(element) }}
+          </td>
+        </ng-container>
+        <!-- expanded content column: the hosts on the network -->
+        <ng-container matColumnDef="expandedDetail">
+          <td
+            mat-cell
+            *matCellDef="let element"
+            [attr.colspan]="networkColumns.length"
+          >
+            <div
+              [@detailExpand]="isExpanded(element) ? 'expanded' : 'collapsed'"
+              style="overflow: hidden"
+            >
+              @if (isExpanded(element)) {
+                <div
+                  class="expanded-detail-div"
+                  [id]="'network-hosts-' + element.id"
+                >
+                  @if (hostsOn(element).length === 0) {
+                    <p class="empty-message">No hosts on this network.</p>
+                  } @else {
+                    <table
+                      mat-table
+                      [dataSource]="sortedHostsOn(element)"
+                      matSort
+                      [matSortActive]="hostSorts()[element.id]?.active ?? ''"
+                      [matSortDirection]="
+                        hostSorts()[element.id]?.direction ?? ''
+                      "
+                      (matSortChange)="hostSortChanged(element, $event)"
+                      [attr.aria-label]="'Hosts on ' + element.name"
+                    >
+                      <ng-container matColumnDef="action">
+                        <th
+                          mat-header-cell
+                          *matHeaderCellDef
+                          class="column-action"
+                        >
+                          @if (canEdit() && !isNoNetwork(element)) {
+                            <button
+                              mat-icon-button
+                              (click)="editHost(null, element)"
+                              title="Add a host on {{ element.name }}"
+                              style="outline: none"
+                            >
+                              <mat-icon
+                                class="mdi-24px"
+                                fontIcon="mdi-plus-circle"
+                              />
+                            </button>
+                          }
+                        </th>
+                        <td
+                          mat-cell
+                          *matCellDef="let host"
+                          class="column-action"
+                        >
+                          @if (canEdit()) {
+                            <button
+                              mat-icon-button
+                              (click)="editHost(host)"
+                              [attr.aria-label]="
+                                'Edit host ' + host.name + ' on ' + element.name
+                              "
+                              title="Edit {{ host.name }}"
+                            >
+                              <mat-icon
+                                class="mdi-18px"
+                                fontIcon="mdi-square-edit-outline"
+                              />
+                            </button>
+                            <button
+                              mat-icon-button
+                              (click)="deleteHost(host)"
+                              [attr.aria-label]="
+                                'Delete host ' +
+                                host.name +
+                                ' on ' +
+                                element.name
+                              "
+                              title="Delete {{ host.name }}"
+                            >
+                              <mat-icon
+                                class="mdi-18px"
+                                fontIcon="mdi-trash-can-outline"
+                              />
+                            </button>
+                          }
+                        </td>
+                      </ng-container>
+                      <ng-container matColumnDef="name">
+                        <th
+                          mat-header-cell
+                          *matHeaderCellDef
+                          mat-sort-header
+                          class="column-name"
+                        >
+                          Host
+                        </th>
+                        <td mat-cell *matCellDef="let host" class="column-name">
+                          {{ host.name }}
+                        </td>
+                      </ng-container>
+                      <ng-container matColumnDef="role">
+                        <th
+                          mat-header-cell
+                          *matHeaderCellDef
+                          mat-sort-header
+                          class="column-role"
+                        >
+                          Role
+                        </th>
+                        <td mat-cell *matCellDef="let host" class="column-role">
+                          {{ host.role }}
+                        </td>
+                      </ng-container>
+                      <ng-container matColumnDef="operatingSystem">
+                        <th
+                          mat-header-cell
+                          *matHeaderCellDef
+                          mat-sort-header
+                          class="column-os"
+                        >
+                          Operating System
+                        </th>
+                        <td mat-cell *matCellDef="let host" class="column-os">
+                          {{ host.operatingSystem }}
+                        </td>
+                      </ng-container>
+                      <ng-container matColumnDef="address">
+                        <th
+                          mat-header-cell
+                          *matHeaderCellDef
+                          mat-sort-header
+                          class="column-address"
+                        >
+                          Address
+                        </th>
+                        <td
+                          mat-cell
+                          *matCellDef="let host"
+                          class="column-address mono"
+                        >
+                          {{ addressOn(host, element) }}
+                        </td>
+                      </ng-container>
+                      <tr
+                        mat-header-row
+                        *matHeaderRowDef="networkHostColumns"
+                      ></tr>
+                      <tr
+                        mat-row
+                        *matRowDef="let row; columns: networkHostColumns"
+                      ></tr>
+                    </table>
+                  }
+                </div>
+              }
+            </div>
+          </td>
+        </ng-container>
+        <!-- row definitions -->
+        <tr mat-header-row *matHeaderRowDef="networkColumns; sticky: true"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: networkColumns"
+          [class]="
+            isExpanded(row)
+              ? 'element-row element-row-expanded'
+              : 'element-row element-row-not-expanded'
+          "
+          tabindex="0"
+          [attr.aria-expanded]="isExpanded(row)"
+          (click)="toggle(row)"
+          (keydown.enter)="toggleFromKey($event, row)"
+          (keydown.space)="toggleFromKey($event, row)"
+        ></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: networkDetailColumns"
+          class="detail-row"
+        ></tr>
+      </table>
+      @if (!loading() && networks().length === 0) {
+        <p class="empty-message">
+          No networks yet. Add the networks of the exercise's range, or of the
+          network a tabletop describes.
+        </p>
+      }
+    </div>
+  </div>
+</section>

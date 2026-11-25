@@ -1,0 +1,161 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+// The tables follow the other tabs (Teams, Moves): a search row with the paginator, a sticky header
+// and the actions in the first column. The networks and the hosts share the tab's height.
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.cssLayoutRowStartCenter {
+  min-height: 76px;
+  flex-shrink: 0;
+}
+
+.section-title {
+  margin: 0 0 0 10px;
+  font-size: 18px;
+}
+
+.frame {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.table-container {
+  flex: 1;
+  overflow: auto;
+  padding-bottom: 20px;
+}
+
+table {
+  width: 100%;
+}
+
+.button-end {
+  margin-left: auto;
+}
+
+.element-row {
+  cursor: pointer;
+}
+
+.element-row:hover {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.detail-row {
+  height: 0;
+}
+
+.element-row td {
+  border-bottom-width: 0;
+}
+
+.expanded-detail-div {
+  width: calc(100% - 20px);
+  margin-left: 20px;
+  max-height: 500px;
+  overflow: auto;
+  padding: 8px 0;
+}
+
+.column-action {
+  flex: 0 0 168px;
+  width: 168px;
+  min-width: 168px;
+  white-space: nowrap;
+}
+
+// the name stays on one line
+.column-name {
+  white-space: nowrap;
+}
+
+.column-domains {
+  flex: 2;
+  min-width: 0;
+}
+
+.column-name {
+  flex: 3;
+  min-width: 0;
+}
+
+.column-range,
+.column-address {
+  flex: 2;
+  min-width: 0;
+}
+
+.column-purpose,
+.column-role,
+.column-os,
+.column-networks {
+  flex: 3;
+  min-width: 0;
+}
+
+.column-count {
+  flex: 0 0 80px;
+  text-align: right;
+}
+
+.column-teams,
+.column-organizations {
+  flex: 3;
+  min-width: 0;
+}
+
+.mono {
+  font-family: monospace;
+}
+
+.empty-message {
+  margin: 12px 16px;
+  opacity: 0.75;
+}
+
+.range-hint {
+  opacity: 0.75;
+}
+
+// the Add and Edit dialogs
+.range-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.range-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.range-grow {
+  flex: 1 1 200px;
+}
+
+.range-label {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+
+.full-width {
+  width: 100%;
+}
