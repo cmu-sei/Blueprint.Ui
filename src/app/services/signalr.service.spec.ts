@@ -511,7 +511,7 @@ describe('SignalRService', () => {
     });
 
     /**
-     * Verifies: UserCreated adds a user, UserUpdated replaces a stored user, and UserDeleted removes it.
+     * Verifies: UserCreated adds a user, UserUpdated merges into a stored user, and UserDeleted removes it.
      * Interacts with: FakeHubConnection.trigger, UserDataService, UserQuery.
      * Data: user-1 "Alice" created, updated to "Alice Admin", deleted.
      */
@@ -532,10 +532,12 @@ describe('SignalRService', () => {
         ['roleId'],
       );
       expect(users.getEntity('user-1').roleId).toBe('role-a');
-      hub.trigger('UserUpdated', { id: 'user-1', name: 'Alice Admin' }, [
-        'roleId',
-      ]);
-      expect(users.getEntity('user-1').roleId).toBeUndefined();
+      hub.trigger(
+        'UserUpdated',
+        { id: 'user-1', name: 'Alice Admin', roleId: null },
+        ['roleId'],
+      );
+      expect(users.getEntity('user-1').roleId).toBeNull();
 
       hub.trigger('UserDeleted', 'user-1');
       expect(users.getAll()).toEqual([]);

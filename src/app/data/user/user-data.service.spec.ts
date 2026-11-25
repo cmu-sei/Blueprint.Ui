@@ -147,7 +147,7 @@ describe('UserDataService', () => {
    * Interacts with: UserService.updateUser (stub), real UserQuery.
    * Data: user-1 "Alice Analyst" with role-a stored; the API returns "Alice Admin" with role-b.
    */
-  it('update replaces a user that is already stored', () => {
+  it('update merges a user that is already stored', () => {
     const { service, query, userApi } = setup();
     service.updateStore(user({ roleId: 'role-a' }));
     userApi.updateUser.mockReturnValue(
@@ -165,19 +165,19 @@ describe('UserDataService', () => {
   });
 
   /**
-   * Verifies: a user whose role was removed is stored without a role, even when the answer has no role id, which a merge
-   * into the stored user would not give.
+   * Verifies: a user whose role was removed is stored without a role: the API answers a removed role as an explicit null,
+   * which the merge into the stored user writes over the old role.
    * Interacts with: UserService.updateUser (stub), real UserQuery.
-   * Data: user-1 with role-a stored; the API's answer has no roleId.
+   * Data: user-1 with role-a stored; the API's answer has roleId null.
    */
   it('update with the role removed leaves the stored user without a role', () => {
     const { service, query, userApi } = setup();
     service.updateStore(user({ roleId: 'role-a' }));
-    userApi.updateUser.mockReturnValue(of(user()));
+    userApi.updateUser.mockReturnValue(of(user({ roleId: null })));
 
     service.update(user({ roleId: null }));
 
-    expect(query.getEntity('user-1').roleId).toBeUndefined();
+    expect(query.getEntity('user-1').roleId).toBeNull();
   });
 
   /**
