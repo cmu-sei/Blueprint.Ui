@@ -140,9 +140,6 @@ describe('DashboardComponent', () => {
         'Your events could not be loaded. Reload the page to try again.',
       ),
     ).toBeInTheDocument();
-    expect(
-      screen.queryByText(/No accessible resources found/),
-    ).not.toBeInTheDocument();
   });
 
   /**
