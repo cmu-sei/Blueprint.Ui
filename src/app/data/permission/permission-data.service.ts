@@ -51,8 +51,8 @@ export class PermissionDataService {
     return this._permissions.includes(permission);
   }
 
-  // GET users answers only these, as the API decides: the user admins, ViewMsels, and the group and unit
-  // managers, who pick users to add as members
+  // GET users answers only these, as Blueprint.Api decides in UserController.Get: the user admins, ViewMsels,
+  // and the group and unit managers, who pick users to add as members. Change both together.
   canListUsers() {
     return [
       SystemPermission.ViewUsers,
