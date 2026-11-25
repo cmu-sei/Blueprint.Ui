@@ -9,6 +9,7 @@ import { ComnAuthQuery, ComnAuthService } from '@cmusei/crucible-common';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { PlayerApplicationTeamService } from 'src/app/generated/blueprint.api/api/api';
+import { ErrorService } from 'src/app/services/error/error.service';
 import {
   PlayerApplicationTeam,
   Team,
@@ -19,6 +20,7 @@ import {
 })
 export class PlayerApplicationTeamDataService implements OnDestroy {
   private playerApplicationTeamService = inject(PlayerApplicationTeamService);
+  private errorService = inject(ErrorService);
   private authQuery = inject(ComnAuthQuery);
   private authService = inject(ComnAuthService);
   private router = inject(Router);
@@ -65,6 +67,8 @@ export class PlayerApplicationTeamDataService implements OnDestroy {
           this.updateStore(et);
         },
         (error) => {
+          // the API refuses a second link for a view the team already shows, and says which; show that
+          this.errorService.handleError(error);
           this.updatePlayerApplicationTeams(this._playerApplicationTeams);
         },
       );
