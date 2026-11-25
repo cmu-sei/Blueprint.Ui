@@ -1,8 +1,10 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { of } from 'rxjs';
+import { NetworkService } from 'src/app/generated/blueprint.api';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -40,6 +42,22 @@ function dialogData(overrides: Partial<typeof ORGANIZATION> = {}) {
   };
 }
 
+// the networks the dialog lists for the team or organization it edits
+const networkApi = {
+  getNetworksByMsel: vi.fn(() =>
+    of([
+      {
+        id: 'n-lan',
+        name: 'bank-lan',
+        range: '10.20.0.0/24',
+        teamIds: ['team-1'],
+        organizationIds: ['org-1'],
+      },
+      { id: 'n-dmz', name: 'bank-dmz', teamIds: [], organizationIds: [] },
+    ]),
+  ),
+};
+
 async function renderOrganizationEditDialog(data = dialogData()) {
   const rendered = await renderComponent(OrganizationEditDialogComponent, {
     imports: [
@@ -52,6 +70,7 @@ async function renderOrganizationEditDialog(data = dialogData()) {
     // angular-editor injects HttpClient for its image upload.
     providers: [
       { provide: MAT_DIALOG_DATA, useValue: data },
+      { provide: NetworkService, useValue: networkApi },
       provideHttpClient(),
       provideHttpClientTesting(),
     ],
@@ -104,6 +123,20 @@ describe('OrganizationEditDialogComponent', () => {
       { saveChanges: true, organization: data.organization },
       { saveChanges: false, organization: null },
     ]);
+  });
+
+  /**
+   * Verifies: the dialog lists the networks the organization has access to, with their ranges, and says to change them on the Networks tab.
+   * Data: bank-lan open to org-1, bank-dmz open to nobody.
+   */
+  it('lists the networks the organization has access to', async () => {
+    await renderOrganizationEditDialog();
+
+    expect(screen.getByText('Networks with access')).toBeInTheDocument();
+    expect(screen.getByText('bank-lan')).toBeInTheDocument();
+    expect(screen.getByText('10.20.0.0/24')).toBeInTheDocument();
+    expect(screen.queryByText('bank-dmz')).toBeNull();
+    expect(screen.getByText(/use the Networks tab/)).toBeInTheDocument();
   });
 
   /**

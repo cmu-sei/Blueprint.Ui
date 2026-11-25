@@ -113,6 +113,13 @@ project root for license information.
         </div>
       </div>
       <div class="add-margin left">
+        <app-access-networks
+          kind="organization"
+          [ownerId]="data.organization.id"
+          [mselId]="data.organization.mselId"
+        />
+      </div>
+      <div class="add-margin left">
         <div>
           <p
             style="

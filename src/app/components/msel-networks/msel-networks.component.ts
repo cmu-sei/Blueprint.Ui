@@ -2,13 +2,6 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import {
-  animate,
-  state,
-  style,
-  transition,
-  trigger,
-} from '@angular/animations';
-import {
   AfterViewInit,
   Component,
   OnDestroy,
@@ -82,19 +75,6 @@ const NO_NETWORK = {
   selector: 'app-msel-networks',
   templateUrl: './msel-networks.component.html',
   styleUrls: ['./msel-networks.component.scss'],
-  animations: [
-    trigger('detailExpand', [
-      state(
-        'collapsed',
-        style({ height: '0px', minHeight: '0', visibility: 'hidden' }),
-      ),
-      state('expanded', style({ height: '*', visibility: 'visible' })),
-      transition(
-        'expanded <=> collapsed',
-        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
-      ),
-    ]),
-  ],
   imports: [
     FormsModule,
     MatIcon,
@@ -172,7 +152,10 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
       (a.name ?? '').localeCompare(b.name ?? ''),
     )) {
       for (const i of host.interfaces ?? []) {
-        byNetwork.set(i.networkId, [...(byNetwork.get(i.networkId) ?? []), host]);
+        byNetwork.set(i.networkId, [
+          ...(byNetwork.get(i.networkId) ?? []),
+          host,
+        ]);
       }
     }
 
@@ -209,9 +192,7 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
       (n) => this.networkValues(n),
     );
 
-    return this.hostsOnNoNetwork().length
-      ? [...rows, NO_NETWORK as Network]
-      : rows;
+    return this.hostsOnNoNetwork().length ? [...rows, NO_NETWORK] : rows;
   });
   constructor() {
     effect(() => (this.networkDataSource.data = this.networkRows()));
@@ -377,7 +358,9 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   networkSortChanged(sort: Sort): void {
-    this.networkSort.set(sort.direction ? sort : { active: 'name', direction: 'asc' });
+    this.networkSort.set(
+      sort.direction ? sort : { active: 'name', direction: 'asc' },
+    );
   }
 
   /** The rows that match the search, in the sort's order */

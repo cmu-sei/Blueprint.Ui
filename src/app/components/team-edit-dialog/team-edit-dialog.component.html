@@ -179,6 +179,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
         </div>
       </div>
+      <div class="add-margin left">
+        <app-access-networks
+          kind="team"
+          [ownerId]="data.team.id"
+          [mselId]="data.team.mselId"
+        />
+      </div>
       <div class="add-margin">
         <div>
           <mat-checkbox

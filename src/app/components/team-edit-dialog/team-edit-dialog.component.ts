@@ -29,6 +29,7 @@ import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatButton } from '@angular/material/button';
+import { AccessNetworksComponent } from '../msel-networks/access-networks.component';
 
 const MIN_NAME_LENGTH = 3;
 
@@ -37,6 +38,7 @@ const MIN_NAME_LENGTH = 3;
   templateUrl: './team-edit-dialog.component.html',
   styleUrls: ['./team-edit-dialog.component.scss'],
   imports: [
+    AccessNetworksComponent,
     CrucibleDialogComponent,
     CrucibleDialogContentDirective,
     MatFormField,

@@ -76,9 +76,10 @@ export class AccessNetworksComponent implements OnInit {
         this.networks.set(
           networks
             .filter((n) =>
-              (this.kind() === 'team' ? n.teamIds : n.organizationIds)?.includes(
-                ownerId,
-              ),
+              (this.kind() === 'team'
+                ? n.teamIds
+                : n.organizationIds
+              )?.includes(ownerId),
             )
             .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
         ),

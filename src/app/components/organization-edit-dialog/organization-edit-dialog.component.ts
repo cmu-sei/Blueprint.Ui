@@ -26,12 +26,14 @@ import {
 } from '@angular/material/input';
 import { MatButton } from '@angular/material/button';
 import { AngularEditorModule } from '@kolkov/angular-editor';
+import { AccessNetworksComponent } from '../msel-networks/access-networks.component';
 
 @Component({
   selector: 'app-organization-edit-dialog',
   templateUrl: './organization-edit-dialog.component.html',
   styleUrls: ['./organization-edit-dialog.component.scss'],
   imports: [
+    AccessNetworksComponent,
     CrucibleDialogComponent,
     CrucibleDialogContentDirective,
     MatFormField,

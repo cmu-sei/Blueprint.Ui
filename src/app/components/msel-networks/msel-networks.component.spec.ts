@@ -167,7 +167,9 @@ describe('MselNetworksComponent', () => {
       screen.getAllByRole('columnheader', { name: 'Teams with access' }),
     ).toHaveLength(1);
     expect(
-      screen.getAllByRole('columnheader', { name: 'Organizations with access' }),
+      screen.getAllByRole('columnheader', {
+        name: 'Organizations with access',
+      }),
     ).toHaveLength(1);
     expect(screen.getByRole('columnheader', { name: 'Domains' })).toBeTruthy();
     expect(screen.queryByText('Defended by')).toBeNull();
@@ -224,7 +226,9 @@ describe('MselNetworksComponent', () => {
     const user = userEvent.setup();
 
     const row = rowOf('Hosts on no network');
-    const rows = screen.getAllByRole('row').filter((r) => r.matches('.element-row'));
+    const rows = screen
+      .getAllByRole('row')
+      .filter((r) => r.matches('.element-row'));
     expect(rows[rows.length - 1]).toBe(row);
     expect(row).toHaveTextContent('1');
     expect(
@@ -234,7 +238,9 @@ describe('MselNetworksComponent', () => {
     ).toBeNull();
 
     await user.click(rowOf('Hosts on no network'));
-    const list = screen.getByRole('table', { name: 'Hosts on Hosts on no network' });
+    const list = screen.getByRole('table', {
+      name: 'Hosts on Hosts on no network',
+    });
     expect(list).toHaveTextContent('spare');
     await user.click(
       within(list).getByRole('button', {
@@ -494,10 +500,14 @@ describe('MselNetworksComponent', () => {
         id: 'x',
         teamIds: ['t-blue'],
         organizationIds: ['o-bank'],
-      } as Network),
+      }),
     ).toBe('blue.example, meridian-bank.com');
     expect(
-      component.domains({ id: 'y', teamIds: [], organizationIds: [] } as Network),
+      component.domains({
+        id: 'y',
+        teamIds: [],
+        organizationIds: [],
+      }),
     ).toBe('');
   });
 
@@ -552,7 +562,9 @@ describe('MselNetworksComponent', () => {
     await user.click(within(lan).getByRole('columnheader', { name: 'Host' }));
 
     const first = (table: HTMLElement) =>
-      within(table).getAllByRole('row')[1].querySelector('td.column-name')
+      within(table)
+        .getAllByRole('row')[1]
+        .querySelector('td.column-name')
         ?.textContent?.trim();
     expect(first(lan)).toBe('ws');
     expect(
