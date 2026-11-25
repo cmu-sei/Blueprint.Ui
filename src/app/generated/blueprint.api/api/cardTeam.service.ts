@@ -473,7 +473,7 @@ export class CardTeamService extends BaseService {
             }
         }
 
-        let localVarPath = `/api/teamcards/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}`;
+        let localVarPath = `/api/cardteams/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}`;
         const { basePath, withCredentials } = this.configuration;
         return this.httpClient.request<CardTeam>('put', `${basePath}${localVarPath}`,
             {
