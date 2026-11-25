@@ -516,6 +516,10 @@ export class TechniquePoolComponent
           releaseId,
           new Map(tactics.map((t) => [t.shortName, t.name])),
         );
+        // the group column sorts by these names, so sort again if the techniques came first
+        if (this.techniques.length > 0) {
+          this.browserDataSource.data = this.techniques;
+        }
       });
     this.techniqueReleaseService
       .getTechniques(releaseId)
@@ -650,13 +654,13 @@ export class TechniquePoolComponent
 
   // The pool's search and filters, like the Competencies tab's: the filtered rows are the data source's data.
 
-  /** A group's key: its short name and the name its release gives it, since two releases may name one short name differently. */
+  /**
+   * A group's key: its domain and short name. Two domains may use one short name for different groups, so the domain keeps them
+   * apart, and the key does not depend on a release's group names, which arrive after its techniques; a group filter set before
+   * they arrive, or kept across an upgrade of a domain's release, still points at the same group.
+   */
   private groupKey(technique: Technique, shortName: string): string {
-    const name =
-      this.tacticNamesByRelease
-        .get(technique?.techniqueReleaseId)
-        ?.get(shortName) || shortName;
-    return `${shortName}\u0000${name}`;
+    return `${technique?.domain ?? ''}\u0000${shortName}`;
   }
 
   /** Works out the Domain and group filters' options from the pool, and drops a filter whose option is gone. */

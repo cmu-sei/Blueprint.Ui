@@ -7,7 +7,7 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { fireEvent, screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { of } from 'rxjs';
+import { Observable, Subject, of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import {
   TechniqueRelease,
@@ -288,6 +288,7 @@ async function renderTechniques(
   grants: PermissionGrants = {},
   tactics: Record<string, TechniqueTactic[]> = {},
   dialog?: Pick<CrucibleDialogService, 'confirm'>,
+  tacticsFor?: (releaseId: string) => Observable<TechniqueTactic[]>,
 ) {
   const poolApi = {
     getMselTechniques: vi.fn(() => of(structuredClone(pool))),
@@ -296,8 +297,10 @@ async function renderTechniques(
   } satisfies ApiStub<MselTechniqueService>;
   const releaseApi = {
     getTechniqueReleases: vi.fn(() => of(structuredClone(releases))),
-    getTechniqueTactics: vi.fn((id: string) =>
-      of<TechniqueTactic[]>(structuredClone(tactics[id] ?? [])),
+    getTechniqueTactics: vi.fn(
+      (id: string) =>
+        tacticsFor?.(id) ??
+        of<TechniqueTactic[]>(structuredClone(tactics[id] ?? [])),
     ),
     getTechniques: vi.fn((id: string) =>
       of(structuredClone(techniques[id] ?? [])),
@@ -1359,5 +1362,277 @@ describe('MselTechniquesComponent', () => {
     const { poolApi } = await removeBothTicked(false);
 
     expect(poolApi.deleteMselTechnique).not.toHaveBeenCalled();
+  });
+
+  /**
+   * Verifies: two domains that use one group short name for different groups show as two options, each narrowing the pool to
+   * its own domain's techniques.
+   * Interacts with: TechniquePoolComponent.groupKey, refreshPoolFacets.
+   * Data: T1059 (enterprise, group "impact" named Impact) and CAPEC-66 (capec, group "impact" named Business Impact); the filter
+   * is labelled Group because the pool mixes tactics and categories.
+   */
+  it('keeps two groups that share a short name apart', async () => {
+    const enterprise = {
+      ...T1059,
+      technique: { ...T1059.technique, tactics: ['impact'] },
+    };
+    const capec = {
+      ...CAPEC_66_IN_POOL,
+      technique: { ...CAPEC_66, tactics: ['impact'] },
+    };
+    await renderTechniques(
+      [enterprise, capec],
+      [ENTERPRISE_RELEASE, CAPEC_RELEASE],
+      {},
+      NO_MAPPINGS,
+      {},
+      {
+        'rel-1': [{ id: 'ta-1', shortName: 'impact', name: 'Impact' }],
+        'rel-c': [{ id: 'ta-9', shortName: 'impact', name: 'Business Impact' }],
+      },
+    );
+    const user = userEvent.setup();
+
+    await user.click(
+      await within(attackSection()).findByRole('combobox', { name: 'Group' }),
+    );
+    expect(
+      await screen.findByRole('option', { name: 'Business Impact' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Impact' })).toBeInTheDocument();
+    await user.click(screen.getByRole('option', { name: 'Business Impact' }));
+
+    expect(
+      within(attackSection()).getByRole('cell', { name: /CAPEC-66/ }),
+    ).toBeInTheDocument();
+    expect(
+      within(attackSection()).queryByRole('cell', { name: /T1059/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a group filter whose group leaves the pool is dropped, so every row shows again and the table does not stay
+   * empty behind a control that is no longer shown.
+   * Interacts with: TechniquePoolComponent.refreshPoolFacets, MselTechniqueService.deleteMselTechnique (stub).
+   * Data: T1059 in "execution" and T1003 in "credential-access"; filtered to Execution, then T1059 removed; ManageMsels granted.
+   */
+  it('drops a group filter when its last technique is removed', async () => {
+    const execution = {
+      ...T1059,
+      technique: { ...T1059.technique, tactics: ['execution'] },
+    };
+    const credentials = {
+      ...T1003,
+      technique: { ...T1003.technique, tactics: ['credential-access'] },
+    };
+    await renderTechniques(
+      [execution, credentials],
+      [ENTERPRISE_RELEASE],
+      {},
+      NO_MAPPINGS,
+      { system: [SystemPermission.ManageMsels] },
+      {
+        'rel-1': [
+          { id: 'ta-1', shortName: 'execution', name: 'Execution' },
+          {
+            id: 'ta-2',
+            shortName: 'credential-access',
+            name: 'Credential Access',
+          },
+        ],
+      },
+      { confirm: () => dialogRefStub<unknown, boolean>(true).dialogRef },
+    );
+    const user = userEvent.setup();
+    await user.click(
+      await within(attackSection()).findByRole('combobox', { name: 'Tactic' }),
+    );
+    await user.click(await screen.findByRole('option', { name: 'Execution' }));
+
+    await user.click(
+      within(attackSection()).getByRole('button', { name: 'Remove T1059' }),
+    );
+
+    expect(
+      await within(attackSection()).findByRole('cell', { name: 'T1003' }),
+    ).toBeInTheDocument();
+    expect(
+      within(attackSection()).queryByRole('combobox', { name: 'Tactic' }),
+    ).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a group filter chosen before its release's group names arrive still applies once they do, because the group's
+   * key does not depend on those names.
+   * Interacts with: TechniquePoolComponent.loadTacticNames, groupKey.
+   * Data: T1059 and T1003 in two groups; the names are held back, then released.
+   */
+  it('keeps a group filter when the group names arrive', async () => {
+    const execution = {
+      ...T1059,
+      technique: { ...T1059.technique, tactics: ['execution'] },
+    };
+    const credentials = {
+      ...T1003,
+      technique: { ...T1003.technique, tactics: ['credential-access'] },
+    };
+    const names = new Subject<TechniqueTactic[]>();
+    await renderTechniques(
+      [execution, credentials],
+      [ENTERPRISE_RELEASE],
+      {},
+      NO_MAPPINGS,
+      {},
+      {},
+      undefined,
+      () => names,
+    );
+    const user = userEvent.setup();
+    await user.click(
+      await within(attackSection()).findByRole('combobox', { name: 'Tactic' }),
+    );
+    await user.click(
+      await screen.findByRole('option', { name: 'credential-access' }),
+    );
+    expect(
+      within(attackSection()).queryByRole('cell', { name: 'T1059' }),
+    ).not.toBeInTheDocument();
+
+    names.next([
+      { id: 'ta-1', shortName: 'execution', name: 'Execution' },
+      { id: 'ta-2', shortName: 'credential-access', name: 'Credential Access' },
+    ]);
+    names.complete();
+
+    expect(
+      await within(attackSection()).findByRole('cell', { name: 'T1003' }),
+    ).toBeInTheDocument();
+    expect(
+      within(attackSection()).queryByRole('cell', { name: 'T1059' }),
+    ).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: the pool's group column sorts by the group names.
+   * Interacts with: TechniquePoolComponent.sortValue.
+   * Data: T1059 in "execution" (Execution) and T1003 in "credential-access" (Credential Access).
+   */
+  it('sorts the pool by its group column', async () => {
+    const execution = {
+      ...T1059,
+      technique: { ...T1059.technique, tactics: ['execution'] },
+    };
+    const credentials = {
+      ...T1003,
+      technique: { ...T1003.technique, tactics: ['credential-access'] },
+    };
+    const { fixture } = await renderTechniques(
+      [execution, credentials],
+      [ENTERPRISE_RELEASE],
+      {},
+      NO_MAPPINGS,
+      {},
+      {
+        'rel-1': [
+          { id: 'ta-1', shortName: 'execution', name: 'Execution' },
+          {
+            id: 'ta-2',
+            shortName: 'credential-access',
+            name: 'Credential Access',
+          },
+        ],
+      },
+    );
+    const user = userEvent.setup();
+    const ids = () =>
+      within(attackSection())
+        .getAllByRole('cell', { name: /^T\d{4}$/ })
+        .map((c) => c.textContent?.trim());
+    await within(attackSection()).findByRole('cell', { name: 'T1059' });
+
+    await user.click(
+      within(attackSection()).getAllByRole('columnheader', {
+        name: 'Tactics',
+      })[0],
+    );
+    fixture.detectChanges();
+    // Credential Access comes before Execution
+    expect(ids()).toEqual(['T1003', 'T1059']);
+
+    await user.click(
+      within(attackSection()).getAllByRole('columnheader', {
+        name: 'Tactics',
+      })[0],
+    );
+    fixture.detectChanges();
+    expect(ids()).toEqual(['T1059', 'T1003']);
+  });
+
+  /**
+   * Verifies: the browser sorts by Name, and sorts its group column again when the group names arrive after the techniques.
+   * Interacts with: TechniquePoolComponent.loadRelease, sortValue.
+   * Data: T1110 in group "a" and T1059 in group "b" that are named Zulu and Alpha once the names arrive.
+   */
+  it('sorts the browser by Name and by its group names', async () => {
+    const brute = {
+      id: 'at-b',
+      techniqueReleaseId: 'rel-1',
+      domain: 'enterprise-attack',
+      externalId: 'T1110',
+      name: 'Brute Force',
+      tactics: ['a'],
+    };
+    const command = {
+      id: 'at-a',
+      techniqueReleaseId: 'rel-1',
+      domain: 'enterprise-attack',
+      externalId: 'T1059',
+      name: 'Command and Scripting Interpreter',
+      tactics: ['b'],
+    };
+    const names = new Subject<TechniqueTactic[]>();
+    const { fixture } = await renderTechniques(
+      [],
+      [ENTERPRISE_RELEASE],
+      { 'rel-1': [brute, command] },
+      NO_MAPPINGS,
+      {},
+      {},
+      undefined,
+      () => names,
+    );
+    const user = userEvent.setup();
+    const ids = () =>
+      within(attackSection())
+        .getAllByRole('cell', { name: /^T\d{4}$/ })
+        .map((c) => c.textContent?.trim());
+    await within(attackSection()).findByRole('cell', { name: 'T1110' });
+
+    await user.click(
+      within(attackSection()).getAllByRole('columnheader', { name: 'Name' })[0],
+    );
+    fixture.detectChanges();
+    expect(ids()).toEqual(['T1110', 'T1059']);
+
+    // sorted by group, with the names still short names: a before b
+    await user.click(
+      within(attackSection()).getAllByRole('columnheader', {
+        name: 'Tactics',
+      })[0],
+    );
+    fixture.detectChanges();
+    expect(ids()).toEqual(['T1110', 'T1059']);
+
+    names.next([
+      { id: 'ta-a', shortName: 'a', name: 'Zulu' },
+      { id: 'ta-b', shortName: 'b', name: 'Alpha' },
+    ]);
+    names.complete();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    // Alpha (b) now comes before Zulu (a)
+    expect(ids()).toEqual(['T1059', 'T1110']);
   });
 });
