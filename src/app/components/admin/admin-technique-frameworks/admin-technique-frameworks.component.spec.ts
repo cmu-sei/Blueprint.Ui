@@ -4,6 +4,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { fireEvent, screen, waitFor } from '@testing-library/angular';
@@ -70,7 +71,13 @@ async function renderFrameworks(
   } satisfies ApiStub<TechniqueReleaseService>;
   const messages = { displayMessage: vi.fn() };
   const rendered = await renderComponent(AdminTechniqueFrameworksComponent, {
-    imports: [MatButtonModule, MatIconModule, MatTableModule, MatTooltipModule],
+    imports: [
+      MatButtonModule,
+      MatIconModule,
+      MatSortModule,
+      MatTableModule,
+      MatTooltipModule,
+    ],
     declarations: [AdminTechniqueFrameworksComponent],
     providers: [
       { provide: TechniqueFrameworkService, useValue: frameworkApi },
@@ -137,6 +144,65 @@ describe('AdminTechniqueFrameworksComponent', () => {
     expect(
       screen.queryByText(/No technique frameworks are defined/),
     ).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: the table sorts by a clicked header, like the other admin tables.
+   * Interacts with: MatSort, the Releases header.
+   * Data: an ontology with 2 releases and a bundle with none.
+   */
+  it('sorts the definitions by a clicked header', async () => {
+    const user = userEvent.setup();
+    await renderFrameworks([ONTOLOGY, BUNDLE]);
+
+    await user.click(screen.getByRole('button', { name: 'Releases' }));
+    await user.click(screen.getByRole('button', { name: 'Releases' }));
+
+    const names = screen
+      .getAllByRole('row')
+      .slice(1)
+      .map((r) => r.querySelectorAll('[role=cell]')[1].textContent.trim());
+    expect(names).toEqual(['Defences', 'Attacks']);
+  });
+
+  /**
+   * Verifies: sorting by name ignores case, as the list's own order does.
+   * Interacts with: MatSort, the sorting data accessor.
+   * Data: a lower-case "alpha" and a capitalised "Zeta" definition.
+   */
+  it('sorts names without regard to case', async () => {
+    const user = userEvent.setup();
+    await renderFrameworks([
+      { ...BUNDLE, id: 'fw-z', name: 'Zeta' },
+      { ...BUNDLE, id: 'fw-a', name: 'alpha' },
+    ]);
+
+    await user.click(screen.getByRole('button', { name: 'Name' }));
+
+    const names = screen
+      .getAllByRole('row')
+      .slice(1)
+      .map((r) => r.querySelectorAll('[role=cell]')[1].textContent.trim());
+    expect(names).toEqual(['alpha', 'Zeta']);
+  });
+
+  /**
+   * Verifies: deleting a definition asks first with Delete and Cancel buttons, and a cancelled delete deletes nothing.
+   * Interacts with: CrucibleDialogService.confirm (stub), TechniqueFrameworkService.
+   * Data: one bundle framework.
+   */
+  it('confirms a delete with Delete and Cancel buttons', async () => {
+    const user = userEvent.setup();
+    const { frameworkApi, fixture } = await renderFrameworks([BUNDLE]);
+    const confirm = vi.fn(() => ({ afterClosed: () => of(false) }));
+    fixture.componentInstance.dialogService = { confirm } as never;
+
+    await user.click(screen.getByRole('button', { name: 'Delete Attacks' }));
+
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({ confirmText: 'Delete', cancelText: 'Cancel' }),
+    );
+    expect(frameworkApi.deleteTechniqueFramework).not.toHaveBeenCalled();
   });
 
   it('says a definition is needed when there are none', async () => {

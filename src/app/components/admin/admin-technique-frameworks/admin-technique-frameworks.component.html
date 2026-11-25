@@ -5,7 +5,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 
 <h3 class="section-title">Frameworks</h3>
-<mat-table [dataSource]="dataSource" aria-label="Technique frameworks">
+<mat-table [dataSource]="dataSource" matSort aria-label="Technique frameworks">
   <ng-container matColumnDef="action">
     <mat-header-cell *matHeaderCellDef class="col-action">
       @if (canEdit()) {
@@ -13,14 +13,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
           mat-icon-button
           title="Add a technique framework"
           aria-label="Add a technique framework"
+          style="outline: none"
           (click)="add()"
         >
-          <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle-outline" />
+          <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle" />
         </button>
         <button
           mat-icon-button
           title="Import technique framework definitions"
           aria-label="Import technique framework definitions"
+          style="outline: none"
           (click)="chooseFile()"
         >
           <mat-icon class="mdi-24px" fontIcon="mdi-upload" />
@@ -62,7 +64,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-cell>
   </ng-container>
   <ng-container matColumnDef="name">
-    <mat-header-cell *matHeaderCellDef class="col-name">Name</mat-header-cell>
+    <mat-header-cell mat-sort-header *matHeaderCellDef class="col-name"
+      >Name</mat-header-cell
+    >
     <mat-cell
       *matCellDef="let framework"
       class="col-name"
@@ -72,7 +76,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     >
   </ng-container>
   <ng-container matColumnDef="domain">
-    <mat-header-cell *matHeaderCellDef class="col-small"
+    <mat-header-cell mat-sort-header *matHeaderCellDef class="col-small"
       >Domain</mat-header-cell
     >
     <mat-cell *matCellDef="let framework" class="col-small">{{
@@ -80,7 +84,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
     }}</mat-cell>
   </ng-container>
   <ng-container matColumnDef="family">
-    <mat-header-cell *matHeaderCellDef class="col-small"
+    <mat-header-cell
+      mat-sort-header="isDefensive"
+      *matHeaderCellDef
+      class="col-small"
       >Family</mat-header-cell
     >
     <mat-cell *matCellDef="let framework" class="col-small">{{
@@ -88,7 +95,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
     }}</mat-cell>
   </ng-container>
   <ng-container matColumnDef="format">
-    <mat-header-cell *matHeaderCellDef class="col-small"
+    <mat-header-cell
+      mat-sort-header="format"
+      *matHeaderCellDef
+      class="col-small"
       >File Format</mat-header-cell
     >
     <mat-cell *matCellDef="let framework" class="col-small">{{
@@ -96,7 +106,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     }}</mat-cell>
   </ng-container>
   <ng-container matColumnDef="releaseCount">
-    <mat-header-cell *matHeaderCellDef class="col-count"
+    <mat-header-cell mat-sort-header *matHeaderCellDef class="col-count"
       >Releases</mat-header-cell
     >
     <mat-cell *matCellDef="let framework" class="col-count">{{

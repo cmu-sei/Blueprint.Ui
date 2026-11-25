@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -156,6 +157,7 @@ async function renderReleases(
       of(structuredClone(IMPORT_RESULT)),
     ),
     importTechniqueRelease: vi.fn(() => of(structuredClone(CUSTOM))),
+    deleteTechniqueRelease: vi.fn(() => of(undefined)),
     // the API answers the release as saved: the four notice fields changed, nothing else
     updateTechniqueRelease: vi.fn(
       (id: string, notice: TechniqueReleaseNotice) =>
@@ -172,6 +174,7 @@ async function renderReleases(
       MatFormFieldModule,
       MatIconModule,
       MatInputModule,
+      MatPaginatorModule,
       MatProgressSpinnerModule,
       MatSortModule,
       MatTableModule,
@@ -479,6 +482,55 @@ describe('AdminTechniqueReleasesComponent', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
     expect(releaseApi.updateTechniqueRelease).not.toHaveBeenCalled();
+  });
+
+  /**
+   * Verifies: the Releases table pages like the other admin tables, and a search nothing matches says so.
+   * Interacts with: the Search box, the paginator, filterControl.
+   * Data: 25 custom releases, paged by 20; a search for text no release holds.
+   */
+  it('pages the releases and says when a search finds none', async () => {
+    const user = userEvent.setup();
+    const releases = Array.from({ length: 25 }, (_, i) => ({
+      ...CUSTOM,
+      id: `rel-${i}`,
+      name: `Release ${String(i).padStart(2, '0')}`,
+    }));
+    await renderReleases(releases);
+
+    expect(screen.getByText('Items per page:')).toBeInTheDocument();
+    expect(screen.getAllByText(/^Release \d\d$/)).toHaveLength(20);
+    expect(screen.queryByText('No releases found')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
+    expect(screen.getAllByText(/^Release \d\d$/)).toHaveLength(5);
+
+    await user.type(screen.getByPlaceholderText('Search'), 'zzzz-no-match');
+
+    expect(await screen.findByText('No releases found')).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: deleting a release asks first with Delete and Cancel buttons, and a cancelled delete deletes nothing.
+   * Interacts with: CrucibleDialogService.confirm (stub), TechniqueReleaseService.
+   * Data: one custom release.
+   */
+  it('confirms a release delete with Delete and Cancel buttons', async () => {
+    const user = userEvent.setup();
+    const { releaseApi, fixture } = await renderReleases([CUSTOM]);
+    const confirm = vi.fn(() => ({ afterClosed: () => of(false) }));
+    fixture.componentInstance.dialogService = { confirm } as never;
+
+    await user.click(
+      screen.getByRole('button', {
+        name: `Delete ${CUSTOM.name} ${CUSTOM.version}`,
+      }),
+    );
+
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({ confirmText: 'Delete', cancelText: 'Cancel' }),
+    );
+    expect(releaseApi.deleteTechniqueRelease).not.toHaveBeenCalled();
   });
 
   /**
