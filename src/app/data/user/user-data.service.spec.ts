@@ -143,22 +143,76 @@ describe('UserDataService', () => {
   });
 
   /**
-   * Verifies: update sends the edit, but the store keeps the old user because updateStore uses add().
+   * Verifies: update sends the edit and the store takes the API's answer, so a user's new name and role show at once.
    * Interacts with: UserService.updateUser (stub), real UserQuery.
-   * Data: user-1 "Alice Analyst" stored; the API returns "Alice Admin".
+   * Data: user-1 "Alice Analyst" with role-a stored; the API returns "Alice Admin" with role-b.
    */
-  it('update does not replace a user that is already stored', () => {
+  it('update merges a user that is already stored', () => {
     const { service, query, userApi } = setup();
-    service.updateStore(user());
-    userApi.updateUser.mockReturnValue(of(user({ name: 'Alice Admin' })));
+    service.updateStore(user({ roleId: 'role-a' }));
+    userApi.updateUser.mockReturnValue(
+      of(user({ name: 'Alice Admin', roleId: 'role-b' })),
+    );
 
-    service.update(user({ name: 'Alice Admin' }));
+    service.update(user({ name: 'Alice Admin', roleId: 'role-b' }));
 
     expect(userApi.updateUser).toHaveBeenCalledWith(
       'user-1',
-      expect.objectContaining({ name: 'Alice Admin' }),
+      expect.objectContaining({ name: 'Alice Admin', roleId: 'role-b' }),
     );
-    expect(query.getEntity('user-1').name).toBe('Alice Analyst');
+    expect(query.getEntity('user-1').name).toBe('Alice Admin');
+    expect(query.getEntity('user-1').roleId).toBe('role-b');
+  });
+
+  /**
+   * Verifies: a user whose role was removed is stored without a role: the API answers a removed role as an explicit null,
+   * which the merge into the stored user writes over the old role.
+   * Interacts with: UserService.updateUser (stub), real UserQuery.
+   * Data: user-1 with role-a stored; the API's answer has roleId null.
+   */
+  it('update with the role removed leaves the stored user without a role', () => {
+    const { service, query, userApi } = setup();
+    service.updateStore(user({ roleId: 'role-a' }));
+    userApi.updateUser.mockReturnValue(of(user({ roleId: null })));
+
+    service.update(user({ roleId: null }));
+
+    expect(query.getEntity('user-1').roleId).toBeNull();
+  });
+
+  /**
+   * Verifies: replacing a stored user keeps that user's UI state.
+   * Interacts with: real UserStore UI store via UserQuery.ui.
+   * Data: user-1 marked as editing, then updated.
+   */
+  it("update keeps the stored user's UI state", () => {
+    const { service, query, store, userApi } = setup();
+    service.updateStore(user());
+    store.ui.update('user-1', { isEditing: true });
+    userApi.updateUser.mockReturnValue(of(user({ roleId: 'role-b' })));
+
+    service.update(user({ roleId: 'role-b' }));
+
+    expect(query.getEntity('user-1').roleId).toBe('role-b');
+    expect(query.ui.getEntity('user-1').isEditing).toBe(true);
+  });
+
+  /**
+   * Verifies: updateStore adds a user the store does not hold yet, with the initial UI state.
+   * Interacts with: real UserStore UI store via UserQuery.ui.
+   * Data: user-2 stored after user-1.
+   */
+  it('updateStore adds a user that is not stored yet', () => {
+    const { service, query } = setup();
+    service.updateStore(user());
+
+    service.updateStore(user({ id: 'user-2', name: 'Bob' }));
+
+    expect(names(query.getAll())).toEqual(['Alice Analyst', 'Bob']);
+    expect(query.ui.getEntity('user-2')).toEqual({
+      id: 'user-2',
+      ...initialUserUiState,
+    });
   });
 
   /**
