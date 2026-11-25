@@ -525,6 +525,18 @@ describe('SignalRService', () => {
       ]);
       expect(users.getEntity('user-1').name).toBe('Alice Admin');
 
+      // a role set and then removed by another admin shows as removed
+      hub.trigger(
+        'UserUpdated',
+        { id: 'user-1', name: 'Alice Admin', roleId: 'role-a' },
+        ['roleId'],
+      );
+      expect(users.getEntity('user-1').roleId).toBe('role-a');
+      hub.trigger('UserUpdated', { id: 'user-1', name: 'Alice Admin' }, [
+        'roleId',
+      ]);
+      expect(users.getEntity('user-1').roleId).toBeUndefined();
+
       hub.trigger('UserDeleted', 'user-1');
       expect(users.getAll()).toEqual([]);
     });

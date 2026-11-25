@@ -165,8 +165,8 @@ describe('UserDataService', () => {
   });
 
   /**
-   * Verifies: a user whose role was removed is stored without a role: the API leaves a null role id out of its answer, so
-   * merging the answer into the stored user would keep the old role.
+   * Verifies: a user whose role was removed is stored without a role, even when the answer has no role id, which a merge
+   * into the stored user would not give.
    * Interacts with: UserService.updateUser (stub), real UserQuery.
    * Data: user-1 with role-a stored; the API's answer has no roleId.
    */
@@ -178,6 +178,23 @@ describe('UserDataService', () => {
     service.update(user({ roleId: null }));
 
     expect(query.getEntity('user-1').roleId).toBeUndefined();
+  });
+
+  /**
+   * Verifies: replacing a stored user keeps that user's UI state.
+   * Interacts with: real UserStore UI store via UserQuery.ui.
+   * Data: user-1 marked as editing, then updated.
+   */
+  it("update keeps the stored user's UI state", () => {
+    const { service, query, store, userApi } = setup();
+    service.updateStore(user());
+    store.ui.update('user-1', { isEditing: true });
+    userApi.updateUser.mockReturnValue(of(user({ roleId: 'role-b' })));
+
+    service.update(user({ roleId: 'role-b' }));
+
+    expect(query.getEntity('user-1').roleId).toBe('role-b');
+    expect(query.ui.getEntity('user-1').isEditing).toBe(true);
   });
 
   /**

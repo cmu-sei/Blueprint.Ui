@@ -107,8 +107,8 @@ export class UserDataService {
   }
 
   updateStore(user: User) {
-    // add skips a user that is already in the store, and a merge would keep a role the API left out
-    // of its answer (it leaves out a null), so a saved user replaces the stored one
+    // add skips a user that is already in the store, so a saved user replaces the stored one; replacing, not merging,
+    // also means a role that was removed does not survive if an answer ever leaves it out
     if (this.userQuery.hasEntity(user.id)) {
       this.userStore.replace(user.id, user);
     } else {
