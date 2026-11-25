@@ -333,20 +333,9 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
           this.permissionDataService.hasPermission(
             SystemPermission.ManageCompetencyFrameworks,
           );
-        // Update canAccessAdminSection based on having any admin permission
+        // the page has something to show when the user holds a permission that opens one of its sections
         this.canAccessAdminSection =
-          this.canViewUsers ||
-          this.canViewRoles ||
-          this.canViewGroups ||
-          this.canViewUnits ||
-          this.canViewInjectTypes ||
-          this.canViewCatalogs ||
-          this.canViewOrganizations ||
-          this.canViewCiteActions ||
-          this.canViewCiteDuties ||
-          this.canViewPlayerApplications ||
-          this.canViewDataFields ||
-          this.canViewCompetencyFrameworks;
+          this.permissionDataService.canViewAdministration();
         // Load additional data if user has permissions
         if (this.canAccessAdminSection) {
           this.unitDataService.load();

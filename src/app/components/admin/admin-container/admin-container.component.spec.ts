@@ -565,16 +565,16 @@ describe('AdminContainerComponent', () => {
   });
 
   /**
-   * Verifies: a user whose only admin permission is ViewGalleryCards never loads the units.
+   * Verifies: a user whose only admin permission is ViewGalleryCards still loads the units, since that section is one the page opens.
    * Interacts with: real PermissionDataService (grants: ViewGalleryCards), UnitService.getUnits (stub).
    * Data: ViewGalleryCards only.
    */
-  it('does not load units for a ViewGalleryCards-only user', async () => {
+  it('loads units for a ViewGalleryCards-only user', async () => {
     const { units } = await renderAdmin({
       permissions: [SystemPermission.ViewGalleryCards],
     });
 
-    expect(units.getUnits).not.toHaveBeenCalled();
+    expect(units.getUnits).toHaveBeenCalledTimes(1);
   });
 
   /**

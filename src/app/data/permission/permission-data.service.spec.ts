@@ -16,8 +16,23 @@ import { permissionDataProviders } from 'src/app/test-utils/mock-permission-data
 import { ApiStub } from 'src/app/test-utils/api-stub';
 
 const ALL_PERMISSIONS = Object.values(SystemPermission);
-// The permissions that open an admin section; ViewMsels opens none.
-const SECTION_VIEW_PERMISSIONS = [...ADMIN_SECTION_PERMISSIONS];
+// The permissions that open an admin section, listed by hand so the constant is checked against something else;
+// ViewMsels opens none.
+const SECTION_VIEW_PERMISSIONS: SystemPermission[] = [
+  SystemPermission.ViewUnits,
+  SystemPermission.ViewDataFields,
+  SystemPermission.ViewInjectTypes,
+  SystemPermission.ViewCatalogs,
+  SystemPermission.ViewOrganizations,
+  SystemPermission.ViewGalleryCards,
+  SystemPermission.ViewCiteActions,
+  SystemPermission.ViewCiteDuties,
+  SystemPermission.ViewPlayerApplications,
+  SystemPermission.ViewCompetencyFrameworks,
+  SystemPermission.ViewUsers,
+  SystemPermission.ViewRoles,
+  SystemPermission.ViewGroups,
+];
 const NON_VIEW_PERMISSIONS = ALL_PERMISSIONS.filter(
   (p) => !p.startsWith('View'),
 );
