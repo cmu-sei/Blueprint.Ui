@@ -4,7 +4,9 @@
 // The checks the Networks tab makes before it saves: names, CIDR ranges, IP addresses and an address inside
 // its network's range. The API makes the same checks and says what is wrong when it refuses a save.
 
-const IPV4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+// no leading zeros: the API reads 010 as octal, so the same text would mean two addresses
+const OCTET = '(0|[1-9]\\d{0,2})';
+const IPV4 = new RegExp(`^${OCTET}\\.${OCTET}\\.${OCTET}\\.${OCTET}$`);
 
 /** The address as a number and its bit length (32 or 128), or null when it is not an IP address */
 function parseAddress(text: string): { value: bigint; bits: number } | null {

@@ -104,6 +104,9 @@ describe('range rules', () => {
     '1::2::3',
     '1:2:3:4:5:6:7:8:9',
     'abc',
+    // a leading zero is decimal here and octal to the API
+    '010.20.0.10',
+    '10.020.0.10',
   ])('refuses the malformed address %o', (address) => {
     expect(addressProblem(address)).toContain('single IP address');
   });

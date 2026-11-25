@@ -455,6 +455,7 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** Opens the dialog on the network; when the save fails the dialog opens again with what was entered */
   private openNetworkDialog(network: Network): void {
+    const mselId = this.mselId();
     const data: NetworkEditDialogData = {
       network,
       networks: this.networks(),
@@ -468,6 +469,7 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
         maxWidth: '90vw',
       })
       .afterClosed()
+      .pipe(takeUntil(this.unsubscribe$))
       .subscribe((result: Network | undefined) => {
         if (!result) {
           return;
@@ -475,11 +477,14 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
         const save = result.id
           ? this.networkService.updateNetwork(result.id, result)
           : this.networkService.createNetwork(result);
-        save.subscribe({
+        save.pipe(takeUntil(this.unsubscribe$)).subscribe({
           next: () => this.load(),
           error: (err) => {
             this.errorService.handleError(err);
-            this.openNetworkDialog(result);
+            // the dialog opens again only while the tab still shows the MSEL it was for
+            if (mselId === this.mselId()) {
+              this.openNetworkDialog(result);
+            }
           },
         });
       });
@@ -495,7 +500,7 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
         message:
           `Are you sure that you want to delete ${network.name}?` +
           (hosts
-            ? ` The ${hosts === 1 ? 'host on it keeps' : hosts + ' hosts on it keep'} its other interfaces.`
+            ? ` The ${hosts === 1 ? 'host on it keeps its' : hosts + ' hosts on it keep their'} other interfaces.`
             : ''),
         confirmText: 'Delete',
         cancelText: 'Cancel',
@@ -526,6 +531,7 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** Opens the dialog on the host; when the save fails the dialog opens again with what was entered */
   private openHostDialog(host: Host): void {
+    const mselId = this.mselId();
     const data: HostEditDialogData = {
       host,
       hosts: this.hosts(),
@@ -536,6 +542,7 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
     this.dialog
       .open(HostEditDialogComponent, { data, width: '720px', maxWidth: '90vw' })
       .afterClosed()
+      .pipe(takeUntil(this.unsubscribe$))
       .subscribe((result: Host | undefined) => {
         if (!result) {
           return;
@@ -543,11 +550,13 @@ export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
         const save = result.id
           ? this.hostService.updateHost(result.id, result)
           : this.hostService.createHost(result);
-        save.subscribe({
+        save.pipe(takeUntil(this.unsubscribe$)).subscribe({
           next: () => this.load(),
           error: (err) => {
             this.errorService.handleError(err);
-            this.openHostDialog(result);
+            if (mselId === this.mselId()) {
+              this.openHostDialog(result);
+            }
           },
         });
       });

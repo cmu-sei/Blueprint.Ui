@@ -601,13 +601,16 @@ describe('MselNetworksComponent', () => {
       dialogResult: edits,
       failSaves: true,
     });
+    // the reopened dialog is dismissed, so the save is tried once
+    open.mockReturnValueOnce(dialogRefStub<unknown, unknown>(edits).dialogRef);
+    open.mockReturnValue(dialogRefStub<unknown, unknown>(undefined).dialogRef);
     const user = userEvent.setup();
 
     await user.click(screen.getByRole('button', { name: 'Add a network' }));
 
-    expect(networkApi.createNetwork).toHaveBeenCalled();
+    expect(networkApi.createNetwork).toHaveBeenCalledTimes(1);
     const calls = open.mock.calls as unknown[][];
-    expect(calls.length).toBeGreaterThan(1);
+    expect(calls).toHaveLength(2);
     const reopened = (calls[1][1] as { data: { network: Network } }).data;
     expect(reopened.network).toEqual(edits);
   });
@@ -622,6 +625,8 @@ describe('MselNetworksComponent', () => {
       dialogResult: edits,
       failSaves: true,
     });
+    open.mockReturnValueOnce(dialogRefStub<unknown, unknown>(edits).dialogRef);
+    open.mockReturnValue(dialogRefStub<unknown, unknown>(undefined).dialogRef);
     const user = userEvent.setup();
 
     await user.click(rowOf('bank-dmz'));
@@ -629,9 +634,9 @@ describe('MselNetworksComponent', () => {
       screen.getByRole('button', { name: 'Edit host fw01 on bank-dmz' }),
     );
 
-    expect(hostApi.updateHost).toHaveBeenCalled();
+    expect(hostApi.updateHost).toHaveBeenCalledTimes(1);
     const calls = open.mock.calls as unknown[][];
-    expect(calls.length).toBeGreaterThan(1);
+    expect(calls).toHaveLength(2);
     const reopened = (calls[1][1] as { data: { host: Host } }).data;
     expect(reopened.host.name).toBe('fw02');
   });
@@ -775,5 +780,29 @@ describe('MselNetworksComponent', () => {
     first.complete();
 
     expect(component.networks().map((n) => n.name)).toEqual(['newer']);
+  });
+
+  /**
+   * Verifies: a save that fails after the tab is gone, or after another MSEL is showing, does not open a dialog.
+   * Data: the host save answers late, after the tab is destroyed.
+   */
+  it('does not reopen a dialog for a save that fails after the tab is gone', async () => {
+    const edits = { ...HOSTS[1], name: 'fw02' };
+    const late = new Subject<Host>();
+    const { open, hostApi, fixture } = await renderNetworks({
+      dialogResult: edits,
+    });
+    hostApi.updateHost.mockReturnValue(late);
+    const user = userEvent.setup();
+
+    await user.click(rowOf('bank-dmz'));
+    await user.click(
+      screen.getByRole('button', { name: 'Edit host fw01 on bank-dmz' }),
+    );
+    const opened = open.mock.calls.length;
+    fixture.destroy();
+    late.error(new Error('refused'));
+
+    expect(open.mock.calls).toHaveLength(opened);
   });
 });

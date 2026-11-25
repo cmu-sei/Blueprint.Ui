@@ -57,10 +57,12 @@ export class NetworkEditDialogComponent {
 
   // a field is invalid, so its mat-error shows, while its rule is broken
   readonly nameMatcher: ErrorStateMatcher = {
-    isErrorState: () => !!this.nameProblem(),
+    isErrorState: (control) =>
+      !!this.nameProblem() && !!(control?.touched || control?.dirty),
   };
   readonly rangeMatcher: ErrorStateMatcher = {
-    isErrorState: () => !!this.rangeProblem(),
+    isErrorState: (control) =>
+      !!this.rangeProblem() && !!(control?.touched || control?.dirty),
   };
 
   nameProblem(): string | null {

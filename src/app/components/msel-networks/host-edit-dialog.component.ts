@@ -106,7 +106,10 @@ export class HostEditDialogComponent {
 
   /** Marks a field as invalid, so its mat-error shows, while its rule is broken */
   private invalidWhen(problem: () => string | null): ErrorStateMatcher {
-    return { isErrorState: () => !!problem() };
+    return {
+      isErrorState: (control) =>
+        !!problem() && !!(control?.touched || control?.dirty),
+    };
   }
 
   readonly nameMatcher = this.invalidWhen(() => this.nameProblem());
