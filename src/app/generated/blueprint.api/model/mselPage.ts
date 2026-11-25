@@ -22,5 +22,11 @@ export interface MselPage {
     content?: string | null;
     allCanView?: boolean;
     includeInPlaybook?: boolean;
+    /**
+     * The MSEL\'s marking and name, so a reader of the page can draw its banner without reading the MSEL, which a page reader may not be allowed to; null when the MSEL is not loaded.
+     */
+    articleMarking?: string | null;
+    articleMarkingText?: string | null;
+    mselName?: string | null;
 }
 

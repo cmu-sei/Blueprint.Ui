@@ -61,6 +61,8 @@ export class MselPlus implements Msel {
   useCite?: boolean;
   citeEvaluationId?: string;
   citeScoringModelId?: string;
+  articleMarking?: string;
+  articleMarkingText?: string;
   useCaster?: boolean;
   casterDirectoryId?: string;
   casterWorkspaceId?: string;

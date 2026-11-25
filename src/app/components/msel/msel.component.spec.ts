@@ -49,6 +49,9 @@ import { CardListComponent } from '../card-list/card-list.component';
 import { CiteActionListComponent } from '../cite-action-list/cite-action-list.component';
 import { CiteDutyListComponent } from '../cite-duty-list/cite-duty-list.component';
 import { MselCompetenciesComponent } from '../msel-competencies/msel-competencies.component';
+import { MselTechniquesComponent } from '../msel-techniques/msel-techniques.component';
+import { MselTechniqueDataService } from 'src/app/data/msel-technique/msel-technique-data.service';
+import { MselCountermeasureDataService } from 'src/app/data/msel-technique/msel-countermeasure-data.service';
 import { ScenarioEventListComponent } from '../scenario-event-list/scenario-event-list.component';
 import { MselViewComponent } from '../msel-view/msel-view.component';
 import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
@@ -116,6 +119,10 @@ class MselScoringModelTabStub {
 }
 @Component({ selector: 'app-msel-competencies', template: '' })
 class MselCompetenciesStub {
+  readonly loggedInUserId = input<string>(undefined);
+}
+@Component({ selector: 'app-msel-techniques', template: '' })
+class MselTechniquesStub {
   readonly loggedInUserId = input<string>(undefined);
 }
 @Component({ selector: 'app-scenario-event-list', template: '' })
@@ -215,6 +222,7 @@ async function renderMsel(
       { replace: CiteDutyListComponent, with: CiteDutyListStub },
       { replace: MselScoringModelTabComponent, with: MselScoringModelTabStub },
       { replace: MselCompetenciesComponent, with: MselCompetenciesStub },
+      { replace: MselTechniquesComponent, with: MselTechniquesStub },
       { replace: ScenarioEventListComponent, with: ScenarioEventListStub },
       { replace: MselViewComponent, with: MselViewStub },
       { replace: AssessorViewComponent, with: AssessorViewStub },
@@ -328,6 +336,29 @@ describe('MselComponent', () => {
       expect(endpoint).toHaveBeenCalledWith('msel-1');
     }
     expect(child(fixture, MselInfoStub)?.loggedInUserId()).toBe('user-me');
+  });
+
+  /**
+   * Verifies: the Techniques tab gets the signed-in user's id, as every other tab does, so a MSEL's creator or
+   * owner can edit its techniques; leaving the MSEL drops its technique pool and countermeasures.
+   * Interacts with: the Techniques tab (stub), MselTechniqueDataService.unload, MselCountermeasureDataService.unload.
+   * Data: loggedInUserId user-me.
+   */
+  it('gives the Techniques tab the user id and unloads its data on leaving', async () => {
+    const { fixture } = await renderMsel();
+    const pool = TestBed.inject(MselTechniqueDataService);
+    const countermeasures = TestBed.inject(MselCountermeasureDataService);
+    const unloadPool = vi.spyOn(pool, 'unload');
+    const unloadCountermeasures = vi.spyOn(countermeasures, 'unload');
+
+    await openTab('Techniques');
+
+    expect(child(fixture, MselTechniquesStub)?.loggedInUserId()).toBe(
+      'user-me',
+    );
+    fixture.destroy();
+    expect(unloadPool).toHaveBeenCalled();
+    expect(unloadCountermeasures).toHaveBeenCalled();
   });
 
   /**

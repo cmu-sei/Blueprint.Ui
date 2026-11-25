@@ -1,7 +1,7 @@
 // Copyright 2023 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 import { DOCUMENT } from '@angular/common';
-import { Component, OnDestroy, inject } from '@angular/core';
+import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -13,12 +13,14 @@ import { ComnSettingsService } from '@cmusei/crucible-common';
 import { VIEW_CONFIG } from 'src/app/utilities/editor-config';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { FormsModule } from '@angular/forms';
+import { MarkingBanner, markingBanner } from 'src/app/utilities/msel-marking';
+import { MarkingBannerComponent } from 'src/app/components/marking-banner/marking-banner.component';
 
 @Component({
   selector: 'app-msel-pageapp',
   templateUrl: './msel-page.component.html',
   styleUrls: ['./msel-page.component.scss'],
-  imports: [AngularEditorModule, FormsModule],
+  imports: [AngularEditorModule, FormsModule, MarkingBannerComponent],
 })
 export class MselPageComponent implements OnDestroy {
   private activatedRoute = inject(ActivatedRoute);
@@ -31,6 +33,8 @@ export class MselPageComponent implements OnDestroy {
   mselPage: MselPage = {} as MselPage;
   private unsubscribe$ = new Subject();
   viewConfig = VIEW_CONFIG;
+  // the MSEL's marking, drawn above and below the page as it is shown, not stored in its content
+  readonly banner = signal<MarkingBanner | null>(null);
 
   constructor() {
     this._document.getElementById('appTitle').innerHTML =
@@ -53,6 +57,14 @@ export class MselPageComponent implements OnDestroy {
       .subscribe((mselPage) => {
         if (mselPage) {
           this.mselPage = mselPage;
+          // the page carries its MSEL's marking, as its readers may not be allowed to read the MSEL
+          this.banner.set(
+            markingBanner(
+              mselPage.articleMarking,
+              mselPage.articleMarkingText,
+              mselPage.mselName,
+            ),
+          );
         }
       });
   }

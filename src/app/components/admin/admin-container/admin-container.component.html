@@ -169,6 +169,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
               fontIcon="mdi-tune-variant"
             />
           </mat-list-item>
+          <mat-list-item
+            [class]="getSelectedClass(techniqueReleasesText)"
+            (click)="gotoSection(techniqueReleasesText)"
+            [title]="techniqueReleasesText"
+          >
+            <mat-icon
+              matListItemIcon
+              class="mat-list-item-icon"
+              fontIcon="mdi-shield-bug-outline"
+            />
+          </mat-list-item>
         }
         @if (canViewUsers) {
           <mat-list-item
@@ -495,6 +506,26 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <mat-icon fontIcon="mdi-chevron-right" />
               </button>
             </mat-list-item>
+            <!-- Technique Frameworks -->
+            <mat-list-item
+              [class]="getSelectedClass(techniqueReleasesText)"
+              id="wrapper showhand"
+              (click)="gotoSection(techniqueReleasesText)"
+            >
+              <mat-icon
+                matListItemIcon
+                class="mat-list-item-icon"
+                fontIcon="mdi-shield-bug-outline"
+              />
+              {{ techniqueReleasesSidebarText }}
+              <button
+                aria-labelledby="techniqueReleasesText"
+                mat-icon-button
+                class="pull-right"
+              >
+                <mat-icon fontIcon="mdi-chevron-right" />
+              </button>
+            </mat-list-item>
           }
           <!-- Users -->
           @if (canViewUsers) {
@@ -636,6 +667,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
           [canEdit]="canManageCompetencyFrameworks"
         />
       </span>
+    }
+    @if (canViewCompetencyFrameworks && selectedTab === techniqueReleasesText) {
+      <app-admin-technique-releases
+        [loggedInUserId]="loggedInUserId"
+        [canEdit]="canManageCompetencyFrameworks"
+      />
     }
     @if (canViewCatalogs && selectedTab === catalogsText) {
       <span>

@@ -27,6 +27,7 @@ import { DataField } from './dataField';
 import { Move } from './move';
 import { MselItemStatus } from './mselItemStatus';
 import { Team } from './team';
+import { MselTechnique } from './mselTechnique';
 import { IntegrationType } from './integrationType';
 import { PlayerApplication } from './playerApplication';
 
@@ -51,6 +52,8 @@ export interface Msel {
     useCite?: boolean;
     citeEvaluationId?: string | null;
     citeScoringModelId?: string | null;
+    articleMarking?: string | null;
+    articleMarkingText?: string | null;
     citeIntegrationType?: IntegrationType;
     useCaster?: boolean;
     casterDirectoryId?: string | null;
@@ -112,6 +115,7 @@ export interface Msel {
     pages?: Array<MselPage> | null;
     invitations?: Array<Invitation> | null;
     mselCompetencies?: Array<MselCompetency> | null;
+    mselTechniques?: Array<MselTechnique> | null;
 }
 export namespace Msel {
 }

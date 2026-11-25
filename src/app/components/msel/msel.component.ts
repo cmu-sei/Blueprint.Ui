@@ -46,6 +46,8 @@ import { InvitationDataService } from 'src/app/data/invitation/invitation-data.s
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
+import { MselTechniqueDataService } from 'src/app/data/msel-technique/msel-technique-data.service';
+import { MselCountermeasureDataService } from 'src/app/data/msel-technique/msel-countermeasure-data.service';
 import { MatTabGroup, MatTab } from '@angular/material/tabs';
 import { MselUnitDataService } from 'src/app/data/msel-unit/msel-unit-data.service';
 import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
@@ -78,6 +80,7 @@ import { CardListComponent } from '../card-list/card-list.component';
 import { CiteActionListComponent } from '../cite-action-list/cite-action-list.component';
 import { CiteDutyListComponent } from '../cite-duty-list/cite-duty-list.component';
 import { MselCompetenciesComponent } from '../msel-competencies/msel-competencies.component';
+import { MselTechniquesComponent } from '../msel-techniques/msel-techniques.component';
 import { ScenarioEventListComponent } from '../scenario-event-list/scenario-event-list.component';
 import { MselViewComponent } from '../msel-view/msel-view.component';
 import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
@@ -111,6 +114,7 @@ import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
     CiteActionListComponent,
     CiteDutyListComponent,
     MselCompetenciesComponent,
+    MselTechniquesComponent,
     ScenarioEventListComponent,
     MselViewComponent,
     AssessorViewComponent,
@@ -139,6 +143,8 @@ export class MselComponent implements OnDestroy {
   private mselDataService = inject(MselDataService);
   private mselUnitDataService = inject(MselUnitDataService);
   private mselQuery = inject(MselQuery);
+  private mselTechniqueDataService = inject(MselTechniqueDataService);
+  private mselCountermeasureDataService = inject(MselCountermeasureDataService);
   private mselUnitQuery = inject(MselUnitQuery);
   private organizationDataService = inject(OrganizationDataService);
   private scenarioEventDataService = inject(ScenarioEventDataService);
@@ -173,6 +179,7 @@ export class MselComponent implements OnDestroy {
     'Info',
     'Contributors',
     'Competencies',
+    'Techniques',
     'Data Fields',
     'Teams',
     'Organizations',
@@ -204,6 +211,7 @@ export class MselComponent implements OnDestroy {
     ['Actions', 'mdi-clipboard-check-outline'],
     ['Duties', 'mdi-clipboard-account-outline'],
     ['Competencies', 'mdi-certificate-outline'],
+    ['Techniques', 'mdi-shield-bug-outline'],
     ['Scenario Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
     ['Assessor View', 'mdi-clipboard-check-multiple-outline'],
@@ -600,5 +608,8 @@ export class MselComponent implements OnDestroy {
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
+    // the technique pool and countermeasures are read again the next time a MSEL is opened
+    this.mselTechniqueDataService.unload();
+    this.mselCountermeasureDataService.unload();
   }
 }

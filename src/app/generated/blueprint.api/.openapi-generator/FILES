@@ -31,6 +31,7 @@ api/mselExecution.service.ts
 api/mselImage.service.ts
 api/mselPage.service.ts
 api/mselScoringModel.service.ts
+api/mselTechnique.service.ts
 api/mselUnit.service.ts
 api/organization.service.ts
 api/player.service.ts
@@ -44,6 +45,8 @@ api/systemRoles.service.ts
 api/team.service.ts
 api/teamCompetency.service.ts
 api/teamUser.service.ts
+api/techniqueFramework.service.ts
+api/techniqueRelease.service.ts
 api/unit.service.ts
 api/unitUser.service.ts
 api/user.service.ts
@@ -150,7 +153,9 @@ model/invitation.ts
 model/invitationCreate.ts
 model/invitationEdit.ts
 model/itemStatus.ts
+model/jsonLdFormatOptions.ts
 model/layoutKind.ts
+model/mappingTargetMatch.ts
 model/memberInfo.ts
 model/memberTypes.ts
 model/methodAttributes.ts
@@ -172,6 +177,7 @@ model/mselCasterExportEntry.ts
 model/mselCasterExportFile.ts
 model/mselCasterImportResult.ts
 model/mselCompetency.ts
+model/mselCountermeasures.ts
 model/mselCreate.ts
 model/mselEdit.ts
 model/mselExecution.ts
@@ -190,6 +196,9 @@ model/mselScoringCategory.ts
 model/mselScoringModel.ts
 model/mselScoringModelLink.ts
 model/mselScoringOption.ts
+model/mselTechnique.ts
+model/mselTechniqueCountermeasures.ts
+model/mselTechniqueUpgrade.ts
 model/mselUnit.ts
 model/mselUnitCreate.ts
 model/organization.ts
@@ -230,6 +239,8 @@ model/scoringOption.ts
 model/scoringOptionSelection.ts
 model/securityRuleSet.ts
 model/severityLevel.ts
+model/stixFormatOptions.ts
+model/stixGrouping.ts
 model/structLayoutAttribute.ts
 model/systemPermission.ts
 model/systemRole.ts
@@ -241,6 +252,20 @@ model/teamPermission.ts
 model/teamRole.ts
 model/teamType.ts
 model/teamUser.ts
+model/technique.ts
+model/techniqueCountermeasure.ts
+model/techniqueCountermeasureImport.ts
+model/techniqueFileFormat.ts
+model/techniqueFramework.ts
+model/techniqueFrameworkMatch.ts
+model/techniqueFrameworkSettings.ts
+model/techniqueLink.ts
+model/techniqueLinkSource.ts
+model/techniqueMappingDefinition.ts
+model/techniqueMappingFormat.ts
+model/techniqueRelease.ts
+model/techniqueReleaseNotice.ts
+model/techniqueTactic.ts
 model/type.ts
 model/typeAttributes.ts
 model/typeInfo.ts

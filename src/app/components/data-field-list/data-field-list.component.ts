@@ -82,6 +82,7 @@ import { MatIconButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatCheckbox } from '@angular/material/checkbox';
+import { DataFieldTypeNamePipe } from 'src/app/utilities/data-field-type-name';
 import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
@@ -119,6 +120,7 @@ import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
     MatHeaderRow,
     MatRowDef,
     MatRow,
+    DataFieldTypeNamePipe,
   ],
 })
 export class DataFieldListComponent
@@ -438,7 +440,7 @@ export class DataFieldListComponent
         onScenarioEventList: true,
         onExerciseView: true,
         isTemplate: makeTemplate,
-      } as DataField;
+      };
     } else {
       if (makeTemplate === dataField.isTemplate) {
         dialogTitle = dialogTitle.replace('Add a', 'Edit');
@@ -702,6 +704,11 @@ export class DataFieldListComponent
       return `${count} option${count !== 1 ? 's' : ''}`;
     } else if (dataField.dataType === DataFieldType.Competency) {
       return 'Manage';
+    } else if (
+      dataField.dataType === DataFieldType.AttackTechnique ||
+      dataField.dataType === DataFieldType.DefensiveTechnique
+    ) {
+      return 'Techniques tab';
     } else {
       return ' ';
     }

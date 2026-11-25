@@ -19,10 +19,11 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { screen } from '@testing-library/angular';
+import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { Observable, of, Subject } from 'rxjs';
 import {
+  Competency,
   CiteService,
   CiteTeamResponses,
   CiteTeamResponsesStatus,
@@ -48,6 +49,8 @@ import { DataFieldStore } from 'src/app/data/data-field/data-field.store';
 import { DataValueStore } from 'src/app/data/data-value/data-value.store';
 import { MoveStore } from 'src/app/data/move/move.store';
 import { MselStore } from 'src/app/data/msel/msel.store';
+import { MselCompetencyStore } from 'src/app/data/msel-competency/msel-competency.store';
+import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import { ScenarioEventStore } from 'src/app/data/scenario-event/scenario-event.store';
 import { TeamStore } from 'src/app/data/team/team.store';
 import {
@@ -204,6 +207,171 @@ const T0001: MselCompetency[] = [
   },
 ];
 
+const LEVELS: ProficiencyLevel[] = [
+  {
+    id: 'level-3',
+    proficiencyScaleId: 'scale-1',
+    name: 'Expert',
+    value: 3,
+    displayOrder: 3,
+  },
+  {
+    id: 'level-1',
+    proficiencyScaleId: 'scale-1',
+    name: 'Novice',
+    value: 1,
+    displayOrder: 1,
+  },
+  {
+    id: 'level-2',
+    proficiencyScaleId: 'scale-1',
+    name: 'Proficient',
+    value: 2,
+    displayOrder: 2,
+  },
+];
+
+// The printed report's exercise: two teams (BLUE and RED above), two moves, four injects, three of them with competencies.
+const REPORT_MSEL: Msel = {
+  ...MSEL,
+  name: 'Scoring Model Check',
+  description: 'Rehearse triage and containment of a ransomware intrusion.',
+  startTime: new Date('2026-11-03T14:00:00Z'),
+  durationSeconds: 5400,
+  teams: [RED, BLUE],
+};
+const TRIAGE: Competency = {
+  id: 'comp-t1',
+  competencyFrameworkId: 'fw-1',
+  idNumber: 'T-1',
+  shortName: 'Incident triage',
+};
+const CONTAIN: Competency = {
+  id: 'comp-k2',
+  competencyFrameworkId: 'fw-1',
+  idNumber: 'K-2',
+  shortName: 'Containment knowledge',
+};
+const REPORT_COMPETENCIES: MselCompetency[] = [
+  { id: 'mc-1', mselId: 'msel-1', competencyId: TRIAGE.id, competency: TRIAGE },
+  {
+    id: 'mc-2',
+    mselId: 'msel-1',
+    competencyId: CONTAIN.id,
+    competency: CONTAIN,
+  },
+];
+const REPORT_MOVES: Move[] = [
+  {
+    id: 'move-1',
+    mselId: 'msel-1',
+    moveNumber: 1,
+    deltaSeconds: 0,
+    description: 'Initial Reports',
+  },
+  {
+    id: 'move-2',
+    mselId: 'msel-1',
+    moveNumber: 2,
+    deltaSeconds: 3600,
+    description: 'Escalation',
+  },
+];
+const REPORT_FIELDS: DataField[] = [
+  {
+    id: 'df-title',
+    mselId: 'msel-1',
+    name: 'Title',
+    dataType: DataFieldType.String,
+    displayOrder: 1,
+    isAssessorVisible: true,
+  },
+  {
+    id: 'df-comps',
+    mselId: 'msel-1',
+    name: 'Competencies',
+    dataType: DataFieldType.Competency,
+    displayOrder: 3,
+    isAssessorVisible: true,
+  },
+];
+const inject = (id: string, deltaSeconds: number): ScenarioEvent => ({
+  id,
+  mselId: 'msel-1',
+  scenarioEventType: EventType.Inject,
+  deltaSeconds,
+  groupOrder: 1,
+});
+const REPORT_EVENTS = [
+  inject('se-1', 900),
+  inject('se-2', 1800),
+  inject('se-3', 3900),
+  inject('se-4', 4000),
+];
+const value = (
+  scenarioEventId: string,
+  dataFieldId: string,
+  v: string,
+): DataValue => ({
+  id: `dv-${scenarioEventId}-${dataFieldId}`,
+  scenarioEventId,
+  dataFieldId,
+  value: v,
+});
+const REPORT_VALUES: DataValue[] = [
+  value('se-1', 'df-title', 'Unusual logins'),
+  value('se-1', 'df-comps', 'T-1'),
+  value('se-2', 'df-title', 'Locked accounts'),
+  value('se-2', 'df-comps', 'T-1, K-2'),
+  value('se-3', 'df-title', 'Ransom note'),
+  value('se-3', 'df-comps', 'K-2'),
+  value('se-4', 'df-title', 'Press call'),
+];
+
+// An assessor's assertion as Blueprint's API writes it to the LRS.
+function asserted(
+  id: string,
+  timestamp: string,
+  competency: Competency,
+  score: number,
+  grouping: string,
+  team = BLUE,
+  comment?: string,
+) {
+  return {
+    id,
+    timestamp,
+    actor: { name: 'J. Doe' },
+    verb: {
+      id: 'https://w3id.org/xapi/tla/verbs/asserted',
+      display: { 'en-US': 'asserted' },
+    },
+    object: {
+      id: `https://blueprint.example/api/competencies/${competency.id}`,
+      definition: {
+        type: 'https://w3id.org/xapi/tla/activity-types/competency',
+        extensions: {
+          'https://w3id.org/xapi/tla/extensions/competency-identifier':
+            competency.idNumber,
+        },
+      },
+    },
+    result: {
+      score: { raw: score },
+      completion: true,
+      ...(comment ? { response: comment } : {}),
+    },
+    context: {
+      platform: 'Blueprint',
+      team: { name: team.shortName, account: { name: team.id } },
+      extensions: { 'https://w3id.org/xapi/tla/extensions/confidence': 1 },
+      contextActivities: { grouping: [{ id: grouping }] },
+    },
+  };
+}
+const onEvent = (eventId: string) =>
+  `https://blueprint.example/api/scenarioevents/${eventId}`;
+
 function seeded<S extends { set(entities: unknown[]): void }>(
   Store: new () => S,
   entities: unknown[],
@@ -227,6 +395,7 @@ async function renderAssessorView(
     standalone?: boolean;
     canChooseFields?: boolean;
     msel?: Msel;
+    events?: ScenarioEvent[];
     teams?: Team[];
     mselCompetencies?: MselCompetency[];
     teamCompetencies?: TeamCompetency[];
@@ -247,6 +416,7 @@ async function renderAssessorView(
     standalone = false,
     canChooseFields = false,
     msel = MSEL,
+    events = [EVENT],
     teams = [],
     mselCompetencies = [],
     teamCompetencies = [],
@@ -316,7 +486,7 @@ async function renderAssessorView(
       },
       seeded(DataFieldStore, fields),
       seeded(DataValueStore, values),
-      seeded(ScenarioEventStore, [EVENT]),
+      seeded(ScenarioEventStore, events),
       seeded(MoveStore, moves),
       seeded(TeamStore, teams),
     ],
@@ -327,7 +497,7 @@ async function renderAssessorView(
       canChooseFields,
     },
   });
-  return { ...rendered, poolApi, citeApi };
+  return { ...rendered, poolApi, citeApi, frameworkApi, scaleApi };
 }
 
 function values(fixture: ComponentFixture<unknown>): DataValueStub[] {
@@ -600,6 +770,883 @@ describe('AssessorViewComponent', () => {
         (e) => e.textContent,
       ),
     ).toEqual(['20 Oct 2026 12:00 EDT', '20 Nov 2026 12:00 EST']);
+  });
+
+  describe('printed assessment report', () => {
+    const STATEMENTS = [
+      asserted(
+        'st-1',
+        '2026-11-03T14:20:00Z',
+        TRIAGE,
+        2,
+        onEvent('se-1'),
+        BLUE,
+        'Slow to isolate',
+      ),
+      asserted(
+        'st-2',
+        '2026-11-03T14:30:00Z',
+        TRIAGE,
+        3,
+        onEvent('se-1'),
+        BLUE,
+        'Isolated both hosts',
+      ),
+      asserted('st-3', '2026-11-03T15:10:00Z', CONTAIN, 1, onEvent('se-3')),
+      asserted(
+        'st-4',
+        '2026-11-03T15:05:00Z',
+        CONTAIN,
+        2,
+        'https://blueprint.example/api/msels/msel-1/moves/2',
+      ),
+    ];
+
+    // Clicks Print Assessment Report, answers the statements request, and waits until the report would be printed.
+    // printDocument, which copies the area into the body, prints and reloads, is stubbed: jsdom can do neither.
+    const isStatementsRead = (req: {
+      url: string;
+      params: { get(name: string): string | null };
+    }) =>
+      req.url === '/api/xapi/statements' &&
+      req.params.get('mselId') === 'msel-1';
+
+    // the report exercise, rendered with its print spied on, for a test that answers the reads itself
+    async function renderForPrint(
+      overrides: Parameters<typeof renderAssessorView>[0] = {},
+    ) {
+      vi.stubEnv('TZ', 'America/New_York');
+      const rendered = await renderAssessorView({
+        msel: REPORT_MSEL,
+        moves: REPORT_MOVES,
+        fields: REPORT_FIELDS,
+        events: REPORT_EVENTS,
+        values: REPORT_VALUES,
+        mselCompetencies: REPORT_COMPETENCIES,
+        proficiencyLevels: LEVELS,
+        ...overrides,
+      });
+      const printDocument = vi
+        .spyOn(
+          rendered.fixture.componentInstance as unknown as {
+            printDocument(): void;
+          },
+          'printDocument',
+        )
+        .mockImplementation(() => undefined);
+      return { ...rendered, printDocument };
+    }
+
+    async function printReport(
+      statements: unknown[] | 'unavailable',
+      overrides: Parameters<typeof renderAssessorView>[0] = {},
+      beforePrinting?: (view: AssessorViewComponent) => void,
+    ) {
+      const rendered = await renderForPrint(overrides);
+      const { printDocument } = rendered;
+      beforePrinting?.(rendered.fixture.componentInstance);
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      );
+      const request = TestBed.inject(HttpTestingController).expectOne(
+        (req) =>
+          req.url === '/api/xapi/statements' &&
+          req.params.get('mselId') === 'msel-1',
+      );
+      if (statements === 'unavailable') {
+        request.flush('LRS down', {
+          status: 503,
+          statusText: 'Service Unavailable',
+        });
+      } else {
+        request.flush({ statements });
+      }
+      rendered.fixture.detectChanges();
+      await vi.waitFor(() => expect(printDocument).toHaveBeenCalledTimes(1));
+      rendered.fixture.detectChanges();
+      return { ...rendered, printDocument };
+    }
+
+    const texts = (root: ParentNode, selector: string) =>
+      Array.from(root.querySelectorAll(selector), (e) =>
+        e.textContent.replace(/\s+/g, ' ').trim(),
+      );
+    const section = (name: string) => screen.getByLabelText(name);
+
+    /**
+     * Verifies: the report is drawn only when printing, so the view on screen is unchanged; Print Assessment Report
+     * reads the statements first when no section has been opened yet.
+     * Interacts with: printReport, HttpClient GET api/xapi/statements (HttpTestingController), printDocument (spy).
+     * Data: the report exercise, nothing expanded before printing.
+     */
+    it('draws the report only when printing', async () => {
+      let drawnBeforePrinting: boolean | undefined;
+      const { printDocument } = await printReport(STATEMENTS, {}, () => {
+        drawnBeforePrinting = !!document.getElementById(
+          'assessment-print-area',
+        );
+      });
+
+      expect(drawnBeforePrinting).toBe(false);
+
+      expect(printDocument).toHaveBeenCalledTimes(1);
+      expect(document.getElementById('assessment-print-area')).not.toBeNull();
+    });
+
+    const tableRows = (table: Element) =>
+      Array.from(table.querySelectorAll('tbody tr'), (row) => texts(row, 'td'));
+
+    /**
+     * Verifies: the cover shows the theme band (no MSEL image), "Assessment Report", the MSEL name and facts, and the
+     * purpose: the MSEL description and each move's description.
+     * Interacts with: buildAssessmentReport, reportMoves, DatePipe, TimezoneAbbrPipe.
+     * Data: TZ America/New_York; start 3 Nov 2026 14:00 UTC, 90 minutes; two described moves.
+     */
+    it('prints a cover with the exercise and its purpose', async () => {
+      await printReport(STATEMENTS);
+
+      const cover = section('Cover');
+      expect(within(cover).getByTestId('cover-band')).toBeInTheDocument();
+      expect(within(cover).getByText('Assessment Report')).toBeInTheDocument();
+      expect(
+        within(cover).getByRole('heading', { level: 1, hidden: true }),
+      ).toHaveTextContent('Scoring Model Check');
+      const facts = cover.querySelector('.cover-facts');
+      expect(texts(facts, 'dt')).toEqual([
+        'Start',
+        'Duration',
+        'Moves',
+        'Injects',
+        'Teams',
+        'Assessors',
+        'Printed',
+      ]);
+      expect(texts(facts, 'dd').slice(0, 6)).toEqual([
+        '03 Nov 2026 09:00 EST',
+        '1 hour 30 minutes',
+        '2',
+        '4',
+        '2',
+        'J. Doe',
+      ]);
+      const purpose = within(cover).getByLabelText('Purpose');
+      expect(texts(purpose, '.purpose-description')).toEqual([
+        'Rehearse triage and containment of a ransomware intrusion.',
+      ]);
+      expect(texts(purpose, '.purpose-moves li')).toEqual([
+        'Move 1: Initial Reports',
+        'Move 2: Escalation',
+      ]);
+    });
+
+    /**
+     * Verifies: with no objective data field the results are measured by competency, and the report says so; each
+     * competency row gives its code and name, the injects that exercise it, how many of those were assessed, and the
+     * latest ratings per level across teams, the levels in scale order; then a row per team.
+     * Interacts with: buildAssessmentReport, ProficiencyScaleService.getProficiencyScale (stub).
+     * Data: Blue rated Expert on T-1 for "Unusual logins" (after an earlier Proficient), Novice on K-2 for "Ransom
+     * note" and Proficient on K-2 for Move 2 as a whole; Red not rated.
+     */
+    it('prints results by competency and by team', async () => {
+      await printReport(STATEMENTS);
+
+      const results = section('Results');
+      expect(texts(results, 'h2')).toEqual([
+        'Results by competency',
+        'Results by team',
+      ]);
+      expect(
+        within(results).getByText(
+          'This MSEL has no objectives, so its competencies measure the results.',
+        ),
+      ).toBeInTheDocument();
+      const byCompetency = within(results).getByLabelText(
+        'Results by competency',
+      );
+      expect(texts(byCompetency, 'thead th')).toEqual([
+        'Competency',
+        'Injects',
+        'Assessed',
+        'Novice',
+        'Proficient',
+        'Expert',
+      ]);
+      expect(tableRows(byCompetency)).toEqual([
+        ['K-2 Containment knowledge', '2', '1', '1', '1', '0'],
+        ['T-1 Incident triage', '2', '1', '0', '0', '1'],
+      ]);
+      const byTeam = within(results).getByLabelText('Results by team');
+      expect(texts(byTeam, 'thead th')).toEqual([
+        'Team',
+        'Injects assessed',
+        'Not assessed',
+        'Novice',
+        'Proficient',
+        'Expert',
+      ]);
+      expect(tableRows(byTeam)).toEqual([
+        ['Blue Team', '2', '1', '1', '1', '1'],
+        ['Red Team', '0', '3', '0', '0', '0'],
+      ]);
+    });
+
+    /**
+     * Verifies: when the MSEL has a data field named for objectives, results are rolled up by its values too, before
+     * the competencies, and the report names the field. A rating of a whole move counts for the objectives of the
+     * injects in it, as it does for the competency and team results.
+     * Interacts with: buildAssessmentReport (objective field found by name).
+     * Data: an Objectives field, not assessor-visible: "Detect intrusion" on the first two injects, "Contain
+     * ransomware" on "Ransom note".
+     */
+    it('prints results by objective when the MSEL has an objective field', async () => {
+      await printReport(STATEMENTS, {
+        fields: [
+          ...REPORT_FIELDS,
+          {
+            id: 'df-obj',
+            mselId: 'msel-1',
+            name: 'Objectives',
+            dataType: DataFieldType.String,
+            displayOrder: 4,
+            isAssessorVisible: false,
+          },
+        ],
+        values: [
+          ...REPORT_VALUES,
+          value('se-1', 'df-obj', 'Detect intrusion'),
+          value('se-2', 'df-obj', '<p>Detect intrusion</p>'),
+          value('se-3', 'df-obj', 'Contain ransomware'),
+        ],
+      });
+
+      const results = section('Results');
+      expect(texts(results, 'h2')).toEqual([
+        'Results by objective',
+        'Results by competency',
+        'Results by team',
+      ]);
+      expect(
+        within(results).getByText(
+          'Objectives are the values of the Objectives data field.',
+        ),
+      ).toBeInTheDocument();
+      expect(
+        tableRows(within(results).getByLabelText('Results by objective')),
+      ).toEqual([
+        ['Detect intrusion', '2', '1', '0', '0', '1'],
+        // Ransom note's own rating, and its move's
+        ['Contain ransomware', '1', '1', '1', '1', '0'],
+      ]);
+    });
+
+    /**
+     * Verifies: each team prints on its own page as one table of its assessed injects in time order, with the move it
+     * was rated on as a whole; each rating reads "CODE Level", followed by the assessor's comment only when there is
+     * one; a "Not assessed" line names the injects with competencies the team was not rated on.
+     * Interacts with: buildAssessmentReport, readAssertion.
+     * Data: as above; "Press call" has no competencies, so it is never listed as not assessed.
+     */
+    it('prints each team as one table with a not-assessed line', async () => {
+      await printReport(STATEMENTS);
+
+      expect(texts(document, '.report-team .team-title')).toEqual([
+        'Blue Team',
+        'Red Team',
+      ]);
+      const blue = section('Blue Team');
+      expect(texts(blue, 'thead th')).toEqual(['Time', 'Inject', 'Rating']);
+      expect(
+        tableRows(blue.querySelector('table')).map((row) => row.slice(1)),
+      ).toEqual([
+        ['Unusual logins', 'T-1 Expert Isolated both hosts'],
+        ['Move 2 (whole move)', 'K-2 Proficient'],
+        ['Ransom note', 'K-2 Novice'],
+      ]);
+      expect(blue.querySelectorAll('.rating-comment')).toHaveLength(1);
+      expect(texts(blue, '.not-assessed')).toEqual([
+        'Not assessed: Locked accounts',
+      ]);
+
+      const red = section('Red Team');
+      expect(
+        within(red).getByText('No assessments recorded for this team.'),
+      ).toBeInTheDocument();
+      expect(texts(red, '.not-assessed')).toEqual([
+        'Not assessed: Unusual logins, Locked accounts, Ransom note',
+      ]);
+      expect(
+        document.querySelector('#assessment-print-area')?.textContent,
+      ).not.toMatch(/Confidence/);
+    });
+
+    /**
+     * Verifies: with team competency assignments, a team's not-assessed line keeps only the injects with one of its
+     * competencies, and a team rated on everything it has gets no line.
+     * Interacts with: buildAssessmentReport (isAssessableFor), TeamCompetencyService (stub).
+     * Data: Red is assigned K-2 only; Blue is assigned T-1 and K-2 and is rated on every inject with competencies.
+     */
+    it("narrows the not-assessed injects to the team's competencies", async () => {
+      await printReport(
+        [
+          ...STATEMENTS,
+          asserted('st-5', '2026-11-03T14:45:00Z', TRIAGE, 2, onEvent('se-2')),
+        ],
+        {
+          teamCompetencies: [
+            {
+              id: 'tc-1',
+              teamId: RED.id,
+              competencyId: CONTAIN.id,
+              competency: CONTAIN,
+            },
+            {
+              id: 'tc-2',
+              teamId: BLUE.id,
+              competencyId: TRIAGE.id,
+              competency: TRIAGE,
+            },
+            {
+              id: 'tc-3',
+              teamId: BLUE.id,
+              competencyId: CONTAIN.id,
+              competency: CONTAIN,
+            },
+          ],
+        },
+      );
+
+      expect(texts(section('Red Team'), '.not-assessed')).toEqual([
+        'Not assessed: Locked accounts, Ransom note',
+      ]);
+      expect(section('Blue Team').querySelector('.not-assessed')).toBeNull();
+    });
+
+    /**
+     * Verifies: a MSEL with no teams prints the cover and results with a no-teams line and no team pages; a MSEL with
+     * no competencies on its injects says so in the competency results.
+     * Interacts with: buildAssessmentReport (reportTeams).
+     * Data: the report exercise without teams or MSEL competencies; no statements.
+     */
+    it('prints no team pages for a MSEL with no teams', async () => {
+      await printReport([], {
+        msel: { ...REPORT_MSEL, teams: [] },
+        mselCompetencies: [],
+      });
+
+      const results = section('Results');
+      expect(
+        within(results).getByText('This MSEL has no teams.'),
+      ).toBeInTheDocument();
+      expect(
+        within(results).getByText('No injects exercise a competency.'),
+      ).toBeInTheDocument();
+      expect(document.querySelectorAll('.report-team')).toHaveLength(0);
+    });
+
+    /**
+     * Verifies: an answer with no list of statements is reported as unreadable, not printed as an exercise with no
+     * assessments.
+     * Interacts with: printReport (answer check), buildAssessmentReport (statementsUnavailable).
+     * Data: GET api/xapi/statements answers an object with no statements.
+     */
+    it('says the statements could not be read when the answer holds none', async () => {
+      const { fixture, printDocument } = await renderForPrint();
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      );
+      TestBed.inject(HttpTestingController)
+        .expectOne(isStatementsRead)
+        .flush({ more: 'unexpected' });
+      fixture.detectChanges();
+      await vi.waitFor(() => expect(printDocument).toHaveBeenCalledTimes(1));
+      fixture.detectChanges();
+
+      expect(
+        within(section('Cover')).getByText(
+          /^The xAPI statements could not be read/,
+        ),
+      ).toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: with names hidden from the start and the statements unreadable, the report prints once, from the one
+     * failed read, rather than starting again for a names setting it did not read under.
+     * Interacts with: loadAllStatements error path, statementsHidingNames, printReport.
+     * Data: the MSEL hiding names; GET api/xapi/statements answers 503.
+     */
+    it('prints once when the statements cannot be read while names are hidden', async () => {
+      const { printDocument } = await printReport('unavailable', {
+        msel: { ...REPORT_MSEL, hideNamesOnAssessorView: true },
+      });
+      await new Promise((r) => setTimeout(r, 400));
+
+      expect(printDocument).toHaveBeenCalledTimes(1);
+      TestBed.inject(HttpTestingController).expectNone(
+        (req) => req.url === '/api/xapi/statements',
+      );
+    });
+
+    /**
+     * Verifies: when the statements can't be read the report still prints, says why it shows no assessments, and
+     * names every inject with competencies as not assessed.
+     * Interacts with: loadAllStatements error path, buildAssessmentReport.
+     * Data: GET api/xapi/statements answers 503.
+     */
+    it('says so when the statements could not be read', async () => {
+      await printReport('unavailable');
+
+      expect(
+        within(section('Cover')).getByText(
+          /^The xAPI statements could not be read/,
+        ),
+      ).toBeInTheDocument();
+      expect(
+        within(section('Blue Team')).getByText(
+          'No assessments recorded for this team.',
+        ),
+      ).toBeInTheDocument();
+      expect(texts(section('Blue Team'), '.not-assessed')).toEqual([
+        'Not assessed: Unusual logins, Locked accounts, Ransom note',
+      ]);
+    });
+
+    /**
+     * Verifies: a rating for no team of the MSEL prints on a "No team" page, which has no not-assessed line; with no
+     * such rating there is no "No team" page.
+     * Interacts with: buildAssessmentReport.
+     * Data: one T-1 rating on "Unusual logins" whose statement names a team not on the MSEL.
+     */
+    it('prints a rating for no MSEL team on its own page', async () => {
+      const other = { ...BLUE, id: 'team-gone', shortName: 'GONE' };
+      await printReport([
+        asserted(
+          'st-9',
+          '2026-11-03T14:20:00Z',
+          TRIAGE,
+          1,
+          onEvent('se-1'),
+          other,
+        ),
+      ]);
+
+      expect(texts(document, '.report-team .team-title')).toEqual([
+        'Blue Team',
+        'Red Team',
+        'No team',
+      ]);
+      expect(
+        tableRows(section('No team').querySelector('table')).map((row) =>
+          row.slice(1),
+        ),
+      ).toEqual([['Unusual logins', 'T-1 Novice']]);
+      expect(section('No team').querySelector('.not-assessed')).toBeNull();
+    });
+
+    /**
+     * Verifies: when the MSEL starts hiding names while the report's statements are being read, the read is dropped,
+     * every statement is read again, and the report still prints, from the masked statements, with no Assessors line.
+     * Interacts with: printReport, MselStore update (as a MselUpdated broadcast does), restartStatementsIfStale,
+     * HttpClient GET api/xapi/statements (HttpTestingController), printDocument (spy).
+     * Data: the report exercise; Print Assessment Report is clicked, the MSEL hides names, the first read answers with
+     * J. Doe's ratings, and the second with the same ratings without the actor's name.
+     */
+    it('still prints when names are hidden during its read', async () => {
+      const { fixture, printDocument } = await renderForPrint();
+      const http = TestBed.inject(HttpTestingController);
+      const isRead = isStatementsRead;
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      );
+      const first = http.expectOne(isRead);
+      TestBed.inject(MselStore).update('msel-1', {
+        hideNamesOnAssessorView: true,
+      });
+      fixture.detectChanges();
+      first.flush({ statements: STATEMENTS });
+      http.expectOne(isRead).flush({
+        statements: STATEMENTS.map((stmt) => ({
+          ...stmt,
+          actor: { objectType: 'Agent' },
+        })),
+      });
+      fixture.detectChanges();
+      await vi.waitFor(() => expect(printDocument).toHaveBeenCalledTimes(1));
+      fixture.detectChanges();
+
+      const facts = section('Cover').querySelector('.cover-facts');
+      expect(texts(facts, 'dt')).not.toContain('Assessors');
+      expect(
+        tableRows(section('Blue Team').querySelector('table')).map((row) =>
+          row.slice(1),
+        ),
+      ).toEqual([
+        ['Unusual logins', 'T-1 Expert Isolated both hosts'],
+        ['Move 2 (whole move)', 'K-2 Proficient'],
+        ['Ransom note', 'K-2 Novice'],
+      ]);
+    });
+
+    /**
+     * Verifies: printing reads the statements again even when they were read before, so a rating saved since then is
+     * in the report.
+     * Interacts with: printReport, loadAllStatements.
+     * Data: the statements already read (none on screen); the read on printing answers the report's statements.
+     */
+    it('reads the statements again when printing, though they were read before', async () => {
+      await printReport(STATEMENTS, {}, (view) => {
+        // as after an inject was opened: read once, before the rating was saved
+        Object.assign(
+          view as unknown as {
+            statementsLoaded: boolean;
+            allMselStatements: unknown[];
+          },
+          { statementsLoaded: true, allMselStatements: [] },
+        );
+      });
+
+      expect(
+        tableRows(section('Blue Team').querySelector('table'))[0].slice(1),
+      ).toEqual(['Unusual logins', 'T-1 Expert Isolated both hosts']);
+    });
+
+    /**
+     * Verifies: when the MSEL starts hiding names after the report is drawn but before it prints, the print does not
+     * print what it drew: it starts again with a read of its own and prints from that, so the names are not printed.
+     * Interacts with: printReport (starting again), MselStore update (as a MselUpdated broadcast does),
+     * HttpClient GET api/xapi/statements (HttpTestingController), printDocument (spy).
+     * Data: the report exercise; the first read answers with J. Doe's ratings, then the MSEL hides names, and the
+     * print's second read answers without the actor's name.
+     */
+    it('prints from the masked statements when names are hidden before it prints', async () => {
+      const { fixture, printDocument } = await renderForPrint();
+      const http = TestBed.inject(HttpTestingController);
+      const isRead = isStatementsRead;
+      const masked = STATEMENTS.map((stmt) => ({
+        ...stmt,
+        actor: { objectType: 'Agent' },
+      }));
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      );
+      http.expectOne(isRead).flush({ statements: STATEMENTS });
+      fixture.detectChanges();
+      // the report is drawn and waiting to print when the MSEL starts hiding names
+      TestBed.inject(MselStore).update('msel-1', {
+        hideNamesOnAssessorView: true,
+      });
+      fixture.detectChanges();
+      // the wait ends without printing, and the print reads again
+      const again = await vi.waitFor(() => http.expectOne(isRead));
+      expect(printDocument).not.toHaveBeenCalled();
+      again.flush({ statements: masked });
+      fixture.detectChanges();
+      await vi.waitFor(() => expect(printDocument).toHaveBeenCalledTimes(1));
+      fixture.detectChanges();
+
+      const facts = section('Cover').querySelector('.cover-facts');
+      expect(texts(facts, 'dt')).not.toContain('Assessors');
+      expect(section('Cover')).not.toHaveTextContent('J. Doe');
+    });
+
+    /**
+     * Verifies: when the MSEL starts hiding names while the cover image loads, after the statements were read, the
+     * report drawn from those statements is not printed: the print starts again from the masked statements.
+     * Interacts with: printReport, MselImageDataService.imageUrl (spy, answering when the test says), reloadStatements,
+     * HttpClient GET api/xapi/statements (HttpTestingController), printDocument (spy).
+     * Data: the report exercise; J. Doe's named statements read, then names hidden, then the image answers.
+     */
+    it('does not print names read before they were hidden while the image loaded', async () => {
+      const { fixture, printDocument } = await renderForPrint();
+      const images: Subject<string | null>[] = [];
+      vi.spyOn(
+        TestBed.inject(MselImageDataService),
+        'imageUrl',
+      ).mockImplementation(() => {
+        const image = new Subject<string | null>();
+        images.push(image);
+        return image;
+      });
+      const http = TestBed.inject(HttpTestingController);
+      const isRead = isStatementsRead;
+      const masked = STATEMENTS.map((stmt) => ({
+        ...stmt,
+        actor: { objectType: 'Agent' },
+      }));
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      );
+      http.expectOne(isRead).flush({ statements: STATEMENTS });
+      TestBed.inject(MselStore).update('msel-1', {
+        hideNamesOnAssessorView: true,
+      });
+      fixture.detectChanges();
+      // the image answers before the read for the change: the report is drawn from the named statements
+      images[0].next(null);
+      images[0].complete();
+      await vi.waitFor(() => {
+        for (const read of http.match(isRead))
+          read.flush({ statements: masked });
+        for (const image of images.slice(1)) {
+          image.next(null);
+          image.complete();
+        }
+        fixture.detectChanges();
+        expect(printDocument).toHaveBeenCalledTimes(1);
+      });
+      fixture.detectChanges();
+
+      expect(section('Cover')).not.toHaveTextContent('J. Doe');
+    });
+
+    /**
+     * Verifies: a MSEL that hides names and shows them again while the report waits to print still starts again: the
+     * setting is the same at the end, but the statements read at the start may not have been answered under it.
+     * Interacts with: printReport (namesSettingChanges), MselStore update, HttpTestingController, printDocument (spy).
+     * Data: the report exercise; names hidden and shown again after the first read.
+     */
+    it('starts again when names are hidden and shown again before it prints', async () => {
+      const { fixture, printDocument } = await renderForPrint();
+      const http = TestBed.inject(HttpTestingController);
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      );
+      http.expectOne(isStatementsRead).flush({ statements: STATEMENTS });
+      for (const hide of [true, false]) {
+        TestBed.inject(MselStore).update('msel-1', {
+          hideNamesOnAssessorView: hide,
+        });
+        fixture.detectChanges();
+      }
+
+      const again = await vi.waitFor(() => http.expectOne(isStatementsRead));
+      expect(printDocument).not.toHaveBeenCalled();
+      again.flush({ statements: STATEMENTS });
+      fixture.detectChanges();
+      await vi.waitFor(() => expect(printDocument).toHaveBeenCalledTimes(1));
+    });
+
+    /**
+     * Verifies: a rating of a whole move counts for an objective only when one of the objective's injects in the move
+     * exercises the competency rated.
+     * Interacts with: buildAssessmentReport (objective rows), baseEventCompetencies.
+     * Data: move 2 holds Ransom note (K-2, objective Contain ransomware) and Press call (no competencies, objective
+     * Brief the press); Blue is rated on K-2 for the whole move.
+     */
+    it("counts a whole move's rating only for the objectives whose injects exercise it", async () => {
+      await printReport(STATEMENTS, {
+        fields: [
+          ...REPORT_FIELDS,
+          {
+            id: 'df-obj',
+            mselId: 'msel-1',
+            name: 'Objectives',
+            dataType: DataFieldType.String,
+            displayOrder: 4,
+            isAssessorVisible: false,
+          },
+        ],
+        values: [
+          ...REPORT_VALUES,
+          value('se-3', 'df-obj', 'Contain ransomware'),
+          value('se-4', 'df-obj', 'Brief the press'),
+        ],
+      });
+
+      expect(
+        tableRows(
+          within(section('Results')).getByLabelText('Results by objective'),
+        ),
+      ).toEqual([
+        ['Contain ransomware', '1', '1', '1', '1', '0'],
+        ['Brief the press', '1', '0', '0', '0', '0'],
+      ]);
+    });
+
+    /**
+     * Verifies: a print is of the MSEL it was asked for: when another MSEL is shown before its statements come, it
+     * prints nothing, and Print is offered again.
+     * Interacts with: printReport (MSEL check), MselStore (another MSEL made active), printDocument (spy).
+     * Data: the report exercise; a second MSEL made active while the read is under way.
+     */
+    it('prints nothing when another MSEL is shown before its statements come', async () => {
+      const { fixture, printDocument } = await renderForPrint();
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      );
+      const read = TestBed.inject(HttpTestingController).expectOne(
+        isStatementsRead,
+      );
+      const store = TestBed.inject(MselStore);
+      store.add({ ...REPORT_MSEL, id: 'msel-2', name: 'Other Exercise' });
+      store.setActive('msel-2');
+      fixture.detectChanges();
+
+      read.flush({ statements: STATEMENTS });
+      await new Promise((r) => setTimeout(r, 400));
+
+      expect(printDocument).not.toHaveBeenCalled();
+      expect(
+        (fixture.componentInstance as unknown as { printPending: boolean })
+          .printPending,
+      ).toBe(false);
+    });
+
+    /**
+     * Verifies: when the view goes while the report waits to be printed, the print does not happen, so it cannot copy
+     * an empty area over the page that replaced the view.
+     * Interacts with: printReport (timer), ngOnDestroy, printDocument (spy).
+     * Data: the report exercise; the view destroyed right after the statements come.
+     */
+    it('does not print when the view goes before the print', async () => {
+      const { fixture, printDocument } = await renderForPrint();
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      );
+      TestBed.inject(HttpTestingController)
+        .expectOne(isStatementsRead)
+        .flush({ statements: STATEMENTS });
+
+      fixture.destroy();
+      await new Promise((r) => setTimeout(r, 400));
+
+      expect(printDocument).not.toHaveBeenCalled();
+    });
+
+    /**
+     * Verifies: when another MSEL is shown in the same view, its proficiency scale is read for it rather than the last
+     * MSEL's kept, so its ratings are read by its own levels.
+     * Interacts with: the active MSEL subscription (scale reset), loadProficiencyScale, ProficiencyScaleService (stub).
+     * Data: the report exercise, then a second MSEL made active.
+     */
+    it("reads the next MSEL's proficiency scale when another MSEL is shown", async () => {
+      const { fixture, scaleApi } = await renderAssessorView({
+        msel: REPORT_MSEL,
+        mselCompetencies: REPORT_COMPETENCIES,
+        proficiencyLevels: LEVELS,
+      });
+      const reads = scaleApi.getProficiencyScale.mock.calls.length;
+      expect(reads).toBeGreaterThan(0);
+
+      const store = TestBed.inject(MselStore);
+      store.add({ ...REPORT_MSEL, id: 'msel-2', name: 'Other Exercise' });
+      store.setActive('msel-2');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(scaleApi.getProficiencyScale.mock.calls.length).toBeGreaterThan(
+        reads,
+      );
+    });
+
+    /**
+     * Verifies: a scale read still under way for the last MSEL, answering after the next MSEL's, does not replace the
+     * next MSEL's levels.
+     * Interacts with: loadProficiencyScale (read counter), CompetencyFrameworkService and ProficiencyScaleService
+     * (stubs, the last MSEL's framework answering late).
+     * Data: the last MSEL's scale names score 3 Expert A; the next one's names it Novice B.
+     */
+    it("keeps the next MSEL's scale when the last one's answers late", async () => {
+      const { fixture, frameworkApi, scaleApi } = await renderAssessorView({
+        msel: REPORT_MSEL,
+        mselCompetencies: REPORT_COMPETENCIES,
+        proficiencyLevels: LEVELS,
+      });
+      const view = fixture.componentInstance as unknown as {
+        proficiencyScale: unknown;
+        proficiencyLevels: ProficiencyLevel[];
+        loadProficiencyScale(): void;
+      };
+      scaleApi.getProficiencyScale.mockImplementation((id: string) =>
+        of<ProficiencyScale>({
+          id,
+          proficiencyLevels: [
+            {
+              id: `${id}-3`,
+              proficiencyScaleId: id,
+              name: id === 'scale-a' ? 'Expert A' : 'Novice B',
+              value: 3,
+              displayOrder: 1,
+            },
+          ],
+        }),
+      );
+      // the last MSEL's scale read, under way
+      const late = new Subject<CompetencyFramework>();
+      frameworkApi.getCompetencyFramework.mockReturnValueOnce(late);
+      view.proficiencyScale = null;
+      view.loadProficiencyScale();
+
+      const store = TestBed.inject(MselStore);
+      store.add({ ...REPORT_MSEL, id: 'msel-2', name: 'Other Exercise' });
+      store.setActive('msel-2');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      late.next({ id: 'fw-a', defaultProficiencyScaleId: 'scale-a' });
+
+      expect(view.proficiencyLevels.map((l) => l.name)).toEqual(['Novice B']);
+    });
+
+    /**
+     * Verifies: Print Assessment Report waits for the MSEL's competencies, which the report reads ratings by: it is
+     * disabled while they load and enabled once they are in.
+     * Interacts with: reportDataReady, MselCompetencyStore loading.
+     * Data: the report exercise; the competencies loading, then loaded.
+     */
+    it('offers the print once the competencies are in', async () => {
+      const { fixture } = await renderForPrint();
+      const store = TestBed.inject(MselCompetencyStore);
+
+      store.setLoading(true);
+      fixture.detectChanges();
+      expect(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      ).toBeDisabled();
+
+      store.setLoading(false);
+      fixture.detectChanges();
+      expect(
+        screen.getByRole('button', { name: 'Print Assessment Report' }),
+      ).toBeEnabled();
+    });
+
+    /**
+     * Verifies: the cover names the assessors the statements name, as the rest of the view does: the API leaves names
+     * out for whoever the MSEL hides them from, and not for an owner.
+     * Interacts with: buildAssessmentReport (assessors).
+     * Data: the MSEL hiding names; statements with J. Doe's name, as an owner reads them.
+     */
+    it("names the assessors the statements name while the MSEL hides names, as an owner's are", async () => {
+      await printReport(STATEMENTS, {
+        msel: { ...REPORT_MSEL, hideNamesOnAssessorView: true },
+      });
+
+      const facts = section('Cover').querySelector('.cover-facts');
+      expect(texts(facts, 'dd')).toContain('J. Doe');
+    });
+
+    /**
+     * Verifies: the report titles injects from their values even when the Title field is not one the assessors see.
+     * Interacts with: injectTitle.
+     * Data: the Title field not assessor-visible.
+     */
+    it('titles injects though the Title field is not assessor-visible', async () => {
+      await printReport(STATEMENTS, {
+        fields: REPORT_FIELDS.map((f) =>
+          f.name === 'Title' ? { ...f, isAssessorVisible: false } : f,
+        ),
+      });
+
+      expect(
+        tableRows(section('Blue Team').querySelector('table')).map(
+          (row) => row[1],
+        ),
+      ).toContain('Unusual logins');
+    });
   });
 
   describe('statement grouping', () => {
