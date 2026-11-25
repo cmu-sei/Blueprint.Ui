@@ -56,6 +56,7 @@ import { TeamStore } from 'src/app/data/team/team.store';
 import {
   AssessorViewComponent,
   TEAM_RESPONSES_STALE_MS,
+  XApiStatement,
 } from './assessor-view.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
@@ -1627,6 +1628,164 @@ describe('AssessorViewComponent', () => {
 
       const facts = section('Cover').querySelector('.cover-facts');
       expect(texts(facts, 'dd')).toContain('J. Doe');
+    });
+
+    /**
+     * Verifies: an assertion in the shape the API writes now, with the learner as the actor, the assessor as the
+     * instructor and the rating in the Crucible assessment extension, names its assessor and still reads as a
+     * rating; the learner is not named as an assessor.
+     * Interacts with: buildAssessmentReport (assessors, ratings).
+     * Data: STATEMENTS rewritten to that shape.
+     */
+    it('reads the assessor from the instructor and the rating from the extension', async () => {
+      const current = STATEMENTS.map((s) => {
+        const { result, ...rest } = s;
+        return {
+          ...rest,
+          actor: { name: 'A. Learner' },
+          context: {
+            ...s.context,
+            instructor: { name: 'J. Doe' },
+            extensions: {
+              ...s.context.extensions,
+              'https://crucible.sei.cmu.edu/xapi/ext/assessment': {
+                raw: result.score.raw,
+                ...(result.response ? { comment: result.response } : {}),
+              },
+            },
+          },
+        };
+      });
+
+      await printReport(current);
+
+      const facts = section('Cover').querySelector('.cover-facts');
+      expect(texts(facts, 'dd')).toContain('J. Doe');
+      expect(texts(facts, 'dd')).not.toContain('A. Learner');
+      expect(document.body.textContent).toContain('Isolated both hosts');
+      // the same levels as the statements that keep the rating in result
+      expect(
+        tableRows(
+          within(section('Results')).getByLabelText('Results by competency'),
+        ),
+      ).toEqual([
+        ['K-2 Containment knowledge', '2', '1', '1', '1', '0'],
+        ['T-1 Incident triage', '2', '1', '0', '0', '1'],
+      ]);
+    });
+
+    /**
+     * Verifies: an assertion in the current shape whose instructor carries no name does not fall back to the actor,
+     * who is the learner, so the learner is never listed as the assessor.
+     * Interacts with: buildAssessmentReport (assessors).
+     * Data: STATEMENTS in the current shape with an instructor that has no identity.
+     */
+    it('does not name the learner as the assessor when the instructor has no name', async () => {
+      const current = STATEMENTS.map((s) => {
+        const { result, ...rest } = s;
+        return {
+          ...rest,
+          actor: { name: 'A. Learner' },
+          context: {
+            ...s.context,
+            instructor: {},
+            extensions: {
+              'https://crucible.sei.cmu.edu/xapi/ext/assessment': {
+                raw: result.score.raw,
+              },
+            },
+          },
+        };
+      });
+
+      await printReport(current);
+
+      const facts = section('Cover').querySelector('.cover-facts');
+      expect(texts(facts, 'dd')).not.toContain('A. Learner');
+    });
+
+    /**
+     * Verifies: an assertion in the current shape that has no instructor at all does not name its actor, the learner,
+     * as the assessor; and one in the old shape names its actor even when it carries an unrelated instructor.
+     * Interacts with: buildAssessmentReport (assessors).
+     * Data: STATEMENTS in the current shape with no instructor, then in the old shape with an instructor.
+     */
+    it('takes the shape from the assessment extension, not from whether there is an instructor', async () => {
+      const noInstructor = STATEMENTS.map((s) => {
+        const { result, ...rest } = s;
+        return {
+          ...rest,
+          actor: { name: 'A. Learner' },
+          context: {
+            ...s.context,
+            extensions: {
+              'https://crucible.sei.cmu.edu/xapi/ext/assessment': {
+                raw: result.score.raw,
+              },
+            },
+          },
+        };
+      });
+      await printReport(noInstructor);
+      expect(
+        texts(section('Cover').querySelector('.cover-facts'), 'dd'),
+      ).not.toContain('A. Learner');
+    });
+
+    it('names the actor of an old-shape assertion even when it carries an instructor', async () => {
+      const old = STATEMENTS.map((s) => ({
+        ...s,
+        context: { ...s.context, instructor: { name: 'Course Instructor' } },
+      }));
+      await printReport(old);
+      expect(
+        texts(section('Cover').querySelector('.cover-facts'), 'dd'),
+      ).toContain('J. Doe');
+      expect(
+        texts(section('Cover').querySelector('.cover-facts'), 'dd'),
+      ).not.toContain('Course Instructor');
+    });
+
+    /**
+     * Verifies: an assessment extension whose comment is not text reads as no comment, a rating that is not a number
+     * as no rating, and an extensions value that is not an object as the old shape.
+     * Interacts with: buildAssessmentReport (ratings).
+     * Data: one statement per case, on the same inject and team.
+     */
+    it('reads an assessment extension with bad values as no rating or no comment', async () => {
+      const { fixture } = await renderForPrint();
+      const base = STATEMENTS[0];
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- dropped to build a statement without a result
+      const { result, ...current } = base;
+      const withExtension = (assessment: unknown) => ({
+        ...current,
+        context: {
+          ...base.context,
+          instructor: { name: 'J. Doe' },
+          extensions: {
+            'https://crucible.sei.cmu.edu/xapi/ext/assessment': assessment,
+          },
+        },
+      });
+      const ratings = (statement: unknown) =>
+        fixture.componentInstance
+          .buildAssessmentReport([statement as XApiStatement])
+          .teams.flatMap((t) => t.rows.flatMap((r) => r.ratings));
+
+      const badComment = ratings(withExtension({ raw: 2, comment: 7 }));
+      expect(badComment.map((r) => [r.level, r.comment])).toEqual([
+        ['Proficient', ''],
+      ]);
+      const levels = (assessment: unknown) =>
+        ratings(withExtension(assessment)).map((r) => r.level);
+      expect(levels({ raw: '2', comment: 'ok' })).toEqual(['No rating']);
+      expect(levels(null)).toEqual(['No rating']);
+      expect(
+        ratings({
+          ...base,
+          context: { ...base.context, extensions: 'not an object' },
+        }).map((r) => r.comment),
+      ).toEqual(['Slow to isolate']);
     });
 
     /**
