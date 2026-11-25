@@ -165,7 +165,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
     this.permissionDataService.load().subscribe((x) => {
       this.permissions = this.permissionDataService.permissions;
       this.canAccessAdminSection =
-        this.permissions.filter((p) => !p.endsWith('Msels')).length > 0;
+        this.permissionDataService.canViewAdministration();
       this.canEditMsels = this.permissionDataService.hasPermission(
         SystemPermission.EditMsels,
       );

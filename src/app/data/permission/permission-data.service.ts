@@ -9,6 +9,26 @@ import {
   SystemPermissionsService,
 } from 'src/app/generated/blueprint.api';
 
+/**
+ * The permissions that each open a section of the Administration page. The page lists only the sections its user holds
+ * one of these for, so the Administration menu item is offered only to a user who holds at least one.
+ */
+export const ADMIN_SECTION_PERMISSIONS: readonly SystemPermission[] = [
+  SystemPermission.ViewUnits,
+  SystemPermission.ViewDataFields,
+  SystemPermission.ViewInjectTypes,
+  SystemPermission.ViewCatalogs,
+  SystemPermission.ViewOrganizations,
+  SystemPermission.ViewGalleryCards,
+  SystemPermission.ViewCiteActions,
+  SystemPermission.ViewCiteDuties,
+  SystemPermission.ViewPlayerApplications,
+  SystemPermission.ViewCompetencyFrameworks,
+  SystemPermission.ViewUsers,
+  SystemPermission.ViewRoles,
+  SystemPermission.ViewGroups,
+];
+
 @Injectable({
   providedIn: 'root',
 })
@@ -52,6 +72,6 @@ export class PermissionDataService {
   }
 
   canViewAdministration() {
-    return this._permissions.some((y) => y.startsWith('View'));
+    return this._permissions.some((y) => ADMIN_SECTION_PERMISSIONS.includes(y));
   }
 }

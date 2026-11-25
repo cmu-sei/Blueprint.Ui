@@ -8,15 +8,31 @@ import {
   SystemPermission,
   SystemPermissionsService,
 } from 'src/app/generated/blueprint.api';
-import { PermissionDataService } from './permission-data.service';
+import {
+  ADMIN_SECTION_PERMISSIONS,
+  PermissionDataService,
+} from './permission-data.service';
 import { permissionDataProviders } from 'src/app/test-utils/mock-permission-data.service';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 
 const ALL_PERMISSIONS = Object.values(SystemPermission);
-// The View* permissions that open an admin section; ViewMsels opens none.
-const SECTION_VIEW_PERMISSIONS = ALL_PERMISSIONS.filter(
-  (p) => p.startsWith('View') && p !== SystemPermission.ViewMsels,
-);
+// The permissions that open an admin section, listed by hand so the constant is checked against something else;
+// ViewMsels opens none.
+const SECTION_VIEW_PERMISSIONS: SystemPermission[] = [
+  SystemPermission.ViewUnits,
+  SystemPermission.ViewDataFields,
+  SystemPermission.ViewInjectTypes,
+  SystemPermission.ViewCatalogs,
+  SystemPermission.ViewOrganizations,
+  SystemPermission.ViewGalleryCards,
+  SystemPermission.ViewCiteActions,
+  SystemPermission.ViewCiteDuties,
+  SystemPermission.ViewPlayerApplications,
+  SystemPermission.ViewCompetencyFrameworks,
+  SystemPermission.ViewUsers,
+  SystemPermission.ViewRoles,
+  SystemPermission.ViewGroups,
+];
 const NON_VIEW_PERMISSIONS = ALL_PERMISSIONS.filter(
   (p) => !p.startsWith('View'),
 );
@@ -163,15 +179,45 @@ describe('PermissionDataService', () => {
   );
 
   /**
-   * Verifies: ViewMsels alone opens the administration area, although no admin section is gated on it (current behavior).
+   * Verifies: ViewMsels, a View permission that opens no admin section, does not open the administration area.
    * Interacts with: PermissionDataService.canViewAdministration.
-   * Data: ViewMsels only.
+   * Data: ViewMsels on its own.
    */
-  it('canViewAdministration is true with only ViewMsels', async () => {
+  it('canViewAdministration is false with only ViewMsels', async () => {
     const { service } = setup([SystemPermission.ViewMsels]);
     await firstValueFrom(service.load());
 
-    expect(service.canViewAdministration()).toBe(true);
+    expect(service.canViewAdministration()).toBe(false);
+  });
+
+  /**
+   * Verifies: a Content Developer, who can create, view, edit and manage MSELs, is not offered Administration.
+   * Interacts with: PermissionDataService.canViewAdministration.
+   * Data: CreateMsels, ViewMsels, EditMsels and ManageMsels.
+   */
+  it('canViewAdministration is false for the Content Developer permissions', async () => {
+    const { service } = setup([
+      SystemPermission.CreateMsels,
+      SystemPermission.ViewMsels,
+      SystemPermission.EditMsels,
+      SystemPermission.ManageMsels,
+    ]);
+    await firstValueFrom(service.load());
+
+    expect(service.canViewAdministration()).toBe(false);
+  });
+
+  /**
+   * Verifies: ADMIN_SECTION_PERMISSIONS names every View permission except ViewMsels, which opens no section.
+   * Interacts with: SystemPermission, ADMIN_SECTION_PERMISSIONS.
+   * Data: the SystemPermission values that start with View.
+   */
+  it('ADMIN_SECTION_PERMISSIONS holds every View permission that opens a section', () => {
+    const views = ALL_PERMISSIONS.filter(
+      (p) => p.startsWith('View') && p !== SystemPermission.ViewMsels,
+    );
+
+    expect([...ADMIN_SECTION_PERMISSIONS].sort()).toEqual([...views].sort());
   });
 
   /**

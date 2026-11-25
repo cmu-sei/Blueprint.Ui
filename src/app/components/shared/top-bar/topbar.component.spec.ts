@@ -122,7 +122,7 @@ describe('TopbarComponent', () => {
   });
 
   /**
-   * Verifies: without any View* system permission the user menu has no Administration entry.
+   * Verifies: without a View permission the user menu has no Administration entry.
    * Interacts with: real PermissionDataService over SystemPermissionsService.getMySystemPermissions (stub), mat-menu.
    * Data: every system permission that does not start with View (near miss: CreateMsels, every Manage*).
    */
@@ -150,7 +150,29 @@ describe('TopbarComponent', () => {
   });
 
   /**
-   * Verifies: any View* system permission adds an Administration entry that navigates to /admin with the current URL as returnUrl.
+   * Verifies: a user who can only work on MSELs (the Content Developer permissions) has no Administration entry, since no admin section would open.
+   * Interacts with: real PermissionDataService over SystemPermissionsService.getMySystemPermissions (stub), mat-menu.
+   * Data: CreateMsels, ViewMsels, EditMsels and ManageMsels (near miss: ViewMsels is a View permission).
+   */
+  it('hides Administration for the MSEL permissions alone', async () => {
+    await renderTopbar({
+      permissions: [
+        SystemPermission.CreateMsels,
+        SystemPermission.ViewMsels,
+        SystemPermission.EditMsels,
+        SystemPermission.ManageMsels,
+      ],
+    });
+
+    await openUserMenu();
+
+    expect(
+      screen.queryByRole('menuitem', { name: 'Administration' }),
+    ).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a View permission that opens an admin section adds an Administration entry that navigates to /admin with the current URL as returnUrl.
    * Interacts with: real PermissionDataService (grants: ViewUsers), mat-menu, routerLink → Router.navigateByUrl (spy).
    * Data: ViewUsers only; the router sits at "/".
    */

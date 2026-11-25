@@ -63,6 +63,23 @@ class MselStub {
   readonly deleteThisMsel = output<string>();
 }
 
+// The permissions that open a section of the Administration page; the home page offers Administration only for these.
+const ADMIN_SECTION_PERMISSIONS: SystemPermission[] = [
+  SystemPermission.ViewUnits,
+  SystemPermission.ViewDataFields,
+  SystemPermission.ViewInjectTypes,
+  SystemPermission.ViewCatalogs,
+  SystemPermission.ViewOrganizations,
+  SystemPermission.ViewGalleryCards,
+  SystemPermission.ViewCiteActions,
+  SystemPermission.ViewCiteDuties,
+  SystemPermission.ViewPlayerApplications,
+  SystemPermission.ViewCompetencyFrameworks,
+  SystemPermission.ViewUsers,
+  SystemPermission.ViewRoles,
+  SystemPermission.ViewGroups,
+];
+
 const MSEL_PERMISSIONS = [
   SystemPermission.CreateMsels,
   SystemPermission.ViewMsels,
@@ -200,21 +217,40 @@ describe('HomeAppComponent', () => {
   });
 
   /**
-   * Verifies: each non-MSEL system permission alone opens the Administration control.
+   * Verifies: each permission that opens an admin section opens the Administration control on its own.
    * Interacts with: real PermissionDataService over SystemPermissionsService, MselListStub input.
-   * Data: exactly one system permission not ending in Msels, with no broader grant.
+   * Data: exactly one of the 13 section permissions, with no broader grant.
+   */
+  it.each(ADMIN_SECTION_PERMISSIONS)(
+    'offers Administration with exactly %s',
+    async (permission) => {
+      const { fixture } = await renderHome({ permissions: [permission] });
+
+      expect(
+        screen.getByRole('button', { name: 'Administration' }),
+      ).toBeInTheDocument();
+      expect(child(fixture, MselListStub)?.canAccessAdminSection()).toBe(true);
+    },
+  );
+
+  /**
+   * Verifies: a permission that opens no admin section, such as ManageUnits alone, does not offer Administration, so the cog never leads to an empty page.
+   * Interacts with: real PermissionDataService over SystemPermissionsService, MselListStub input.
+   * Data: exactly one permission that is neither a MSEL permission nor a section permission.
    */
   it.each(
     Object.values(SystemPermission).filter(
-      (permission) => !permission.endsWith('Msels'),
+      (permission) =>
+        !permission.endsWith('Msels') &&
+        !ADMIN_SECTION_PERMISSIONS.includes(permission),
     ),
-  )('offers Administration with exactly %s', async (permission) => {
+  )('hides Administration with exactly %s', async (permission) => {
     const { fixture } = await renderHome({ permissions: [permission] });
 
     expect(
-      screen.getByRole('button', { name: 'Administration' }),
-    ).toBeInTheDocument();
-    expect(child(fixture, MselListStub)?.canAccessAdminSection()).toBe(true);
+      screen.queryByRole('button', { name: 'Administration' }),
+    ).not.toBeInTheDocument();
+    expect(child(fixture, MselListStub)?.canAccessAdminSection()).toBe(false);
   });
 
   /**
