@@ -62,7 +62,6 @@ export function integrationsLocked(msel: Msel | undefined): boolean {
       msel?.galleryCollectionId ||
       msel?.galleryExhibitId ||
       msel?.citeEvaluationId ||
-      msel?.steamfitterScenarioId ||
       msel?.casterWorkspaceId
     )
   );

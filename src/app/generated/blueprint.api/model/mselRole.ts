@@ -21,7 +21,8 @@ export const MselRole = {
     Approver: 'Approver',
     MoveEditor: 'MoveEditor',
     Viewer: 'Viewer',
-    Evaluator: 'Evaluator'
+    Evaluator: 'Evaluator',
+    Facilitator: 'Facilitator'
 } as const;
 export type MselRole = typeof MselRole[keyof typeof MselRole];
 

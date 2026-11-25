@@ -1,0 +1,76 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+
+:host {
+  flex: 1;
+  overflow: auto;
+}
+
+.tasks-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+}
+
+.tasks-content {
+  padding: 16px 24px;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.tasks-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.tasks-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: var(--mat-sys-headline-small);
+}
+
+.tasks-score {
+  font: var(--mat-sys-title-large);
+}
+
+.tasks-note {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.tasks-error {
+  color: var(--mat-sys-error);
+}
+
+.tasks-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+    vertical-align: middle;
+  }
+}
+
+.tasks-task {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tasks-name {
+  font-weight: 600;
+}
+
+.tasks-reason {
+  display: block;
+}

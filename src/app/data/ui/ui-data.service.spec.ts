@@ -26,13 +26,15 @@ describe('UIDataService', () => {
     expect(ui.useRealTime()).toBeUndefined();
     expect(ui.getVisibleDataFieldColumns()).toEqual([]);
     expect(ui.getStatementGrouping()).toBeUndefined();
+    // the Facilitator View starts with only the events that have tasks
+    expect(ui.getFacilitatorOnlyEventsWithTasks()).toBe(true);
     expect(ui.isItemExpanded('anything')).toBe(false);
   });
 
   /**
    * Verifies: every setter persists to localStorage and a new service instance restores the saved state.
    * Interacts with: UIDataService setters/getters, localStorage.
-   * Data: tab, admin tab, theme, nav, real-time, visible column and statement grouping choices.
+   * Data: tab, admin tab, theme, nav, real-time, visible column, statement grouping and Facilitator View event choices.
    */
   it('persists choices and restores them in a new instance', () => {
     const ui = new UIDataService();
@@ -43,6 +45,7 @@ describe('UIDataService', () => {
     ui.setUseRealTime(true);
     ui.setVisibleDataFieldColumns(['Title', 'Assigned To']);
     ui.setStatementGrouping('user');
+    ui.setFacilitatorOnlyEventsWithTasks(false);
 
     expect(saved()).toMatchObject({
       selectedMselTab: 'Scenario Events',
@@ -52,6 +55,7 @@ describe('UIDataService', () => {
       useRealTime: true,
       visibleDataFieldColumns: ['Title', 'Assigned To'],
       statementGrouping: 'user',
+      facilitatorOnlyEventsWithTasks: false,
     });
 
     const restored = new UIDataService();
@@ -65,6 +69,7 @@ describe('UIDataService', () => {
       'Assigned To',
     ]);
     expect(restored.getStatementGrouping()).toBe('user');
+    expect(restored.getFacilitatorOnlyEventsWithTasks()).toBe(false);
   });
 
   /**

@@ -125,9 +125,9 @@ describe('UserMselRoleDataService', () => {
   });
 
   /**
-   * Verifies: setIntegrationRoles sends the three integration roles and upserts every assignment the API returns.
+   * Verifies: setIntegrationRoles sends the two integration roles and upserts every assignment the API returns.
    * Interacts with: UserMselRoleService.setUserMselIntegrationRoles (stub), real UserMselRoleQuery.
-   * Data: user-1 given CITE "Observer", Gallery "Viewer" and no Steamfitter role; the API returns two updated rows.
+   * Data: user-1 given CITE "Observer", Gallery "Viewer"; the API returns two updated rows.
    */
   it('setIntegrationRoles stores the updated assignments', () => {
     const { service, query, umrApi } = setup();
@@ -143,7 +143,7 @@ describe('UserMselRoleDataService', () => {
       ]),
     );
 
-    service.setIntegrationRoles('msel-1', 'user-1', 'Observer', 'Viewer', null);
+    service.setIntegrationRoles('msel-1', 'user-1', 'Observer', 'Viewer');
 
     expect(umrApi.setUserMselIntegrationRoles).toHaveBeenCalledWith(
       'msel-1',
@@ -151,7 +151,6 @@ describe('UserMselRoleDataService', () => {
       {
         citeEvaluationRole: 'Observer',
         galleryExhibitRole: 'Viewer',
-        steamfitterScenarioRole: null,
       },
     );
     expect(query.getEntity('umr-1').galleryExhibitRole).toBe('Viewer');
@@ -234,7 +233,7 @@ describe('UserMselRoleDataService', () => {
       method: 'setIntegrationRoles',
       endpoint: 'setUserMselIntegrationRoles',
       call: (s: UserMselRoleDataService) =>
-        s.setIntegrationRoles('msel-1', 'user-1', null, null, null),
+        s.setIntegrationRoles('msel-1', 'user-1', null, null),
     },
   ] as const)(
     '$method lets a failed request reach the global ErrorHandler',

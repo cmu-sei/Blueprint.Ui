@@ -294,6 +294,26 @@ project root for license information or contact permission@sei.cmu.edu for full 
           />
         </mat-cell>
       </ng-container>
+      <!-- facilitator Column -->
+      <ng-container matColumnDef="facilitator">
+        <mat-header-cell
+          mat-sort-header="onFacilitatorView"
+          title="Display on the Facilitator View"
+          *matHeaderCellDef
+          class="column-display"
+        >
+          &nbsp;&nbsp;&nbsp;&nbsp;Facilitate
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element" class="column-display">
+          <mat-checkbox
+            [(ngModel)]="element.onFacilitatorView"
+            [disabled]="!canEditRow(element)"
+            (change)="saveChange(element)"
+            (click)="$event.stopPropagation()"
+            title="Display on the Facilitator View"
+          />
+        </mat-cell>
+      </ng-container>
       <!-- information Column -->
       <ng-container matColumnDef="information">
         <mat-header-cell

@@ -5,7 +5,8 @@
 */
 
 // Resolves a Player application icon the way Push does (IntegrationPlayerExtensions), so the
-// list shows what Player will show. A relative path is relative to the Player UI.
+// list shows what Player will show. A relative path is relative to the Player UI. Blueprint no
+// longer pushes to Steamfitter, so {steamfitterUrl} becomes empty, as it does in the push.
 export function playerAppIconUrl(icon: string, settings: any): string {
   if (!icon || icon.startsWith('mdi-')) return '';
   const trim = (url: string) => (url || '').replace(/\/+$/, '');
@@ -13,7 +14,7 @@ export function playerAppIconUrl(icon: string, settings: any): string {
     .replace('{playerUrl}', trim(settings.PlayerUrl))
     .replace('{citeUrl}', trim(settings.CiteUrl))
     .replace('{galleryUrl}', trim(settings.GalleryUrl))
-    .replace('{steamfitterUrl}', trim(settings.SteamfitterUrl))
+    .replace('{steamfitterUrl}', '')
     .replace('{casterUrl}', trim(settings.CasterUrl))
     .replace('{vmUrl}', trim(settings.VmUrl))
     .replace('{blueprintUrl}', window.location.origin);

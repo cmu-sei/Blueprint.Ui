@@ -22,13 +22,23 @@ import {
   MselService,
   Unit,
   ScenarioEvent,
-  SteamfitterScenarioStartMode,
   Team,
   UserMselRole,
 } from 'src/app/generated/blueprint.api';
 import { map, shareReplay, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
 import { ErrorService } from 'src/app/services/error/error.service';
+
+// what a user may do on a MSEL, or on one of its scenario events
+export interface MselRoleFlags {
+  owner: boolean;
+  moveEditor: boolean;
+  approver: boolean;
+  editor: boolean;
+  evaluator: boolean;
+  facilitator: boolean;
+  viewer: boolean;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -53,9 +63,6 @@ export class MselPlus implements Msel {
   citeScoringModelId?: string;
   articleMarking?: string;
   articleMarkingText?: string;
-  useSteamfitter?: boolean;
-  steamfitterScenarioId?: string;
-  steamfitterScenarioStartMode?: SteamfitterScenarioStartMode;
   useCaster?: boolean;
   casterDirectoryId?: string;
   casterWorkspaceId?: string;
@@ -80,6 +87,16 @@ export class MselPlus implements Msel {
   showGroupOnAssessorView?: boolean;
   showIntegrationTargetOnAssessorView?: boolean;
   hideNamesOnAssessorView?: boolean;
+  showTimeOnFacilitatorView?: boolean;
+  showMoveOnFacilitatorView?: boolean;
+  showGroupOnFacilitatorView?: boolean;
+  showIntegrationTargetOnFacilitatorView?: boolean;
+  deploymentId?: string | null;
+  currentMoveNumber?: number | null;
+  currentGroupNumber?: number | null;
+  currentGroupStartedAt?: Date | null;
+  automationPaused?: boolean;
+  automationTestPlayerViewId?: string | null;
   moves?: Array<Move>;
   dataFields?: Array<DataField>;
   scenarioEvents?: Array<ScenarioEvent>;
@@ -94,7 +111,6 @@ export class MselPlus implements Msel {
   playerIntegrationType?: IntegrationType;
   galleryIntegrationType?: IntegrationType;
   citeIntegrationType?: IntegrationType;
-  steamfitterIntegrationType?: IntegrationType;
   educationalLevel?: string;
   subject?: string;
   keywords?: string;
@@ -103,14 +119,15 @@ export class MselPlus implements Msel {
   language?: string;
   imageDateModified?: Date | null;
 
-  hasRole(userId: string, scenarioEventId: string) {
+  hasRole(userId: string, scenarioEventId: string): MselRoleFlags {
     // initialize to no roles
-    let mselRole = {
+    let mselRole: MselRoleFlags = {
       owner: false,
       moveEditor: false,
       approver: false,
       editor: false,
       evaluator: false,
+      facilitator: false,
       viewer: false,
     };
     // set owner role
@@ -131,6 +148,7 @@ export class MselPlus implements Msel {
       mselRole.editor = true;
       mselRole.moveEditor = true;
       mselRole.evaluator = true;
+      mselRole.facilitator = true;
       mselRole.viewer = true;
       // set roles for a particular scenario event for a non-owner
     } else if (
@@ -166,7 +184,7 @@ export class MselPlus implements Msel {
     return mselRole;
   }
 
-  private setMselRoles(userId: string, mselRole: any) {
+  private setMselRoles(userId: string, mselRole: MselRoleFlags) {
     if (this.userMselRoles && this.userMselRoles.length > 0) {
       mselRole.approver = this.userMselRoles.some(
         (umr) => umr.userId === userId && umr.role === MselRole.Approver,
@@ -179,11 +197,15 @@ export class MselPlus implements Msel {
       mselRole.evaluator = this.userMselRoles.some(
         (umr) => umr.userId === userId && umr.role === MselRole.Evaluator,
       );
+      mselRole.facilitator = this.userMselRoles.some(
+        (umr) => umr.userId === userId && umr.role === MselRole.Facilitator,
+      );
       mselRole.viewer =
         mselRole.approver ||
         mselRole.editor ||
         mselRole.moveEditor ||
         mselRole.evaluator ||
+        mselRole.facilitator ||
         this.userMselRoles.some(
           (umr) => umr.userId === userId && umr.role === MselRole.Viewer,
         );
@@ -734,5 +756,8 @@ export class MselDataService {
     msel.dateCreated = new Date(msel.dateCreated);
     msel.dateModified = new Date(msel.dateModified);
     msel.startTime = new Date(msel.startTime);
+    msel.currentGroupStartedAt = msel.currentGroupStartedAt
+      ? new Date(msel.currentGroupStartedAt)
+      : null;
   }
 }

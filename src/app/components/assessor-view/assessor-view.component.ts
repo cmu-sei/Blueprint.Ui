@@ -103,6 +103,11 @@ import { DataValueComponent } from '../data-value/data-value.component';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
 import { TeamResponsesComponent } from '../team-responses/team-responses.component';
 import {
+  MselSectionExpansion,
+  MselSectionRow,
+  buildSectionRows,
+} from 'src/app/utilities/msel-section-rows';
+import {
   agentIdentityKey,
   agentName,
   isAnonymousActor,
@@ -411,9 +416,17 @@ export class AssessorViewComponent
   availableVerbs: string[] = [];
   filterChange = new Subject<string>();
   private subscription: Subscription;
-  expandedEventIds = new Set<string>();
-  expandedMoveNumbers = new Set<number>();
-  expandedGroupKeys = new Set<string>();
+  // which move, group and event rows are open
+  readonly sections = new MselSectionExpansion();
+  get expandedEventIds(): Set<string> {
+    return this.sections.eventIds;
+  }
+  get expandedMoveNumbers(): Set<number> {
+    return this.sections.moveNumbers;
+  }
+  get expandedGroupKeys(): Set<string> {
+    return this.sections.groupKeys;
+  }
   eventStatements: Map<string, XApiStatement[]> = new Map();
   moveStatements: Map<number, XApiStatement[]> = new Map();
   groupStatements: Map<string, XApiStatement[]> = new Map();
@@ -947,171 +960,63 @@ export class AssessorViewComponent
   printedAt: Date | null = null;
 
   toggleEvent(eventId: string) {
-    if (this.expandedEventIds.has(eventId)) {
-      this.expandedEventIds.delete(eventId);
-    } else {
-      this.expandedEventIds.add(eventId);
-      this.initEventTeamDefault(eventId);
-      if (!this.statementsLoaded) {
-        this.loadAllStatements();
-      }
+    if (this.sections.toggleEvent(eventId)) {
+      this.eventsOpened([eventId]);
     }
   }
 
   toggleMoveExpand(moveNumber: number) {
-    if (this.expandedMoveNumbers.has(moveNumber)) {
-      this.expandedMoveNumbers.delete(moveNumber);
-    } else {
-      this.expandedMoveNumbers.add(moveNumber);
-      if (!this.statementsLoaded) {
-        this.loadAllStatements();
-      }
+    if (this.sections.toggleMove(moveNumber)) {
+      this.eventsOpened([]);
     }
   }
 
   toggleGroupExpand(groupKey: string) {
-    if (this.expandedGroupKeys.has(groupKey)) {
-      this.expandedGroupKeys.delete(groupKey);
-    } else {
-      this.expandedGroupKeys.add(groupKey);
-      if (!this.statementsLoaded) {
-        this.loadAllStatements();
-      }
+    if (this.sections.toggleGroup(groupKey)) {
+      this.eventsOpened([]);
     }
   }
 
   expandAll() {
-    // Expand all moves, groups, and events
-    const rows = this.displayRows;
-    rows.forEach((row) => {
-      if (row.type === 'move' && row.moveNumber !== undefined) {
-        this.expandedMoveNumbers.add(row.moveNumber);
-      } else if (row.type === 'group' && row.groupKey) {
-        this.expandedGroupKeys.add(row.groupKey);
-      } else if (row.type === 'event' && row.event?.id) {
-        this.expandedEventIds.add(row.event.id);
-        this.initEventTeamDefault(row.event.id);
-      }
-    });
-    if (!this.statementsLoaded) {
-      this.loadAllStatements();
-    }
+    this.eventsOpened(this.sections.expandAll(this.displayRows));
   }
 
   collapseAll() {
-    this.expandedMoveNumbers.clear();
-    this.expandedGroupKeys.clear();
-    this.expandedEventIds.clear();
+    this.sections.collapseAll();
   }
 
   get isFullyExpanded(): boolean {
-    const rows = this.displayRows;
-    return rows.every((row) => {
-      if (row.type === 'move' && row.moveNumber !== undefined) {
-        return this.expandedMoveNumbers.has(row.moveNumber);
-      } else if (row.type === 'group' && row.groupKey) {
-        return this.expandedGroupKeys.has(row.groupKey);
-      } else if (row.type === 'event' && row.event?.id) {
-        return this.expandedEventIds.has(row.event.id);
-      }
-      return true;
-    });
+    return this.sections.isFullyExpanded(this.displayRows);
   }
 
   get isFullyCollapsed(): boolean {
-    return (
-      this.expandedMoveNumbers.size === 0 &&
-      this.expandedGroupKeys.size === 0 &&
-      this.expandedEventIds.size === 0
-    );
+    return this.sections.isFullyCollapsed;
   }
 
   expandAllInMove(moveNumber: number) {
-    // Expand the move itself
-    this.expandedMoveNumbers.add(moveNumber);
-    // Expand all groups and events in this move
-    const rows = this.displayRows;
-    rows.forEach((row) => {
-      if (
-        row.type === 'group' &&
-        row.moveNumber === moveNumber &&
-        row.groupKey
-      ) {
-        this.expandedGroupKeys.add(row.groupKey);
-      } else if (
-        row.type === 'event' &&
-        row.moveNumber === moveNumber &&
-        row.event?.id
-      ) {
-        this.expandedEventIds.add(row.event.id);
-        this.initEventTeamDefault(row.event.id);
-      }
-    });
-    if (!this.statementsLoaded) {
-      this.loadAllStatements();
-    }
+    this.eventsOpened(this.sections.expandMove(this.displayRows, moveNumber));
   }
 
   collapseAllInMove(moveNumber: number) {
-    // Collapse all groups and events in this move
-    const rows = this.displayRows;
-    rows.forEach((row) => {
-      if (
-        row.type === 'group' &&
-        row.moveNumber === moveNumber &&
-        row.groupKey
-      ) {
-        this.expandedGroupKeys.delete(row.groupKey);
-      } else if (
-        row.type === 'event' &&
-        row.moveNumber === moveNumber &&
-        row.event?.id
-      ) {
-        this.expandedEventIds.delete(row.event.id);
-      }
-    });
-    // Collapse the move itself
-    this.expandedMoveNumbers.delete(moveNumber);
+    this.sections.collapseMove(this.displayRows, moveNumber);
   }
 
   expandAllInGroup(moveNumber: number, groupOrder: number) {
-    const groupKey = `${moveNumber}-${groupOrder}`;
-    // Expand the group itself
-    this.expandedGroupKeys.add(groupKey);
-    // Expand all events in this group
-    const rows = this.displayRows;
-    rows.forEach((row) => {
-      if (
-        row.type === 'event' &&
-        row.moveNumber === moveNumber &&
-        row.groupNumber === groupOrder &&
-        row.event?.id
-      ) {
-        this.expandedEventIds.add(row.event.id);
-        this.initEventTeamDefault(row.event.id);
-      }
-    });
-    if (!this.statementsLoaded) {
-      this.loadAllStatements();
-    }
+    this.eventsOpened(
+      this.sections.expandGroup(this.displayRows, moveNumber, groupOrder),
+    );
   }
 
   collapseAllInGroup(moveNumber: number, groupOrder: number) {
-    // Collapse all events in this group
-    const rows = this.displayRows;
-    rows.forEach((row) => {
-      if (
-        row.type === 'event' &&
-        row.moveNumber === moveNumber &&
-        row.groupNumber === groupOrder &&
-        row.event?.id
-      ) {
-        this.expandedEventIds.delete(row.event.id);
-      }
-    });
-    // Collapse the group itself
-    const groupKey = `${moveNumber}-${groupOrder}`;
-    this.expandedGroupKeys.delete(groupKey);
+    this.sections.collapseGroup(this.displayRows, moveNumber, groupOrder);
+  }
+
+  /** An open row shows evidence, so the statements are read; an event opened gets its team preselected. */
+  private eventsOpened(eventIds: string[]) {
+    eventIds.forEach((id) => this.initEventTeamDefault(id));
+    if (!this.statementsLoaded) {
+      this.loadAllStatements();
+    }
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -1506,56 +1411,11 @@ export class AssessorViewComponent
     return events;
   }
 
-  get displayRows(): {
-    type: 'move' | 'group' | 'event';
-    moveNumber?: number;
-    groupNumber?: number;
-    groupKey?: string;
-    event?: ScenarioEvent;
-    rowIndex?: number;
-  }[] {
-    const filtered = this.applyTopFieldFilters(this.displayedScenarioEvents);
-    const rows: {
-      type: 'move' | 'group' | 'event';
-      moveNumber?: number;
-      groupNumber?: number;
-      groupKey?: string;
-      event?: ScenarioEvent;
-      rowIndex?: number;
-    }[] = [];
-    let lastMove = -1;
-    let lastGroup = '';
-    let rowIndex = 0;
-    for (const event of filtered) {
-      const nums = this.moveAndGroupNumbers[event.id];
-      const moveNum = nums ? +nums[0] : 0;
-      const groupNum = nums ? +nums[1] : 0;
-      const groupKey = `${moveNum}-${groupNum}`;
-
-      if (moveNum !== lastMove) {
-        rows.push({ type: 'move', moveNumber: moveNum });
-        lastMove = moveNum;
-        lastGroup = '';
-      }
-      if (groupKey !== lastGroup) {
-        rows.push({
-          type: 'group',
-          moveNumber: moveNum,
-          groupNumber: groupNum,
-          groupKey,
-        });
-        lastGroup = groupKey;
-      }
-      rows.push({
-        type: 'event',
-        event,
-        rowIndex: ++rowIndex,
-        moveNumber: moveNum,
-        groupNumber: groupNum,
-        groupKey,
-      });
-    }
-    return rows;
+  get displayRows(): MselSectionRow[] {
+    return buildSectionRows(
+      this.applyTopFieldFilters(this.displayedScenarioEvents),
+      this.moveAndGroupNumbers,
+    );
   }
 
   private applyStatementFilters(

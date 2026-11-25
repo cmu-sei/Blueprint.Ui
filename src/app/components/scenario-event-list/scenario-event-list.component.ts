@@ -1,6 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 import {
   ChangeDetectorRef,
   Component,
@@ -32,6 +33,9 @@ import {
 import { ComnSettingsService, Theme } from '@cmusei/crucible-common';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import {
+  AutomationRun,
+  AutomationRunKind,
+  AutomationTask,
   Card,
   Catalog,
   CreateFromInjectsForm,
@@ -46,7 +50,6 @@ import {
   MselRole,
   Organization,
   ScenarioEvent,
-  SteamfitterTask,
   SystemPermission,
   Team,
   Unit,
@@ -71,7 +74,10 @@ import {
   IntegrationTarget,
 } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventCopyDialogComponent } from '../scenario-event-copy-dialog/scenario-event-copy-dialog.component';
-import { ScenarioEventEditDialogComponent } from '../scenario-event-edit-dialog/scenario-event-edit-dialog.component';
+import {
+  ScenarioEventEditDialogComponent,
+  ScenarioEventEditDialogData,
+} from '../scenario-event-edit-dialog/scenario-event-edit-dialog.component';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
@@ -82,7 +88,33 @@ import { TeamQuery } from 'src/app/data/team/team.query';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
-import { MatIconButton } from '@angular/material/button';
+import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatTooltip } from '@angular/material/tooltip';
+import { AutomationRunDataService } from 'src/app/data/automation-run/automation-run-data.service';
+import {
+  AutomationRunQuery,
+  newestFirst,
+} from 'src/app/data/automation-run/automation-run.query';
+import { AutomationTaskDataService } from 'src/app/data/automation-task/automation-task-data.service';
+import {
+  AutomationTaskQuery,
+  byDisplayOrder,
+} from 'src/app/data/automation-task/automation-task.query';
+import {
+  AutomationTaskDraft,
+  copyDrafts,
+  draftFromTask,
+  latestRunByTask,
+  overallStatus,
+  triggerSummary,
+} from 'src/app/utilities/automation-tasks';
+import { canViewFacilitator } from 'src/app/utilities/facilitator-msels';
+import { AutomationStatusChipComponent } from '../automation-status-chip/automation-status-chip.component';
+import {
+  AutomationTestDialogComponent,
+  AutomationTestDialogData,
+} from '../automation-test-dialog/automation-test-dialog.component';
+import { AutomationTriggerOption } from '../automation-task-list/automation-task-list.component';
 import { MatIcon } from '@angular/material/icon';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
@@ -118,6 +150,9 @@ interface StringDictionary {
     MatSelect,
     MatOption,
     DataValueComponent,
+    MatButton,
+    MatTooltip,
+    AutomationStatusChipComponent,
   ],
 })
 export class ScenarioEventListComponent
@@ -144,6 +179,10 @@ export class ScenarioEventListComponent
   private teamQuery = inject(TeamQuery);
   private unitQuery = inject(UnitQuery);
   private uiDataService = inject(UIDataService);
+  private automationTaskDataService = inject(AutomationTaskDataService);
+  private automationTaskQuery = inject(AutomationTaskQuery);
+  private automationRunDataService = inject(AutomationRunDataService);
+  private automationRunQuery = inject(AutomationRunQuery);
   private changeDetectorRef = inject(ChangeDetectorRef);
 
   readonly loggedInUserId = input<string>(undefined);
@@ -233,8 +272,18 @@ export class ScenarioEventListComponent
   allSelected = false;
   mselListForCopy: Msel[] = [];
   integrationTargetOptions: string[] = [];
+  // the MSEL's automation tasks by scenario event, and each task's newest test
+  tasksByEvent = new Map<string, AutomationTask[]>();
+  latestTests = new Map<string, AutomationRun>();
+  hasAutomation = false;
+  private testRunsLoadedFor = '';
 
   constructor() {
+    // a new hub connection missed the test runs that ended while the old one was down
+    reloadOnReconnect(() => {
+      this.testRunsLoadedFor = '';
+      this.loadTestRuns();
+    });
     // load the user's build MSELs for use when copying scenario events
     this.mselDataService
       .getMyBuildMsels()
@@ -254,12 +303,11 @@ export class ScenarioEventListComponent
           this.msel = this.getEditableMsel(msel) as MselPlus;
           this.mselUsers = this.getMselUsers();
           this.scenarioEventDataService.updateScenarioEventViewUsers(this);
+          this.automationTaskDataService.loadByMsel(msel.id);
+          this.loadTestRuns();
           const options = [];
           if (msel.useGallery) {
             options.push(IntegrationTarget.Gallery);
-          }
-          if (msel.useSteamfitter) {
-            options.push(IntegrationTarget.Steamfitter);
           }
           this.integrationTargetOptions = options;
           // in case the dataFields were received before the msel
@@ -327,6 +375,29 @@ export class ScenarioEventListComponent
           this,
         );
       });
+    this.automationTaskQuery
+      .selectAll({ sortBy: byDisplayOrder })
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((tasks) => {
+        const byEvent = new Map<string, AutomationTask[]>();
+        tasks
+          .filter((t) => t.mselId === this.msel.id)
+          .forEach((t) =>
+            byEvent.set(t.scenarioEventId, [
+              ...(byEvent.get(t.scenarioEventId) ?? []),
+              t,
+            ]),
+          );
+        this.tasksByEvent = byEvent;
+        this.hasAutomation = byEvent.size > 0;
+      });
+    this.automationRunQuery
+      .selectAll({
+        filterBy: (r) => r.kind === AutomationRunKind.Test,
+        sortBy: newestFirst,
+      })
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((runs) => (this.latestTests = latestRunByTask(runs)));
     // is user a contentdeveloper or system admin?
     this.permissionDataService
       .load()
@@ -335,6 +406,8 @@ export class ScenarioEventListComponent
         this.canDoAnything = this.permissionDataService.hasPermission(
           SystemPermission.CreateMsels,
         );
+        // the MSEL may have arrived first
+        this.loadTestRuns();
         this.changeDetectorRef.markForCheck();
       });
     // subscribe to organizations
@@ -700,7 +773,6 @@ export class ScenarioEventListComponent
       scenarioEventType: EventType.Inject,
       deltaSeconds: this.maxScenarioEventStartSeconds,
     } as ScenarioEvent;
-    this.makeSteamfitterTask(newScenarioEvent, uuidv4());
     this.mselDataFields.forEach((df) => {
       newScenarioEvent.dataValues.push({
         dataFieldId: df.id,
@@ -712,7 +784,7 @@ export class ScenarioEventListComponent
     this.displayEditDialog(newScenarioEvent);
   }
 
-  editScenarioEvent(scenarioEvent: ScenarioEvent) {
+  editScenarioEvent(scenarioEvent: ScenarioEvent, initialTab = '') {
     this.isAddingScenarioEvent = false;
     const editScenarioEvent = { ...scenarioEvent };
     editScenarioEvent.dataValues = [];
@@ -726,15 +798,11 @@ export class ScenarioEventListComponent
       }
       editScenarioEvent.dataValues.push({ ...dataValue });
     });
-    if (scenarioEvent.steamfitterTaskId) {
-      editScenarioEvent.steamfitterTask = { ...scenarioEvent.steamfitterTask };
-      editScenarioEvent.steamfitterTask.actionParameters = {
-        ...scenarioEvent.steamfitterTask.actionParameters,
-      };
-    } else {
-      this.makeSteamfitterTask(editScenarioEvent, null);
-    }
-    this.displayEditDialog(editScenarioEvent);
+    this.displayEditDialog(
+      editScenarioEvent,
+      this.eventTasks(scenarioEvent).map(draftFromTask),
+      initialTab,
+    );
   }
 
   copyScenarioEvent(scenarioEvent: ScenarioEvent): void {
@@ -752,17 +820,18 @@ export class ScenarioEventListComponent
           value: dv.value,
         });
       });
-    if (scenarioEvent.steamfitterTaskId) {
-      newScenarioEvent.steamfitterTask = { ...scenarioEvent.steamfitterTask };
-      newScenarioEvent.steamfitterTaskId = null;
-      newScenarioEvent.steamfitterTask.id = null;
-    } else {
-      this.makeSteamfitterTask(newScenarioEvent, uuidv4());
-    }
-    this.displayEditDialog(newScenarioEvent);
+    // the copy's tasks trigger each other as the originals do; secrets are not copied
+    this.displayEditDialog(
+      newScenarioEvent,
+      copyDrafts(this.eventTasks(scenarioEvent).map(draftFromTask)),
+    );
   }
 
-  displayEditDialog(scenarioEvent: ScenarioEvent) {
+  displayEditDialog(
+    scenarioEvent: ScenarioEvent,
+    automationTasks: AutomationTaskDraft[] = [],
+    initialTab = '',
+  ) {
     const isOwner =
       this.canEditMsel() ||
       this.msel.hasRole(this.loggedInUserId(), scenarioEvent.id).owner;
@@ -797,10 +866,28 @@ export class ScenarioEventListComponent
         showScenarioEventType: !this.isStarterMsel(),
         useCite: this.msel.useCite,
         useGallery: this.msel.useGallery,
-        useSteamfitter: this.msel.useSteamfitter,
         userList: this.mselUsers,
         mselStartTime: this.msel.startTime,
-      },
+        mselId: this.msel.id,
+        automationTasks,
+        savedTaskIds: this.isAddingScenarioEvent
+          ? []
+          : this.eventTasks(scenarioEvent).map((t) => t.id),
+        triggerOptions: this.triggerOptionsFor(scenarioEvent.id),
+        otherTriggers: this.otherTriggersFor(scenarioEvent.id),
+        latestTests: this.latestTests,
+        // a test needs the event on the server
+        canTest:
+          !this.isAddingScenarioEvent && isEditor && !this.isStarterMsel(),
+        eventLabel: this.eventLabel(scenarioEvent.id),
+        testPlayerViewId:
+          this.msel.automationTestPlayerViewId ?? this.msel.playerViewId,
+        deployedPlayerViewId:
+          this.msel.status === MselItemStatus.Deployed
+            ? this.msel.playerViewId
+            : null,
+        initialTab,
+      } satisfies ScenarioEventEditDialogData,
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
       if (result.saveChanges && result.scenarioEvent) {
@@ -812,21 +899,116 @@ export class ScenarioEventListComponent
     });
   }
 
-  makeSteamfitterTask(scenarioEvent: ScenarioEvent, newId: string) {
-    const steamfitterTask = {
-      expectedOutput: '',
-      expirationSeconds: 120,
-      triggerCondition: 'Manual',
-      userExecutable: true,
-      repeatable: false,
-      actionParameters: {},
-      scenarioEventId: scenarioEvent.id,
-    } as SteamfitterTask;
-    if (newId) {
-      steamfitterTask.id = newId;
-      scenarioEvent.steamfitterTaskId = newId;
+  /**
+   * Reads the MSEL's test runs once, for those who can open its Facilitator View: the API refuses them to anyone
+   * else. Called when the MSEL arrives and when the permissions do, whichever is last.
+   */
+  private loadTestRuns() {
+    if (
+      !this.msel?.id ||
+      this.testRunsLoadedFor === this.msel.id ||
+      !canViewFacilitator(
+        this.msel,
+        this.loggedInUserId(),
+        this.permissionDataService.hasPermission(SystemPermission.ViewMsels),
+      )
+    ) {
+      return;
     }
-    scenarioEvent.steamfitterTask = steamfitterTask;
+    this.testRunsLoadedFor = this.msel.id;
+    this.automationRunDataService.loadByMsel(
+      this.msel.id,
+      AutomationRunKind.Test,
+    );
+  }
+
+  eventTasks(scenarioEvent: ScenarioEvent): AutomationTask[] {
+    return this.tasksByEvent.get(scenarioEvent.id) ?? [];
+  }
+
+  /** "Event 4", by the event's place in the MSEL's own order. */
+  eventLabel(scenarioEventId: string): string {
+    const index = this.mselScenarioEvents.findIndex(
+      (se) => se.id === scenarioEventId,
+    );
+    return index < 0 ? 'New event' : `Event ${index + 1}`;
+  }
+
+  /** The tasks of the MSEL's other events, which one of this event's can be triggered by. */
+  triggerOptionsFor(scenarioEventId: string): AutomationTriggerOption[] {
+    const options: AutomationTriggerOption[] = [];
+    this.mselScenarioEvents
+      .filter((se) => se.id !== scenarioEventId)
+      .forEach((se) =>
+        this.eventTasks(se).forEach((t, i) =>
+          options.push({
+            id: t.id,
+            label: `${this.eventLabel(se.id)} › ${i + 1}. ${t.name}`,
+          }),
+        ),
+      );
+    return options;
+  }
+
+  /** The triggers of the other events' tasks, for finding a loop before the API refuses one. */
+  otherTriggersFor(scenarioEventId: string): Map<string, string | null> {
+    const triggers = new Map<string, string | null>();
+    this.tasksByEvent.forEach((tasks, eventId) => {
+      if (eventId !== scenarioEventId) {
+        tasks.forEach((t) => triggers.set(t.id, t.triggerTaskId ?? null));
+      }
+    });
+    return triggers;
+  }
+
+  eventTestStatus(scenarioEvent: ScenarioEvent) {
+    return overallStatus(
+      this.eventTasks(scenarioEvent).map((t) => t.id),
+      this.latestTests,
+    );
+  }
+
+  automationTooltip(scenarioEvent: ScenarioEvent): string {
+    const tasks = this.eventTasks(scenarioEvent);
+    const names = new Map(
+      [...this.tasksByEvent.values()].flat().map((t) => [t.id, t.name]),
+    );
+    return tasks
+      .map(
+        (t, i) =>
+          `${i + 1}. ${t.name}: ${triggerSummary(t.triggerCondition, names.get(t.triggerTaskId))}${t.enabled ? '' : ' (disabled)'}`,
+      )
+      .join('\n');
+  }
+
+  canTestAutomation(scenarioEvent: ScenarioEvent): boolean {
+    return (
+      this.eventTasks(scenarioEvent).length > 0 &&
+      !this.isStarterMsel() &&
+      (this.canEditMsel() ||
+        this.msel.hasRole(this.loggedInUserId(), scenarioEvent.id).editor)
+    );
+  }
+
+  openAutomationTest(scenarioEvent: ScenarioEvent) {
+    const tasks = this.eventTasks(scenarioEvent);
+    this.dialog.open(AutomationTestDialogComponent, {
+      width: '900px',
+      maxWidth: '90vw',
+      data: {
+        mselId: this.msel.id,
+        scenarioEventId: scenarioEvent.id,
+        eventLabel: this.eventLabel(scenarioEvent.id),
+        tasks: tasks.map(draftFromTask),
+        savedTaskIds: tasks.map((t) => t.id),
+        playerViewId:
+          this.msel.automationTestPlayerViewId ?? this.msel.playerViewId,
+        deployedPlayerViewId:
+          this.msel.status === MselItemStatus.Deployed
+            ? this.msel.playerViewId
+            : null,
+      } satisfies AutomationTestDialogData,
+    });
   }
 
   saveDataValue(

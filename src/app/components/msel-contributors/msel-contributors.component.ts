@@ -152,6 +152,7 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
     MselRole.MoveEditor,
     MselRole.Owner,
     MselRole.Evaluator,
+    MselRole.Facilitator,
     MselRole.Viewer,
   ];
   citeEvaluationRoles: string[] = [
@@ -164,12 +165,6 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
     'Member',
   ];
   galleryExhibitRoles: string[] = ['Manager', 'Observer', 'Member'];
-  steamfitterScenarioRoles: string[] = [
-    'Manager',
-    'Facilitator',
-    'Member',
-    'Observer',
-  ];
   isEditEnabled = false;
   userList: User[] = [];
   mselUnitList: MselUnit[] = [];
@@ -381,7 +376,6 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
       userId,
       role,
       this.getGalleryExhibitRole(userId),
-      this.getSteamfitterScenarioRole(userId),
     );
   }
 
@@ -397,24 +391,6 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
       this.msel.id,
       userId,
       this.getCiteEvaluationRole(userId),
-      role,
-      this.getSteamfitterScenarioRole(userId),
-    );
-  }
-
-  getSteamfitterScenarioRole(userId: string): string | null {
-    const umr = this.userMselRoles.find(
-      (u) => u.userId === userId && u.mselId === this.msel.id,
-    );
-    return umr?.steamfitterScenarioRole ?? null;
-  }
-
-  setSteamfitterScenarioRole(userId: string, role: string | null) {
-    this.userMselRoleDataService.setIntegrationRoles(
-      this.msel.id,
-      userId,
-      this.getCiteEvaluationRole(userId),
-      this.getGalleryExhibitRole(userId),
       role,
     );
   }
@@ -551,6 +527,8 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
       [MselRole.Owner]: 'Holds full control over the MSEL.',
       [MselRole.Evaluator]:
         'Can access the MSEL view and mark items as complete.',
+      [MselRole.Facilitator]:
+        'Runs the deployed MSEL on the Facilitator View: starts moves and groups and runs its automation tasks.',
       [MselRole.Viewer]:
         'Can only view MSEL Pages without the ability to make changes.',
       Creator:

@@ -77,6 +77,7 @@ const NO_ROLES = {
   approver: false,
   editor: false,
   evaluator: false,
+  facilitator: false,
   viewer: false,
 };
 const ALL_ROLES = {
@@ -85,6 +86,7 @@ const ALL_ROLES = {
   approver: true,
   editor: true,
   evaluator: true,
+  facilitator: true,
   viewer: true,
 };
 
@@ -135,6 +137,7 @@ describe('MselPlus.hasRole', () => {
       [MselRole.Approver, { approver: true, editor: true, viewer: true }],
       [MselRole.Editor, { editor: true, viewer: true }],
       [MselRole.Evaluator, { evaluator: true, viewer: true }],
+      [MselRole.Facilitator, { facilitator: true, viewer: true }],
       [MselRole.MoveEditor, { moveEditor: true, viewer: true }],
       [MselRole.Viewer, { viewer: true }],
     ])('maps %s to its flags', (mselRole, granted) => {

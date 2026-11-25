@@ -1,0 +1,398 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+-->
+<mat-sidenav-container class="container" hasBackdrop="false">
+  <mat-sidenav #drawer position="end" mode="over" class="history-drawer">
+    @if (drawerTask) {
+      <app-automation-results-drawer
+        [task]="drawerTask"
+        [label]="historyLabel(drawerTask)"
+        [runs]="deploymentRuns"
+        [canAct]="canAct"
+        [userNames]="userNames"
+        (closed)="closeHistory()"
+      />
+    }
+  </mat-sidenav>
+  <mat-sidenav-content class="content">
+    <div class="facilitator-summary" aria-live="polite">
+      <mat-icon fontIcon="mdi-robot-outline" aria-hidden="true" />
+      <span class="summary-now">
+        @if (currentMove != null) {
+          Now: Move {{ currentMove }} · Group {{ currentGroup ?? 0 }}
+        } @else {
+          Not started
+        }
+      </span>
+      <app-automation-status-chip
+        status="Failed"
+        [label]="counts.failed + ' failed'"
+      />
+      <app-automation-status-chip
+        status="Running"
+        [label]="counts.running + ' running'"
+      />
+      <app-automation-status-chip
+        status="Pending"
+        [label]="counts.waiting + ' waiting'"
+      />
+      @if (scoring.score > 0) {
+        <span class="summary-now"
+          >Score {{ scoring.scoreEarned }}/{{ scoring.score }}</span
+        >
+      }
+      @if (next; as n) {
+        <span class="summary-next">Next: {{ n.label }} ({{ n.detail }})</span>
+      }
+      @if (isPaused) {
+        <span class="summary-paused">Automation is paused</span>
+      }
+      @if (canAct) {
+        <button
+          matButton="outlined"
+          type="button"
+          class="summary-pause"
+          (click)="togglePause()"
+          [disabled]="pausing()"
+        >
+          <mat-icon
+            [fontIcon]="isPaused ? 'mdi-play' : 'mdi-pause'"
+            aria-hidden="true"
+          />
+          {{ isPaused ? 'Resume Automation' : 'Pause Automation' }}
+        </button>
+      }
+    </div>
+    @if (msel.status !== 'Deployed') {
+      <p class="facilitator-note">
+        This MSEL is not deployed. Its tasks run once it is pushed; until then
+        test them from the Scenario Events tab.
+      </p>
+    } @else if (!canFacilitate()) {
+      <p class="facilitator-note">
+        You can follow the exercise here. Only a Facilitator or Owner can start
+        moves and run tasks.
+      </p>
+    }
+    @if (errorMessage()) {
+      <p role="alert" class="facilitator-error">{{ errorMessage() }}</p>
+    }
+    @if (facilitatorDataFields.length === 0) {
+      <p class="facilitator-note">
+        No data field is marked "Facilitate", so only the events' places and
+        automation are shown.
+        @if (!standalone()) {
+          Mark the fields to show here on the Data Fields tab.
+        } @else if (canChooseFields()) {
+          <button matButton type="button" (click)="openDataFields()">
+            Open Data Fields
+          </button>
+        }
+      </p>
+    }
+
+    <div class="facilitator-filters">
+      <mat-form-field class="search-field" subscriptSizing="dynamic">
+        <mat-label>Search</mat-label>
+        <input
+          matInput
+          [(ngModel)]="filterString"
+          (ngModelChange)="filterChange.next($event)"
+        />
+        @if (filterString) {
+          <button
+            matIconButton
+            matSuffix
+            type="button"
+            (click)="applyFilter('')"
+            aria-label="Clear Search"
+          >
+            <mat-icon fontIcon="mdi-close-circle-outline" />
+          </button>
+        }
+      </mat-form-field>
+      <mat-slide-toggle
+        [checked]="onlyEventsWithTasks"
+        (change)="setOnlyEventsWithTasks($event.checked)"
+        >Only events with tasks</mat-slide-toggle
+      >
+      <button
+        matIconButton
+        type="button"
+        (click)="expandAll()"
+        [disabled]="isFullyExpanded"
+        aria-label="Expand All"
+        matTooltip="Expand All"
+      >
+        <mat-icon fontIcon="mdi-unfold-more-horizontal" />
+      </button>
+      <button
+        matIconButton
+        type="button"
+        (click)="collapseAll()"
+        [disabled]="sections.isFullyCollapsed"
+        aria-label="Collapse All"
+        matTooltip="Collapse All"
+      >
+        <mat-icon fontIcon="mdi-unfold-less-horizontal" />
+      </button>
+    </div>
+
+    <div class="tableFixHead">
+      <table>
+        <thead>
+          <tr>
+            <th class="expand-col">
+              <span class="cdk-visually-hidden">Expand</span>
+            </th>
+            <th class="row-num-col">#</th>
+            @if (msel.showMoveOnFacilitatorView) {
+              <th>Move</th>
+            }
+            @if (msel.showGroupOnFacilitatorView) {
+              <th>Group</th>
+            }
+            @if (msel.showTimeOnFacilitatorView) {
+              <th>
+                <button
+                  matIconButton
+                  type="button"
+                  (click)="setRealTime(!showRealTime)"
+                  [attr.aria-label]="
+                    showRealTime
+                      ? 'Switch to Delta Time'
+                      : 'Switch to Real Time'
+                  "
+                  [disabled]="!msel.startTime"
+                >
+                  <mat-icon
+                    [fontIcon]="
+                      showRealTime
+                        ? 'mdi-clock-time-four-outline'
+                        : 'mdi-timer-outline'
+                    "
+                  />
+                </button>
+                Time
+              </th>
+            }
+            @if (msel.showIntegrationTargetOnFacilitatorView) {
+              <th>Integration Target</th>
+            }
+            <th>Automation</th>
+            @for (df of facilitatorDataFields; track df.id) {
+              <th>{{ df.name }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (
+            row of displayRows;
+            track row.type + (row.event?.id ?? row.groupKey ?? row.moveNumber)
+          ) {
+            @if (row.type === 'move') {
+              <tr
+                class="move-header-row"
+                [class.move-completed]="
+                  moveTone(row.moveNumber) === 'completed'
+                "
+              >
+                <td class="expand-col">
+                  <button
+                    matIconButton
+                    type="button"
+                    (click)="toggleMove(row.moveNumber)"
+                    [attr.aria-expanded]="
+                      sections.moveNumbers.has(row.moveNumber)
+                    "
+                    [attr.aria-label]="'Move ' + row.moveNumber"
+                  >
+                    <mat-icon
+                      [fontIcon]="
+                        sections.moveNumbers.has(row.moveNumber)
+                          ? 'mdi-chevron-down'
+                          : 'mdi-chevron-right'
+                      "
+                    />
+                  </button>
+                </td>
+                <td [attr.colspan]="columnCount - 1">
+                  <div class="section-header-content">
+                    <mat-icon
+                      fontIcon="mdi-folder-outline"
+                      aria-hidden="true"
+                    />
+                    <span class="section-label">Move {{ row.moveNumber }}</span>
+                    <span class="section-description">{{
+                      moveDescription(row.moveNumber)
+                    }}</span>
+                    <span class="section-status">{{
+                      moveStatus(row.moveNumber)
+                    }}</span>
+                    @if (canAct) {
+                      <button
+                        matButton="tonal"
+                        type="button"
+                        class="section-action"
+                        (click)="startMove(row.moveNumber, $event)"
+                      >
+                        <mat-icon fontIcon="mdi-play" aria-hidden="true" />
+                        Start Move {{ row.moveNumber }}
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+            @if (
+              row.type === 'group' && sections.moveNumbers.has(row.moveNumber)
+            ) {
+              <tr class="group-header-row">
+                <td class="expand-col">
+                  <button
+                    matIconButton
+                    type="button"
+                    (click)="toggleGroup(row.groupKey)"
+                    [attr.aria-expanded]="sections.groupKeys.has(row.groupKey)"
+                    [attr.aria-label]="
+                      'Move ' + row.moveNumber + ' group ' + row.groupNumber
+                    "
+                  >
+                    <mat-icon
+                      [fontIcon]="
+                        sections.groupKeys.has(row.groupKey)
+                          ? 'mdi-chevron-down'
+                          : 'mdi-chevron-right'
+                      "
+                    />
+                  </button>
+                </td>
+                <td [attr.colspan]="columnCount - 1">
+                  <div class="section-header-content">
+                    <mat-icon
+                      fontIcon="mdi-folder-table-outline"
+                      aria-hidden="true"
+                    />
+                    <span class="section-label"
+                      >Group {{ row.groupNumber }}</span
+                    >
+                    @if (isCurrentGroup(row)) {
+                      <span class="section-status">Current</span>
+                    }
+                    @if (groupWaiting(row) > 0) {
+                      <app-automation-status-chip
+                        status="Pending"
+                        [label]="groupWaiting(row) + ' tasks waiting'"
+                      />
+                    }
+                    @if (canAct) {
+                      <button
+                        matButton
+                        type="button"
+                        class="section-action"
+                        (click)="startGroup(row, $event)"
+                      >
+                        Start Group {{ row.groupNumber }}
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+            @if (
+              row.type === 'event' &&
+              sections.moveNumbers.has(row.moveNumber) &&
+              sections.groupKeys.has(row.groupKey)
+            ) {
+              <tr [style]="getRowStyle(row.event)">
+                <td class="expand-col">
+                  <button
+                    matIconButton
+                    type="button"
+                    (click)="toggleEvent(row.event.id)"
+                    [attr.aria-expanded]="sections.eventIds.has(row.event.id)"
+                    [attr.aria-label]="eventLabel(row.event.id) + ' automation'"
+                  >
+                    <mat-icon
+                      [fontIcon]="
+                        sections.eventIds.has(row.event.id)
+                          ? 'mdi-chevron-down'
+                          : 'mdi-chevron-right'
+                      "
+                    />
+                  </button>
+                </td>
+                <td class="row-num-col">{{ eventNumber(row.event.id) }}</td>
+                @if (msel.showMoveOnFacilitatorView) {
+                  <td>{{ row.moveNumber }}</td>
+                }
+                @if (msel.showGroupOnFacilitatorView) {
+                  <td>{{ row.groupNumber }}</td>
+                }
+                @if (msel.showTimeOnFacilitatorView) {
+                  <td>
+                    <app-duration-view
+                      [startTime]="msel.startTime"
+                      [durationSeconds]="row.event.deltaSeconds"
+                      [showRealTime]="showRealTime"
+                    />
+                  </td>
+                }
+                @if (msel.showIntegrationTargetOnFacilitatorView) {
+                  <td>{{ row.event.integrationTarget || '' }}</td>
+                }
+                <td>
+                  @if (eventTasks(row.event).length > 0) {
+                    @let s = summary(row.event);
+                    <app-automation-status-chip
+                      [status]="s.status"
+                      [label]="s.label"
+                    />
+                  }
+                </td>
+                @for (df of facilitatorDataFields; track df.id) {
+                  <td [attr.data-field-type]="df.dataType">
+                    <app-data-value
+                      [value]="getDataValue(row.event, df.name).value"
+                      [dataField]="df"
+                      [canEdit]="false"
+                      [canApprove]="false"
+                      [isOwner]="false"
+                      [showValueOnly]="true"
+                      [organizationOptions]="getSortedOrganizationOptions()"
+                      [teamOptions]="teamList"
+                      [cardOptions]="cardList"
+                      [moveOptions]="moveList"
+                      [userOptions]="users"
+                    />
+                  </td>
+                }
+              </tr>
+              @if (sections.eventIds.has(row.event.id)) {
+                <tr class="detail-row">
+                  <td [attr.colspan]="columnCount">
+                    @if (eventTasks(row.event).length > 0) {
+                      <app-facilitator-automation-panel
+                        [tasks]="eventTasks(row.event)"
+                        [runs]="deploymentRuns"
+                        [canAct]="canAct"
+                        [taskNames]="taskNames"
+                        [scores]="scoring.tasks"
+                        (history)="openHistory($event)"
+                      />
+                    } @else {
+                      <p class="facilitator-note detail-note">
+                        This event has no automation tasks.
+                      </p>
+                    }
+                  </td>
+                </tr>
+              }
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

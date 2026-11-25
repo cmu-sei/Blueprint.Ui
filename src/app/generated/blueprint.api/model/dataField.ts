@@ -43,6 +43,7 @@ export interface DataField {
     isInformationField?: boolean;
     isFacilitationField?: boolean;
     isAssessorVisible?: boolean;
+    onFacilitatorView?: boolean;
 }
 export namespace DataField {
 }

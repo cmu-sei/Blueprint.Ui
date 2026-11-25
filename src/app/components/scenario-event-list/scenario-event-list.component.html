@@ -255,6 +255,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 </div>
               </th>
             }
+            <!-- Automation header, once the MSEL has a task -->
+            @if (hasAutomation) {
+              <th class="background">
+                <div>Automation</div>
+              </th>
+            }
             <!-- IntegrationTarget header -->
             @if (msel.showIntegrationTargetOnScenarioEventList) {
               <th mat-sort-header="integrationTarget" class="background">
@@ -349,6 +355,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     >
                       Edit
                     </button>
+                    @if (canTestAutomation(item)) {
+                      <button
+                        mat-menu-item
+                        (click)="openAutomationTest(item)"
+                        title="Test the automation tasks of event {{
+                          rowIndex + 1
+                        }}"
+                      >
+                        Test Automation…
+                      </button>
+                    }
                     @if (
                       canEditMsel() ||
                       msel.hasRole(loggedInUserId(), item.id).owner
@@ -474,6 +491,39 @@ project root for license information or contact permission@sei.cmu.edu for full 
                       [showRealTime]="showRealTime"
                     />
                   </div>
+                </td>
+              }
+              <!-- Automation value -->
+              @if (hasAutomation) {
+                <td>
+                  @if (eventTasks(item).length > 0) {
+                    <button
+                      matButton
+                      type="button"
+                      class="automation-cell"
+                      (click)="
+                        editScenarioEvent(item, 'Automation');
+                        $event.stopPropagation()
+                      "
+                      [matTooltip]="automationTooltip(item)"
+                      matTooltipClass="multiline-tooltip"
+                      [attr.aria-label]="
+                        eventTasks(item).length +
+                        ' automation tasks on event ' +
+                        (rowIndex + 1)
+                      "
+                    >
+                      <mat-icon
+                        fontIcon="mdi-robot-outline"
+                        aria-hidden="true"
+                      />
+                      {{ eventTasks(item).length }}
+                      <app-automation-status-chip
+                        [status]="eventTestStatus(item)"
+                        [compact]="true"
+                      />
+                    </button>
+                  }
                 </td>
               }
               <!-- Integration Target value -->

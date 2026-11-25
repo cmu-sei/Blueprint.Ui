@@ -65,46 +65,36 @@ project root for license information or contact permission@sei.cmu.edu for full 
         }
         <!-- Tabs -->
         <span class="single-edit-dialog">
-          @if (
-            (showDefaultTab() || data.useGallery || data.useSteamfitter) &&
-            data.scenarioEvent.scenarioEventType === eventType.Inject
-          ) {
-            <mat-tab-group
-              mat-stretch-tabs
-              class="full-width"
-              mat-align-tabs="start"
-              [selectedIndex]="selectedTab"
-              (selectedTabChange)="tabChange($event)"
-              style="margin-bottom: 20px"
-            >
-              @if (showDefaultTab()) {
-                <mat-tab label="Default" />
-              }
-              <mat-tab label="All" />
-              @if (
-                data.useGallery &&
-                data.scenarioEvent.integrationTarget?.includes(
-                  integrationTarget.Gallery
-                )
-              ) {
-                <mat-tab label="Gallery Article" />
-              }
-              @if (
-                data.useSteamfitter &&
-                data.scenarioEvent.integrationTarget?.includes(
-                  integrationTarget.Steamfitter
-                )
-              ) {
-                <mat-tab label="Steamfitter Task">
-                  <app-steamfitter-task
-                    [scenarioEvent]="data.scenarioEvent"
-                    [canEdit]="data.isEditor"
+          <mat-tab-group
+            mat-stretch-tabs
+            class="full-width"
+            mat-align-tabs="start"
+            [selectedIndex]="selectedTab"
+            (selectedTabChange)="tabChange($event)"
+            style="margin-bottom: 20px"
+          >
+            @for (label of tabLabels(); track label) {
+              @if (label === 'Automation') {
+                <mat-tab label="Automation">
+                  <ng-template mat-tab-label>
+                    Automation ({{ automationTasks.length }})
+                  </ng-template>
+                  <app-automation-task-list
+                    [drafts]="automationTasks"
+                    [canEdit]="data.isEditor && !data.isEditingRestricted"
+                    [canTest]="!!data.canTest"
+                    [triggerOptions]="data.triggerOptions ?? []"
+                    [latestTests]="data.latestTests ?? emptyRuns"
+                    (changed)="tasksChanged = true"
+                    (test)="openTest($event)"
                   />
                 </mat-tab>
+              } @else {
+                <mat-tab [label]="label" />
               }
-            </mat-tab-group>
-          }
-          @if (selectedTabName !== 'Steamfitter Task') {
+            }
+          </mat-tab-group>
+          @if (selectedTabName !== 'Automation') {
             <span>
               <!-- event start time (deltaSeconds) -->
               @if (

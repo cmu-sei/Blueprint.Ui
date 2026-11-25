@@ -198,6 +198,13 @@ export class DataFieldListComponent
       label: 'Assess',
       title: 'Display on the Assessor View',
     },
+    // not "Facil", which is the Facilitation events column
+    {
+      key: 'onFacilitatorView',
+      column: 'facilitator',
+      label: 'Facilitate',
+      title: 'Display on the Facilitator View',
+    },
     {
       key: 'isInformationField',
       column: 'information',
@@ -368,6 +375,7 @@ export class DataFieldListComponent
         onScenarioEventList: this.msel.showMoveOnScenarioEventList,
         onExerciseView: this.msel.showMoveOnExerciseView,
         isAssessorVisible: this.msel.showMoveOnAssessorView,
+        onFacilitatorView: this.msel.showMoveOnFacilitatorView,
         isInformationField: false,
         isFacilitationField: false,
         galleryArticleParameter: 'Gallery Move',
@@ -380,6 +388,7 @@ export class DataFieldListComponent
         onScenarioEventList: this.msel.showGroupOnScenarioEventList,
         onExerciseView: this.msel.showGroupOnExerciseView,
         isAssessorVisible: this.msel.showGroupOnAssessorView,
+        onFacilitatorView: this.msel.showGroupOnFacilitatorView,
         isInformationField: false,
         isFacilitationField: false,
         galleryArticleParameter: 'Gallery Inject',
@@ -392,6 +401,7 @@ export class DataFieldListComponent
         onScenarioEventList: this.msel.showTimeOnScenarioEventList,
         onExerciseView: this.msel.showTimeOnExerciseView,
         isAssessorVisible: this.msel.showTimeOnAssessorView,
+        onFacilitatorView: this.msel.showTimeOnFacilitatorView,
         isInformationField: false,
         isFacilitationField: false,
         galleryArticleParameter: '- - -',
@@ -404,6 +414,7 @@ export class DataFieldListComponent
         onScenarioEventList: this.msel.showIntegrationTargetOnScenarioEventList,
         onExerciseView: this.msel.showIntegrationTargetOnExerciseView,
         isAssessorVisible: this.msel.showIntegrationTargetOnAssessorView,
+        onFacilitatorView: this.msel.showIntegrationTargetOnFacilitatorView,
         isInformationField: false,
         isFacilitationField: false,
         galleryArticleParameter: '- - -',
@@ -607,6 +618,7 @@ export class DataFieldListComponent
       case 'isInformationField':
       case 'isFacilitationField':
       case 'isAssessorVisible':
+      case 'onFacilitatorView':
       case 'isShownOnDefaultTab':
       case 'isOnlyShownToOwners':
         const aChecked = a[sortFieldName];
@@ -869,17 +881,20 @@ export class DataFieldListComponent
           this.msel.showMoveOnExerciseView = dataField.onExerciseView;
           this.msel.showMoveOnScenarioEventList = dataField.onScenarioEventList;
           this.msel.showMoveOnAssessorView = dataField.isAssessorVisible;
+          this.msel.showMoveOnFacilitatorView = dataField.onFacilitatorView;
           break;
         case 'Group':
           this.msel.showGroupOnExerciseView = dataField.onExerciseView;
           this.msel.showGroupOnScenarioEventList =
             dataField.onScenarioEventList;
           this.msel.showGroupOnAssessorView = dataField.isAssessorVisible;
+          this.msel.showGroupOnFacilitatorView = dataField.onFacilitatorView;
           break;
         case 'Execution Time':
           this.msel.showTimeOnExerciseView = dataField.onExerciseView;
           this.msel.showTimeOnScenarioEventList = dataField.onScenarioEventList;
           this.msel.showTimeOnAssessorView = dataField.isAssessorVisible;
+          this.msel.showTimeOnFacilitatorView = dataField.onFacilitatorView;
           break;
         case 'Integration Target':
           this.msel.showIntegrationTargetOnExerciseView =
@@ -888,6 +903,8 @@ export class DataFieldListComponent
             dataField.onScenarioEventList;
           this.msel.showIntegrationTargetOnAssessorView =
             dataField.isAssessorVisible;
+          this.msel.showIntegrationTargetOnFacilitatorView =
+            dataField.onFacilitatorView;
           break;
       }
       this.saveMsel();

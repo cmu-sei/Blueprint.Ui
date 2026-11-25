@@ -15,6 +15,8 @@ export class UIState {
   useRealTime: boolean;
   visibleDataFieldColumns: string[] = [];
   statementGrouping: string;
+  // the Facilitator View shows only the events with automation tasks unless this is false
+  facilitatorOnlyEventsWithTasks: boolean;
 }
 
 @Injectable({
@@ -113,6 +115,18 @@ export class UIDataService {
     return this.uiState.selectedTheme;
   }
   // end theme
+
+  //
+  // Facilitator View section
+  getFacilitatorOnlyEventsWithTasks(): boolean {
+    return this.uiState.facilitatorOnlyEventsWithTasks !== false;
+  }
+
+  setFacilitatorOnlyEventsWithTasks(value: boolean) {
+    this.uiState.facilitatorOnlyEventsWithTasks = value;
+    this.saveChanges();
+  }
+  // end Facilitator View section
 
   //
   // Data field display columns section

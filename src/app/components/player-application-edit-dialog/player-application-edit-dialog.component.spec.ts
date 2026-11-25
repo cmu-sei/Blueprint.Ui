@@ -164,13 +164,13 @@ describe('PlayerApplicationEditDialogComponent', () => {
 
     expect(
       screen.getByText(
-        '{citeUrl}, {galleryUrl}, {steamfitterUrl}, {playerUrl}, {blueprintUrl}, {casterUrl}, {vmUrl}',
+        '{citeUrl}, {galleryUrl}, {playerUrl}, {blueprintUrl}, {casterUrl}, {vmUrl}',
         { exact: false },
       ),
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        '{citeEvaluationId}, {galleryExhibitId}, {steamfitterScenarioId}, {playerViewId}, {casterWorkspaceId}, {blueprintMselId}',
+        '{citeEvaluationId}, {galleryExhibitId}, {playerViewId}, {casterWorkspaceId}, {blueprintMselId}',
         { exact: false },
       ),
     ).toBeInTheDocument();

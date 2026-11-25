@@ -24,11 +24,6 @@ export interface MselIntegrationNames {
     galleryExhibitName?: string | null;
     citeEvaluationName?: string | null;
     citeScoringModelName?: string | null;
-    steamfitterScenarioName?: string | null;
-    /**
-     * The Steamfitter scenario\'s status - Ready until it is started, then Active, then Ended.
-     */
-    steamfitterScenarioStatus?: string | null;
     casterDirectoryName?: string | null;
     casterWorkspaceName?: string | null;
 }

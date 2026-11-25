@@ -261,6 +261,11 @@ describe('DashboardComponent', () => {
     expect(
       within(assess).getByText('You are not an assessor on any event'),
     ).toBeInTheDocument();
+    const facilitate = card('FACILITATE');
+    expect(facilitate).toHaveClass('disabled-card');
+    expect(
+      within(facilitate).getByText('You are not a facilitator on any event'),
+    ).toBeInTheDocument();
   });
 
   // crucible-common remembers loaded images, so each test uses its own URL.
@@ -364,6 +369,70 @@ describe('DashboardComponent', () => {
     expect(assess.querySelector('.metric-value')?.textContent).toBe('1');
     await userEvent.setup().click(assess);
     expect(navigate).toHaveBeenCalledWith(['assess']);
+  });
+
+  /**
+   * Verifies: FACILITATE counts the running events whose Facilitator View the user can open, a read-only Editor's too, and opens
+   * /facilitate; an Evaluator's event does not count, and one not yet running only makes the card say so.
+   * Interacts with: MselService.getMyMsels (stub), canViewFacilitator, facilitatableMsels, Router.navigate (spy).
+   * Data: Bravo deployed as Facilitator, Charlie deployed as Editor, Delta deployed as Evaluator (near miss on role), Echo approved
+   * as Facilitator (near miss on status).
+   */
+  it('counts the events the user can facilitate', async () => {
+    const roles = (id: string, r: MselRole[]) =>
+      r.map((role) => ({ userId: 'user-me', mselId: id, role }));
+    const event = (
+      id: string,
+      role: MselRole,
+      status: MselItemStatus,
+    ): Msel => ({
+      id,
+      name: id,
+      status,
+      userMselRoles: roles(id, [role]),
+    });
+    await renderDashboard({
+      build: [
+        event('msel-2', MselRole.Facilitator, MselItemStatus.Deployed),
+        event('msel-3', MselRole.Editor, MselItemStatus.Deployed),
+        event('msel-4', MselRole.Evaluator, MselItemStatus.Deployed),
+        event('msel-5', MselRole.Facilitator, MselItemStatus.Approved),
+      ],
+    });
+    const navigate = vi
+      .spyOn(TestBed.inject(Router), 'navigate')
+      .mockResolvedValue(true);
+    const facilitate = card('FACILITATE');
+
+    expect(facilitate.querySelector('.metric-value')?.textContent).toBe('2');
+    await userEvent.setup().click(facilitate);
+    expect(navigate).toHaveBeenCalledWith(['facilitate']);
+  });
+
+  /**
+   * Verifies: a facilitator whose events are not running sees the FACILITATE card greyed out, saying there is none running.
+   * Interacts with: hasFacilitatorRole.
+   * Data: Echo approved, the user its Facilitator.
+   */
+  it('greys out FACILITATE until a facilitated event runs', async () => {
+    await renderDashboard({
+      build: [
+        {
+          id: 'msel-5',
+          name: 'Exercise Echo',
+          status: MselItemStatus.Approved,
+          userMselRoles: [
+            { userId: 'user-me', mselId: 'msel-5', role: MselRole.Facilitator },
+          ],
+        },
+      ],
+    });
+    const facilitate = card('FACILITATE');
+
+    expect(facilitate).toHaveClass('disabled-card');
+    expect(
+      within(facilitate).getByText('No running events available to facilitate'),
+    ).toBeInTheDocument();
   });
 
   /**

@@ -236,36 +236,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
                           </mat-form-field>
                         </div>
                       }
-                      @if (msel.useSteamfitter) {
-                        <div
-                          class="role-select"
-                          (click)="$event.stopPropagation()"
-                        >
-                          <mat-form-field>
-                            <mat-label>Steamfitter Role</mat-label>
-                            <mat-select
-                              [value]="getSteamfitterScenarioRole(user.id)"
-                              (selectionChange)="
-                                setSteamfitterScenarioRole(
-                                  user.id,
-                                  $event.value
-                                )
-                              "
-                              [disabled]="!canManageMsel()"
-                            >
-                              <mat-option [value]="null">&mdash;</mat-option>
-                              @for (
-                                role of steamfitterScenarioRoles;
-                                track role
-                              ) {
-                                <mat-option [value]="role">{{
-                                  role
-                                }}</mat-option>
-                              }
-                            </mat-select>
-                          </mat-form-field>
-                        </div>
-                      }
                     </div>
                   }
                   @if (getMselUnitUsers(element.unitId).length === 0) {

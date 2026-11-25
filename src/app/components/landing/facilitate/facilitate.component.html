@@ -1,0 +1,99 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+-->
+<div class="join-page" crucibleLandingBackground>
+  @if (!hideTopbar) {
+    <app-topbar
+      [title]="topbarText"
+      [topbarView]="TopbarView.BLUEPRINT_HOME"
+      [imageFilePath]="topbarImage"
+      (urlNavigate)="topBarNavigate($event)"
+    />
+  }
+  <div class="join-container">
+    <div class="page-header">
+      <h1 class="page-title">Facilitate an Exercise</h1>
+      <p class="page-subtitle">
+        Choose a running exercise to start its moves and follow its automation
+        tasks.
+      </p>
+    </div>
+    @if (isLoading) {
+      <div class="joining-state">
+        <mat-progress-spinner
+          color="primary"
+          mode="indeterminate"
+          diameter="60"
+        />
+      </div>
+    } @else {
+      <div class="event-grid">
+        @for (msel of facilitateMselList; track msel.id) {
+          <div class="event-card">
+            @if (cardPhotos[msel.id]) {
+              <div
+                class="card-image card-photo"
+                [style.background-image]="'url(' + cardPhotos[msel.id] + ')'"
+                aria-hidden="true"
+              ></div>
+            } @else {
+              <div
+                class="card-image"
+                [style.background]="cardImage(msel)"
+                aria-hidden="true"
+              ></div>
+            }
+            <h2 class="card-title" [appOverflowTooltip]="msel.name">
+              {{ msel.name }}
+            </h2>
+            @if (msel.description) {
+              <p
+                class="card-description"
+                [appOverflowTooltip]="msel.description"
+              >
+                {{ msel.description }}
+              </p>
+            }
+            <p class="card-status">
+              {{ position(msel) }}
+              @if (msel.automationPaused) {
+                · Automation paused
+              }
+              @if (runCounts[msel.id]; as counts) {
+                @if (counts.failed > 0) {
+                  · {{ counts.failed }} failed
+                }
+                @if (counts.running > 0) {
+                  · {{ counts.running }} running
+                }
+              }
+            </p>
+            <div class="card-footer">
+              <a
+                matButton="filled"
+                [routerLink]="['/facilitate']"
+                [queryParams]="{ msel: msel.id }"
+                title="Facilitate {{ msel.name }}"
+              >
+                Facilitate
+              </a>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <mat-icon fontIcon="mdi-robot-outline" />
+            @if (loadFailed) {
+              <p>
+                The exercises to facilitate could not be loaded. Reload the page
+                to try again.
+              </p>
+            } @else {
+              <p>No running exercises available to facilitate</p>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
