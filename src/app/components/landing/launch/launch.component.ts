@@ -81,7 +81,6 @@ export class LaunchComponent implements OnDestroy, OnInit {
       'blue',
     );
     this.titleService.setTitle(this.appTitle);
-    // Set the display settings from config file
     // a new hub connection missed what was broadcast while the old one was down, which can include
     // the launched MSEL's integration status
     reloadOnReconnect(() => {
