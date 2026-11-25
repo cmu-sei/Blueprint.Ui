@@ -678,8 +678,16 @@ export class TechniquePoolComponent
         if (!groups.has(key)) groups.set(key, names?.get(t) || t);
       }
     }
+    // ATT&CK's domains share most group names, so a name several domains use is told apart by its domain
+    const uses = new Map<string, number>();
+    for (const name of groups.values()) {
+      uses.set(name, (uses.get(name) || 0) + 1);
+    }
     this.poolGroups = [...groups.entries()]
-      .map(([key, name]) => ({ key, name }))
+      .map(([key, name]) => ({
+        key,
+        name: uses.get(name) > 1 ? `${name} (${key.split('\u0000')[0]})` : name,
+      }))
       .sort((a, b) => a.name.localeCompare(b.name));
     // a filter's control shows only while there are several options, so a filter left on a gone option could not be cleared
     let changed = false;

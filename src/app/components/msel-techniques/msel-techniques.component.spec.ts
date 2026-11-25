@@ -1411,6 +1411,46 @@ describe('MselTechniquesComponent', () => {
   });
 
   /**
+   * Verifies: a group name that two domains both use is listed once for each, with its domain, so the options can be told
+   * apart.
+   * Interacts with: TechniquePoolComponent.refreshPoolFacets.
+   * Data: T1059 (enterprise) and CAPEC-66 (capec) both in a group "impact" named Impact.
+   */
+  it('tells a group name that two domains share apart by its domain', async () => {
+    const enterprise = {
+      ...T1059,
+      technique: { ...T1059.technique, tactics: ['impact'] },
+    };
+    const capec = {
+      ...CAPEC_66_IN_POOL,
+      technique: { ...CAPEC_66, tactics: ['impact'] },
+    };
+    await renderTechniques(
+      [enterprise, capec],
+      [ENTERPRISE_RELEASE, CAPEC_RELEASE],
+      {},
+      NO_MAPPINGS,
+      {},
+      {
+        'rel-1': [{ id: 'ta-1', shortName: 'impact', name: 'Impact' }],
+        'rel-c': [{ id: 'ta-9', shortName: 'impact', name: 'Impact' }],
+      },
+    );
+    const user = userEvent.setup();
+
+    await user.click(
+      await within(attackSection()).findByRole('combobox', { name: 'Group' }),
+    );
+
+    expect(
+      await screen.findByRole('option', { name: 'Impact (capec)' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('option', { name: 'Impact (enterprise-attack)' }),
+    ).toBeInTheDocument();
+  });
+
+  /**
    * Verifies: a group filter whose group leaves the pool is dropped, so every row shows again and the table does not stay
    * empty behind a control that is no longer shown.
    * Interacts with: TechniquePoolComponent.refreshPoolFacets, MselTechniqueService.deleteMselTechnique (stub).
