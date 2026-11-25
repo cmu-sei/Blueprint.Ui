@@ -26,17 +26,15 @@ project root for license information.
           >With Caster, the name of the machine in the template</mat-hint
         >
       </mat-form-field>
-      <mat-form-field class="range-count">
-        <mat-label>Count</mat-label>
-        <input matInput type="number" min="1" [(ngModel)]="host.count" />
-        <mat-hint>Identical hosts this row stands for</mat-hint>
-      </mat-form-field>
     </div>
     @if (nameProblem(); as problem) {
       <p class="range-problem">{{ problem }}</p>
     }
-    @if (countProblem(); as problem) {
-      <p class="range-problem">{{ problem }}</p>
+    @if (onSeveralNetworks()) {
+      <p class="range-hint">
+        This host is on {{ data.host.interfaces?.length }} networks. Changes to
+        it apply on all of them.
+      </p>
     }
     <div class="range-row">
       <mat-form-field class="range-grow">
@@ -118,16 +116,16 @@ project root for license information.
     }
 
     <mat-form-field class="full-width">
-      <mat-label>Defended by</mat-label>
+      <mat-label>Teams with access</mat-label>
       <mat-select multiple [(ngModel)]="host.teamIds">
         @for (team of data.teams; track team.id) {
           <mat-option [value]="team.id">{{ team.name }}</mat-option>
         }
       </mat-select>
-      <mat-hint>The teams that defend this host</mat-hint>
+      <mat-hint>The teams with access to this host</mat-hint>
     </mat-form-field>
     <mat-form-field class="full-width">
-      <mat-label>Belongs to</mat-label>
+      <mat-label>Organizations with access</mat-label>
       <mat-select multiple [(ngModel)]="host.organizationIds">
         @for (organization of data.organizations; track organization.id) {
           <mat-option [value]="organization.id">{{
@@ -135,7 +133,7 @@ project root for license information.
           }}</mat-option>
         }
       </mat-select>
-      <mat-hint>The organizations this host belongs to</mat-hint>
+      <mat-hint>The organizations with access to this host</mat-hint>
     </mat-form-field>
   </div>
 </crucible-dialog>

@@ -60,11 +60,15 @@ export class HostEditDialogComponent {
 
   host: Host = {
     ...this.data.host,
-    count: this.data.host.count ?? 1,
     interfaces: (this.data.host.interfaces ?? []).map((i) => ({ ...i })),
     teamIds: [...(this.data.host.teamIds ?? [])],
     organizationIds: [...(this.data.host.organizationIds ?? [])],
   };
+
+  /** An existing host on more than one network is one host, so an edit changes it under each */
+  onSeveralNetworks(): boolean {
+    return !!this.data.host.id && (this.data.host.interfaces?.length ?? 0) > 1;
+  }
 
   interfaces(): HostInterface[] {
     return this.host.interfaces ?? [];
@@ -92,14 +96,6 @@ export class HostEditDialogComponent {
     return nameProblem(this.host.name, this.host.id, this.data.hosts, 'host');
   }
 
-  countProblem(): string | null {
-    const count = Number(this.host.count);
-
-    return Number.isInteger(count) && count >= 1
-      ? null
-      : 'Count must be a whole number, 1 or more';
-  }
-
   interfaceProblem(hostInterface: HostInterface): string | null {
     if (!hostInterface.networkId) {
       return 'Choose a network';
@@ -117,7 +113,6 @@ export class HostEditDialogComponent {
   canSave(): boolean {
     return (
       !this.nameProblem() &&
-      !this.countProblem() &&
       this.interfaces().every((i) => !this.interfaceProblem(i))
     );
   }
@@ -129,7 +124,6 @@ export class HostEditDialogComponent {
       role: textOrNull(this.host.role),
       operatingSystem: textOrNull(this.host.operatingSystem),
       description: textOrNull(this.host.description),
-      count: Number(this.host.count),
       interfaces: this.interfaces().map((i) => ({
         networkId: i.networkId,
         address: textOrNull(i.address),

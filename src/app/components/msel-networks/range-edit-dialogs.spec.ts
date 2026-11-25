@@ -124,7 +124,6 @@ describe('HostEditDialogComponent', () => {
     host: {
       mselId: 'msel-1',
       name: '',
-      count: 1,
       interfaces: [],
       teamIds: [],
       organizationIds: [],
@@ -139,7 +138,7 @@ describe('HostEditDialogComponent', () => {
   });
 
   /**
-   * Verifies: Add Interface puts the host on the first network it isn't on yet, and Save closes with the interfaces and count.
+   * Verifies: Add Interface puts the host on the first network it isn't on yet, and Save closes with the interfaces.
    */
   it('adds interfaces on networks the host is not on yet', async () => {
     const { close } = await renderDialog(HostEditDialogComponent, data());
@@ -155,7 +154,6 @@ describe('HostEditDialogComponent', () => {
     expect(close).toHaveBeenCalledWith(
       expect.objectContaining({
         name: 'fw01',
-        count: 1,
         interfaces: [
           { networkId: 'n-lan', address: '10.20.0.1' },
           { networkId: 'n-dmz', address: null },
@@ -165,9 +163,9 @@ describe('HostEditDialogComponent', () => {
   });
 
   /**
-   * Verifies: Save stays disabled for an address that isn't a single IP address, and for a count below 1.
+   * Verifies: Save stays disabled for an address that isn't a single IP address.
    */
-  it('disables Save for a bad address or count', async () => {
+  it('disables Save for a bad address', async () => {
     await renderDialog(HostEditDialogComponent, data());
     const user = userEvent.setup();
 
@@ -177,12 +175,6 @@ describe('HostEditDialogComponent', () => {
 
     expect(actions().getByRole('button', { name: 'Save' })).toBeDisabled();
     expect(screen.getByText(/single IP address/)).toBeInTheDocument();
-
-    await user.clear(screen.getByLabelText('Address'));
-    await user.clear(screen.getByLabelText('Count'));
-    await user.type(screen.getByLabelText('Count'), '0');
-
-    expect(actions().getByRole('button', { name: 'Save' })).toBeDisabled();
   });
 
   /**
@@ -195,5 +187,44 @@ describe('HostEditDialogComponent', () => {
     expect(
       screen.getByText('Add a network first to put the host on it.'),
     ).toBeInTheDocument();
+  });
+
+  const hostOn = (networkIds: string[]): HostEditDialogData => {
+    const base = data();
+
+    return {
+      ...base,
+      host: {
+        ...base.host,
+        id: 'h-fw',
+        name: 'fw01',
+        interfaces: networkIds.map((networkId) => ({
+          networkId,
+          address: null,
+        })),
+      },
+    };
+  };
+
+  /**
+   * Verifies: a host that is on several networks says that an edit applies on all of them.
+   * Data: fw01 on bank-lan and bank-dmz.
+   */
+  it('says an edit applies on every network the host is on', async () => {
+    await renderDialog(HostEditDialogComponent, hostOn(['n-lan', 'n-dmz']));
+
+    expect(
+      screen.getByText(
+        /This host is on 2 networks\. Changes to it apply on all of them\./,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a host on one network, and a new host, get no such note.
+   */
+  it('has no note for a host on one network or a new host', async () => {
+    await renderDialog(HostEditDialogComponent, hostOn(['n-lan']));
+    expect(screen.queryByText(/This host is on/)).toBeNull();
   });
 });

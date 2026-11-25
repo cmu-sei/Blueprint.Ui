@@ -2,16 +2,44 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
+import {
+  AfterViewInit,
   Component,
   OnDestroy,
   OnInit,
+  computed,
+  effect,
   inject,
   input,
   signal,
+  viewChild,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MatIconButton } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort, MatSortHeader, Sort } from '@angular/material/sort';
+import {
+  MatCell,
+  MatCellDef,
+  MatColumnDef,
+  MatHeaderCell,
+  MatHeaderCellDef,
+  MatHeaderRow,
+  MatHeaderRowDef,
+  MatRow,
+  MatRowDef,
+  MatTable,
+  MatTableDataSource,
+} from '@angular/material/table';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { Observable, Subject, takeUntil } from 'rxjs';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
@@ -36,18 +64,60 @@ import {
   NetworkEditDialogData,
 } from './network-edit-dialog.component';
 
+/** The id of the row that lists the hosts on no network, which is not a network */
+export const NO_NETWORK_ID = 'hosts-on-no-network';
+const NO_NETWORK = {
+  id: NO_NETWORK_ID,
+  name: 'Hosts on no network',
+  teamIds: [],
+  organizationIds: [],
+};
+
 /**
- * The MSEL's range: its networks and the hosts on them, and the teams that defend them and the
- * organizations they belong to. A tabletop describes its network layout here; with Caster, the names
+ * The MSEL's range: its networks and the hosts on them, and the teams and
+ * organizations with access to them. A tabletop describes its network layout here; with Caster, the names
  * match the networks and machines in the template.
  */
 @Component({
   selector: 'app-msel-networks',
   templateUrl: './msel-networks.component.html',
   styleUrls: ['./msel-networks.component.scss'],
-  imports: [MatIconButton, MatIcon],
+  animations: [
+    trigger('detailExpand', [
+      state(
+        'collapsed',
+        style({ height: '0px', minHeight: '0', visibility: 'hidden' }),
+      ),
+      state('expanded', style({ height: '*', visibility: 'visible' })),
+      transition(
+        'expanded <=> collapsed',
+        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+      ),
+    ]),
+  ],
+  imports: [
+    FormsModule,
+    MatIcon,
+    MatIconButton,
+    MatFormField,
+    MatInput,
+    MatSuffix,
+    MatPaginator,
+    MatTable,
+    MatSort,
+    MatSortHeader,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCellDef,
+    MatCell,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+  ],
 })
-export class MselNetworksComponent implements OnInit, OnDestroy {
+export class MselNetworksComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly canEdit = input(false);
 
   private mselQuery = inject(MselQuery);
@@ -66,6 +136,90 @@ export class MselNetworksComponent implements OnInit, OnDestroy {
   readonly teams = signal<Team[]>([]);
   readonly organizations = signal<Organization[]>([]);
   readonly loading = signal(true);
+  /** The networks whose hosts are listed under them */
+  readonly expanded = signal<ReadonlySet<string>>(new Set());
+  readonly networkFilter = signal('');
+  readonly networkSort = signal<Sort>({ active: 'name', direction: 'asc' });
+
+  readonly networkColumns = [
+    'action',
+    'name',
+    'range',
+    'purpose',
+    'hostCount',
+    'teams',
+    'organizations',
+    'domains',
+  ];
+  readonly networkDetailColumns = ['expandedDetail'];
+  readonly networkHostColumns = [
+    'action',
+    'name',
+    'role',
+    'operatingSystem',
+    'address',
+  ];
+  readonly networkDataSource = new MatTableDataSource<Network>([]);
+  readonly networkPaginator = viewChild<MatPaginator>('networkPaginator');
+
+  /** The sort of the hosts under each network that has been sorted, by the network's id */
+  readonly hostSorts = signal<Record<string, Sort>>({});
+
+  /** The hosts on each network by the network's id, a host on several networks under each */
+  readonly hostsByNetwork = computed(() => {
+    const byNetwork = new Map<string, Host[]>();
+    for (const host of [...this.hosts()].sort((a, b) =>
+      (a.name ?? '').localeCompare(b.name ?? ''),
+    )) {
+      for (const i of host.interfaces ?? []) {
+        byNetwork.set(i.networkId, [...(byNetwork.get(i.networkId) ?? []), host]);
+      }
+    }
+
+    return byNetwork;
+  });
+
+  /** Hosts with no interface, which no network lists */
+  readonly hostsOnNoNetwork = computed(() =>
+    this.hosts()
+      .filter((h) => !h.interfaces?.length)
+      .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
+  );
+
+  // the networks that match the search in the sort's order, then the group of hosts on no network when there are some
+  /** The hosts under each network in its sort's order, by the network's id; by name until a column is sorted */
+  readonly sortedHostsByNetwork = computed(() => {
+    const sorts = this.hostSorts();
+    const sorted = new Map<string, Host[]>();
+    for (const [id, hosts] of [
+      ...this.hostsByNetwork(),
+      [NO_NETWORK_ID, this.hostsOnNoNetwork()] as [string, Host[]],
+    ]) {
+      sorted.set(id, this.sortHosts(id, hosts, sorts[id]));
+    }
+
+    return sorted;
+  });
+
+  private readonly networkRows = computed(() => {
+    const rows = this.arrange(
+      this.networks(),
+      this.networkFilter(),
+      this.networkSort(),
+      (n) => this.networkValues(n),
+    );
+
+    return this.hostsOnNoNetwork().length
+      ? [...rows, NO_NETWORK as Network]
+      : rows;
+  });
+  constructor() {
+    effect(() => (this.networkDataSource.data = this.networkRows()));
+  }
+
+  ngAfterViewInit(): void {
+    this.networkDataSource.paginator = this.networkPaginator();
+  }
 
   ngOnInit(): void {
     (this.mselQuery.selectActive() as Observable<MselPlus>)
@@ -130,24 +284,151 @@ export class MselNetworksComponent implements OnInit, OnDestroy {
     return this.names(ids, this.organizations());
   }
 
-  /** How many hosts are on the network, counting each row's Count */
-  hostCount(network: Network): number {
-    return this.hosts()
-      .filter((h) => h.interfaces?.some((i) => i.networkId === network.id))
-      .reduce((sum, h) => sum + (h.count ?? 1), 0);
-  }
+  /** The distinct domains of the teams and organizations with access to the network */
+  domains(network: Network): string {
+    const teams = this.teams().filter((t) => network.teamIds?.includes(t.id));
+    const organizations = this.organizations().filter((o) =>
+      network.organizationIds?.includes(o.id),
+    );
 
-  /** The host's interfaces as "network address" */
-  interfaceText(host: Host): string {
-    return (host.interfaces ?? [])
-      .map((i) => {
-        const network =
-          this.networks().find((n) => n.id === i.networkId)?.name ?? '';
-
-        return i.address ? `${network} ${i.address}` : network;
-      })
+    return [
+      ...new Set(
+        [...teams, ...organizations]
+          .map((x) => x.domain?.trim().toLowerCase())
+          .filter((d) => !!d),
+      ),
+    ]
       .sort()
       .join(', ');
+  }
+
+  /** How many hosts are on the network */
+  hostCount(network: Network): number {
+    return this.hostsOn(network).length;
+  }
+
+  isExpanded(network: Network): boolean {
+    return this.expanded().has(network.id);
+  }
+
+  toggle(network: Network): void {
+    this.expanded.update((ids) => {
+      const next = new Set(ids);
+      if (!next.delete(network.id)) {
+        next.add(network.id);
+      }
+
+      return next;
+    });
+  }
+
+  /** The hosts with an interface on the network; a host on several networks is listed under each */
+  hostsOn(network: Network): Host[] {
+    return this.isNoNetwork(network)
+      ? this.hostsOnNoNetwork()
+      : (this.hostsByNetwork().get(network.id) ?? []);
+  }
+
+  /** The row for the hosts on no network, which has no network to edit or delete */
+  isNoNetwork(network: Network): boolean {
+    return network.id === NO_NETWORK_ID;
+  }
+
+  /** The hosts under the network, sorted by the column the planner chose */
+  sortedHostsOn(network: Network): Host[] {
+    return this.sortedHostsByNetwork().get(network.id) ?? [];
+  }
+
+  hostSortChanged(network: Network, sort: Sort): void {
+    this.hostSorts.update((sorts) => ({ ...sorts, [network.id]: sort }));
+  }
+
+  private sortHosts(networkId: string, hosts: Host[], sort?: Sort): Host[] {
+    const active = sort?.direction ? sort.active : 'name';
+    const dir = sort?.direction === 'desc' ? -1 : 1;
+    const value = (h: Host): string | number => {
+      switch (active) {
+        case 'role':
+          return h.role ?? '';
+        case 'operatingSystem':
+          return h.operatingSystem ?? '';
+        case 'address':
+          return (
+            h.interfaces?.find((i) => i.networkId === networkId)?.address ?? ''
+          );
+        default:
+          return h.name ?? '';
+      }
+    };
+
+    return [...hosts].sort((a, b) => {
+      const x = value(a);
+      const y = value(b);
+      const order =
+        typeof x === 'number' && typeof y === 'number'
+          ? x - y
+          : String(x).localeCompare(String(y), undefined, {
+              numeric: true,
+              sensitivity: 'base',
+            });
+
+      return (order || (a.name ?? '').localeCompare(b.name ?? '')) * dir;
+    });
+  }
+
+  networkSortChanged(sort: Sort): void {
+    this.networkSort.set(sort.direction ? sort : { active: 'name', direction: 'asc' });
+  }
+
+  /** The rows that match the search, in the sort's order */
+  private arrange<T>(
+    items: T[],
+    search: string,
+    sort: Sort,
+    values: (item: T) => Record<string, string | number>,
+  ): T[] {
+    const term = search.trim().toLowerCase();
+    const dir = sort.direction === 'desc' ? -1 : 1;
+
+    return items
+      .filter(
+        (item) =>
+          !term ||
+          Object.values(values(item)).some((v) =>
+            String(v).toLowerCase().includes(term),
+          ),
+      )
+      .sort((a, b) => {
+        const x = values(a)[sort.active] ?? '';
+        const y = values(b)[sort.active] ?? '';
+        const order =
+          typeof x === 'number' && typeof y === 'number'
+            ? x - y
+            : String(x).localeCompare(String(y), undefined, {
+                sensitivity: 'base',
+              });
+
+        return order * dir;
+      });
+  }
+
+  private networkValues(n: Network): Record<string, string | number> {
+    return {
+      name: n.name ?? '',
+      range: n.range ?? '',
+      purpose: n.purpose ?? '',
+      hostCount: this.hostCount(n),
+      teams: this.teamNames(n.teamIds),
+      organizations: this.organizationNames(n.organizationIds),
+      domains: this.domains(n),
+    };
+  }
+
+  /** The host's address on the network, empty when it has none */
+  addressOn(host: Host, network: Network): string {
+    return (
+      host.interfaces?.find((i) => i.networkId === network.id)?.address ?? ''
+    );
   }
 
   editNetwork(network: Network | null): void {
@@ -209,13 +490,13 @@ export class MselNetworksComponent implements OnInit, OnDestroy {
       });
   }
 
-  editHost(host: Host | null): void {
+  /** Adds a host, or edits one; a new host from a network's row starts with an interface on that network */
+  editHost(host: Host | null, network: Network | null = null): void {
     const data: HostEditDialogData = {
       host: host ?? {
         mselId: this.mselId(),
         name: '',
-        count: 1,
-        interfaces: [],
+        interfaces: network ? [{ networkId: network.id, address: null }] : [],
         teamIds: [],
         organizationIds: [],
       },

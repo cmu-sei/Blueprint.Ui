@@ -17,7 +17,7 @@ import { HostInterface } from './hostInterface';
 
 
 /**
- * A host on a MSEL\'s range, or a group of identical ones (Blueprint.Api.ViewModels.Host.Count), with its interfaces on the MSEL\'s networks and the teams and organizations linked to it. A save sends the whole lists, which replace the stored ones.
+ * A host on a MSEL\'s range with its interfaces on the MSEL\'s networks and the teams and organizations linked to it. A save sends the whole lists, which replace the stored ones.
  */
 export interface Host { 
     dateCreated?: Date;
@@ -30,7 +30,6 @@ export interface Host {
     role?: string | null;
     operatingSystem?: string | null;
     description?: string | null;
-    count?: number;
     casterId?: string | null;
     interfaces?: Array<HostInterface> | null;
     teamIds?: Array<string> | null;

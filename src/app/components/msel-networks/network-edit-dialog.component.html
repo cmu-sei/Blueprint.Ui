@@ -49,16 +49,16 @@ project root for license information.
       />
     </mat-form-field>
     <mat-form-field class="full-width">
-      <mat-label>Defended by</mat-label>
+      <mat-label>Teams with access</mat-label>
       <mat-select multiple [(ngModel)]="network.teamIds">
         @for (team of data.teams; track team.id) {
           <mat-option [value]="team.id">{{ team.name }}</mat-option>
         }
       </mat-select>
-      <mat-hint>The teams that defend this network</mat-hint>
+      <mat-hint>The teams with access to this network. None means it is shared.</mat-hint>
     </mat-form-field>
     <mat-form-field class="full-width">
-      <mat-label>Belongs to</mat-label>
+      <mat-label>Organizations with access</mat-label>
       <mat-select multiple [(ngModel)]="network.organizationIds">
         @for (organization of data.organizations; track organization.id) {
           <mat-option [value]="organization.id">{{
@@ -66,7 +66,7 @@ project root for license information.
           }}</mat-option>
         }
       </mat-select>
-      <mat-hint>The organizations this network belongs to</mat-hint>
+      <mat-hint>The organizations with access to this network</mat-hint>
     </mat-form-field>
   </div>
 </crucible-dialog>
